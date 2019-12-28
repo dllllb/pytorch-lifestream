@@ -1,0 +1,7 @@
+*.p filter=lfs diff=lfs merge=lfs -text
+uplift/notebooks/*.ipynb filter=lfs diff=lfs merge=lfs -text
+domyshnik/notebooks/*.ipynb filter=lfs diff=lfs merge=lfs -text
+opends/notebooks/*.ipynb filter=lfs diff=lfs merge=lfs -text
+experiments/sensors/*.ipynb filter=lfs diff=lfs merge=lfs -text
+experiments/scenario_gender/notebooks/adversarial_demo.ipynb filter=lfs diff=lfs merge=lfs -text
+experiments/scenario_gender/notebooks/adv_demo_interface.ipynb filter=lfs diff=lfs merge=lfs -text
