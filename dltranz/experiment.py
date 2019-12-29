@@ -6,6 +6,7 @@ from time import strftime
 
 import torch
 from ignite.contrib.metrics import ROC_AUC
+from ignite.metrics import Accuracy
 from sklearn.metrics import roc_auc_score
 
 from dltranz.ensemble import ModelEnsemble
@@ -35,7 +36,10 @@ def update_model_stats(stats_file, params, results):
 
 
 def get_epoch_score_metric(metric_name):
-    m = {'auroc': ROC_AUC}.get(metric_name)
+    m = {
+        'auroc': ROC_AUC,
+        'accuracy': Accuracy,
+    }.get(metric_name)
     if m is not None:
         return m
     else:

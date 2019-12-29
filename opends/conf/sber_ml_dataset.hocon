@@ -1,0 +1,18 @@
+{
+  dataset: {
+    path: "/data/kireev-ia/data_open_ds/age-prediction-nti-sbebank-2019/sber_all_trx.p"
+    valid_size: 0.02
+
+    preprocessing: {
+        add_seq_len: true
+    }
+  }
+
+  stats.path: "runs/sber_ml_result.json"
+
+  output: {
+    path: "/data/kireev-ia/data_open_ds/age-prediction-nti-sbebank-2019/sber_all_vectors"
+    format: pickle
+    columns: ["client_id"]
+  }
+}

@@ -1,0 +1,627 @@
+[
+    {
+        "results": {
+            "accuracy": 0.5956666666666667,
+            "exec-sec": 334.27857780456543,
+            "finish_time": "2019-12-19T13:47:07.322574"
+        },
+        "params": {
+            "device": "cuda",
+            "model_type": "rnn",
+            "ensemble_size": 1,
+            "trx_encoder": {
+                "norm_embeddings": false,
+                "embeddings_noise": 0.003,
+                "embeddings": {
+                    "trans_date": {
+                        "in": 800,
+                        "out": 4
+                    },
+                    "small_group": {
+                        "in": 250,
+                        "out": 4
+                    }
+                },
+                "numeric_values": {
+                    "amount_rur": "identity"
+                }
+            },
+            "rnn": {
+                "hidden_size": 64,
+                "type": "gru",
+                "bidir": false,
+                "trainable_starter": "static"
+            },
+            "head": {
+                "pred_all_states": false,
+                "explicit_lengths": false,
+                "norm_input": false,
+                "num_classes": 4
+            },
+            "train": {
+                "random_neg": false,
+                "trx_dropout": 0.01,
+                "max_seq_len": 1200,
+                "batch_size": 32,
+                "num_workers": 8,
+                "loss": "NLLLoss",
+                "lr": 0.01,
+                "weight_decay": 0.0,
+                "n_epoch": 5
+            },
+            "lr_scheduler": {
+                "step_size": 10,
+                "step_gamma": 1.0
+            },
+            "valid": {
+                "max_seq_len": 1200,
+                "batch_size": 512,
+                "num_workers": 8
+            },
+            "norm_scores": false,
+            "score_metric": "accuracy"
+        }
+    },
+    {
+        "results": {
+            "accuracy": 0.5843333333333334,
+            "exec-sec": 668.4359292984009,
+            "finish_time": "2019-12-19T14:09:36.205892"
+        },
+        "params": {
+            "device": "cuda",
+            "model_type": "rnn",
+            "ensemble_size": 1,
+            "trx_encoder": {
+                "norm_embeddings": false,
+                "embeddings_noise": 0.003,
+                "embeddings": {
+                    "trans_date": {
+                        "in": 800,
+                        "out": 4
+                    },
+                    "small_group": {
+                        "in": 250,
+                        "out": 4
+                    }
+                },
+                "numeric_values": {
+                    "amount_rur": "identity"
+                }
+            },
+            "rnn": {
+                "hidden_size": 64,
+                "type": "gru",
+                "bidir": false,
+                "trainable_starter": "static"
+            },
+            "head": {
+                "pred_all_states": false,
+                "explicit_lengths": false,
+                "norm_input": false,
+                "num_classes": 4
+            },
+            "train": {
+                "random_neg": false,
+                "trx_dropout": 0.01,
+                "max_seq_len": 1200,
+                "batch_size": 32,
+                "num_workers": 8,
+                "loss": "NLLLoss",
+                "lr": 0.015,
+                "weight_decay": 0.0,
+                "n_epoch": 10
+            },
+            "lr_scheduler": {
+                "step_size": 1,
+                "step_gamma": 0.85
+            },
+            "valid": {
+                "max_seq_len": 1200,
+                "batch_size": 512,
+                "num_workers": 8
+            },
+            "norm_scores": false,
+            "score_metric": "accuracy"
+        }
+    },
+    {
+        "results": {
+            "accuracy": 0.6033333333333334,
+            "exec-sec": 558.8576407432556,
+            "finish_time": "2019-12-19T15:03:50.652717"
+        },
+        "params": {
+            "device": "cuda",
+            "model_type": "rnn",
+            "ensemble_size": 1,
+            "trx_encoder": {
+                "norm_embeddings": false,
+                "embeddings_noise": 0.003,
+                "embeddings": {
+                    "trans_date": {
+                        "in": 800,
+                        "out": 4
+                    },
+                    "small_group": {
+                        "in": 250,
+                        "out": 4
+                    }
+                },
+                "numeric_values": {
+                    "amount_rur": "identity"
+                }
+            },
+            "rnn": {
+                "hidden_size": 64,
+                "type": "gru",
+                "bidir": false,
+                "trainable_starter": "static"
+            },
+            "head": {
+                "pred_all_states": false,
+                "explicit_lengths": false,
+                "norm_input": false,
+                "num_classes": 4
+            },
+            "train": {
+                "random_neg": false,
+                "trx_dropout": 0.01,
+                "max_seq_len": 1200,
+                "SubsamplingDataset": {
+                    "min_seq_len": 200,
+                    "max_seq_len": 800
+                },
+                "batch_size": 32,
+                "num_workers": 8,
+                "loss": "NLLLoss",
+                "lr": 0.015,
+                "weight_decay": 0.0,
+                "n_epoch": 10
+            },
+            "lr_scheduler": {
+                "step_size": 1,
+                "step_gamma": 0.85
+            },
+            "valid": {
+                "max_seq_len": 1200,
+                "batch_size": 512,
+                "num_workers": 8
+            },
+            "norm_scores": false,
+            "score_metric": "accuracy"
+        }
+    },
+    {
+        "results": {
+            "accuracy": 0.6219166666666667,
+            "finish_time": "2019-12-20T10:04:43.411763"
+        },
+        "params": {
+            "dataset": {
+                "train_path": "/data/kireev-ia/data_open_ds/age-prediction-nti-sbebank-2019/sber_train_trx_dataset.p",
+                "valid_path": "/data/kireev-ia/data_open_ds/age-prediction-nti-sbebank-2019/sber_test_trx_dataset.p",
+                "preprocessing": {
+                    "add_seq_len": false
+                }
+            },
+            "log_ds_stat": false,
+            "stats": {
+                "path": "runs/sber_target_results.json"
+            },
+            "output": {
+                "path": "/data/kireev-ia/data_open_ds/age-prediction-nti-sbebank-2019/sber_target_vectors",
+                "format": "pickle",
+                "columns": [
+                    "client_id"
+                ]
+            },
+            "params": {
+                "device": "cuda",
+                "model_type": "rnn",
+                "ensemble_size": 1,
+                "trx_encoder": {
+                    "norm_embeddings": false,
+                    "embeddings_noise": 0.003,
+                    "embeddings": {
+                        "trans_date": {
+                            "in": 800,
+                            "out": 8
+                        },
+                        "small_group": {
+                            "in": 250,
+                            "out": 16
+                        }
+                    },
+                    "numeric_values": {
+                        "amount_rur": "identity"
+                    }
+                },
+                "rnn": {
+                    "hidden_size": 48,
+                    "type": "gru",
+                    "bidir": false,
+                    "trainable_starter": "static"
+                },
+                "head": {
+                    "pred_all_states": false,
+                    "pred_all_states_mean": false,
+                    "explicit_lengths": false,
+                    "norm_input": false,
+                    "num_classes": 4
+                },
+                "train": {
+                    "random_neg": false,
+                    "trx_dropout": 0.005,
+                    "max_seq_len": 1200,
+                    "SubsamplingDataset": {
+                        "min_seq_len_s": 30,
+                        "min_seq_len_e": 500,
+                        "max_seq_len_s": 120,
+                        "max_seq_len_e": 1000,
+                        "crop_proba_init": 1.0,
+                        "crop_proba_gamma": 1.0,
+                        "total_n_epoch": 40
+                    },
+                    "batch_size": 32,
+                    "num_workers": 16,
+                    "loss": "NLLLoss",
+                    "lr": 0.01,
+                    "weight_decay": 0.0,
+                    "n_epoch": 35
+                },
+                "lr_scheduler": {
+                    "step_size": 5,
+                    "step_gamma": 0.5
+                },
+                "valid": {
+                    "max_seq_len": 1200,
+                    "batch_size": 512,
+                    "num_workers": 8
+                },
+                "norm_scores": false,
+                "score_metric": "accuracy"
+            },
+            "save_model": true,
+            "model_path": {
+                "model": "/data/kireev-ia/data_open_ds/age-prediction-nti-sbebank-2019/target_model.p"
+            },
+            "data_path": ""
+        }
+    },
+    {
+        "results": [
+            {
+                "accuracy": 0.6377270454924179,
+                "finish_time": "2019-12-20T10:42:46.333684"
+            },
+            {
+                "accuracy": 0.619896683886019,
+                "finish_time": "2019-12-20T10:53:51.525578"
+            },
+            {
+                "accuracy": 0.6466666666666666,
+                "finish_time": "2019-12-20T11:04:48.421996"
+            },
+            {
+                "accuracy": 0.6216666666666667,
+                "finish_time": "2019-12-20T11:15:28.036032"
+            },
+            {
+                "accuracy": 0.6337112370790263,
+                "finish_time": "2019-12-20T11:26:04.796044"
+            }
+        ],
+        "params": {
+            "dataset": {
+                "train_path": "/data/kireev-ia/data_open_ds/age-prediction-nti-sbebank-2019/sber_train_trx_dataset.p",
+                "valid_path": "/data/kireev-ia/data_open_ds/age-prediction-nti-sbebank-2019/sber_test_trx_dataset.p",
+                "preprocessing": {
+                    "add_seq_len": false
+                }
+            },
+            "log_ds_stat": false,
+            "stats": {
+                "path": "runs/sber_target_results.json"
+            },
+            "output": {
+                "path": "/data/kireev-ia/data_open_ds/age-prediction-nti-sbebank-2019/sber_target_vectors",
+                "format": "pickle",
+                "columns": [
+                    "client_id"
+                ]
+            },
+            "params": {
+                "device": "cuda",
+                "model_type": "rnn",
+                "ensemble_size": 1,
+                "trx_encoder": {
+                    "norm_embeddings": false,
+                    "embeddings_noise": 0.003,
+                    "embeddings": {
+                        "trans_date": {
+                            "in": 800,
+                            "out": 8
+                        },
+                        "small_group": {
+                            "in": 250,
+                            "out": 16
+                        }
+                    },
+                    "numeric_values": {
+                        "amount_rur": "identity"
+                    }
+                },
+                "rnn": {
+                    "hidden_size": 48,
+                    "type": "gru",
+                    "bidir": false,
+                    "trainable_starter": "static"
+                },
+                "head": {
+                    "pred_all_states": false,
+                    "pred_all_states_mean": false,
+                    "explicit_lengths": false,
+                    "norm_input": false,
+                    "num_classes": 4
+                },
+                "train": {
+                    "random_neg": false,
+                    "trx_dropout": 0.005,
+                    "max_seq_len": 1200,
+                    "SubsamplingDataset": {
+                        "min_seq_len_s": 30,
+                        "min_seq_len_e": 500,
+                        "max_seq_len_s": 120,
+                        "max_seq_len_e": 1000,
+                        "crop_proba_init": 1.0,
+                        "crop_proba_gamma": 1.0,
+                        "total_n_epoch": 40
+                    },
+                    "batch_size": 32,
+                    "num_workers": 16,
+                    "loss": "NLLLoss",
+                    "lr": 0.01,
+                    "weight_decay": 0.0,
+                    "n_epoch": 35
+                },
+                "lr_scheduler": {
+                    "step_size": 5,
+                    "step_gamma": 0.5
+                },
+                "valid": {
+                    "max_seq_len": 1200,
+                    "batch_size": 512,
+                    "num_workers": 8
+                },
+                "norm_scores": false,
+                "score_metric": "accuracy"
+            },
+            "save_model": false,
+            "model_path": {
+                "model": "/data/kireev-ia/data_open_ds/age-prediction-nti-sbebank-2019/target_model.p"
+            },
+            "data_path": ""
+        }
+    },
+    {
+        "results": [
+            {
+                "accuracy": 0.6298950174970838,
+                "finish_time": "2019-12-20T11:58:32.897982"
+            },
+            {
+                "accuracy": 0.6077320446592235,
+                "finish_time": "2019-12-20T12:09:04.020143"
+            },
+            {
+                "accuracy": 0.6291666666666667,
+                "finish_time": "2019-12-20T12:19:43.415770"
+            },
+            {
+                "accuracy": 0.6266666666666667,
+                "finish_time": "2019-12-20T12:30:19.547957"
+            },
+            {
+                "accuracy": 0.6195398466155385,
+                "finish_time": "2019-12-20T12:41:01.485950"
+            }
+        ],
+        "params": {
+            "dataset": {
+                "train_path": "/data/kireev-ia/data_open_ds/age-prediction-nti-sbebank-2019/sber_train_trx_dataset.p",
+                "valid_path": "/data/kireev-ia/data_open_ds/age-prediction-nti-sbebank-2019/sber_test_trx_dataset.p",
+                "preprocessing": {
+                    "add_seq_len": false
+                }
+            },
+            "log_ds_stat": false,
+            "stats": {
+                "path": "runs/sber_target_results.json"
+            },
+            "output": {
+                "path": "/data/kireev-ia/data_open_ds/age-prediction-nti-sbebank-2019/sber_target_vectors",
+                "format": "pickle",
+                "columns": [
+                    "client_id"
+                ]
+            },
+            "params": {
+                "device": "cuda",
+                "model_type": "rnn",
+                "ensemble_size": 1,
+                "trx_encoder": {
+                    "norm_embeddings": false,
+                    "embeddings_noise": 0.003,
+                    "embeddings": {
+                        "trans_date": {
+                            "in": 800,
+                            "out": 8
+                        },
+                        "small_group": {
+                            "in": 250,
+                            "out": 16
+                        }
+                    },
+                    "numeric_values": {
+                        "amount_rur": "identity"
+                    }
+                },
+                "rnn": {
+                    "hidden_size": 48,
+                    "type": "gru",
+                    "bidir": false,
+                    "trainable_starter": "static"
+                },
+                "head": {
+                    "pred_all_states": false,
+                    "pred_all_states_mean": false,
+                    "explicit_lengths": false,
+                    "norm_input": false,
+                    "num_classes": 4
+                },
+                "train": {
+                    "random_neg": false,
+                    "trx_dropout": 0.005,
+                    "max_seq_len": 1200,
+                    "SubsamplingDataset": {
+                        "min_seq_len_s": 30,
+                        "min_seq_len_e": 500,
+                        "max_seq_len_s": 120,
+                        "max_seq_len_e": 1000,
+                        "crop_proba_init": 1.0,
+                        "crop_proba_gamma": 1.0,
+                        "total_n_epoch": 40
+                    },
+                    "batch_size": 32,
+                    "num_workers": 16,
+                    "loss": "NLLLoss",
+                    "lr": 0.01,
+                    "weight_decay": 0.0,
+                    "n_epoch": 35
+                },
+                "lr_scheduler": {
+                    "step_size": 5,
+                    "step_gamma": 0.5
+                },
+                "valid": {
+                    "max_seq_len": 1200,
+                    "batch_size": 512,
+                    "num_workers": 8
+                },
+                "norm_scores": false,
+                "score_metric": "accuracy"
+            },
+            "save_model": false,
+            "model_path": {
+                "model": "/data/kireev-ia/data_open_ds/age-prediction-nti-sbebank-2019/target_model.p"
+            },
+            "data_path": ""
+        }
+    },
+    {
+        "results": [
+            {
+                "accuracy": 0.637060489918347,
+                "finish_time": "2019-12-20T13:48:32.368340"
+            },
+            {
+                "accuracy": 0.6167305449091818,
+                "finish_time": "2019-12-20T14:00:13.977387"
+            },
+            {
+                "accuracy": 0.6353333333333333,
+                "finish_time": "2019-12-20T14:11:56.566708"
+            },
+            {
+                "accuracy": 0.6298333333333334,
+                "finish_time": "2019-12-20T14:23:38.999423"
+            },
+            {
+                "accuracy": 0.6360453484494831,
+                "finish_time": "2019-12-20T14:35:22.356573"
+            }
+        ],
+        "params": {
+            "dataset": {
+                "train_path": "/data/kireev-ia/data_open_ds/age-prediction-nti-sbebank-2019/sber_train_trx_dataset.p",
+                "valid_path": "/data/kireev-ia/data_open_ds/age-prediction-nti-sbebank-2019/sber_test_trx_dataset.p",
+                "preprocessing": {
+                    "add_seq_len": false
+                }
+            },
+            "log_ds_stat": false,
+            "stats": {
+                "path": "runs/sber_target_results.json"
+            },
+            "params": {
+                "device": "cuda",
+                "model_type": "rnn",
+                "ensemble_size": 1,
+                "trx_encoder": {
+                    "embeddings": {
+                        "trans_date": {
+                            "in": 800
+                        },
+                        "small_group": {
+                            "in": 250
+                        }
+                    },
+                    "numeric_values": {
+                        "amount_rur": "identity"
+                    }
+                },
+                "rnn": {
+                    "hidden_size": 196
+                },
+                "head": {
+                    "pred_all_states": false,
+                    "pred_all_states_mean": false,
+                    "explicit_lengths": false,
+                    "norm_input": false,
+                    "num_classes": 4
+                },
+                "train": {
+                    "random_neg": false,
+                    "trx_dropout": 0.005,
+                    "max_seq_len": 1200,
+                    "SubsamplingDataset": {
+                        "min_seq_len_s": 30,
+                        "min_seq_len_e": 500,
+                        "max_seq_len_s": 120,
+                        "max_seq_len_e": 1000,
+                        "crop_proba_init": 1.0,
+                        "crop_proba_gamma": 1.0,
+                        "total_n_epoch": 40
+                    },
+                    "batch_size": 32,
+                    "num_workers": 16,
+                    "loss": "NLLLoss",
+                    "lr": 0.001,
+                    "weight_decay": 0.0,
+                    "n_epoch": 35
+                },
+                "lr_scheduler": {
+                    "step_size": 5,
+                    "step_gamma": 0.5
+                },
+                "valid": {
+                    "max_seq_len": 1200,
+                    "batch_size": 512,
+                    "num_workers": 8
+                },
+                "norm_scores": false,
+                "score_metric": "accuracy"
+            },
+            "save_model": false,
+            "output": {
+                "path": "/data/kireev-ia/data_open_ds/age-prediction-nti-sbebank-2019/sber_ft_vectors",
+                "format": "pickle",
+                "columns": [
+                    "client_id"
+                ]
+            },
+            "data_path": ""
+        }
+    }
+]

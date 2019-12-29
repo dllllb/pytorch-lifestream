@@ -1,0 +1,14 @@
+{
+  dataset: {
+    train_path: "/data/kireev-ia/data_open_ds/age-prediction-nti-sbebank-2019/sber_train_trx_dataset.p"
+    valid_path: "/data/kireev-ia/data_open_ds/age-prediction-nti-sbebank-2019/sber_test_trx_dataset.p"
+
+    preprocessing: {
+      add_seq_len: false
+    }
+  }
+
+  log_ds_stat: false
+
+  stats.path: "runs/sber_target_results.json"
+}
