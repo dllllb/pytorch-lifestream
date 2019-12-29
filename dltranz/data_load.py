@@ -3,8 +3,6 @@ from functools import partial
 from collections import defaultdict
 from multiprocessing.pool import Pool
 
-import sparkpickle
-
 import numpy as np
 import torch
 from torch.utils.data import WeightedRandomSampler, Sampler, Dataset
@@ -62,6 +60,7 @@ def default_preprocess(data, conf, drop_unknown=True):
 
 
 def read_spark_dataset_gen(data_files):
+    import sparkpickle
     for path in data_files:
         with open(path, 'rb') as f:
             for row in sparkpickle.load_gen(f):
@@ -69,6 +68,7 @@ def read_spark_dataset_gen(data_files):
 
 
 def data_read_main(path, prepare_gen):
+    import sparkpickle
     with open(path, 'rb') as f:
         rec_gen = (dict(e) for e in sparkpickle.load_gen(f))
         prepared_rec_gen = prepare_gen(rec_gen)

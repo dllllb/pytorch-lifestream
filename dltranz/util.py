@@ -54,6 +54,8 @@ def init_logger(name, level=logging.INFO, filename=None):
 
 
 def get_conf(args=None):
+    import sys
+    import os
     from pyhocon import ConfigFactory
 
     p = argparse.ArgumentParser()
@@ -62,10 +64,13 @@ def get_conf(args=None):
 
     logger.info(f'args: {args}, overrides: {overrides}')
 
-    file_conf = ConfigFactory.parse_string("")
-    for name in args.conf:
-        logger.info(f'Load config from "{name}"')
-        file_conf = ConfigFactory.parse_file(name, resolve=False).with_fallback(file_conf, resolve=False)
+    init_conf = f"script_path={os.path.dirname(os.path.abspath(sys.argv[0]))}"
+    file_conf = ConfigFactory.parse_string(init_conf)
+
+    if args is not None and args.conf is not None:
+        for name in args.conf:
+            logger.info(f'Load config from "{name}"')
+            file_conf = ConfigFactory.parse_file(name, resolve=False).with_fallback(file_conf, resolve=False)
 
     overrides = ','.join(overrides)
     over_conf = ConfigFactory.parse_string(overrides)
