@@ -18,7 +18,7 @@ def parse_args(args):
     parser = argparse.ArgumentParser()
     parser.add_argument('--data_path', type=os.path.abspath,
                         default='/mnt/wind/data_open_ds/data-like-tinkoff-2019/')
-    parser.add_argument('--embedding_file_name', default="tinkoff_all_vectors_large.pickle")
+    parser.add_argument('--embedding_file_name', default="tinkoff_all_vectors.pickle")
     parser.add_argument('--train_size', type=float, default=0.75)
 
     parser.add_argument('--model_type', default='nn', choices=['nn'])

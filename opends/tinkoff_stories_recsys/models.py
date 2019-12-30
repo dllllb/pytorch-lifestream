@@ -233,12 +233,16 @@ class StoriesRecModel(torch.nn.Module):
         logger.info(f'Used {loss_fn.__class__.__name__}')
         return loss_fn
 
-    def _get_optim(self):
+    def _get_optim(self, lr=None):
+
+        if lr is None:
+            lr = self.config.optim_lr
+
         logger.info(f'Used model "{self.__class__.__name__}" with parameters: ' +
                     ', '.join([f'{n}: {p.size()}' for n, p in self.named_parameters()]))
 
         return torch.optim.Adam(self.parameters(),
-                                lr=self.config.optim_lr,
+                                lr=lr,
                                 weight_decay=self.config.optim_weight_decay)
 
     def _get_train_data_loader(self, df_log):
@@ -278,12 +282,18 @@ class StoriesRecModel(torch.nn.Module):
 
         max_epoch = self.config.max_epoch
         for n_epoch in range(1, max_epoch + 1):
-            if n_epoch == 1 and self.embed_user.pretrained_embedding_size > 1:
-                self.embed_user.embedding.requires_grad = False
-                logging.info('Freeze embed_user.embedding')
-            else:
-                self.embed_user.embedding.requires_grad = True
-                logging.info('Unfreeze embed_user.embedding')
+            if self.embed_user.pretrained_embedding_size > 1:
+                if n_epoch == 1:
+                    for p in self.embed_user.embedding.parameters():
+                        p.requires_grad = False
+                    logging.info('Freeze embed_user.embedding')
+                else:
+                    for p in self.embed_user.embedding.parameters():
+                        p.requires_grad = True
+                    logging.info('Freeze embed_user.embedding')
+
+                    optimiser = self._get_optim(self.config.optim_lr / 100)
+                    logging.info('Unfreeze embed_user.embedding')
 
             epoch_loss = 0.0
 
