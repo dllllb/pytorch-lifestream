@@ -187,8 +187,9 @@ class LastKTrxDataset(Dataset):
 
 
 class TrxDataset(Dataset):
-    def __init__(self, data):
+    def __init__(self, data, y_dtype=np.float32):
         self.data = data
+        self.y_dtype = y_dtype
 
     def __len__(self):
         return len(self.data)
@@ -197,7 +198,7 @@ class TrxDataset(Dataset):
         x = self.data[idx]['feature_arrays']
         y = self.data[idx]['target']
 
-        return x, y
+        return x, self.y_dtype(y)
 
 
 class ConvertingTrxDataset(Dataset):
