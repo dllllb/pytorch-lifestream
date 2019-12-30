@@ -83,6 +83,8 @@ def get_loss(params):
 
     if loss_type == 'bce':
         loss = BCELoss()
+    elif loss_type == 'NLLLoss':
+        loss = nn.NLLLoss()
     elif loss_type == 'ranking':
         loss = PairwiseMarginRankingLoss(margin=params['ranking.loss_margin'])
     elif loss_type == 'both':
@@ -94,7 +96,7 @@ def get_loss(params):
     else:
         raise Exception(f'unknown loss type: {loss_type}')
 
-    if params.get('head',{}).get('pred_all_states'):
+    if params.get('head', {}).get('pred_all_states'):
         loss = AllStateLoss(loss)
 
     return loss
