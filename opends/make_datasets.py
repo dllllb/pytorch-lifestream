@@ -17,7 +17,9 @@ def parse_args(args=None):
 
     parser.add_argument('--print_dataset_info', action='store_true', default=True)
     parser.add_argument('--col_client_id', type=str)
-    parser.add_argument('--col_event_time', type=str)
+    parser.add_argument('--cols_event_time', nargs='+')
+    parser.add_argument('--cols_category', nargs='*', default=[])
+    parser.add_argument('--cols_log_norm', nargs='*', default=[])
 
     parser.add_argument('--output_path', type=os.path.abspath)
 
@@ -39,22 +41,58 @@ def load_source_data(data_path, trx_files):
     return data
 
 
-def trx_to_features(df_data, print_dataset_info, col_client_id, col_event_time):
+def pd_hist(data, name, bins=10):
+    if data.dtype.kind == 'f':
+        bins = np.linspace(data.min(), data.max(), bins + 1).round(1)
+    elif data.max() - data.min() > 10:
+        bins = np.linspace(data.min(), data.max() + 1, bins + 1).astype(int)
+    else:
+        bins = np.arange(data.min(), data.max() + 2, 1).astype(int)
+    df = pd.cut(data, bins, right=False).rename(name)
+    df = df.to_frame().assign(cnt=1).groupby(name)['cnt'].sum()
+    return df
+
+
+def encode_col(col):
+    return col.map({k: i + 1 for i, k in enumerate(col.value_counts().index)})
+
+
+def trx_to_features(df_data, print_dataset_info,
+                    col_client_id, cols_event_time, cols_category, cols_log_norm):
     def copy_time(rec):
-        rec['event_time'] = rec['feature_arrays']['trans_date'].copy()
+        rec['event_time'] = rec['feature_arrays']['event_time']
+        del rec['feature_arrays']['event_time']
         return rec
 
     if print_dataset_info:
-        df = df_data.groupby('client_id')['trans_date'].count().value_counts().sort_index()
-        with pd.option_context('display.max_rows', 9):
-            logger.info(f'Trx count per clients:\nlen(trx_list) | client_count\n{df}')
+        logger.info(f'Found {df_data[col_client_id].nunique()} unique clients')
+
+    # event_time mapping
+    df_event_time = df_data[cols_event_time].drop_duplicates()
+    df_event_time = df_event_time.sort_values(cols_event_time)
+    df_event_time['event_time'] = np.arange(len(df_event_time))
+    df_data = pd.merge(df_data, df_event_time, on=cols_event_time)
 
     # TODO: apply here fit_transform encodings, normalizers
+    for col in cols_category:
+        df_data[col] = encode_col(df_data[col])
+        if print_dataset_info:
+            logger.info(f'Encoder stat for "{col}":\ncodes | trx_count\n{pd_hist(df_data[col], col)}')
+
+    for col in cols_log_norm:
+        df_data[col] = np.log1p(df_data[col])
+        df_data[col] /= df_data[col].max()
+        if print_dataset_info:
+            logger.info(f'Encoder stat for "{col}":\ncodes | trx_count\n{pd_hist(df_data[col], col)}')
+
+    if print_dataset_info:
+        df = df_data.groupby(col_client_id)['event_time'].count()
+        logger.info(f'Trx count per clients:\nlen(trx_list) | client_count\n{pd_hist(df, "trx_count")}')
 
     logger.info('Feature collection in progress ...')
     features = df_data \
-        .assign(event_time=lambda x: pd.to_datetime(x[col_event_time])) \
-        .set_index([col_client_id, 'event_time']).sort_index() \
+        .assign(et_index=lambda x: x['event_time']) \
+        .set_index([col_client_id, 'et_index']).sort_index() \
         .groupby(col_client_id).apply(lambda x: {k: np.array(v) for k, v in x.to_dict(orient='list').items()}) \
         .rename('feature_arrays').reset_index().to_dict(orient='records')
 
@@ -88,7 +126,9 @@ if __name__ == '__main__':
         df_data=source_data,
         print_dataset_info=config.print_dataset_info,
         col_client_id=config.col_client_id,
-        col_event_time=config.col_event_time,
+        cols_event_time=config.cols_event_time,
+        cols_category=config.cols_category,
+        cols_log_norm=config.cols_log_norm,
     )
 
     save_features(
