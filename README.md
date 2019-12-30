@@ -26,3 +26,14 @@ pip install -r requirements.txt
 # download datasets
 ./get-data.sh
 ```
+
+# Run scenario
+1. Convert datasets from transaction list to features for metric learning
+```
+python make_datasets.py \
+    --data_path data/age-pred/ \
+    --trx_files transactions_train.csv transactions_test.csv \
+    --col_client_id "client_id" \
+    --col_event_time "trans_date" \
+    --output_path "data/age-pred/all_trx.p"
+```
