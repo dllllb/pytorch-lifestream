@@ -6,7 +6,7 @@
     "device": "cuda",
     "rnn": {
       "type": "gru",
-      "hidden_size": 160,
+      "hidden_size": 128,
       "bidir": false,
       "trainable_starter": "static"
     },
