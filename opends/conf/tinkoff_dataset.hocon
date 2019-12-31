@@ -1,17 +1,17 @@
 {
   dataset: {
-    path: "/data/kireev-ia/data_open_ds/data-like-tinkoff-2019/tinkoff_trx.p"
-    valid_size: 0.1
+    ${script_path}"/../data/tinkoff/all_trx.p"
+    valid_size: 0.05
 
     preprocessing: {
         add_seq_len: true
     }
   }
 
-  stats.path: "runs/tinkoff_ml_result.json"
+  stats.path: ${script_path}"/runs/tinkoff_ml_result.json"
 
   output: {
-    path: "/data/kireev-ia/data_open_ds/data-like-tinkoff-2019/tinkoff_all_vectors"
+    path: ${script_path}"/../data/tinkoff/embeddings"
     format: pickle
     columns: ["customer_id"]
   }
