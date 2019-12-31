@@ -44,16 +44,18 @@ def load_source_data(data_path, trx_files):
 def pd_hist(data, name, bins=10):
     if data.dtype.kind == 'f':
         bins = np.linspace(data.min(), data.max(), bins + 1).round(1)
-    elif data.max() - data.min() > 10:
-        bins = np.linspace(data.min(), data.max() + 1, bins + 1).astype(int)
+    elif np.percentile(data, 99) - data.min() > bins - 1:
+        bins = np.linspace(data.min(), np.percentile(data, 99), bins).astype(int).tolist() + [int(data.max() + 1)]
     else:
         bins = np.arange(data.min(), data.max() + 2, 1).astype(int)
     df = pd.cut(data, bins, right=False).rename(name)
-    df = df.to_frame().assign(cnt=1).groupby(name)['cnt'].sum()
+    df = df.to_frame().assign(cnt=1).groupby(name)[['cnt']].sum()
+    df['% of total'] = df['cnt'] / df['cnt'].sum()
     return df
 
 
 def encode_col(col):
+    col = col.astype(str)
     return col.map({k: i + 1 for i, k in enumerate(col.value_counts().index)})
 
 
@@ -80,8 +82,8 @@ def trx_to_features(df_data, print_dataset_info,
             logger.info(f'Encoder stat for "{col}":\ncodes | trx_count\n{pd_hist(df_data[col], col)}')
 
     for col in cols_log_norm:
-        df_data[col] = np.log1p(df_data[col])
-        df_data[col] /= df_data[col].max()
+        df_data[col] = np.log1p(abs(df_data[col])) * np.sign(df_data[col])
+        df_data[col] /= abs(df_data[col]).max()
         if print_dataset_info:
             logger.info(f'Encoder stat for "{col}":\ncodes | trx_count\n{pd_hist(df_data[col], col)}')
 
