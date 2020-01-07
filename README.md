@@ -32,26 +32,25 @@ pip install -r requirements.txt
 
 # Run scenario
 
-1. Train metric learning model
+## Train metric learning model
 
 Run this script for every project: age-pred, tinkoff, gender.
 Provide valid dataset description in hocon file and model params in json file
 
 ```sh
 python metric_learning.py --conf conf/sber_ml_dataset.hocon conf/sber_ml_params_train.json
-
 python metric_learning.py --conf conf/tinkoff_dataset.hocon conf/tinkoff_train_params.json
 ```
 
-2. With pretrained mertic learning model run inference ang take embeddings for each customer
+## With pretrained mertic learning model run inference ang take embeddings for each customer
 
 Run this script for every project: age-pred, tinkoff, gender.
 Provide valid dataset description in hocon file and model inference params in json file
 
-```
+```sh
 python ml_inference.py --conf conf/dataset.hocon conf/ml_params_inference.json
 ```
 
-3. Use embeddings for each customer as a features for specific machine learning problem
+## Use embeddings for each customer as a features for specific machine learning problem
 
 See code in notebooks in `notebooks/`.
