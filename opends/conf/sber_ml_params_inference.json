@@ -4,7 +4,7 @@
     "trx_encoder": {
       "embeddings": {
         "trans_date": {"in": 800},
-        "small_group": {"in": 250}
+        "small_group": {"in": 100}
       },
       "numeric_values": {
         "amount_rur": "identity"
