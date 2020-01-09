@@ -22,6 +22,7 @@ def parse_args(args=None):
     parser.add_argument('--cols_log_norm', nargs='*', default=[])
 
     parser.add_argument('--output_path', type=os.path.abspath)
+    parser.add_argument('--log_file', type=os.path.abspath)
 
     args = parser.parse_args(args)
     logger.info('Parsed args:\n' + '\n'.join([f'  {k:15}: {v}' for k, v in vars(args).items()]))
@@ -115,9 +116,14 @@ def save_features(df_data, save_path):
 
 
 if __name__ == '__main__':
-    logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)-7s %(funcName)-20s   : %(message)s')
-
     config = parse_args()
+
+    if config.log_file is not None:
+        handlers = [logging.StreamHandler(), logging.FileHandler(config.log_file, mode='w')]
+    else:
+        handlers = None
+    logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)-7s %(funcName)-20s   : %(message)s',
+                        handlers=handlers)
 
     source_data = load_source_data(
         data_path=config.data_path,
