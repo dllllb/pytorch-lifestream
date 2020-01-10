@@ -43,7 +43,7 @@ dltrans/opends$ python ml_inference.py --conf conf/age_pred_ml_dataset.hocon con
 
 # Run estimation for different approaches
 # Check some options with `--help` argument
-dltrans/opends$ python -m scenario_age_pred
+dltrans/opends$ python -m scenario_age_pred compare_approaches
 
 # check the results
 dltrans/opends$ cat runs/scenario_age_pred.csv
