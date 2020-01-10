@@ -1,0 +1,15 @@
+{
+  dataset: {
+    path: "../data/age-pred/all_trx.p"
+
+    preprocessing: {
+      add_seq_len: false
+    }
+  }
+
+  cv_n_split: 5
+
+  log_ds_stat: false
+
+  stats.path: "runs/age_pred_target_results.json"
+}

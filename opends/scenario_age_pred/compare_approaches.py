@@ -18,6 +18,8 @@ def prepare_parser(parser):
     parser.add_argument('--test_size', type=float, default=0.4)
     parser.add_argument('--random_state', type=int, default=42)
     parser.add_argument('--model_seed', type=int, default=42)
+    parser.add_argument('--ml_embedding_file_names', nargs='+', default=['embeddings.pickle'])
+    parser.add_argument('--target_score_file_names', nargs='+', default=['target_scores'])
     parser.add_argument('--output_file', type=os.path.abspath, default='runs/scenario_age_pred.csv')
 
 
@@ -60,12 +62,17 @@ def get_scores(args):
 
 
 def main(conf):
+    logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)-7s %(funcName)-20s   : %(message)s')
+
     param_list = [
         {'use_random': True},
         {'use_client_agg': True},
         {'use_small_group_stat': True},
         {'use_client_agg': True, 'use_small_group_stat': True},
-        {'metric_learning_embedding_name': 'embeddings.pickle'},
+    ] + [
+        {'metric_learning_embedding_name': file_name} for file_name in conf['ml_embedding_file_names']
+    ] + [
+        {'target_scores_name': file_name} for file_name in conf['target_score_file_names']
     ]
 
     df_target = read_target(conf)

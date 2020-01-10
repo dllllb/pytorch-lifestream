@@ -1,6 +1,5 @@
 import datetime
 import logging
-import os
 import pickle
 import sys
 import random
@@ -96,14 +95,14 @@ class EpochTrackingDataLoader(DataLoader):
 def read_consumer_data(conf):
     logger.info(f'Data loading...')
 
-    with open(os.path.join(conf['data_path'], conf['dataset.train_path']), 'rb') as f:
-        train_data = pickle.load(f)
-    with open(os.path.join(conf['data_path'], conf['dataset.valid_path']), 'rb') as f:
-        valid_data = pickle.load(f)
+    with open(conf['dataset.path'], 'rb') as f:
+        data = pickle.load(f)
+    logger.info(f'Loaded raw data: {len(data)}')
 
-    logger.info(f'Loaded train: {len(train_data)}, valid: {len(valid_data)}')
+    data = [rec for rec in data if rec['target'] is not None]
+    logger.info(f'Loaded data with target: {len(data)}')
 
-    return train_data, valid_data
+    return data
 
 
 def create_ds(train_data, valid_data, conf):
@@ -146,17 +145,23 @@ def run_experiment(train_ds, valid_ds, params, model_f):
     }
 
 
-def main(args=None):
-    conf = get_conf(args)
+def prepare_parser(parser):
+    pass
+
+
+def main(_):
+    init_logger(__name__)
+    init_logger('dltranz')
+
+    conf = get_conf(sys.argv[2:])
 
     model_f = model_by_type(conf['params.model_type'])
-    train_data, valid_data = read_consumer_data(conf)
+    all_data = read_consumer_data(conf)
 
     # train
     results = []
-    all_data = train_data + valid_data
 
-    skf = StratifiedKFold(5)
+    skf = StratifiedKFold(conf['cv_n_split'])
     target_values = [rec['target'] for rec in all_data]
     for i, (i_train, i_valid) in enumerate(skf.split(all_data, target_values)):
         logger.info(f'Train fold: {i}')
@@ -176,22 +181,3 @@ def main(args=None):
     stats_file = conf.get('stats.path', None)
     if stats_file is not None:
         update_model_stats(stats_file, conf, results)
-
-
-if __name__ == '__main__':
-    init_logger(__name__)
-    init_logger('dltranz')
-    init_logger('retail_embeddings_projects.embedding_tools')
-
-    if len(sys.argv) == 1:
-        args = [
-            'save_model=false',
-            'data_path="/mnt/wind/data_open_ds/age-prediction-nti-sbebank-2019"',
-            'output.path="/mnt/wind/data_open_ds/age-prediction-nti-sbebank-2019/sber_target_vectors"',
-            '--conf',
-            'conf/sber_target_dataset.hocon',
-            'conf/sber_target_params_train.json',
-        ]
-    else:
-        args = None
-    main(args)

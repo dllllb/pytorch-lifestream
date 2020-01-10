@@ -1,4 +1,5 @@
 import os
+from glob import glob
 
 import numpy as np
 import pandas as pd
@@ -46,12 +47,23 @@ def _metric_learning_embeddings(conf, file_name):
     return df
 
 
+def _target_scores(conf, file_path):
+    pickle_files = glob(os.path.join(conf['data_path'], file_path, '*'))
+
+    df_target_scores = pd.concat([
+        pd.read_pickle(f).set_index('client_id')
+        for f in pickle_files
+    ], axis=0)
+    return df_target_scores
+
+
 def load_features(
         conf,
         use_random=False,
         use_client_agg=False,
         use_small_group_stat=False,
         metric_learning_embedding_name=None,
+        target_scores_name=None,
 ):
     features = []
     if use_random:
@@ -65,5 +77,8 @@ def load_features(
 
     if metric_learning_embedding_name is not None:
         features.append(_metric_learning_embeddings(conf, metric_learning_embedding_name))
+
+    if target_scores_name is not None:
+        features.append(_target_scores(conf, target_scores_name))
 
     return features
