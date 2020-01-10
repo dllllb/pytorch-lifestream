@@ -15,7 +15,7 @@
       "embeddings_noise": 0.003,
       "embeddings": {
         "trans_date": {"in": 800, "out": 16},
-        "small_group": {"in": 100, "out": 16}
+        "small_group": {"in": 250, "out": 16}
       },
       "numeric_values": {
         "amount_rur": "identity"

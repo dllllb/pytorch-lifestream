@@ -32,17 +32,35 @@ pip install -r requirements.txt
 
 # Run scenario
 
-## Train metric learning model
+## age-pred dataset
+
+```sh
+# Train metric learning model
+dltrans/opends$ python metric_learning.py --conf conf/age_pred_ml_dataset.hocon conf/age_pred_ml_params_train.json
+
+# With pretrained mertic learning model run inference ang take embeddings for each customer
+dltrans/opends$ python ml_inference.py --conf conf/age_pred_ml_dataset.hocon conf/age_pred_ml_params_inference.json
+
+# Run estimation for different approaches
+# Check some options with `--help` argument
+dltrans/opends$ python -m scenario_age_pred
+
+# check the results
+dltrans/opends$ cat runs/scenario_age_pred.csv
+```
+
+## common scenario (work in progress)
+
+### Train metric learning model
 
 Run this script for every project: age-pred, tinkoff, gender.
 Provide valid dataset description in hocon file and model params in json file
 
 ```sh
-python metric_learning.py --conf conf/sber_ml_dataset.hocon conf/sber_ml_params_train.json
 python metric_learning.py --conf conf/tinkoff_dataset.hocon conf/tinkoff_train_params.json
 ```
 
-## With pretrained mertic learning model run inference ang take embeddings for each customer
+### With pretrained mertic learning model run inference ang take embeddings for each customer
 
 Run this script for every project: age-pred, tinkoff, gender.
 Provide valid dataset description in hocon file and model inference params in json file
@@ -51,6 +69,6 @@ Provide valid dataset description in hocon file and model inference params in js
 python ml_inference.py --conf conf/dataset.hocon conf/ml_params_inference.json
 ```
 
-## Use embeddings for each customer as a features for specific machine learning problem
+### Use embeddings for each customer as a features for specific machine learning problem
 
 See code in notebooks in `notebooks/`.
