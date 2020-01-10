@@ -44,6 +44,9 @@ dltrans/opends$ python ml_inference.py --conf conf/age_pred_ml_dataset.hocon con
 # Train supervised model and save scores to file
 dltrans/opends$ python -m scenario_age_pred fit_target --conf conf/age_pred_target_dataset.hocon conf/age_pred_target_params_train.json
 
+# Take pretrained ml model and fine tune it in supervised mode and save scores to file
+dltrans/opends$ python -m scenario_age_pred fit_finetunning --conf conf/age_pred_target_dataset.hocon conf/age_pred_finetuning_params_train.json
+
 # Run estimation for different approaches
 # Check some options with `--help` argument
 dltrans/opends$ python -m scenario_age_pred compare_approaches

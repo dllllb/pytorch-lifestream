@@ -60,6 +60,7 @@
     "norm_scores": false,
     "score_metric": "accuracy"
   },
+
   "save_model": false,
 
   "output": {
