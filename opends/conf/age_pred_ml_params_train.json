@@ -59,6 +59,6 @@
 
   "save_model": true,
   "model_path": {
-    "model": "models/sber_ml_model.p"
+    "model": "models/age_pred_ml_model.p"
   }
 }

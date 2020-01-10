@@ -18,8 +18,8 @@ def prepare_parser(parser):
     parser.add_argument('--test_size', type=float, default=0.4)
     parser.add_argument('--random_state', type=int, default=42)
     parser.add_argument('--model_seed', type=int, default=42)
-    parser.add_argument('--ml_embedding_file_names', nargs='+', default=['embeddings.pickle'])
-    parser.add_argument('--target_score_file_names', nargs='+', default=['target_scores', 'finetuning_scores'])
+    parser.add_argument('--ml_embedding_file_names', nargs='+', default=['embeddings.pickle', 'embeddings_800_100_150epoch.pickle'])
+    parser.add_argument('--target_score_file_names', nargs='+', default=['target_scores', 'finetuning_scores', 'finetuning_scores_800_100_150epoch'])
     parser.add_argument('--output_file', type=os.path.abspath, default='runs/scenario_age_pred.csv')
 
 
