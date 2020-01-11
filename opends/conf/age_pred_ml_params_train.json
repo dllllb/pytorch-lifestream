@@ -6,7 +6,7 @@
     "device": "cuda",
     "rnn": {
       "type": "gru",
-      "hidden_size": 128,
+      "hidden_size": 160,
       "bidir": false,
       "trainable_starter": "static"
     },
@@ -42,7 +42,7 @@
       "margin": 0.5,
       "lr": 0.002,
       "weight_decay": 0.0,
-      "n_epoch": 300
+      "n_epoch": 150
     },
     "valid": {
       "batch_size": 1024,
@@ -59,6 +59,6 @@
 
   "save_model": true,
   "model_path": {
-    "model": "models/sber_ml_model.p"
+    "model": "models/age_pred_ml_model.p"
   }
 }

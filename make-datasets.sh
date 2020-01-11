@@ -7,6 +7,8 @@ python opends/make_datasets.py \
     --cols_event_time "trans_date" \
     --cols_category "trans_date" "small_group" \
     --cols_log_norm "amount_rur" \
+    --target_files train_target.csv \
+    --col_target bins \
     --output_path "data/age-pred/all_trx.p" \
     --log_file "opends/runs/dataset_age_pred.log"
 

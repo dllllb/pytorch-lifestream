@@ -5,16 +5,21 @@
     "model_type": "rnn",
     "ensemble_size": 1,
     "trx_encoder": {
+      "norm_embeddings": false,
+      "embeddings_noise": 0.003,
       "embeddings": {
-        "trans_date": {"in": 800},
-        "small_group": {"in": 250}
+        "trans_date": {"in": 800, "out": 8},
+        "small_group": {"in": 250, "out": 16}
       },
       "numeric_values": {
         "amount_rur": "identity"
       }
     },
     "rnn": {
-      "hidden_size": 196
+      "hidden_size": 48,
+      "type": "gru",
+      "bidir": false,
+      "trainable_starter": "static"
     },
     "head": {
       "pred_all_states": false,
@@ -34,12 +39,12 @@
         "max_seq_len_e": 1000,
         "crop_proba_init": 1.0,
         "crop_proba_gamma": 1.0,
-        "total_n_epoch": 40
+        "total_n_epoch": 35
       },
       "batch_size": 32,
       "num_workers": 16,
       "loss": "NLLLoss",
-      "lr": 0.001,
+      "lr": 0.01,
       "weight_decay": 0.0,
       "n_epoch": 35
     },
@@ -55,12 +60,11 @@
     "norm_scores": false,
     "score_metric": "accuracy"
   },
+
   "save_model": false,
 
-  "pretrained_model_path": "models/sber_ml_model.p",
-
   "output": {
-    "path": "/data/kireev-ia/data_open_ds/age-prediction-nti-sbebank-2019/sber_ft_vectors",
+    "path": "../data/age-pred/target_scores",
     "format": "pickle",
     "columns": ["client_id"]
   }

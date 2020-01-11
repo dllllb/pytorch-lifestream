@@ -1,0 +1,9 @@
+     (accuracy, mean)  (accuracy, std)           (accuracy, <lambda_0>) use_random use_client_agg use_small_group_stat metric_learning_embedding_name                  target_scores_name
+pos                                                                                                                                                                                      
+0              0.2488           0.0036  [0.246 0.246 0.248 0.251 0.254]       True            NaN                  NaN                            NaN                                 NaN
+1              0.4762           0.0055  [0.470 0.472 0.476 0.480 0.483]        NaN           True                  NaN                            NaN                                 NaN
+2              0.6239           0.0040  [0.620 0.620 0.625 0.627 0.628]        NaN            NaN                 True                            NaN                                 NaN
+3              0.6256           0.0040  [0.621 0.624 0.625 0.628 0.631]        NaN           True                 True                            NaN                                 NaN
+4              0.6131           0.0024  [0.611 0.612 0.612 0.614 0.617]        NaN            NaN                  NaN              embeddings.pickle                                 NaN
+5              0.6260           0.0061  [0.620 0.621 0.625 0.629 0.635]        NaN            NaN                  NaN                            NaN                       target_scores
+6              0.6331           0.0050  [0.625 0.632 0.634 0.636 0.639]        NaN            NaN                  NaN                            NaN  finetuning_scores_800_100_150epoch

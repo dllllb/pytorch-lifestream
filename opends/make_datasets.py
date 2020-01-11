@@ -14,12 +14,14 @@ def parse_args(args=None):
 
     parser.add_argument('--data_path', type=os.path.abspath)
     parser.add_argument('--trx_files', nargs='+')
+    parser.add_argument('--target_files', nargs='*', default=[])
 
     parser.add_argument('--print_dataset_info', action='store_true', default=True)
     parser.add_argument('--col_client_id', type=str)
     parser.add_argument('--cols_event_time', nargs='+')
     parser.add_argument('--cols_category', nargs='*', default=[])
     parser.add_argument('--cols_log_norm', nargs='*', default=[])
+    parser.add_argument('--col_target', required=False, type=str)
 
     parser.add_argument('--output_path', type=os.path.abspath)
     parser.add_argument('--log_file', type=os.path.abspath)
@@ -76,7 +78,6 @@ def trx_to_features(df_data, print_dataset_info,
     df_event_time['event_time'] = np.arange(len(df_event_time))
     df_data = pd.merge(df_data, df_event_time, on=cols_event_time)
 
-    # TODO: apply here fit_transform encodings, normalizers
     for col in cols_category:
         df_data[col] = encode_col(df_data[col])
         if print_dataset_info:
@@ -109,6 +110,20 @@ def trx_to_features(df_data, print_dataset_info,
     return features
 
 
+def update_with_target(features, data_path, target_files, col_client_id, col_target):
+    df_target = pd.concat([pd.read_csv(os.path.join(data_path, file)) for file in target_files])
+    df_target = df_target.set_index(col_client_id)
+    d_clients = df_target.to_dict(orient='index')
+    logger.info(f'Target loaded for {len(d_clients)} clients')
+
+    features = [
+        dict([('target', d_clients.get(rec[col_client_id], {}).get(col_target))] + list(rec.items()))
+        for rec in features
+    ]
+    logger.info(f'Target updated for {len(features)} clients')
+    return features
+
+
 def save_features(df_data, save_path):
     with open(save_path, 'wb') as f:
         pickle.dump(df_data, f)
@@ -138,6 +153,15 @@ if __name__ == '__main__':
         cols_category=config.cols_category,
         cols_log_norm=config.cols_log_norm,
     )
+
+    if len(config.target_files) > 0 and config.col_target is not None:
+        client_features = update_with_target(
+            features=client_features,
+            data_path=config.data_path,
+            target_files=config.target_files,
+            col_client_id=config.col_client_id,
+            col_target=config.col_target,
+        )
 
     save_features(
         df_data=client_features,

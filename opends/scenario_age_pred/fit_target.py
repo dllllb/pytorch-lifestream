@@ -1,13 +1,11 @@
 import datetime
 import logging
-import os
 import pickle
 import sys
 import random
 from copy import deepcopy
 
 import numpy as np
-import torch
 from sklearn.model_selection import StratifiedKFold
 from torch.utils.data import Dataset
 from torch.utils.data.dataloader import DataLoader
@@ -15,10 +13,12 @@ from torch.utils.data.dataloader import DataLoader
 from dltranz.data_load import TrxDataset, ConvertingTrxDataset, DropoutTrxDataset, padded_collate, \
     create_validation_loader
 from dltranz.loss import get_loss
+from dltranz.models import model_by_type
 from dltranz.train import get_optimizer, get_lr_scheduler, fit_model
 from dltranz.util import init_logger, get_conf
 from dltranz.experiment import get_epoch_score_metric, update_model_stats
 from dltranz.metric_learn.inference_tools import score_part_of_data
+from metric_learning import prepare_embeddings
 
 logger = logging.getLogger(__name__)
 
@@ -96,14 +96,17 @@ class EpochTrackingDataLoader(DataLoader):
 def read_consumer_data(conf):
     logger.info(f'Data loading...')
 
-    with open(os.path.join(conf['data_path'], conf['dataset.train_path']), 'rb') as f:
-        train_data = pickle.load(f)
-    with open(os.path.join(conf['data_path'], conf['dataset.valid_path']), 'rb') as f:
-        valid_data = pickle.load(f)
+    with open(conf['dataset.path'], 'rb') as f:
+        data = pickle.load(f)
+    logger.info(f'Loaded raw data: {len(data)}')
 
-    logger.info(f'Loaded train: {len(train_data)}, valid: {len(valid_data)}')
+    data = [rec for rec in data if rec['target'] is not None]
+    logger.info(f'Loaded data with target: {len(data)}')
 
-    return train_data, valid_data
+    data = list(prepare_embeddings(data, conf))
+    logger.info(f'Fit data to config')
+
+    return data
 
 
 def create_ds(train_data, valid_data, conf):
@@ -146,33 +149,24 @@ def run_experiment(train_ds, valid_ds, params, model_f):
     }
 
 
-def load_model(conf):
-    pretrained_model_path = conf['pretrained_model_path']
-
-    pre_model = torch.load(pretrained_model_path)
-
-    input_size = conf['rnn.hidden_size']
-    head_output_size = conf['head.num_classes']
-
-    model = torch.nn.Sequential(
-        pre_model[:-1],
-        torch.nn.Linear(input_size, head_output_size),
-        torch.nn.LogSoftmax(dim=1),
-    )
-    return model
+def prepare_parser(parser):
+    pass
 
 
-def main(args=None):
-    conf = get_conf(args)
+def main(_):
+    init_logger(__name__)
+    init_logger('dltranz')
+    init_logger('metric_learning')
 
-    model_f = load_model
-    train_data, valid_data = read_consumer_data(conf)
+    conf = get_conf(sys.argv[2:])
+
+    model_f = model_by_type(conf['params.model_type'])
+    all_data = read_consumer_data(conf)
 
     # train
     results = []
-    all_data = train_data + valid_data
 
-    skf = StratifiedKFold(5)
+    skf = StratifiedKFold(conf['cv_n_split'])
     target_values = [rec['target'] for rec in all_data]
     for i, (i_train, i_valid) in enumerate(skf.split(all_data, target_values)):
         logger.info(f'Train fold: {i}')
@@ -192,20 +186,3 @@ def main(args=None):
     stats_file = conf.get('stats.path', None)
     if stats_file is not None:
         update_model_stats(stats_file, conf, results)
-
-
-if __name__ == '__main__':
-    init_logger(__name__)
-    init_logger('dltranz')
-    init_logger('retail_embeddings_projects.embedding_tools')
-
-    if len(sys.argv) == 1:
-        args = [
-            'data_path=""',
-            '--conf',
-            'conf/sber_target_dataset.hocon',
-            'conf/sber_targetft_params_train.json',
-        ]
-    else:
-        args = None
-    main(args)
