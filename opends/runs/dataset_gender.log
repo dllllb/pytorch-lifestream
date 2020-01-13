@@ -74,4 +74,6 @@ trx_count
 2020-01-09 13:57:16,497 INFO    trx_to_features        : Feature collection in progress ...
 2020-01-09 13:57:44,404 INFO    trx_to_features        : Feature names: ['tr_datetime', 'mcc_code', 'tr_type', 'amount', 'term_id']
 2020-01-09 13:57:44,404 INFO    trx_to_features        : Prepared features for 15000 clients
+2020-01-13 08:22:20,012 INFO    update_with_target     : Target loaded for 8400 clients
+2020-01-13 08:22:20,040 INFO    update_with_target     : Target updated for 15000 clients
 2020-01-09 13:58:05,101 INFO    save_features          : Saved to: "/home/ivan/pycharm_from_local/dltrans/data/gender/all_trx.p"

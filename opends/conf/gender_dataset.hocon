@@ -1,0 +1,13 @@
+{
+  dataset: {
+    path: "../data/gender/all_trx.p"
+    valid_size: 0.05
+
+    preprocessing: {
+        add_seq_len: false
+    }
+  }
+  cv_n_split: 5
+
+  log_ds_stat: false
+}

@@ -6,22 +6,24 @@
     "ensemble_size": 1,
     "trx_encoder": {
       "embeddings": {
-        "trans_date": {"in": 800},
-        "small_group": {"in": 250}
+        "mcc_code": {"in": 200},
+        "tr_type": {"in": 100}
       },
       "numeric_values": {
-        "amount_rur": "identity"
+        "amount": "identity"
       }
     },
     "rnn": {
-      "hidden_size": 160
+      "hidden_size": 64,
+      "type": "gru",
+      "bidir": false,
+      "trainable_starter": "static"
     },
     "head": {
       "pred_all_states": false,
       "pred_all_states_mean": false,
       "explicit_lengths": false,
-      "norm_input": false,
-      "num_classes": 4
+      "norm_input": false
     },
     "train": {
       "random_neg": false,
@@ -34,14 +36,14 @@
         "max_seq_len_e": 1000,
         "crop_proba_init": 1.0,
         "crop_proba_gamma": 1.0,
-        "total_n_epoch": 35
+        "total_n_epoch": 15
       },
       "batch_size": 32,
       "num_workers": 16,
-      "loss": "NLLLoss",
+      "loss": "bce",
       "lr": 0.001,
       "weight_decay": 0.0,
-      "n_epoch": 35
+      "n_epoch": 15
     },
     "lr_scheduler": {
       "step_size": 5,
@@ -53,16 +55,16 @@
       "num_workers": 8
     },
     "norm_scores": false,
-    "score_metric": "accuracy",
+    "score_metric": "auroc",
 
-    "pretrained_model_path": "models/age_pred_ml_model.p"
+    "pretrained_model_path": "models/gender_ml_model.p"
   },
 
   "save_model": false,
 
   "output": {
-    "path": "../data/age-pred/finetuning_scores",
+    "path": "../data/gender/finetuning_scores",
     "format": "pickle",
-    "columns": ["client_id"]
+    "columns": ["customer_id"]
   }
 }

@@ -29,5 +29,7 @@ python opends/make_datasets.py \
     --cols_event_time "tr_datetime" \
     --cols_category "mcc_code" "tr_type" "term_id" \
     --cols_log_norm "amount" \
+    --target_files gender_train.csv \
+    --col_target gender \
     --output_path "data/gender/all_trx.p" \
     --log_file "opends/runs/dataset_gender.log"
