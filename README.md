@@ -58,24 +58,26 @@ dltrans/opends$ cat runs/scenario_age_pred.csv
 ## gender dataset
 
 ```sh
+cd dltrans/opends
+
 # Train metric learning model
-dltrans/opends$ python metric_learning.py --conf conf/gender_dataset.hocon conf/gender_ml_params_train.json
+python metric_learning.py --conf conf/gender_dataset.hocon conf/gender_ml_params_train.json
 
 # With pretrained mertic learning model run inference ang take embeddings for each customer
-dltrans/opends$ python ml_inference.py --conf conf/gender_dataset.hocon conf/gender_ml_params_inference.json
+python ml_inference.py --conf conf/gender_dataset.hocon conf/gender_ml_params_inference.json
 
 # Train supervised model and save scores to file
-dltrans/opends$ python -m scenario_gender fit_target --conf conf/gender_dataset.hocon conf/gender_target_params_train.json
+python -m scenario_gender fit_target --conf conf/gender_dataset.hocon conf/gender_target_params_train.json
 
 # Take pretrained ml model and fine tune it in supervised mode and save scores to file
-dltrans/opends$ python -m scenario_gender fit_finetuning --conf conf/gender_dataset.hocon conf/gender_finetuning_params_train.json
+python -m scenario_gender fit_finetuning --conf conf/gender_dataset.hocon conf/gender_finetuning_params_train.json
 
 # Run estimation for different approaches
 # Check some options with `--help` argument
-dltrans/opends$ python -m scenario_gender compare_approaches
+python -m scenario_gender compare_approaches
 
 # check the results
-dltrans/opends$ cat runs/scenario_gender.csv
+cat runs/scenario_gender.csv
 ```
 
 ## common scenario (work in progress)

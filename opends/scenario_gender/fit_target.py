@@ -1,5 +1,6 @@
 import datetime
 import logging
+import math
 import pickle
 import sys
 import random
@@ -23,76 +24,6 @@ from metric_learning import prepare_embeddings
 logger = logging.getLogger(__name__)
 
 
-class SubsamplingDataset(Dataset):
-    def __init__(self,
-                 dataset,
-                 min_seq_len_s, min_seq_len_e,
-                 max_seq_len_s, max_seq_len_e,
-                 crop_proba_init, crop_proba_gamma,
-                 total_n_epoch,
-                 ):
-        self.dataset = dataset
-
-        self.min_seq_len_s = min_seq_len_s
-        self.min_seq_len_e = min_seq_len_e
-        self.max_seq_len_s = max_seq_len_s
-        self.max_seq_len_e = max_seq_len_e
-        self.crop_proba_init = crop_proba_init
-        self.crop_proba_gamma = crop_proba_gamma
-        self.total_n_epoch = total_n_epoch
-
-        self.n_epoch = -1
-
-    def prepare_epoch(self):
-        self.n_epoch += 1
-
-    @property
-    def _progress(self):
-        return min(self.n_epoch / (self.total_n_epoch - 1), 1.0)
-
-    @property
-    def min_seq_len(self):
-        return int(self.min_seq_len_s + (self.min_seq_len_e - self.min_seq_len_s) * self._progress ** 2)
-
-    @property
-    def max_seq_len(self):
-        return int(self.max_seq_len_s + (self.max_seq_len_e - self.max_seq_len_s) * self._progress ** 2)
-
-    @property
-    def crop_proba(self):
-        return self.crop_proba_init * self.crop_proba_gamma ** self.n_epoch
-
-    def __len__(self):
-        return len(self.dataset)
-
-    def __getitem__(self, item):
-        rec = self.dataset[item]
-
-        if random.random() >= self.crop_proba:
-            return rec
-
-        seq_len = len(rec['event_time'])
-        if seq_len <= self.min_seq_len:
-            return rec
-
-        r_len = random.randint(self.min_seq_len, min(self.max_seq_len, seq_len))
-        r_pos = seq_len - r_len
-        if r_pos <= 0:
-            return rec
-
-        rec = deepcopy(rec)
-        r_pos = random.randint(0, r_pos)
-
-        rec['feature_arrays'] = {k: v[r_pos: r_pos + r_len] for k, v in rec['feature_arrays'].items()}
-        rec['event_time'] = rec['event_time'][r_pos: r_pos + r_len]
-        return rec
-
-
-class EpochTrackingDataLoader(DataLoader):
-    def prepare_epoch(self):
-        self.preparing_dataset.prepare_epoch()
-
-
 def read_consumer_data(conf):
     logger.info(f'Data loading...')
 
@@ -109,9 +40,44 @@ def read_consumer_data(conf):
     return data
 
 
+class ClippingDataset(Dataset):
+    def __init__(self, delegate, min_len=250, max_len=350, rate_for_min=0.9):
+        super().__init__()
+
+        self.delegate = delegate
+        self.min_len = min_len
+        self.max_len = max_len
+        self.rate_for_min = rate_for_min
+
+    def __len__(self):
+        return len(self.delegate)
+
+    def __getitem__(self, item):
+        item = self.delegate[item]
+
+        seq_len = len(item['event_time'])
+        if seq_len <= 5:
+            return item
+
+        new_len = random.randint(self.min_len, self.max_len)
+        if new_len > seq_len * self.rate_for_min:
+            new_len = math.ceil(seq_len * self.rate_for_min)
+
+        avail_pos = seq_len - new_len
+        pos = random.randint(0, avail_pos)
+
+        item = deepcopy(item)
+        item['feature_arrays'] = {k: v[pos:pos+new_len] for k, v in item['feature_arrays'].items()}
+        item['event_time'] = item['event_time'][pos:pos+new_len]
+        return item
+
+
 def create_ds(train_data, valid_data, conf):
-    if 'SubsamplingDataset' in conf['params.train']:
-        train_data = SubsamplingDataset(train_data, **conf['params.train.SubsamplingDataset'])
+    if 'clip_seq' in conf['params.train']:
+        train_data = ClippingDataset(train_data,
+                                     min_len=conf['params.train.clip_seq.min_len'],
+                                     max_len=conf['params.train.clip_seq.max_len'],
+                                     )
 
     train_ds = ConvertingTrxDataset(TrxDataset(train_data, y_dtype=np.int64))
     valid_ds = ConvertingTrxDataset(TrxDataset(valid_data, y_dtype=np.int64))
@@ -123,14 +89,13 @@ def run_experiment(train_ds, valid_ds, params, model_f):
     model = model_f(params)
 
     train_ds = DropoutTrxDataset(train_ds, params['train.trx_dropout'], params['train.max_seq_len'])
-    train_loader = EpochTrackingDataLoader(
+    train_loader = DataLoader(
         train_ds,
         batch_size=params['train.batch_size'],
         shuffle=True,
         num_workers=params['train.num_workers'],
         collate_fn=padded_collate)
 
-    train_loader.preparing_dataset = train_ds.core_dataset.delegate.data
     valid_loader = create_validation_loader(valid_ds, params['valid'])
 
     loss = get_loss(params)
@@ -138,10 +103,10 @@ def run_experiment(train_ds, valid_ds, params, model_f):
     scheduler = get_lr_scheduler(opt, params)
 
     metric_name = params['score_metric']
-    metric = get_epoch_score_metric(metric_name)()
+    metrics = {metric_name: get_epoch_score_metric(metric_name)()}
     handlers = []
 
-    scores = fit_model(model, train_loader, valid_loader, loss, opt, scheduler, params, {metric_name: metric}, handlers)
+    scores = fit_model(model, train_loader, valid_loader, loss, opt, scheduler, params, metrics, handlers)
 
     return model, {
         **scores,

@@ -25,6 +25,7 @@ def prepare_parser(parser):
     parser.add_argument('--ml_embedding_file_names', nargs='+', default=['embeddings.pickle'])
     parser.add_argument('--target_score_file_names', nargs='+', default=['target_scores', 'finetuning_scores'])
     parser.add_argument('--output_file', type=os.path.abspath, default='runs/scenario_gender.csv')
+    parser.add_argument('--pos', type=int, nargs='*', default=[])
 
 
 def read_target(conf):
@@ -90,7 +91,7 @@ def main(conf):
         ))
 
     args_list = [(pos, fold_n, conf, params, train_target, valid_target)
-                 for pos, params in enumerate(param_list)
+                 for pos, params in enumerate(param_list) if len(conf['pos']) == 0 or pos in conf['pos']
                  for fold_n, (train_target, valid_target) in enumerate(folds)]
 
     pool = Pool(processes=conf['n_workers'])
