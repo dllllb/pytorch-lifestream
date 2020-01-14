@@ -25,9 +25,14 @@ logger = logging.getLogger(__name__)
 
 
 def prepare_embeddings(seq, conf):
+    min_seq_len = conf['dataset'].get('min_seq_len', 1)
     embeddings = list(conf['params.trx_encoder.embeddings'].keys())
 
     for rec in seq:
+        seq_len = len(rec['event_time'])
+        if seq_len < min_seq_len:
+            continue
+
         feature_arrays = rec['feature_arrays']
         feature_arrays = {k: v + (1 if k in embeddings else 0) for k, v in feature_arrays.items()}
 

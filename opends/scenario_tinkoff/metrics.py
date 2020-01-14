@@ -88,7 +88,7 @@ def label_ranking_average_precision_score(df_scores, df_true, reduce=True, desc=
     return float(score)
 
 
-def roc_auc_mc_score(df):
+def ranking_score(df):
     def pair_ranking_rate(df):
         events = df['event'].map({'dislike': 0, 'skip': 1, 'view': 2, 'like': 3}).values
         scores = df['relevance'].values
