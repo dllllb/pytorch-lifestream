@@ -1,17 +1,19 @@
 {
   dataset: {
-    ${script_path}"/../data/tinkoff/all_trx.p"
+    path: "../data/tinkoff/all_trx.p"
     valid_size: 0.05
 
     preprocessing: {
         add_seq_len: true
     }
+
+    min_seq_len: 10
   }
 
-  stats.path: ${script_path}"/runs/tinkoff_ml_result.json"
+  stats.path: "runs/tinkoff_ml_result.json"
 
   output: {
-    path: ${script_path}"/../data/tinkoff/embeddings"
+    path: "../data/tinkoff/embeddings"
     format: pickle
     columns: ["customer_id"]
   }

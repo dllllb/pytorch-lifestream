@@ -5,8 +5,7 @@
       "embeddings": {
         "transaction_month": {"in": 15},
         "transaction_day": {"in": 50},
-        "merchant_mcc": {"in": 500},
-        "merchant_id": {"in": 2}
+        "merchant_mcc": {"in": 500}
       },
       "numeric_values": {
         "transaction_amt": "identity"

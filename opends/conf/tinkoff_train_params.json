@@ -16,8 +16,7 @@
       "embeddings": {
         "transaction_month": {"in": 15, "out": 4},
         "transaction_day": {"in": 50, "out": 4},
-        "merchant_mcc": {"in": 500, "out": 8},
-        "merchant_id": {"in": 2, "out": 1}
+        "merchant_mcc": {"in": 500, "out": 8}
       },
       "numeric_values": {
         "transaction_amt": "identity"
@@ -34,7 +33,7 @@
         "split_strategy": "SplitByCount",
         "split_count": 5,
         "cnt_min": 20,
-        "cnt_max": 300
+        "cnt_max": 150
       },
       "sampling_strategy": "HardNegativePair",
       "trx_dropout": 0.01,

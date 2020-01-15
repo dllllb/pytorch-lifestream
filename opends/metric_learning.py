@@ -25,11 +25,16 @@ logger = logging.getLogger(__name__)
 
 
 def prepare_embeddings(seq, conf):
+    min_seq_len = conf['dataset'].get('min_seq_len', 1)
     embeddings = list(conf['params.trx_encoder.embeddings'].keys())
 
     feature_keys = embeddings + list(conf['params.trx_encoder.numeric_values'].keys())
 
     for rec in seq:
+        seq_len = len(rec['event_time'])
+        if seq_len < min_seq_len:
+            continue
+
         feature_arrays = rec['feature_arrays']
 
         # TODO: datetime processing. Take date-time features

@@ -4,12 +4,15 @@ import json
 import logging
 
 import numpy as np
+import pandas as pd
+from pandas.io.json import json_normalize
+
 import torch
 
-from tinkoff_stories_recsys.data import load_data, log_split_by_date, get_encoder
-from tinkoff_stories_recsys.feature_preparation import load_user_features, load_item_features
-from tinkoff_stories_recsys.metrics import hit_rate_at_k, label_ranking_average_precision_score, roc_auc_mc_score
-from tinkoff_stories_recsys.models import StoriesRecModel, PopularModel, PairwiseMarginRankingLoss, ALSModel
+from scenario_tinkoff.data import load_data, log_split_by_date, get_encoder
+from scenario_tinkoff.feature_preparation import load_user_features, load_item_features
+from scenario_tinkoff.metrics import hit_rate_at_k, label_ranking_average_precision_score, ranking_score
+from scenario_tinkoff.models import StoriesRecModel, PopularModel, PairwiseMarginRankingLoss, ALSModel
 
 logger = logging.getLogger(__name__)
 
@@ -17,8 +20,8 @@ logger = logging.getLogger(__name__)
 def parse_args(args):
     parser = argparse.ArgumentParser()
     parser.add_argument('--data_path', type=os.path.abspath,
-                        default='/mnt/wind/data_open_ds/data-like-tinkoff-2019/')
-    parser.add_argument('--embedding_file_name', default="tinkoff_all_vectors.pickle")
+                        default='../data/tinkoff')
+    parser.add_argument('--embedding_file_name', default="embeddings.pickle")
     parser.add_argument('--train_size', type=float, default=0.75)
 
     parser.add_argument('--model_type', default='nn', choices=['nn'])
@@ -54,7 +57,8 @@ def parse_args(args):
 
     parser.add_argument('--exclude_seen_items', default=False)
 
-    parser.add_argument('--history_file', type=os.path.abspath, default='tinkoff_stories_recsys_result.json')
+    parser.add_argument('--history_file', type=os.path.abspath, default='runs/scenario_tinkoff.json')
+    parser.add_argument('--report_file', type=os.path.abspath, required=False)
 
     config = parser.parse_args(args)
     conf_str = json.dumps(vars(config), indent=2)
@@ -82,7 +86,34 @@ def save_result(config, score, metrics):
         json.dump(history, f, indent=2)
 
 
+def convert_history_file(config):
+    history_file = config.history_file
+    report_file = config.report_file
+
+    with open(history_file, 'rt') as f:
+        history = json.load(f)
+
+    df = json_normalize(history)
+
+    changing_columns = df.astype(str).nunique()[lambda x: x > 1].index.tolist()
+    col_drop = ['final_score.ranking_score', 'metrics']
+    columns = ['final_score.ranking_score'] + [col for col in changing_columns if col not in col_drop]
+    df_results = df[columns]
+
+    with pd.option_context(
+        'display.float_format', '{:.4f}'.format,
+        'display.max_columns', None,
+        'display.expand_frame_repr', False,
+    ):
+        logger.info(f'Results:\n{df_results}')
+        with open(report_file, 'w') as f:
+            print(df_results, file=f)
+
+
 def main(config):
+    if config.report_file is not None:
+        return convert_history_file(config)
+
     device = torch.device(config.device)
 
     df_log = load_data(config)
@@ -117,7 +148,7 @@ def main(config):
         def valid_fn():
             predict = model.model_predict(df_log_exclude, df_log_valid)
             return {
-                'roc_auc_mc_score': roc_auc_mc_score(predict),
+                'ranking_score': ranking_score(predict),
             }
 
         model.add_valid_fn(valid_fn)
@@ -128,7 +159,7 @@ def main(config):
     predict = model.model_predict(df_log_exclude, df_log_valid)
 
     scores = {
-        'roc_auc_mc_score': roc_auc_mc_score(predict),
+        'ranking_score': ranking_score(predict),
     }
 
     for k, v in scores.items():
