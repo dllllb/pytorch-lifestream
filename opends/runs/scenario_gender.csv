@@ -7,4 +7,4 @@ pos
 4                  0.8756               0.0056  [0.870 0.873 0.873 0.878 0.884]        NaN           True              True             True                            NaN                NaN
 5                  0.8116               0.0111  [0.798 0.803 0.814 0.818 0.826]        NaN            NaN               NaN              NaN              embeddings.pickle                NaN
 6                  0.8530               0.0075  [0.843 0.848 0.854 0.858 0.861]        NaN            NaN               NaN              NaN                            NaN      target_scores
-7                  0.8565               0.0095  [0.849 0.849 0.854 0.859 0.872]        NaN            NaN               NaN              NaN                            NaN  finetuning_scores
+7                  0.8587               0.0088  [0.846 0.856 0.858 0.865 0.869]        NaN            NaN               NaN              NaN                            NaN  finetuning_scores
