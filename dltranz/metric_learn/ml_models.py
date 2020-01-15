@@ -12,7 +12,7 @@ sys.path.append(os.path.join(script_dir, '../..'))
 from dltranz.seq_encoder import RnnEncoder, LastStepEncoder, NormEncoder
 from dltranz.trx_encoder import TrxEncoder
 
-# TODO: копирует dltranz.seq_encoder.NormEncoder
+# TODO: is the same as dltranz.seq_encoder.NormEncoder
 class L2Normalization(nn.Module):
     def __init__(self):
         super(L2Normalization, self).__init__()
