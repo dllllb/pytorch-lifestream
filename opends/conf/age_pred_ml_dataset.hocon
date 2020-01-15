@@ -8,7 +8,7 @@
     }
   }
 
-  stats.path: ${script_path}"/runs/sber_ml_result.json"
+  stats.path: ${script_path}"/runs/age_pred_ml_result.json"
 
   output: {
     path: ${script_path}"/../data/age-pred/embeddings"

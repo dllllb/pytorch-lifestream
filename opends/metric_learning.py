@@ -28,14 +28,24 @@ def prepare_embeddings(seq, conf):
     min_seq_len = conf['dataset'].get('min_seq_len', 1)
     embeddings = list(conf['params.trx_encoder.embeddings'].keys())
 
+    feature_keys = embeddings + list(conf['params.trx_encoder.numeric_values'].keys())
+
     for rec in seq:
         seq_len = len(rec['event_time'])
         if seq_len < min_seq_len:
             continue
 
         feature_arrays = rec['feature_arrays']
+
+        # TODO: datetime processing. Take date-time features
+
+        # drop unused fields
+        feature_arrays = {k: v for k, v in feature_arrays.items() if k in feature_keys}
+
+        # shift embeddings to 1, 0 is padding value
         feature_arrays = {k: v + (1 if k in embeddings else 0) for k, v in feature_arrays.items()}
 
+        # clip embeddings dictionary by max value
         for e_name, e_params in conf['params.trx_encoder.embeddings'].items():
             feature_arrays[e_name] = feature_arrays[e_name].clip(0, e_params['in'] - 1)
 

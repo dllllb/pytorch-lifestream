@@ -1,0 +1,10 @@
+     (rocauc_score, mean)  (rocauc_score, std)       (rocauc_score, <lambda_0>) use_random use_client_agg use_mcc_code_stat use_tr_type_stat metric_learning_embedding_name target_scores_name
+pos                                                                                                                                                                                           
+0                  0.4979               0.0096  [0.484 0.492 0.501 0.504 0.508]       True            NaN               NaN              NaN                            NaN                NaN
+1                  0.6171               0.0219  [0.589 0.610 0.614 0.624 0.649]        NaN           True               NaN              NaN                            NaN                NaN
+2                  0.8705               0.0038  [0.867 0.868 0.870 0.870 0.877]        NaN            NaN              True              NaN                            NaN                NaN
+3                  0.6760               0.0162  [0.659 0.665 0.670 0.693 0.693]        NaN            NaN               NaN             True                            NaN                NaN
+4                  0.8756               0.0056  [0.870 0.873 0.873 0.878 0.884]        NaN           True              True             True                            NaN                NaN
+5                  0.8116               0.0111  [0.798 0.803 0.814 0.818 0.826]        NaN            NaN               NaN              NaN              embeddings.pickle                NaN
+6                  0.8530               0.0075  [0.843 0.848 0.854 0.858 0.861]        NaN            NaN               NaN              NaN                            NaN      target_scores
+7                  0.8587               0.0088  [0.846 0.856 0.858 0.865 0.869]        NaN            NaN               NaN              NaN                            NaN  finetuning_scores

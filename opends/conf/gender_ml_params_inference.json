@@ -3,11 +3,11 @@
     "device": "cuda",
     "trx_encoder": {
       "embeddings": {
-        "trans_date": {"in": 800},
-        "small_group": {"in": 250}
+        "mcc_code": {"in": 200},
+        "tr_type": {"in": 100}
       },
       "numeric_values": {
-        "amount_rur": "identity"
+        "amount": "identity"
       }
     },
     "norm_scores": false,
@@ -20,7 +20,7 @@
 
   "model_path": {
     "models": [
-      "models/age_pred_ml_model.p"
+      "models/gender_ml_model.p"
     ]
   }
 }
