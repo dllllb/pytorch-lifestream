@@ -59,7 +59,7 @@
 
   "save_model": true,
   "model_path": {
-    "model": "models/gender_ml_model_v2.p"
+    "model": "models/gender_ml_model.p"
   },
 
   "stats": {
