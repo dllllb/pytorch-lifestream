@@ -1,10 +1,22 @@
-     (rocauc_score, mean)  (rocauc_score, std)       (rocauc_score, <lambda_0>) use_random use_client_agg use_mcc_code_stat use_tr_type_stat metric_learning_embedding_name target_scores_name
-pos                                                                                                                                                                                           
-0                  0.4979               0.0096  [0.484 0.492 0.501 0.504 0.508]       True            NaN               NaN              NaN                            NaN                NaN
-1                  0.6171               0.0219  [0.589 0.610 0.614 0.624 0.649]        NaN           True               NaN              NaN                            NaN                NaN
-2                  0.8705               0.0038  [0.867 0.868 0.870 0.870 0.877]        NaN            NaN              True              NaN                            NaN                NaN
-3                  0.6760               0.0162  [0.659 0.665 0.670 0.693 0.693]        NaN            NaN               NaN             True                            NaN                NaN
-4                  0.8756               0.0056  [0.870 0.873 0.873 0.878 0.884]        NaN           True              True             True                            NaN                NaN
-5                  0.8116               0.0111  [0.798 0.803 0.814 0.818 0.826]        NaN            NaN               NaN              NaN              embeddings.pickle                NaN
-6                  0.8562               0.0096  [0.845 0.848 0.859 0.864 0.866]        NaN            NaN               NaN              NaN                            NaN      target_scores
-7                  0.8587               0.0088  [0.846 0.856 0.858 0.865 0.869]        NaN            NaN               NaN              NaN                            NaN  finetuning_scores
+                (rocauc_score, mean)  (rocauc_score, std)       (rocauc_score, <lambda_0>) use_random use_client_agg use_mcc_code_stat use_tr_type_stat metric_learning_embedding_name     target_scores_name
+pos model_type                                                                                                                                                                                               
+0   linear                    0.4883               0.0143  [0.476 0.477 0.480 0.503 0.505]       True            NaN               NaN              NaN                            NaN                    NaN
+    xgb                       0.4812               0.0102  [0.467 0.478 0.479 0.487 0.495]       True            NaN               NaN              NaN                            NaN                    NaN
+1   linear                    0.5740               0.0207  [0.544 0.569 0.574 0.583 0.601]        NaN           True               NaN              NaN                            NaN                    NaN
+    xgb                       0.6183               0.0221  [0.588 0.612 0.617 0.628 0.648]        NaN           True               NaN              NaN                            NaN                    NaN
+2   linear                    0.8347               0.0082  [0.826 0.828 0.834 0.841 0.845]        NaN            NaN              True              NaN                            NaN                    NaN
+    xgb                       0.8658               0.0075  [0.858 0.859 0.864 0.871 0.875]        NaN            NaN              True              NaN                            NaN                    NaN
+3   linear                    0.6048               0.0164  [0.592 0.594 0.598 0.607 0.632]        NaN            NaN               NaN             True                            NaN                    NaN
+    xgb                       0.6295               0.0095  [0.618 0.621 0.633 0.635 0.640]        NaN            NaN               NaN             True                            NaN                    NaN
+4   linear                    0.8365               0.0083  [0.827 0.832 0.834 0.841 0.848]        NaN           True              True             True                            NaN                    NaN
+    xgb                       0.8725               0.0067  [0.865 0.868 0.871 0.878 0.881]        NaN           True              True             True                            NaN                    NaN
+5   linear                    0.8352               0.0089  [0.825 0.831 0.832 0.840 0.848]        NaN            NaN              True             True                            NaN                    NaN
+    xgb                       0.8673               0.0061  [0.860 0.863 0.866 0.871 0.876]        NaN            NaN              True             True                            NaN                    NaN
+6   linear                    0.8153               0.0101  [0.804 0.805 0.818 0.823 0.826]        NaN            NaN               NaN              NaN              embeddings.pickle                    NaN
+    xgb                       0.8116               0.0111  [0.798 0.803 0.814 0.818 0.826]        NaN            NaN               NaN              NaN              embeddings.pickle                    NaN
+7   linear                    0.8487               0.0078  [0.839 0.843 0.849 0.855 0.858]        NaN            NaN               NaN              NaN                            NaN          target_scores
+    xgb                       0.8443               0.0098  [0.831 0.839 0.845 0.852 0.855]        NaN            NaN               NaN              NaN                            NaN          target_scores
+8   linear                    0.8451               0.0131  [0.833 0.836 0.843 0.847 0.866]        NaN            NaN               NaN              NaN                            NaN      finetuning_scores
+    xgb                       0.8406               0.0136  [0.826 0.831 0.839 0.846 0.861]        NaN            NaN               NaN              NaN                            NaN      finetuning_scores
+9   linear                    0.8477               0.0064  [0.841 0.843 0.845 0.854 0.855]        NaN            NaN               NaN              NaN                            NaN  target_scores_vectors
+    xgb                       0.8477               0.0073  [0.838 0.845 0.845 0.854 0.856]        NaN            NaN               NaN              NaN                            NaN  target_scores_vectors
