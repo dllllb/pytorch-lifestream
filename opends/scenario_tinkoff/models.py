@@ -9,8 +9,8 @@ from sklearn.metrics import roc_auc_score
 from torch.utils.data import DataLoader
 from tqdm.autonotebook import tqdm
 
-from tinkoff_stories_recsys.data import StoriesDataset, RandomSampler
-from tinkoff_stories_recsys.feature_preparation import get_embeddings
+from scenario_tinkoff.data import StoriesDataset, RandomSampler
+from scenario_tinkoff.feature_preparation import get_embeddings
 
 logger = logging.getLogger(__name__)
 
