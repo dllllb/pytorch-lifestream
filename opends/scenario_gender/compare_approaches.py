@@ -84,7 +84,6 @@ def main(conf):
                      {'use_mcc_code_stat': True},
                      {'use_tr_type_stat': True},
                      {'use_client_agg': True, 'use_mcc_code_stat': True, 'use_tr_type_stat': True},
-                     {'use_mcc_code_stat': True, 'use_tr_type_stat': True},
                  ] + [
                      {'metric_learning_embedding_name': file_name} for file_name in conf['ml_embedding_file_names']
                  ] + [
