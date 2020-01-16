@@ -14,15 +14,15 @@
       "norm_embeddings": false,
       "embeddings_noise": 0.003,
       "embeddings": {
-        "mcc_code": {"in": 200, "out": 16},
-        "tr_type": {"in": 100, "out": 16}
+        "mcc_code": {"in": 200, "out": 48},
+        "tr_type": {"in": 100, "out": 24}
       },
       "numeric_values": {
         "amount": "identity"
       }
     },
     "lr_scheduler": {
-      "step_size": 30,
+      "step_size": 10,
       "step_gamma": 0.9025
     },
     "train": {
@@ -59,17 +59,11 @@
 
   "save_model": true,
   "model_path": {
-    "model": "models/gender_ml_model.p"
+    "model": "models/gender_ml_model_v2.p"
   },
 
   "stats": {
-    "path": "/runs/gender_ml_result.json"
-  },
-
-  "output": {
-    "path": "/../data/gender/embeddings",
-    "format": "pickle",
-    "columns": ["customer_id"]
+    "path": "runs/gender_ml_result.json"
   }
 
 }
