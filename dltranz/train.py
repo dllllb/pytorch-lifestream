@@ -51,13 +51,13 @@ def get_optimizer(model, params):
         parameters = model.parameters()
     else:
         parameters = []
-        for par_name, options in optimiser_params:
+        for par_name, options in optimiser_params.items():
             options = options.copy()
-            options['params'] = [v for k, v in model.named_parameters() if k.endswith(par_name)]
+            options['params'] = [v for k, v in model.named_parameters() if k.startswith(par_name)]
             parameters.append(options)
         default_options = {
             'params': [v for k, v in model.named_parameters() if all(
-                (not k.endswith(par_name) for par_name, options in optimiser_params)
+                (not k.startswith(par_name) for par_name, options in optimiser_params.items())
             )]}
         parameters.append(default_options)
     optimizer = torch.optim.Adam(parameters, lr=params['train.lr'], weight_decay=params['train.weight_decay'])
