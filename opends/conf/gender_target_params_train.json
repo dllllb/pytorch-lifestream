@@ -29,7 +29,7 @@
     },
     "train": {
       "random_neg": false,
-      "trx_dropout": 0.005,
+      "trx_dropout": 0.01,
       "max_seq_len": 1200,
       "clip_seq": {
         "min_len": 250,

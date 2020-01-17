@@ -6,7 +6,7 @@
     "device": "cuda",
     "rnn": {
       "type": "gru",
-      "hidden_size": 64,
+      "hidden_size": 256,
       "bidir": false,
       "trainable_starter": "static"
     },
@@ -27,12 +27,12 @@
     },
     "train": {
       "num_workers": 16,
-      "batch_size": 512,
+      "batch_size": 64,
       "split_strategy": {
         "split_strategy": "SplitByCount",
         "split_count": 5,
         "cnt_min": 25,
-        "cnt_max": 400
+        "cnt_max": 150
       },
       "sampling_strategy": "HardNegativePair",
       "trx_dropout": 0.01,
