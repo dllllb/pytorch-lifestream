@@ -42,7 +42,7 @@
       "margin": 0.5,
       "lr": 0.002,
       "weight_decay": 0.0,
-      "n_epoch": 50
+      "n_epoch": 150
     },
     "valid": {
       "batch_size": 1024,
