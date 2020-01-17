@@ -36,7 +36,11 @@
       "batch_size": 32,
       "num_workers": 16,
       "loss": "bce",
-      "lr": 0.002,
+      "lr": 0.0015,
+      "optimiser_params": {
+        "0.": {"lr": 0.0015},
+        "1.": {"lr": 0.0015}
+      },
       "weight_decay": 0.0,
       "n_epoch": 8
     },

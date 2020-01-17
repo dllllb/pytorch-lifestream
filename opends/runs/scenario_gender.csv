@@ -14,5 +14,5 @@ pos model_type
     xgb                       0.8348               0.0101  [0.820 0.831 0.838 0.840 0.845]        NaN            NaN               NaN              NaN           embeddings_v2.pickle                NaN
 6   linear                    0.8518               0.0119  [0.841 0.842 0.850 0.857 0.869]        NaN            NaN               NaN              NaN                            NaN      target_scores
     xgb                       0.8474               0.0108  [0.837 0.837 0.847 0.854 0.862]        NaN            NaN               NaN              NaN                            NaN      target_scores
-7   linear                    0.8607               0.0084  [0.854 0.854 0.856 0.867 0.872]        NaN            NaN               NaN              NaN                            NaN  finetuning_scores
-    xgb                       0.8569               0.0094  [0.848 0.849 0.854 0.865 0.869]        NaN            NaN               NaN              NaN                            NaN  finetuning_scores
+7   linear                    0.8619               0.0070  [0.851 0.860 0.862 0.868 0.868]        NaN            NaN               NaN              NaN                            NaN  finetuning_scores
+    xgb                       0.8587               0.0077  [0.847 0.858 0.858 0.865 0.866]        NaN            NaN               NaN              NaN                            NaN  finetuning_scores
