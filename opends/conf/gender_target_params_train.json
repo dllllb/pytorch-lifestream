@@ -5,11 +5,11 @@
     "model_type": "rnn",
     "ensemble_size": 1,
     "trx_encoder": {
-      "norm_embeddings": false,
+      "norm_embeddings": true,
       "embeddings_noise": 0.003,
       "embeddings": {
-        "mcc_code": {"in": 200, "out": 8},
-        "tr_type": {"in": 100, "out": 8}
+        "mcc_code": {"in": 200, "out": 48},
+        "tr_type": {"in": 100, "out": 24}
       },
       "numeric_values": {
         "amount": "identity"
@@ -29,7 +29,7 @@
     },
     "train": {
       "random_neg": false,
-      "trx_dropout": 0.005,
+      "trx_dropout": 0.01,
       "max_seq_len": 1200,
       "clip_seq": {
         "min_len": 250,

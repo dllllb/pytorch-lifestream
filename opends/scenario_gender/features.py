@@ -8,6 +8,10 @@ COL_ID = 'customer_id'
 COL_TARGET = 'gender'
 
 
+def df_norm(df):
+    return df.div(df.sum(axis=1) + 1e-5, axis=0)
+
+
 def _random(conf):
     all_clients = pd.read_csv(os.path.join(conf['data_path'], 'gender_train.csv')).set_index(COL_ID)
     all_clients = all_clients.assign(random=np.random.rand(len(all_clients)))
@@ -29,12 +33,12 @@ def _mcc_code_stat(conf):
     df_transactions = pd.read_csv(os.path.join(conf['data_path'], 'transactions.csv'))
 
     cat_counts_train = pd.concat([
-        df_transactions.pivot_table(
-            index=COL_ID, columns='mcc_code', values='amount', aggfunc='count').fillna(0.0),
-        df_transactions.pivot_table(
-            index=COL_ID, columns='mcc_code', values='amount', aggfunc='mean').fillna(0.0),
-        df_transactions.pivot_table(
-            index=COL_ID, columns='mcc_code', values='amount', aggfunc='std').fillna(0.0),
+        df_norm(df_transactions.pivot_table(
+            index=COL_ID, columns='mcc_code', values='amount', aggfunc='count').fillna(0.0)),
+        df_norm(df_transactions.pivot_table(
+            index=COL_ID, columns='mcc_code', values='amount', aggfunc='mean').fillna(0.0)),
+        df_norm(df_transactions.pivot_table(
+            index=COL_ID, columns='mcc_code', values='amount', aggfunc='std').fillna(0.0)),
     ], axis=1, keys=['mcc_code_count', 'mcc_code_mean', 'mcc_code_std'])
 
     cat_counts_train.columns = ['_'.join(map(str, c)) for c in cat_counts_train.columns.values]
@@ -45,12 +49,12 @@ def _tr_type_stat(conf):
     df_transactions = pd.read_csv(os.path.join(conf['data_path'], 'transactions.csv'))
 
     cat_counts_train = pd.concat([
-        df_transactions.pivot_table(
-            index=COL_ID, columns='tr_type', values='amount', aggfunc='count').fillna(0.0),
-        df_transactions.pivot_table(
-            index=COL_ID, columns='tr_type', values='amount', aggfunc='mean').fillna(0.0),
-        df_transactions.pivot_table(
-            index=COL_ID, columns='tr_type', values='amount', aggfunc='std').fillna(0.0),
+        df_norm(df_transactions.pivot_table(
+            index=COL_ID, columns='tr_type', values='amount', aggfunc='count').fillna(0.0)),
+        df_norm(df_transactions.pivot_table(
+            index=COL_ID, columns='tr_type', values='amount', aggfunc='mean').fillna(0.0)),
+        df_norm(df_transactions.pivot_table(
+            index=COL_ID, columns='tr_type', values='amount', aggfunc='std').fillna(0.0)),
     ], axis=1, keys=['tr_type_count', 'tr_type_mean', 'tr_type_std'])
 
     cat_counts_train.columns = ['_'.join(map(str, c)) for c in cat_counts_train.columns.values]
@@ -63,7 +67,11 @@ def _metric_learning_embeddings(conf, file_name):
 
 
 def _target_scores(conf, file_path):
-    pickle_files = glob(os.path.join(conf['data_path'], file_path, '*'))
+    find_path = os.path.join(conf['data_path'], file_path, '*')
+    pickle_files = glob(find_path)
+
+    if len(pickle_files) == 0:
+        raise AssertionError(f'There are no files in {find_path}')
 
     df_target_scores = pd.concat([
         pd.read_pickle(f).set_index(COL_ID)

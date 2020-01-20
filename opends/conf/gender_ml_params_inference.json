@@ -22,5 +22,11 @@
     "models": [
       "models/gender_ml_model.p"
     ]
+  },
+
+  "output": {
+    "path": "../data/gender/embeddings",
+    "format": "pickle",
+    "columns": ["customer_id"]
   }
 }

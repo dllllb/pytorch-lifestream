@@ -14,7 +14,7 @@
       }
     },
     "rnn": {
-      "hidden_size": 64,
+      "hidden_size": 256,
       "type": "gru",
       "bidir": false,
       "trainable_starter": "static"
@@ -27,7 +27,7 @@
     },
     "train": {
       "random_neg": false,
-      "trx_dropout": 0.005,
+      "trx_dropout": 0.01,
       "max_seq_len": 1200,
       "clip_seq": {
         "min_len": 250,
@@ -36,13 +36,17 @@
       "batch_size": 32,
       "num_workers": 16,
       "loss": "bce",
-      "lr": 0.002,
+      "lr": 0.0015,
+      "optimiser_params": {
+        "0.": {"lr": 0.0001},
+        "1.": {"lr": 0.0001}
+      },
       "weight_decay": 0.0,
       "n_epoch": 8
     },
     "lr_scheduler": {
       "step_size": 1,
-      "step_gamma": 0.90
+      "step_gamma": 0.60
     },
     "valid": {
       "max_seq_len": 1200,

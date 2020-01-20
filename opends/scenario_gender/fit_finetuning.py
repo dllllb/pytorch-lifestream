@@ -6,7 +6,7 @@ from sklearn.model_selection import StratifiedKFold
 
 from dltranz.experiment import update_model_stats
 from dltranz.metric_learn.inference_tools import score_part_of_data
-from dltranz.seq_encoder import Squeeze
+from dltranz.seq_encoder import Squeeze, LastStepEncoder
 from dltranz.util import init_logger, get_conf
 from scenario_gender.fit_target import create_ds, run_experiment, read_consumer_data
 
@@ -17,12 +17,16 @@ def load_model(conf):
     pretrained_model_path = conf['pretrained_model_path']
 
     pre_model = torch.load(pretrained_model_path)
+    trx_encoder = pre_model[0]
+    rnn_encoder = pre_model[1]
 
     input_size = conf['rnn.hidden_size']
     head_output_size = 1
 
     model = torch.nn.Sequential(
-        pre_model[:-1],
+        trx_encoder,
+        rnn_encoder,
+        LastStepEncoder(),
         torch.nn.Linear(input_size, head_output_size),
         torch.nn.Sigmoid(),
         Squeeze(),

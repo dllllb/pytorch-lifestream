@@ -6,6 +6,8 @@
     preprocessing: {
         add_seq_len: false
     }
+
+    min_seq_len: 25
   }
   cv_n_split: 5
 
