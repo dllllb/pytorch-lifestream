@@ -1,4 +1,6 @@
-   final_score.ranking_score  config.optim_lr  config.use_user_popular_features  config.use_trans_common_features  config.use_trans_mcc_features  config.use_embeddings
-0                     0.5877           0.0040                              True                             False                          False                  False
-1                     0.5411           0.0100                             False                              True                           True                  False
-2                     0.5837           0.0060                             False                             False                          False                   True
+   final_score.ranking_score  config.optim_lr  config.user_one_for_all_size config.user_learn_embedding_size config.use_user_popular_features  config.use_trans_common_features  config.use_trans_mcc_features  config.use_embeddings
+0                     0.5823           0.0040                           32                                 0                            False                             False                          False                  False
+0                     0.4770           0.0001                            0                                 32                           False                             False                          False                  False
+0                     0.5877           0.0040                            0                                 0                             True                             False                          False                  False
+1                     0.5411           0.0100                            0                                 0                            False                              True                           True                  False
+2                     0.5837           0.0060                            0                                 0                            False                             False                          False                   True

@@ -94,6 +94,8 @@ dltrans/opends$ python ml_inference.py --conf conf/tinkoff_dataset.hocon conf/ti
 dltrans/opends $ 
 rm runs/scenario_tinkoff.json
 
+python -m scenario_tinkoff --user_one_for_all_size 32                           --optim_lr 0.004
+python -m scenario_tinkoff --user_learn_embedding_size 32                       --optim_lr 0.0001
 python -m scenario_tinkoff --use_user_popular_features                          --optim_lr 0.004
 python -m scenario_tinkoff --use_trans_common_features --use_trans_mcc_features --optim_lr 0.010
 python -m scenario_tinkoff --use_embeddings                                     --optim_lr 0.006
