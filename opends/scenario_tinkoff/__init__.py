@@ -11,7 +11,7 @@ import torch
 
 from scenario_tinkoff.data import load_data, log_split_by_date, get_encoder
 from scenario_tinkoff.feature_preparation import load_user_features, load_item_features
-from scenario_tinkoff.metrics import hit_rate_at_k, label_ranking_average_precision_score, ranking_score
+from scenario_tinkoff.metrics import hit_rate_at_k, label_ranking_average_precision_score, ranking_score, precision_at_k
 from scenario_tinkoff.models import StoriesRecModel, PopularModel, PairwiseMarginRankingLoss, ALSModel
 
 logger = logging.getLogger(__name__)
@@ -56,6 +56,7 @@ def parse_args(args):
     parser.add_argument('--valid_num_workers', type=int, default=16)
 
     parser.add_argument('--exclude_seen_items', default=False)
+    parser.add_argument('--precision_k', type=int, default=10)
 
     parser.add_argument('--history_file', type=os.path.abspath, default='runs/scenario_tinkoff.json')
     parser.add_argument('--report_file', type=os.path.abspath, required=False)
@@ -95,9 +96,10 @@ def convert_history_file(config):
 
     df = json_normalize(history)
 
+    metric_columns = ['final_score.precision_at_k', 'final_score.ranking_score']
     changing_columns = df.astype(str).nunique()[lambda x: x > 1].index.tolist()
-    col_drop = ['final_score.ranking_score', 'metrics']
-    columns = ['final_score.ranking_score'] + [col for col in changing_columns if col not in col_drop]
+    col_drop = metric_columns + ['metrics']
+    columns = metric_columns + [col for col in changing_columns if col not in col_drop]
     df_results = df[columns]
 
     with pd.option_context(
@@ -149,6 +151,8 @@ def main(config):
             predict = model.model_predict(df_log_exclude, df_log_valid)
             return {
                 'ranking_score': ranking_score(predict),
+                'precision_at_k': precision_at_k(predict, k=config.precision_k),
+
             }
 
         model.add_valid_fn(valid_fn)
@@ -160,6 +164,7 @@ def main(config):
 
     scores = {
         'ranking_score': ranking_score(predict),
+        'precision_at_k': precision_at_k(predict, k=config.precision_k),
     }
 
     for k, v in scores.items():

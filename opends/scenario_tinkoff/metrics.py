@@ -88,6 +88,15 @@ def label_ranking_average_precision_score(df_scores, df_true, reduce=True, desc=
     return float(score)
 
 
+def precision_at_k(df, k):
+    def _precision(df):
+        df = df.sort_values('relevance', ascending=False).iloc[:k].copy()
+        events = df['event'].map({'dislike': 0, 'skip': 0, 'view': 1, 'like': 1}).values
+        return events.mean()
+
+    return df.groupby('customer_id').apply(_precision).mean()
+
+
 def ranking_score(df):
     def pair_ranking_rate(df):
         events = df['event'].map({'dislike': 0, 'skip': 1, 'view': 2, 'like': 3}).values

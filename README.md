@@ -83,27 +83,29 @@ cat runs/scenario_gender.csv
 ## tinkoff dataset
 
 ```sh
+cd dltrans/opends
+
 # Train metric learning model
-dltrans/opends$ python metric_learning.py --conf conf/tinkoff_dataset.hocon conf/tinkoff_train_params.json
+python metric_learning.py --conf conf/tinkoff_dataset.hocon conf/tinkoff_train_params.json
 
 # With pretrained mertic learning model run inference ang take embeddings for each customer
-dltrans/opends$ python ml_inference.py --conf conf/tinkoff_dataset.hocon conf/tinkoff_inference_params.json
+python ml_inference.py --conf conf/tinkoff_dataset.hocon conf/tinkoff_inference_params.json
 
 # Run estimation for different approaches
 # Check some options with `--help` argument
 dltrans/opends $ 
 rm runs/scenario_tinkoff.json
 
-python -m scenario_tinkoff --user_one_for_all_size 32                           --optim_lr 0.004
-python -m scenario_tinkoff --user_learn_embedding_size 32                       --optim_lr 0.0001
-python -m scenario_tinkoff --use_user_popular_features                          --optim_lr 0.004
-python -m scenario_tinkoff --use_trans_common_features --use_trans_mcc_features --optim_lr 0.010
-python -m scenario_tinkoff --use_embeddings                                     --optim_lr 0.006
+python -m scenario_tinkoff --user_one_for_all_size 32                           --optim_lr 0.004  --device "cuda:1"
+python -m scenario_tinkoff --user_learn_embedding_size 32                       --optim_lr 0.0001 --device "cuda:1"
+python -m scenario_tinkoff --use_user_popular_features                          --optim_lr 0.004  --device "cuda:1"
+python -m scenario_tinkoff --use_trans_common_features --use_trans_mcc_features --optim_lr 0.010  --device "cuda:1"
+python -m scenario_tinkoff --use_embeddings                                     --optim_lr 0.006  --device "cuda:1"
 
 # check the results
-dltrans/opends$ python scenario_tinkoff --report_file "runs/scenario_tinkof.csv"
+python -m scenario_tinkoff --report_file "runs/scenario_tinkof.csv"
 
-dltrans/opends$ cat "runs/scenario_tinkoff.csv"
+cat "runs/scenario_tinkoff.csv"
 ```
 
 ## common scenario (work in progress)
