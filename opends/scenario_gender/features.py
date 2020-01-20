@@ -67,10 +67,11 @@ def _metric_learning_embeddings(conf, file_name):
 
 
 def _target_scores(conf, file_path):
-    pickle_files = glob(os.path.join(conf['data_path'], file_path, '*'))
+    find_path = os.path.join(conf['data_path'], file_path, '*')
+    pickle_files = glob(find_path)
 
     if len(pickle_files) == 0:
-        raise AssertionError(f'There are no files in {pickle_files}')
+        raise AssertionError(f'There are no files in {find_path}')
 
     df_target_scores = pd.concat([
         pd.read_pickle(f).set_index(COL_ID)

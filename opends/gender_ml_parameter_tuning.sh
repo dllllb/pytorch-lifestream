@@ -72,3 +72,23 @@ python -m scenario_gender compare_approaches --pos 6 7 8 9 10 11 12 13 14 --targ
     "finetuning_scores_v_len60"    \
     "finetuning_scores_v_len250"
 
+#                     (rocauc_score, mean)  (rocauc_score, std)       (rocauc_score, <lambda_0>)            target_scores_name
+#     pos model_type
+#     6   linear                    0.8711               0.0076  [0.865 0.866 0.867 0.875 0.883]      finetuning_scores_v_base
+#         xgb                       0.8683               0.0078  [0.861 0.863 0.865 0.871 0.881]      finetuning_scores_v_base
+#     7   linear                    0.8715               0.0058  [0.864 0.869 0.870 0.876 0.878]     finetuning_scores_v_hs512
+#         xgb                       0.8685               0.0055  [0.859 0.869 0.869 0.872 0.873]     finetuning_scores_v_hs512
+#     8   linear                    0.8711               0.0072  [0.865 0.866 0.868 0.876 0.881]  finetuning_scores_v_epoch250
+#         xgb                       0.8678               0.0077  [0.861 0.863 0.864 0.873 0.879]  finetuning_scores_v_epoch250
+#     9   linear                    0.8708               0.0101  [0.862 0.863 0.866 0.877 0.886]      finetuning_scores_v_bs32
+#         xgb                       0.8671               0.0103  [0.857 0.860 0.864 0.873 0.882]      finetuning_scores_v_bs32
+#     10  linear                    0.8713               0.0077  [0.865 0.866 0.867 0.877 0.882]     finetuning_scores_v_bs128
+#         xgb                       0.8691               0.0065  [0.862 0.864 0.867 0.875 0.877]     finetuning_scores_v_bs128
+#     11  linear                    0.8700               0.0056  [0.864 0.865 0.870 0.872 0.878]     finetuning_scores_v_bs256
+#         xgb                       0.8662               0.0041  [0.860 0.864 0.868 0.869 0.870]     finetuning_scores_v_bs256
+#     12  linear                    0.8573               0.0053  [0.851 0.854 0.856 0.861 0.864]    finetuning_scores_v_len150
+#         xgb                       0.8526               0.0056  [0.846 0.847 0.854 0.857 0.859]    finetuning_scores_v_len150
+#     13  linear                    0.8723               0.0062  [0.865 0.868 0.873 0.874 0.881]     finetuning_scores_v_len60
+#         xgb                       0.8677               0.0075  [0.859 0.864 0.868 0.869 0.879]     finetuning_scores_v_len60
+#     14  linear                    0.8705               0.0080  [0.861 0.865 0.870 0.876 0.881]    finetuning_scores_v_len250
+#         xgb                       0.8669               0.0082  [0.858 0.861 0.866 0.872 0.878]    finetuning_scores_v_len250
