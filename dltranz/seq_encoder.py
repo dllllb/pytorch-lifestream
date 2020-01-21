@@ -1,11 +1,11 @@
 from typing import Tuple
-
 import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as tf
 
 from dltranz.trx_encoder import PaddedBatch
+from dltranz.neural_automl import neural_automl_models as node
 
 
 class PerTransHead(nn.Module):
@@ -212,6 +212,14 @@ def scoring_head(input_size, params):
 
     if params['norm_input']:
         layers.append(NormEncoder())
+
+    if params.get('neural_automl', False):
+        if params['pred_all_states']:
+            raise AttributeError('neural_automl not supported with `pred_all_states` for now')
+        layers.append(nn.BatchNorm1d(input_size))
+        head = node.get_model(model_config=params['neural_automl'], input_size=input_size)
+        layers.append(head)
+        return nn.Sequential(*layers)
 
     if "head_layers" not in params:
         head_output_size = params.get('num_classes', 1)
