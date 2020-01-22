@@ -3,3 +3,5 @@
 __pycache__
 data
 opends/models/
+opends/logs
+deb.env

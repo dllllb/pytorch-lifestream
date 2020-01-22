@@ -1,9 +1,11 @@
 import numpy as np
 import torch
+import torch.nn as nn
 import torch.nn.functional as F
 from torch.optim import Adam
 import tqdm
 import os
+import os.path as osp
 import json
 
 import dltranz.neural_automl.lib as lib
@@ -26,7 +28,7 @@ def train_from_config(X_train, y_train, X_valid, y_valid, config=None):
     if config is None or not isinstance(config, dict) or not config.get('layers', False):
         with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), def_conf), 'r') as f:
             config = json.load(f)
-        print(f"\nModel config is not specified. Using default one instead (see neural_automl/conf/default_config.json):")
+        #print(f"\nModel config is not specified. Using default one instead (see neural_automl/conf/default_config.json):")
         #print(json.dumps(config, indent=4))
 
     # loading data
@@ -48,9 +50,9 @@ def train_from_config(X_train, y_train, X_valid, y_valid, config=None):
     elif config['loss_params']['func'] == 'CrossEntropyLoss':
         loss_function = nn.CrossEntropyLoss()
     elif config['loss_params']['func'] == 'MSELoss':
-        loss_function = nn.torch.nn.MSELoss()
+        loss_function = nn.MSELoss()
     else:
-        raise NotImplemented(f"unknown loss function type {config['loss_params']['func']}")
+        raise NotImplementedError(f"unknown loss function type {config['loss_params']['func']}")
 
     #
     lr = config['sgd_params']['lr']

@@ -8,11 +8,11 @@ import os.path as osp
 
 def get_model(model_config, data=None, input_size=None):
     def_conf = 'conf/binary_classification_config.json'
-    if model_config is not None and isinstance(config, str):
+    if model_config is not None and isinstance(model_config, str):
         def_conf = 'conf/' + model_config
         if not osp.exists(def_conf):
             def_conf = 'conf/binary_classification_config.json'
-            print(f"config file {'conf/' + config} not exists, using {def_conf} instead")
+            print(f"config file {'conf/' + model_config} not exists, using {def_conf} instead")
     if model_config is None or not isinstance(model_config, dict) or not model_config.get('layers', False):
         with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), def_conf), 'r') as f:
             model_config = json.load(f)
@@ -50,7 +50,7 @@ def get_model_from_config(model_config, data=None, input_size=None):
                 break
 
             else:
-                raise NotImplemented(f"unsupported layer type automatik size infer {l['type']}")
+                raise NotImplementedError(f"unsupported layer type automatik size infer {l['type']}")
 
         if layer is None:
             raise LookupError('no previous layer found for automatik size infere')
@@ -95,7 +95,7 @@ def get_model_from_config(model_config, data=None, input_size=None):
                 if data is not None or input_size is not None:
                     d_in = input_size if input_size is not None else data.shape[-1]
                 else:
-                    check(d_in)
+                    check(layer, d_in)
             if i > 0 and not d_in:
                 d_in = get_prev_layer_output()
 
@@ -118,7 +118,7 @@ def get_model_from_config(model_config, data=None, input_size=None):
                 if data is not None or input_size is not None:
                     d_in = input_size if input_size is not None else data.shape[-1]
                 else:
-                    check(d_in)
+                    check(layer, d_in)
             if i > 0 and not d_in:
                 d_in = get_prev_layer_output()
 
@@ -134,7 +134,7 @@ def get_model_from_config(model_config, data=None, input_size=None):
             elif func == 'sum':
                 lst_layers.append(lib.Lambda(lambda x: x.sum(dim=dims)))
             else:
-                raise NotImplemented(f"unknown aggregation function type {func}")
+                raise NotImplementedError(f"unknown aggregation function type {func}")
 
         elif layer['type'] == 'sigmoid' or layer['type'] == 'relu':
             if layer['type'] == 'sigmoid':
@@ -143,7 +143,7 @@ def get_model_from_config(model_config, data=None, input_size=None):
                 lst_layers.append(nn.ReLU())
 
         else:
-            raise not NotImplemented(f"unknown layer type: {layer['type']}")
+            raise NotImplementedError(f"unknown layer type: {layer['type']}")
 
         # remember already added layers config
         lst_layers_config.append(layer)

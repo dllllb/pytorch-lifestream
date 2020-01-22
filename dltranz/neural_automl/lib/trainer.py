@@ -35,7 +35,7 @@ class Trainer(nn.Module):
         self.n_last_checkpoints = n_last_checkpoints
 
         if experiment_name is None:
-            experiment_name = 'untitled_{}.{:0>2d}.{:0>2d}_{:0>2d}:{:0>2d}'.format(*time.gmtime()[:5])
+            experiment_name = 'untitled_{0}'.format(time.strftime("%b_%d_%Y_%H_%M_%S", time.gmtime()))
             if self.verbose:
                 print('using automatic experiment name: ' + experiment_name)
 
