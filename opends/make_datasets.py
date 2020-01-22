@@ -26,6 +26,7 @@ def parse_args(args=None):
 
     parser.add_argument('--output_train_path', type=os.path.abspath)
     parser.add_argument('--output_test_path', type=os.path.abspath)
+    parser.add_argument('--output_test_ids_path', type=os.path.abspath)
     parser.add_argument('--log_file', type=os.path.abspath)
 
     args = parser.parse_args(args)
@@ -139,7 +140,7 @@ def split_dataset(all_data, test_size, data_path, target_files, col_client_id):
     logger.info(f'Train size: {len(train)} clients')
     logger.info(f'Test size: {len(test)} clients')
 
-    return test, train
+    return train, test
 
 
 def save_features(df_data, save_path):
@@ -202,3 +203,5 @@ if __name__ == '__main__':
             df_data=test,
             save_path=config.output_test_path,
         )
+        test_ids = pd.DataFrame({config.col_client_id: [rec[config.col_client_id] for rec in test]})
+        test_ids.to_csv(config.output_test_ids_path, index=False)

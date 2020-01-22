@@ -46,8 +46,8 @@ def main(_):
     conf = get_conf(sys.argv[2:])
 
     model_f = load_model
-    train_data = read_consumer_data(conf)
-    test_data = read_consumer_data(conf)
+    train_data = read_consumer_data(conf['dataset.train_path'], conf)
+    test_data = read_consumer_data(conf['dataset.test_path'], conf)
 
     # train
     results = []

@@ -11,6 +11,7 @@ python opends/make_datasets.py \
     --col_target bins \
     --output_train_path "data/age-pred/train_trx.p" \
     --output_test_path "data/age-pred/test_trx.p" \
+    --output_test_ids_path "data/age-pred/test_ids.csv" \
     --log_file "opends/runs/dataset_age_pred.log"
 
 python opends/make_datasets.py \
@@ -24,6 +25,7 @@ python opends/make_datasets.py \
     --test_size 0.1 \
     --output_train_path "data/tinkoff/train_trx.p" \
     --output_test_path "data/tinkoff/test_trx.p" \
+    --output_test_ids_path "data/tinkoff/test_ids.csv" \
     --log_file "opends/runs/dataset_tinkoff.log"
 
 python opends/make_datasets.py \
@@ -38,4 +40,5 @@ python opends/make_datasets.py \
     --test_size 0.1 \
     --output_train_path "data/gender/train_trx.p" \
     --output_test_path "data/gender/test_trx.p" \
+    --output_test_ids_path "data/gender/test_ids.csv" \
     --log_file "opends/runs/dataset_gender.log"

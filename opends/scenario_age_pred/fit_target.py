@@ -93,10 +93,10 @@ class EpochTrackingDataLoader(DataLoader):
         self.preparing_dataset.prepare_epoch()
 
 
-def read_consumer_data(conf):
+def read_consumer_data(path, conf):
     logger.info(f'Data loading...')
 
-    with open(conf['dataset.path'], 'rb') as f:
+    with open(path, 'rb') as f:
         data = pickle.load(f)
     logger.info(f'Loaded raw data: {len(data)}')
 
@@ -161,8 +161,8 @@ def main(_):
     conf = get_conf(sys.argv[2:])
 
     model_f = model_by_type(conf['params.model_type'])
-    train_data = read_consumer_data(conf)
-    test_data = read_consumer_data(conf)
+    train_data = read_consumer_data(conf['dataset.train_path'], conf)
+    test_data = read_consumer_data(conf['dataset.test_path'], conf)
 
     # train
     results = []

@@ -97,9 +97,9 @@ def infer_part_of_data(part_num, part_data, columns, model, conf, lock_obj=None)
         df_scores[col] = df_labels[col]
     df_scores = df_scores.reindex(columns=df_labels.columns.tolist() + df_scores_cols)
     logger.info(f'df_scores examples: {df_scores.shape}:')
+    return df_scores
 
-
-def save_scores(df_scores, part_num, output_conf)
+def save_scores(df_scores, part_num, output_conf):
     # output
     output_name = output_conf['path']
     output_format = output_conf['format']
