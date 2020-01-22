@@ -61,17 +61,20 @@ def get_scores(args):
             n_jobs=4,
             seed=conf['model_seed'],
             n_estimators=300)
-    elif mode_type == 'neural_automl':
+    elif model_type == 'neural_automl':
         pass
     else:
-        raise NotImplemented(f'unknown model type {mode_type}')
+        raise NotImplementedError(f'unknown model type {model_type}')
 
-    if mode_type != 'neural_automl':
+    if model_type != 'neural_automl':
         model.fit(X_train, y_train)
         pred = model.predict_proba(X_valid)[:, 1]
         rocauc_score = roc_auc_score(y_valid, pred)
     else:
-        roc_auc_score = train_from_config(X_train, y_train, X_valid, y_valid)
+        rocauc_score = train_from_config(X_train.values, 
+                                         y_train.values.astype('float32'), 
+                                         X_valid.values, 
+                                         y_valid.values.astype('float32'))
 
     logger.info(f'[{pos:4}:{model_type:6}:{fold_n}] Finished with rocauc_score {rocauc_score:.4f}: {params}')
 
