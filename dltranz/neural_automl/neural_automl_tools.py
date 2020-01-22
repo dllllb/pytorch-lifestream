@@ -17,8 +17,14 @@ config - if None then using params from conf/default_config.json
 '''
 def train_from_config(X_train, y_train, X_valid, y_valid, config=None):
     #
-    if config is None or not config.get('layers', False):
-        with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'conf/default_config.json'), 'r') as f:
+    def_conf = 'conf/binary_classification_config.json'
+    if config is not None and isinstance(config, str):
+        def_conf = 'conf/' + config
+        if not osp.exists(def_conf):
+            def_conf = 'conf/binary_classification_config.json'
+            print(f"config file {'conf/' + config} not exists, using {def_conf} instead")
+    if config is None or not isinstance(config, dict) or not config.get('layers', False):
+        with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), def_conf), 'r') as f:
             config = json.load(f)
         print(f"\nModel config is not specified. Using default one instead (see neural_automl/conf/default_config.json):")
         #print(json.dumps(config, indent=4))
@@ -39,6 +45,10 @@ def train_from_config(X_train, y_train, X_valid, y_valid, config=None):
         loss_function = F.binary_cross_entropy_with_logits
     elif config['loss_params']['func'] == 'binary_cross_entropy':
         loss_function = F.binary_cross_entropy
+    elif config['loss_params']['func'] == 'CrossEntropyLoss':
+        loss_function = nn.CrossEntropyLoss()
+    elif config['loss_params']['func'] == 'MSELoss':
+        loss_function = nn.torch.nn.MSELoss()
     else:
         raise NotImplemented(f"unknown loss function type {config['loss_params']['func']}")
 

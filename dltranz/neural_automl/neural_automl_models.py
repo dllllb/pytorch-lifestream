@@ -3,11 +3,18 @@ import torch
 import torch .nn as nn
 import os
 import json
+import os.path as osp
 
 
 def get_model(model_config, data=None, input_size=None):
+    def_conf = 'conf/binary_classification_config.json'
+    if model_config is not None and isinstance(config, str):
+        def_conf = 'conf/' + model_config
+        if not osp.exists(def_conf):
+            def_conf = 'conf/binary_classification_config.json'
+            print(f"config file {'conf/' + config} not exists, using {def_conf} instead")
     if model_config is None or not isinstance(model_config, dict) or not model_config.get('layers', False):
-        with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'conf/default_config.json'), 'r') as f:
+        with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), def_conf), 'r') as f:
             model_config = json.load(f)
 
     return get_model_from_config(model_config, data, input_size)

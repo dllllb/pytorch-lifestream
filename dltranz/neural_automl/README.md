@@ -14,7 +14,7 @@ train_from_config(X_train, y_train, X_valid, y_valid, model_config)
 ``` 
 Here you need specify data arrays and model config. Currently data are numpy arrays (X_train - [n_samples, n_feautures], y_train - [n_samples])
 
-If model_config is None then **neural_automl/conf/default_config.json** is used
+If model_config is None then **neural_automl/conf/binary_classification_config.json** is used
 
 ## Config file structure
     "device": "cuda",
@@ -42,7 +42,7 @@ If model_config is None then **neural_automl/conf/default_config.json** is used
     },
 
     "loss_params": {                     
-        "func": "binary_cross_entropy_with_logits"   # currently only binari classification is supported
+        "func": "binary_cross_entropy_with_logits"   # currently binari/multiclass/ classification and regression are supported is supported
     },
 
     "layers": [ # model architecture
@@ -72,6 +72,12 @@ If model_config is None then **neural_automl/conf/default_config.json** is used
         ...
         ...
     ]
+
+"loss_params" could be one of: **CrossEntropyLoss** - for multiclass classification or **binary_cross_entropy_with_logits/binary_cross_entropy** for binary classification and **MSELoss** for regression
+
+You also can specify **model_config** as file_name like this: **model_config='binary_classification_config.json'* which should be in **conf** subfolder
+
+There are several configs in **conf** for binaty/multy class classification and regression
  
 If you don't want you can not set input dimention d_in for each layer and then it will be calculated automaticaly in simple cases.
 

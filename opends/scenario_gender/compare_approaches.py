@@ -10,6 +10,7 @@ from sklearn.model_selection import StratifiedKFold
 
 from scenario_gender.features import load_features
 from scenario_gender.features import COL_ID, COL_TARGET
+from dltranz.neural_automl.neural_automl_tools import train_from_config
 
 logger = logging.getLogger(__name__)
 
@@ -53,17 +54,24 @@ def get_scores(args):
 
     if model_type == 'linear':
         model = LogisticRegression()
-    else:
+    elif model_type == 'xgb':
         model = xgb.XGBClassifier(
             # objective='multi:softprob',
             # num_class=4,
             n_jobs=4,
             seed=conf['model_seed'],
             n_estimators=300)
+    elif mode_type == 'neural_automl':
+        pass
+    else:
+        raise NotImplemented(f'unknown model type {mode_type}')
 
-    model.fit(X_train, y_train)
-    pred = model.predict_proba(X_valid)[:, 1]
-    rocauc_score = roc_auc_score(y_valid, pred)
+    if mode_type != 'neural_automl':
+        model.fit(X_train, y_train)
+        pred = model.predict_proba(X_valid)[:, 1]
+        rocauc_score = roc_auc_score(y_valid, pred)
+    else:
+        roc_auc_score = train_from_config(X_train, y_train, X_valid, y_valid)
 
     logger.info(f'[{pos:4}:{model_type:6}:{fold_n}] Finished with rocauc_score {rocauc_score:.4f}: {params}')
 
@@ -102,7 +110,7 @@ def main(conf):
     args_list = [(pos, fold_n, conf, params, model_type, train_target, valid_target)
                  for pos, params in enumerate(param_list) if len(conf['pos']) == 0 or pos in conf['pos']
                  for fold_n, (train_target, valid_target) in enumerate(folds)
-                 for model_type in ['xgb', 'linear']
+                 for model_type in ['xgb', 'linear', 'neural_automl']
                  ]
 
     pool = Pool(processes=conf['n_workers'])
