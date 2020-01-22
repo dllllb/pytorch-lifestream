@@ -65,11 +65,11 @@
 
   "output": {
     "valid": {
-      "path": "../data/age-pred/valid_target_scores",
+      "path": "../data/age-pred/target_scores/valid",
       "format": "pickle"
     },
     "test": {
-      "path": "../data/age-pred/test_target_scores",
+      "path": "../data/age-pred/target_scores/test",
       "format": "pickle"
     },
     "columns": ["client_id"]

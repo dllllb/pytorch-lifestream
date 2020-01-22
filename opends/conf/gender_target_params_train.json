@@ -60,11 +60,11 @@
   "output": {
     "path": "../data/gender/target_scores",
     "valid": {
-      "path": "../data/gender/valid_target_scores",
+      "path": "../data/gender/target_scores/valid",
       "format": "pickle"
     },
     "test": {
-      "path": "../data/gender/test_target_scores",
+      "path": "../data/gender/target_scores/test",
       "format": "pickle"
     },
     "columns": ["customer_id"]

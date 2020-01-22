@@ -62,11 +62,11 @@
 
   "output": {
     "valid": {
-      "path": "../data/age-pred/valid_finetuning_scores",
+      "path": "../data/age-pred/finetuning_scores/valid",
       "format": "pickle"
     },
     "test": {
-      "path": "../data/age-pred/test_finetuning_scores",
+      "path": "../data/age-pred/finetuning_scores/test",
       "format": "pickle"
     },
     "columns": ["client_id"]
