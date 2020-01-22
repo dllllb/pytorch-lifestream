@@ -82,7 +82,7 @@ class StoriesDataset(torch.utils.data.Dataset):
             logger.info(f'Item features not found')
 
         self.df_log = df_log.assign(
-            relevance=df_log['event'].map({'dislike': 0, 'skip': 1, 'view': 2, 'like': 3}))
+            reward=df_log['event'].map({'dislike': -10.0, 'skip': -0.1, 'view': 0.1, 'like': 0.5}))
 
     def __len__(self):
         return len(self.df_log)
@@ -106,7 +106,7 @@ class StoriesDataset(torch.utils.data.Dataset):
         user_encoded_id = np.int32(self.user_encoder.get(user_id, 0))
         item_encoded_id = np.int16(self.item_encoder.get(item_id, 0))
 
-        return f_user, user_encoded_id, f_item, item_encoded_id, np.float32(item_obj['relevance'])
+        return f_user, user_encoded_id, f_item, item_encoded_id, np.float32(item_obj['reward'])
 
 
 class RandomSampler(Sampler):

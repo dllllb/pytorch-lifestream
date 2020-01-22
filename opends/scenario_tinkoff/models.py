@@ -5,11 +5,10 @@ import numpy as np
 import pandas as pd
 import scipy.sparse
 import torch
-from sklearn.metrics import roc_auc_score
 from torch.utils.data import DataLoader
 from tqdm.autonotebook import tqdm
 
-from scenario_tinkoff.data import StoriesDataset, RandomSampler
+from scenario_tinkoff.data import StoriesDataset
 from scenario_tinkoff.feature_preparation import get_embeddings
 
 logger = logging.getLogger(__name__)
@@ -33,8 +32,10 @@ class MixedEmbedding(torch.nn.Module):
     def __init__(self, one_for_all_size,
                  learn_embedding_size, item_count,
                  fixed_vector_size,
-                 hidden_size, norm,
-                 pretrained_embedding_size=0,
+                 hidden_size, norm=False,
+                 trans_use_force=False,
+                 trans_skip=False,
+
                  ):
         super().__init__()
 
@@ -42,67 +43,85 @@ class MixedEmbedding(torch.nn.Module):
 
         self.one_for_all_size = one_for_all_size
         self.learn_embedding_size = learn_embedding_size
+        self.item_count = item_count
         self.fixed_vector_size = fixed_vector_size
         self.hidden_size = hidden_size
-        self.pretrained_embedding_size = pretrained_embedding_size
+        self.norm = norm
+        self.trans_use_force = trans_use_force
+        self.trans_skip = trans_skip
 
-        self.feature_count = 0
+        self.one_for_all = None
+        self.embedding = None
+        self.transformation = None
+
+    def create_layers(self):
         if self.one_for_all_size > 0:
-            self.feature_count += 1
-        if self.learn_embedding_size > 0 or self.pretrained_embedding_size:
-            self.feature_count += 1
-        if self.fixed_vector_size > 0:
-            self.feature_count += 1
+            self.one_for_all = torch.nn.Parameter(torch.randn(1, self.one_for_all_size))
 
-        if self.feature_count == 0:
-            self.one_for_all_size = 32
-            logger.warning(f'Set one_for_all_size to {self.one_for_all_size}')
-
-        if self.one_for_all_size > 0:
-            self.one_for_all = torch.nn.Parameter(
-                torch.randn(1, hidden_size if self.feature_count == 1 else self.one_for_all_size))
-
-        if self.learn_embedding_size > 0 or self.pretrained_embedding_size > 0:
-            if self.pretrained_embedding_size > 0:
-                e_dim = self.pretrained_embedding_size
-            else:
-                e_dim = hidden_size if self.feature_count == 1 else self.learn_embedding_size
+        if self.learn_embedding_size > 0:
             self.embedding = torch.nn.Embedding(
-                num_embeddings=item_count,
-                embedding_dim=e_dim,
+                num_embeddings=self.item_count,
+                embedding_dim=self.learn_embedding_size,
                 padding_idx=None,
             )
 
-        if self.use_transformation():
-            in_features = 0
-            if self.one_for_all_size > 0:
-                in_features += self.one_for_all_size
-            if self.learn_embedding_size > 0 or self.pretrained_embedding_size > 0:
-                if self.pretrained_embedding_size > 0:
-                    in_features += self.pretrained_embedding_size
-                else:
-                    in_features += self.learn_embedding_size
-            if self.fixed_vector_size > 0:
-                in_features += self.fixed_vector_size
-            self.transformation = torch.nn.Linear(in_features, hidden_size, False)
+        if self.is_transformation_required():
+            self.transformation = torch.nn.Linear(self.transformation_input_size, self.hidden_size, False)
 
-        self.norm = norm
+    @property
+    def transformation_input_size(self):
+        in_features = 0
+        if self.one_for_all_size > 0:
+            in_features += self.one_for_all_size
 
-    def use_transformation(self):
-        return self.feature_count > 1 or self.fixed_vector_size > 0 or \
-               self.pretrained_embedding_size > 0 and self.pretrained_embedding_size != self.hidden_size
+        if self.learn_embedding_size > 0:
+            in_features += self.learn_embedding_size
+
+        if self.fixed_vector_size > 0:
+            in_features += self.fixed_vector_size
+
+        return in_features
+
+    @property
+    def output_size(self):
+        if self.is_transformation_required():
+            return self.hidden_size
+        return self.transformation_input_size
+
+    @property
+    def feature_count(self):
+        in_features = 0
+        if self.one_for_all_size > 0:
+            in_features += 1
+
+        if self.learn_embedding_size > 0:
+            in_features += 1
+
+        if self.fixed_vector_size > 0:
+            in_features += 1
+
+        return in_features
+
+    def is_transformation_required(self):
+        return any([
+            self.feature_count > 1,
+            self.trans_use_force,
+        ]) and not self.trans_skip
 
     def forward(self, fixed_vectors, item_id):
         v_item = []
-        if self.one_for_all_size > 0:
+
+        if self.one_for_all is not None:
             v_item.append(self.one_for_all.repeat(len(item_id), 1))
-        if self.learn_embedding_size > 0 or self.pretrained_embedding_size > 0:
+
+        if self.embedding  is not None:
             v_item.append(self.embedding(item_id.long()))
+
         if self.fixed_vector_size > 0:
             v_item.append(fixed_vectors)
         h_item = torch.cat(v_item, dim=1)
 
-        if self.use_transformation():
+        if self.transformation is not None:
             h_item = self.transformation(h_item)
 
         if self.norm:
@@ -111,31 +130,15 @@ class MixedEmbedding(torch.nn.Module):
         return h_item
 
 
-class Activation(torch.nn.Module):
-    def __init__(self, activation):
-        super().__init__()
-        assert activation in ['cosine', 'sigmoid']
-        self.activation = activation
-
-    def forward(self, t):
-        if self.activation == 'cosine':
-            return (t + 1.0) / 2.0
-        elif self.activation == 'sigmoid':
-            return torch.sigmoid(t)
-
-
 class StoriesRecModel(torch.nn.Module):
-    def __init__(self, hidden_size, activation,
+    def __init__(self, hidden_size,
                  user_one_for_all_size, user_learn_embedding_size, user_fixed_vector_size, user_encoder, df_users,
                  item_one_for_all_size, item_learn_embedding_size, item_fixed_vector_size, item_encoder, df_items,
                  config, device,
                  ):
         super().__init__()
 
-        assert activation in ['cosine', 'sigmoid']
-
         self.eps = 1e-5
-        self.activation = Activation(activation)
 
         self.user_encoder = user_encoder
         self.df_users = df_users
@@ -147,28 +150,16 @@ class StoriesRecModel(torch.nn.Module):
         self.device = device
 
         if config.use_embedding_as_init:
-            df_embeddings = get_embeddings(config)
+            raise NotImplementedError()
 
-            self.embed_user = MixedEmbedding(
-                one_for_all_size=user_one_for_all_size,
-                learn_embedding_size=user_learn_embedding_size,
-                item_count=len(self.user_encoder) + 1,
-                fixed_vector_size=user_fixed_vector_size,
-                hidden_size=hidden_size,
-                norm=True if activation == 'cosine' else False,
-                pretrained_embedding_size=df_embeddings.shape[1],
-            )
-
-            self._init_user_embeddings(df_embeddings)
-        else:
-            self.embed_user = MixedEmbedding(
-                one_for_all_size=user_one_for_all_size,
-                learn_embedding_size=user_learn_embedding_size,
-                item_count=len(self.user_encoder) + 1,
-                fixed_vector_size=user_fixed_vector_size,
-                hidden_size=hidden_size,
-                norm=True if activation == 'cosine' else False,
-            )
+        self.embed_user = MixedEmbedding(
+            one_for_all_size=user_one_for_all_size,
+            learn_embedding_size=user_learn_embedding_size,
+            item_count=len(self.user_encoder) + 1,
+            fixed_vector_size=user_fixed_vector_size,
+            hidden_size=hidden_size,
+            trans_skip=True,
+        )
 
         self.embed_item = MixedEmbedding(
             one_for_all_size=item_one_for_all_size,
@@ -176,8 +167,10 @@ class StoriesRecModel(torch.nn.Module):
             item_count=len(self.item_encoder) + 1,
             fixed_vector_size=item_fixed_vector_size,
             hidden_size=hidden_size,
-            norm=True if activation == 'cosine' else False,
         )
+
+        self.embed_user.create_layers()
+        self.embed_item.create_layers()
 
     def add_valid_fn(self, valid_fn):
         self.valid_fn = valid_fn
@@ -208,7 +201,7 @@ class StoriesRecModel(torch.nn.Module):
         h_item = self.embed_item(t_items, item_id)
 
         hidden = (h_user * h_item).sum(dim=1)
-        return self.activation(hidden)
+        return hidden
 
     def batch_predict(self, t_users, user_id, t_items, item_id, drop_mask, k):
         h_user = self.embed_user(t_users, user_id)
@@ -228,22 +221,35 @@ class StoriesRecModel(torch.nn.Module):
             loss_fn = MultiClassMarginRankingLoss(margin=self.config.loss_margin)
         elif loss_name == 'bce':
             loss_fn = torch.nn.BCELoss()
+        elif loss_name == 'mae':
+            loss_fn = torch.nn.L1Loss()
+        elif loss_name == 'mse':
+            loss_fn = torch.nn.MSELoss()
         else:
             raise AttributeError(f'Unknown loss: {loss_name}')
         logger.info(f'Used {loss_fn.__class__.__name__}')
         return loss_fn
 
     def _get_optim(self, lr=None):
-
         if lr is None:
             lr = self.config.optim_lr
 
         logger.info(f'Used model "{self.__class__.__name__}" with parameters: ' +
                     ', '.join([f'{n}: {p.size()}' for n, p in self.named_parameters()]))
 
-        return torch.optim.Adam(self.parameters(),
-                                lr=lr,
-                                weight_decay=self.config.optim_weight_decay)
+        parameters = [
+            {'params': [v for k, v in self.named_parameters() if k.startswith('embed_item.')],
+             'lr': lr / self.config.optim_item_encoder_lr_divisor},
+            {'params': [v for k, v in self.named_parameters() if not k.startswith('embed_item.')],
+             'lr': lr, 'weight_decay': self.config.optim_weight_decay},
+        ]
+
+        return torch.optim.Adam(parameters, lr=lr, weight_decay=self.config.optim_weight_decay)
+
+    def _get_scheduler(self, optimizer):
+        return torch.optim.lr_scheduler.StepLR(optimizer,
+                                               step_size=self.config.lr_step_size,
+                                               gamma=self.config.lr_step_gamma)
 
     def _get_train_data_loader(self, df_log):
         return DataLoader(
@@ -272,6 +278,7 @@ class StoriesRecModel(torch.nn.Module):
 
         data_loader = self._get_train_data_loader(df_log)
         optimiser = self._get_optim()
+        scheduler = self._get_scheduler(optimiser)
         loss_fn = self._get_loss()
 
         avg_loss = RunningAverageItem(0.95, 'loss', 0.0, '{}: [{:.4f}]')
@@ -282,19 +289,6 @@ class StoriesRecModel(torch.nn.Module):
 
         max_epoch = self.config.max_epoch
         for n_epoch in range(1, max_epoch + 1):
-            if self.embed_user.pretrained_embedding_size > 1:
-                if n_epoch == 1:
-                    for p in self.embed_user.embedding.parameters():
-                        p.requires_grad = False
-                    logging.info('Freeze embed_user.embedding')
-                else:
-                    for p in self.embed_user.embedding.parameters():
-                        p.requires_grad = True
-                    logging.info('Freeze embed_user.embedding')
-
-                    optimiser = self._get_optim(self.config.optim_lr / 100)
-                    logging.info('Unfreeze embed_user.embedding')
-
             epoch_loss = 0.0
 
             progress_desc = ', '.join(
@@ -326,6 +320,8 @@ class StoriesRecModel(torch.nn.Module):
                         [m.show() for m in running_metrics]
                     )
                     progress.set_description(progress_desc)
+
+                scheduler.step()
 
                 epoch_loss = epoch_loss / len(data_loader)
                 progress_desc = ', '.join(

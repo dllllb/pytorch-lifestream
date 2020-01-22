@@ -106,3 +106,9 @@ def ranking_score(df):
         return right_pairs.sum() / mask.sum() if mask.sum() > 0 else np.NaN
 
     return df.groupby('customer_id').apply(pair_ranking_rate).mean()
+
+
+def tinkoff_reward(df):
+    df = df.assign(action=np.sign(df['relevance']))
+    df = df.assign(reward=df['event'].map({'dislike': -10, 'skip': -0.1, 'view': 0.1, 'like': 0.5}))
+    return (df['action'] * df['reward']).sum() / (abs(df['reward']).sum())

@@ -11,7 +11,8 @@ import torch
 
 from scenario_tinkoff.data import load_data, log_split_by_date, get_encoder
 from scenario_tinkoff.feature_preparation import load_user_features, load_item_features
-from scenario_tinkoff.metrics import hit_rate_at_k, label_ranking_average_precision_score, ranking_score, precision_at_k
+from scenario_tinkoff.metrics import hit_rate_at_k, label_ranking_average_precision_score, ranking_score, \
+    precision_at_k, tinkoff_reward
 from scenario_tinkoff.models import StoriesRecModel, PopularModel, PairwiseMarginRankingLoss, ALSModel
 
 logger = logging.getLogger(__name__)
@@ -31,12 +32,15 @@ def parse_args(args):
 
     parser.add_argument('--optim_weight_decay', type=float, default=0.0001)
     parser.add_argument('--optim_lr', type=float, default=0.01)
+    parser.add_argument('--optim_item_encoder_lr_divisor', type=float, default=1.0)
+    parser.add_argument('--lr_step_size', type=int, default=1)
+    parser.add_argument('--lr_step_gamma', type=float, default=0.5)
 
-    parser.add_argument('--hidden_size', type=int, default=32)
+    parser.add_argument('--hidden_size', type=int, default=4)
     parser.add_argument('--user_one_for_all_size', type=int, default=0)
     parser.add_argument('--user_learn_embedding_size', type=int, default=0)
     parser.add_argument('--item_one_for_all_size', type=int, default=0)
-    parser.add_argument('--item_learn_embedding_size', type=int, default=32)
+    parser.add_argument('--item_learn_embedding_size', type=int, default=4)
 
     parser.add_argument('--use_user_popular_features', action='store_true')
     parser.add_argument('--use_trans_common_features', action='store_true')
@@ -46,16 +50,15 @@ def parse_args(args):
 
     parser.add_argument('--use_embedding_as_init', action='store_true')
 
-    parser.add_argument('--loss', type=str, default='ranking', choices=['ranking'])
-    parser.add_argument('--loss_margin', type=float, default=0.2)
-    parser.add_argument('--nn_activation', type=str, default='sigmoid', choices=['cosine', 'sigmoid'])
+    parser.add_argument('--loss', type=str, default='mse', choices=['mae', 'mse'])
 
     parser.add_argument('--train_batch_size', type=int, default=128)
-    parser.add_argument('--valid_batch_size', type=int, default=10000)
-    parser.add_argument('--train_num_workers', type=int, default=16)
-    parser.add_argument('--valid_num_workers', type=int, default=16)
+    parser.add_argument('--valid_batch_size', type=int, default=5000)
+    parser.add_argument('--train_num_workers', type=int, default=8)
+    parser.add_argument('--valid_num_workers', type=int, default=8)
 
     parser.add_argument('--exclude_seen_items', default=False)
+    parser.add_argument('--check_random', action='store_true')
     parser.add_argument('--precision_k', type=int, default=10)
 
     parser.add_argument('--history_file', type=os.path.abspath, default='runs/scenario_tinkoff.json')
@@ -96,7 +99,7 @@ def convert_history_file(config):
 
     df = json_normalize(history)
 
-    metric_columns = ['final_score.precision_at_k', 'final_score.ranking_score']
+    metric_columns = ['final_score.reward']
     changing_columns = df.astype(str).nunique()[lambda x: x > 1].index.tolist()
     col_drop = metric_columns + ['metrics']
     columns = metric_columns + [col for col in changing_columns if col not in col_drop]
@@ -112,9 +115,28 @@ def convert_history_file(config):
             print(df_results, file=f)
 
 
+def check_random(config):
+    df_log = load_data(config)
+    df_log_train, df_log_valid = log_split_by_date(df_log, config.train_size)
+
+    predict = df_log_valid.assign(relevance=np.random.rand(len(df_log_valid)))
+    scores = {
+        'ranking_score': ranking_score(predict),
+        'precision_at_k': precision_at_k(predict, k=config.precision_k),
+    }
+
+    for k, v in scores.items():
+        logger.info(f'RandomRelevance predict {k}: {v:.4f}')
+
+    save_result(config, scores, metrics=[])
+
+
 def main(config):
     if config.report_file is not None:
         return convert_history_file(config)
+
+    if config.check_random:
+        return check_random(config)
 
     device = torch.device(config.device)
 
@@ -132,7 +154,6 @@ def main(config):
 
         model = StoriesRecModel(
             hidden_size=config.hidden_size,
-            activation=config.nn_activation,
             user_one_for_all_size=config.user_one_for_all_size,
             user_learn_embedding_size=config.user_learn_embedding_size,
             user_fixed_vector_size=0 if df_users is None else df_users.size,
@@ -150,9 +171,8 @@ def main(config):
         def valid_fn():
             predict = model.model_predict(df_log_exclude, df_log_valid)
             return {
-                'ranking_score': ranking_score(predict),
-                'precision_at_k': precision_at_k(predict, k=config.precision_k),
-
+                # 'ranking_score': ranking_score(predict),
+                'reward': tinkoff_reward(predict),
             }
 
         model.add_valid_fn(valid_fn)
@@ -160,12 +180,7 @@ def main(config):
         raise NotImplementedError(f'Not implemented for model_type: {config.model_type}')
 
     train_metrics = model.model_train(df_log=df_log_train)
-    predict = model.model_predict(df_log_exclude, df_log_valid)
-
-    scores = {
-        'ranking_score': ranking_score(predict),
-        'precision_at_k': precision_at_k(predict, k=config.precision_k),
-    }
+    scores = train_metrics[-1]
 
     for k, v in scores.items():
         logger.info(f'{model.__class__.__name__} predict {k}: {v:.4f}')
