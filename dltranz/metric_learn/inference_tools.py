@@ -62,7 +62,7 @@ def read_dataset_all(conf, desc, preproc_gen):
     return data
 
 
-def score_part_of_data(part_num, part_data, columns, model, conf, lock_obj=None):
+def infer_part_of_data(part_num, part_data, columns, model, conf, lock_obj=None):
     if lock_obj:
         lock_obj.acquire()
 
@@ -98,9 +98,11 @@ def score_part_of_data(part_num, part_data, columns, model, conf, lock_obj=None)
     df_scores = df_scores.reindex(columns=df_labels.columns.tolist() + df_scores_cols)
     logger.info(f'df_scores examples: {df_scores.shape}:')
 
+
+def save_scores(df_scores, part_num, output_conf)
     # output
-    output_name = conf['output.path']
-    output_format = conf['output.format']
+    output_name = output_conf['path']
+    output_format = output_conf['format']
     if output_format not in ('pickle', 'csv'):
         logger.warning(f'Format "{output_format}" is not supported. Used default "pickle"')
         output_format = 'pickle'
@@ -108,7 +110,7 @@ def score_part_of_data(part_num, part_data, columns, model, conf, lock_obj=None)
     if part_num is None:
         output_path = f'{output_name}.{output_format}'
     else:
-        os.makedirs(conf['output.path'], exist_ok=True)
+        os.makedirs(output_conf['path'], exist_ok=True)
         output_path = f'{output_name}/{part_num:03}.{output_format}'
 
     if output_format == 'pickle':
@@ -117,7 +119,13 @@ def score_part_of_data(part_num, part_data, columns, model, conf, lock_obj=None)
         df_scores.to_csv(output_path, sep=',', header=True, index=False)
     else:
         raise AssertionError('Never happens')
-    logger.info(f'{len(part_data)} records saved to: "{output_path}"')
+    logger.info(f'{len(df_scores)} records saved to: "{output_path}"')
+
+
+def score_part_of_data(part_num, part_data, columns, model, conf, lock_obj=None):
+    df_scores = infer_part_of_data(part_num, part_data, columns, model, conf, lock_obj=lock_obj)
+
+    save_scores(df_scores, part_num, conf['output'])
 
 
 def common_preprocessing(seq, conf):

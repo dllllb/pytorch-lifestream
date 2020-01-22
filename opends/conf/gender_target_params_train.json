@@ -59,7 +59,14 @@
 
   "output": {
     "path": "../data/gender/target_scores",
-    "format": "pickle",
+    "valid": {
+      "path": "../data/gender/valid_target_scores",
+      "format": "pickle"
+    },
+    "test": {
+      "path": "../data/gender/test_target_scores",
+      "format": "pickle"
+    },
     "columns": ["customer_id"]
   }
 }

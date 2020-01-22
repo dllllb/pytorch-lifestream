@@ -13,8 +13,8 @@ from dltranz.metric_learn.inference_tools import load_model, score_part_of_data
 logger = logging.getLogger(__name__)
 
 
-def read_dataset(conf):
-    with open(conf['dataset.path'], 'rb') as f:
+def read_dataset(path, conf):
+    with open(path, 'rb') as f:
         data = pickle.load(f)
 
     logger.info(f'loaded {len(data)} records')
@@ -31,11 +31,11 @@ def main(args=None):
     conf = get_conf(args)
 
     model = load_model(conf)
-
-    valid_data = read_dataset(conf)
     columns = conf['output.columns']
 
-    score_part_of_data(None, valid_data, columns, model, conf)
+    train_data = read_dataset(conf['dataset.train_path'], conf)
+    test_data = read_dataset(conf['dataset.test_path'], conf)
+    score_part_of_data(None, train_data+test_data, columns, model, conf)
 
 
 if __name__ == '__main__':

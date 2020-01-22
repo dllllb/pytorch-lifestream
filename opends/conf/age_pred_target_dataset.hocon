@@ -1,7 +1,7 @@
 {
   dataset: {
-    path: "../data/age-pred/all_trx.p"
-
+    train_path: "../data/age-pred/train_trx.p"
+    test_path: "/../data/age-pred/test_trx.p"
     preprocessing: {
       add_seq_len: false
     }

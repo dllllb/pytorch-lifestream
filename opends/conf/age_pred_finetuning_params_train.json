@@ -61,8 +61,14 @@
   "save_model": false,
 
   "output": {
-    "path": "../data/age-pred/finetuning_scores",
-    "format": "pickle",
+    "valid": {
+      "path": "../data/age-pred/valid_finetuning_scores",
+      "format": "pickle"
+    },
+    "test": {
+      "path": "../data/age-pred/test_finetuning_scores",
+      "format": "pickle"
+    },
     "columns": ["client_id"]
   }
 }

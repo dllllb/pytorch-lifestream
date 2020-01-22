@@ -65,9 +65,6 @@ def main(conf):
     logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)-7s %(funcName)-20s   : %(message)s')
 
     param_list = [
-        {'use_random': True},
-        {'use_client_agg': True},
-        {'use_small_group_stat': True},
         {'use_client_agg': True, 'use_small_group_stat': True},
     ] + [
         {'metric_learning_embedding_name': file_name} for file_name in conf['ml_embedding_file_names']

@@ -9,7 +9,8 @@ python opends/make_datasets.py \
     --cols_log_norm "amount_rur" \
     --target_files train_target.csv \
     --col_target bins \
-    --output_path "data/age-pred/all_trx.p" \
+    --output_train_path "data/age-pred/train_trx.p" \
+    --output_test_path "data/age-pred/test_trx.p" \
     --log_file "opends/runs/dataset_age_pred.log"
 
 python opends/make_datasets.py \
@@ -19,7 +20,10 @@ python opends/make_datasets.py \
     --cols_event_time "transaction_month" "transaction_day" \
     --cols_category "transaction_month" "transaction_day" "merchant_id" "merchant_mcc" \
     --cols_log_norm "transaction_amt" \
-    --output_path "data/tinkoff/all_trx.p" \
+    --target_files "stories_reaction_train.csv" \
+    --test_size 0.1 \
+    --output_train_path "data/tinkoff/train_trx.p" \
+    --output_test_path "data/tinkoff/test_trx.p" \
     --log_file "opends/runs/dataset_tinkoff.log"
 
 python opends/make_datasets.py \
@@ -31,5 +35,7 @@ python opends/make_datasets.py \
     --cols_log_norm "amount" \
     --target_files gender_train.csv \
     --col_target gender \
-    --output_path "data/gender/all_trx.p" \
+    --test_size 0.1 \
+    --output_train_path "data/gender/train_trx.p" \
+    --output_test_path "data/gender/test_trx.p" \
     --log_file "opends/runs/dataset_gender.log"
