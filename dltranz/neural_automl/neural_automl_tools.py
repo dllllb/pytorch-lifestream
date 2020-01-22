@@ -19,14 +19,17 @@ config - if None then using params from conf/default_config.json
 '''
 def train_from_config(X_train, y_train, X_valid, y_valid, config=None):
     #
+    base_path = os.path.join(os.path.dirname(os.path.abspath(__file__)))
     def_conf = 'conf/binary_classification_config.json'
     if config is not None and isinstance(config, str):
         def_conf = 'conf/' + config
-        if not osp.exists(def_conf):
+        if not osp.exists(osp.join(base_path, def_conf)):
             def_conf = 'conf/binary_classification_config.json'
             print(f"config file {'conf/' + config} not exists, using {def_conf} instead")
+        else:
+            print(f"using {def_conf} settings")
     if config is None or not isinstance(config, dict) or not config.get('layers', False):
-        with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), def_conf), 'r') as f:
+        with open(osp.join(base_path, def_conf), 'r') as f:
             config = json.load(f)
         #print(f"\nModel config is not specified. Using default one instead (see neural_automl/conf/default_config.json):")
         #print(json.dumps(config, indent=4))

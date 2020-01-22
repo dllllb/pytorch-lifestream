@@ -74,7 +74,8 @@ def get_scores(args):
         rocauc_score = train_from_config(X_train.values, 
                                          y_train.values.astype('float32'), 
                                          X_valid.values, 
-                                         y_valid.values.astype('float32'))
+                                         y_valid.values.astype('float32'),
+                                         'gender.json')
 
     logger.info(f'[{pos:4}:{model_type:6}:{fold_n}] Finished with rocauc_score {rocauc_score:.4f}: {params}')
 

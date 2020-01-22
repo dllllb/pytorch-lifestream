@@ -7,14 +7,17 @@ import os.path as osp
 
 
 def get_model(model_config, data=None, input_size=None):
+    base_path = os.path.join(os.path.dirname(os.path.abspath(__file__)))
     def_conf = 'conf/binary_classification_config.json'
     if model_config is not None and isinstance(model_config, str):
         def_conf = 'conf/' + model_config
-        if not osp.exists(def_conf):
+        if not osp.exists(osp.join(base_path, def_conf)):
             def_conf = 'conf/binary_classification_config.json'
             print(f"config file {'conf/' + model_config} not exists, using {def_conf} instead")
+        else:
+            print(f"using {def_conf} settings")
     if model_config is None or not isinstance(model_config, dict) or not model_config.get('layers', False):
-        with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), def_conf), 'r') as f:
+        with open(osp.join(base_path, def_conf), 'r') as f:
             model_config = json.load(f)
 
     return get_model_from_config(model_config, data, input_size)

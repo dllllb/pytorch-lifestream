@@ -75,7 +75,7 @@ If model_config is None then **neural_automl/conf/binary_classification_config.j
 
 "loss_params" could be one of: **CrossEntropyLoss** - for multiclass classification or **binary_cross_entropy_with_logits/binary_cross_entropy** for binary classification and **MSELoss** for regression
 
-You also can specify **model_config** as file_name like this: **model_config='binary_classification_config.json'* which should be in **conf** subfolder
+You also can specify **model_config** as file_name like this: **model_config='binary_classification_config.json'** which should be in **conf** subfolder
 
 There are several configs in **conf** for binaty/multy class classification and regression
  
@@ -110,13 +110,15 @@ You can try combine this layers as possible
 ## Results 
 for model: **common_models/model_base.p   |  common_models/ml_base.json**
 
-Task                            | NODE ROC_AUC   | XGB ROC_AUC
---------------------------------| -------------- | ---------- |
+Task                            | NODE ROC_AUC       | XGB ROC_AUC| LINEAR ROC_AUC |
+--------------------------------| ------------------ | ---------- | ---------------|
 **Shishorin st_default**        | **0.833**          | 0.832
 **Shishorin mt_default**        | **0.795**          | 0.792
 **Shishorin target_default**    | **0.810**          | 0.806
 **Telemed**                     | **0.856**          | 0.848
 **Sokolov**                     | 0.527              | **0.542**
+--------------------------------|--------------------|------------|----------------|
+**gender ml embeddings**        | **0.859**          | 0.853      | 0.858
 
 ## Learn with TrxEncoder Mode
 
