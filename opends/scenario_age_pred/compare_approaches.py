@@ -7,6 +7,7 @@ import xgboost as xgb
 from sklearn.model_selection import StratifiedKFold
 
 from scenario_age_pred.features import load_features
+from dltranz.neural_automl.neural_automl_tools import train_from_config
 
 logger = logging.getLogger(__name__)
 
@@ -29,7 +30,7 @@ def read_target(conf):
 
 
 def get_scores(args):
-    pos, fold_n, conf, params, train_target, valid_target = args
+    pos, fold_n, conf, params, model_type, train_target, valid_target = args
 
     logger.info(f'[{pos:4}:{fold_n}] Started: {params}')
 
@@ -41,16 +42,28 @@ def get_scores(args):
     X_train = pd.concat([df.reindex(index=train_target.index) for df in features], axis=1)
     X_valid = pd.concat([df.reindex(index=valid_target.index) for df in features], axis=1)
 
-    model = xgb.XGBClassifier(
-        objective='multi:softprob',
-        num_class=4,
-        n_jobs=4,
-        seed=conf['model_seed'],
-        n_estimators=300)
+    if model_type == 'xgb':
+        model = xgb.XGBClassifier(
+            objective='multi:softprob',
+            num_class=4,
+            n_jobs=4,
+            seed=conf['model_seed'],
+            n_estimators=300)
+    elif model_type == 'neural_automl':
+        pass
+    else:
+        raise NotImplementedError(f'unknown model type {model_type}')
 
-    model.fit(X_train, y_train)
-    pred = model.predict(X_valid)
-    accuracy = (y_valid == pred).mean()
+    if model_type != 'neural_automl':
+        model.fit(X_train, y_train)
+        pred = model.predict(X_valid)
+        accuracy = (y_valid == pred).mean()
+    else:
+        accuracy = train_from_config(X_train.values, 
+                                     y_train.values.astype('float32'), 
+                                     X_valid.values, 
+                                     y_valid.values.astype('float32'),
+                                     'age.json')
 
     logger.info(f'[{pos:4}:{fold_n}] Finished with accuracy {accuracy:.4f}: {params}')
 
@@ -85,9 +98,11 @@ def main(conf):
             df_target.iloc[i_test]
         ))
 
-    args_list = [(pos, fold_n, conf, params, train_target, valid_target)
+    args_list = [(pos, fold_n, conf, params, model_type, train_target, valid_target)
                  for pos, params in enumerate(param_list)
-                 for fold_n, (train_target, valid_target) in enumerate(folds)]
+                 for fold_n, (train_target, valid_target) in enumerate(folds)
+                 for model_type in ['xgb', 'neural_automl']
+                 ]
 
     pool = Pool(processes=conf['n_workers'])
     results = pool.map(get_scores, args_list)

@@ -112,13 +112,13 @@ for model: **common_models/model_base.p   |  common_models/ml_base.json**
 
 Task                            | NODE ROC_AUC       | XGB ROC_AUC| LINEAR ROC_AUC |
 --------------------------------| ------------------ | ---------- | ---------------|
-**Shishorin st_default**        | **0.833**          | 0.832
-**Shishorin mt_default**        | **0.795**          | 0.792
-**Shishorin target_default**    | **0.810**          | 0.806
-**Telemed**                     | **0.856**          | 0.848
-**Sokolov**                     | 0.527              | **0.542**
+**Shishorin st_default**        | **0.833**          | 0.832      |                |
+**Shishorin mt_default**        | **0.795**          | 0.792      |                |
+**Shishorin target_default**    | **0.810**          | 0.806      |                |
+**Telemed**                     | **0.856**          | 0.848      |                |
+**Sokolov**                     | 0.527              | **0.542**  |                |
 --------------------------------|--------------------|------------|----------------|
-**gender ml embeddings**        | **0.859**          | 0.853      | 0.858
+**gender ml embeddings**        | **0.859**          | 0.853      | 0.858          | 
 
 ## Learn with TrxEncoder Mode
 
@@ -174,6 +174,9 @@ Method                             |              ROC_AUC |
 **base model**                     | 0.888                |
 **neural_automl (first start )**   | 0.889                |
 **neural_automl with batch norm**  | **0.891**            |
+-----------------------------------|----------------------|
+**gender base model**              | 0.861                |
+**gender neural_automl**           | **0.864**            |
 
  
 
