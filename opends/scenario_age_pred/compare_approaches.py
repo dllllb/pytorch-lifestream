@@ -3,10 +3,13 @@ import os
 from multiprocessing import Pool
 
 import pandas as pd
+import numpy as np
 import xgboost as xgb
 from sklearn.model_selection import StratifiedKFold
+from functools import reduce
+from operator import iadd
 
-from scenario_age_pred.features import load_features
+from scenario_age_pred.features import load_features, load_scores
 
 logger = logging.getLogger(__name__)
 
@@ -34,7 +37,7 @@ def read_target(conf):
     return target[[not x for x in is_test]].set_index('client_id'), target[is_test].set_index('client_id')
 
 
-def get_scores(args):
+def train_and_score(args):
     name, fold_n, conf, params, train_target, valid_target, test_target = args
 
     logger.info(f'[{name}:{fold_n}] Started: {params}')
@@ -54,7 +57,7 @@ def get_scores(args):
         num_class=4,
         n_jobs=4,
         seed=conf['model_seed'],
-        n_estimators=1) # !!! debug. 
+        n_estimators=300)
 
     model.fit(X_train, y_train)
     valid_accuracy = (y_valid == model.predict(X_valid)).mean()
@@ -70,24 +73,46 @@ def get_scores(args):
     return res
 
 
+def get_scores(args):
+    name, conf, params, df_target, test_target = args
+
+    logger.info(f'[{name}] Scoring started: {params}')
+
+    result = []
+    valid_scores, test_scores = load_scores(conf, **params)
+    for fold_n, (valid_fold, test_fold) in enumerate(zip(valid_scores, test_scores)):
+        valid_fold['pred'] = np.argmax(valid_fold.values, 1)
+        test_fold['pred'] = np.argmax(test_fold.values, 1)
+        valid_fold = valid_fold.merge(df_target, on='client_id', how = 'left')
+        test_fold = test_fold.merge(test_target, on='client_id', how = 'left')
+
+        result.append({
+            'name' : name,
+            'fold_n' : fold_n,
+            'oof_accuracy' : (valid_fold['pred'] == valid_fold['bins']).mean(),
+            'test_accuracy' : (test_fold['pred'] == test_fold['bins']).mean(),
+        })
+
+    return result
+
+
 def main(conf):
     logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)-7s %(funcName)-20s   : %(message)s')
 
     approaches_to_train = {
         'baseline' : {'use_client_agg': True, 'use_small_group_stat': True},
-    }
-    approaches_to_train = {
-        **approaches_to_train,
         **{
             f"embeds: {file_name}" : {'metric_learning_embedding_name': file_name} for file_name in conf['ml_embedding_file_names']
-        },
-        **{
-        f"scores: {file_name}" : {'target_scores_name': file_name} for file_name in conf['target_score_file_names']
         }
+    }
+    
+    approaches_to_score = {
+        f"scores: {file_name}" : {'target_scores_name': file_name} for file_name in conf['target_score_file_names']
     }
 
     df_target, test_target  = read_target(conf)
 
+    # train model on features and score valid and test sets
     folds = []
     skf = StratifiedKFold(n_splits=conf['cv_n_split'], random_state=conf['random_state'], shuffle=True)
     for i_train, i_test in skf.split(df_target, df_target['bins']):
@@ -101,15 +126,22 @@ def main(conf):
                  for fold_n, (train_target, valid_target) in enumerate(folds)]
 
     pool = Pool(processes=conf['n_workers'])
-    results = pool.map(get_scores, args_list)
+    results = pool.map(train_and_score, args_list)
     df_results = pd.DataFrame(results).set_index('name')[['oof_accuracy','test_accuracy']]
+
+    # score already trained models on valid and tets sets
+    pool = Pool(processes=conf['n_workers'])
+    args_list = [(name, conf, params, df_target, test_target) for name, params in approaches_to_score.items()]
+    results = reduce(iadd, pool.map(get_scores, args_list))
+    df_scores = pd.DataFrame(results).set_index('name')[['oof_accuracy','test_accuracy']]
+
+    # combine results
+    df_results = pd.concat([df_results, df_scores])
     df_results = pd.concat([
         df_results.groupby(level='name')[['oof_accuracy']].agg([
             'mean', 'std', lambda x: '[' + ' '.join([f'{i:.3f}' for i in sorted(x)]) + ']']),
-        df_results.drop(columns='oof_accuracy').groupby(level='name').first(),
         df_results.groupby(level='name')[['test_accuracy']].agg([
             'mean', 'std', lambda x: '[' + ' '.join([f'{i:.3f}' for i in sorted(x)]) + ']']),
-        df_results.drop(columns='test_accuracy').groupby(level='name').first(),
     ], axis=1).sort_index()
 
     with pd.option_context(

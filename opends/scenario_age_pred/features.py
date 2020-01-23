@@ -47,16 +47,6 @@ def _metric_learning_embeddings(conf, file_name):
     return df
 
 
-def _target_scores(conf, file_path):
-    pickle_files = glob(os.path.join(conf['data_path'], file_path, '*'))
-
-    df_target_scores = pd.concat([
-        pd.read_pickle(f).set_index('client_id')
-        for f in pickle_files
-    ], axis=0)
-    return df_target_scores
-
-
 def load_features(
         conf,
         use_random=False,
@@ -78,7 +68,13 @@ def load_features(
     if metric_learning_embedding_name is not None:
         features.append(_metric_learning_embeddings(conf, metric_learning_embedding_name))
 
-    if target_scores_name is not None:
-        features.append(_target_scores(conf, target_scores_name))
-
     return features
+
+def load_scores(conf, target_scores_name):
+    valid_files = glob(os.path.join(conf['data_path'], target_scores_name, 'valid', '*'))
+    valid_scores = [pd.read_pickle(f).set_index('client_id') for f in valid_files]
+
+    test_files = glob(os.path.join(conf['data_path'], target_scores_name, 'test', '*'))
+    test_scores = [pd.read_pickle(f).set_index('client_id') for f in test_files]
+
+    return valid_scores, test_scores
