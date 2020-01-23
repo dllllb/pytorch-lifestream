@@ -191,7 +191,7 @@ Method                             |              ROC_AUC |
 **gender base model**              | 0.861                |
 **gender neural_automl**           | **0.864**            |
 -----------------------------------|----------------------|
-**age base model**                 |                      |
-**age neural_automl**              | **0.62**             |
+**age base model**                 | **0.631**            |
+**age neural_automl**              | 0.620                |
  
 
