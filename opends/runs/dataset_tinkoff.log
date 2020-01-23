@@ -1,14 +1,14 @@
-2020-01-09 13:55:32,465 INFO    load_source_data       : Loaded 3951115 rows from "/home/ivan/pycharm_from_local/dltrans/data/tinkoff/transactions.csv"
-2020-01-09 13:55:32,544 INFO    load_source_data       : Loaded 3951115 rows in total
-2020-01-09 13:55:32,581 INFO    trx_to_features        : Found 46948 unique clients
-2020-01-09 13:55:36,285 INFO    trx_to_features        : Encoder stat for "transaction_month":
+2020-01-22 13:11:00,021 INFO    load_source_data       : Loaded 3951115 rows from "/mnt/data/ovsov/repo/dltranz/data/tinkoff/transactions.csv"
+2020-01-22 13:11:00,090 INFO    load_source_data       : Loaded 3951115 rows in total
+2020-01-22 13:11:00,126 INFO    trx_to_features        : Found 46948 unique clients
+2020-01-22 13:11:03,758 INFO    trx_to_features        : Encoder stat for "transaction_month":
 codes | trx_count
                        cnt  % of total
 transaction_month                     
 [1, 2)             1790768    0.453231
 [2, 3)             1664583    0.421294
 [3, 4)              495764    0.125474
-2020-01-09 13:55:39,313 INFO    trx_to_features        : Encoder stat for "transaction_day":
+2020-01-22 13:11:06,748 INFO    trx_to_features        : Encoder stat for "transaction_day":
 codes | trx_count
                     cnt  % of total
 transaction_day                    
@@ -22,7 +22,7 @@ transaction_day
 [24, 27)         334108    0.084560
 [27, 31)         431404    0.109185
 [31, 32)         106403    0.026930
-2020-01-09 13:55:46,531 INFO    trx_to_features        : Encoder stat for "merchant_id":
+2020-01-22 13:11:13,949 INFO    trx_to_features        : Encoder stat for "merchant_id":
 codes | trx_count
                       cnt  % of total
 merchant_id                          
@@ -36,7 +36,7 @@ merchant_id
 [485867, 555277)    69410    0.017567
 [555277, 624686)    69409    0.017567
 [624686, 664199)    39513    0.010000
-2020-01-09 13:55:49,673 INFO    trx_to_features        : Encoder stat for "merchant_mcc":
+2020-01-22 13:11:17,168 INFO    trx_to_features        : Encoder stat for "merchant_mcc":
 codes | trx_count
                   cnt  % of total
 merchant_mcc                     
@@ -50,7 +50,7 @@ merchant_mcc
 [81, 92)        31448    0.007959
 [92, 104)       22023    0.005574
 [104, 410)      39761    0.010063
-2020-01-09 13:55:50,098 INFO    trx_to_features        : Encoder stat for "transaction_amt":
+2020-01-22 13:11:17,568 INFO    trx_to_features        : Encoder stat for "transaction_amt":
 codes | trx_count
                      cnt  % of total
 transaction_amt                     
@@ -64,7 +64,7 @@ transaction_amt
 [0.7, 0.8)         14096    0.003568
 [0.8, 0.9)           997    0.000252
 [0.9, 1.0)            23    0.000006
-2020-01-09 13:55:50,368 INFO    trx_to_features        : Trx count per clients:
+2020-01-22 13:11:17,825 INFO    trx_to_features        : Trx count per clients:
 len(trx_list) | client_count
               cnt  % of total
 trx_count                    
@@ -78,7 +78,10 @@ trx_count
 [269, 307)    715    0.015230
 [307, 346)    425    0.009053
 [346, 805)    477    0.010160
-2020-01-09 13:55:50,368 INFO    trx_to_features        : Feature collection in progress ...
-2020-01-09 13:56:24,272 INFO    trx_to_features        : Feature names: ['transaction_month', 'transaction_day', 'transaction_amt', 'merchant_id', 'merchant_mcc']
-2020-01-09 13:56:24,272 INFO    trx_to_features        : Prepared features for 46948 clients
-2020-01-09 13:56:26,600 INFO    save_features          : Saved to: "/home/ivan/pycharm_from_local/dltrans/data/tinkoff/all_trx.p"
+2020-01-22 13:11:17,825 INFO    trx_to_features        : Feature collection in progress ...
+2020-01-22 13:11:51,633 INFO    trx_to_features        : Feature names: ['transaction_month', 'transaction_day', 'transaction_amt', 'merchant_id', 'merchant_mcc']
+2020-01-22 13:11:51,633 INFO    trx_to_features        : Prepared features for 46948 clients
+2020-01-22 13:11:51,893 INFO    split_dataset          : Train size: 43304 clients
+2020-01-22 13:11:51,893 INFO    split_dataset          : Test size: 3644 clients
+2020-01-22 13:11:53,843 INFO    save_features          : Saved to: "/mnt/data/ovsov/repo/dltranz/data/tinkoff/train_trx.p"
+2020-01-22 13:11:53,955 INFO    save_features          : Saved to: "/mnt/data/ovsov/repo/dltranz/data/tinkoff/test_trx.p"

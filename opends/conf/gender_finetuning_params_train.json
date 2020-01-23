@@ -62,8 +62,14 @@
   "save_model": false,
 
   "output": {
-    "path": "../data/gender/finetuning_scores",
-    "format": "pickle",
+    "valid": {
+      "path": "../data/gender/finetuning_scores/valid",
+      "format": "pickle"
+    },
+    "test": {
+      "path": "../data/gender/finetuning_scores/test",
+      "format": "pickle"
+    },
     "columns": ["customer_id"]
   }
 }
