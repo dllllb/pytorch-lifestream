@@ -23,7 +23,11 @@
     },
 
     "loss_params": {
-        "func": "CrossEntropyLoss"
+        "func": "cross_entropy"
+    },
+    
+    "accuracy_params": {
+        "func": "accuracy"
     },
 
     "layers": [

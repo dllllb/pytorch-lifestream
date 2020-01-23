@@ -50,9 +50,9 @@ def train_from_config(X_train, y_train, X_valid, y_valid, config=None):
         loss_function = F.binary_cross_entropy_with_logits
     elif config['loss_params']['func'] == 'binary_cross_entropy':
         loss_function = F.binary_cross_entropy
-    elif config['loss_params']['func'] == 'CrossEntropyLoss':
+    elif config['loss_params']['func'] == 'cross_entropy':
         loss_function = nn.CrossEntropyLoss()
-    elif config['loss_params']['func'] == 'MSELoss':
+    elif config['loss_params']['func'] == 'mse':
         loss_function = nn.MSELoss()
     else:
         raise NotImplementedError(f"unknown loss function type {config['loss_params']['func']}")
@@ -96,12 +96,24 @@ def _test(trainer, config, data, epoch, err_history):
     trainer.save_checkpoint()
     trainer.average_checkpoints(out_tag='avg')
     trainer.load_checkpoint(tag='avg')
-    roc_auc = trainer.evaluate_binary_auc(data.X_valid, data.y_valid, device=config['device'], batch_size=config['valid_params']['batch_size'])
-    err_history.append(roc_auc)
 
-    if roc_auc >= np.max(err_history):
+    test_type = 'roc_auc'
+    if config.get('accuracy_params', False):
+        test_type = config['accuracy_parans']['func']
+        
+    if test_type == 'roc_auc':
+        res = trainer.evaluate_binary_auc(data.X_valid, data.y_valid, device=config['device'], batch_size=config['valid_params']['batch_size'])
+    elif test_type == 'accuracy':
+        res = trainer.evaluate_auc(data.X_valid, data.y_valid, device=config['device'], batch_size=config['valid_params']['batch_size'])
+    elif test_type == 'mse':
+        res = trainer.evaluate_mse(data.X_valid, data.y_valid, device=config['device'], batch_size=config['valid_params']['batch_size'])   
+    else:
+        raise NotImplementedError(f"unknown test {test_type} in accuracy params")
+    err_history.append(res)
+
+    if res >= np.max(err_history):
         trainer.save_checkpoint(tag='best')
 
     trainer.load_checkpoint()  # last
     trainer.remove_old_temp_checkpoints()
-    print(f'epoch {epoch}, ROC_AUC: {roc_auc}')
+    print(f'epoch {epoch}, {test_type}: {res}')

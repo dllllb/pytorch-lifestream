@@ -26,6 +26,10 @@
         "func": "binary_cross_entropy_with_logits"
     },
 
+    "accuracy_params": {
+        "func": "roc_auc"
+    },
+
     "layers": [
         {
             "type": "tree",

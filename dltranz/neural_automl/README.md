@@ -45,6 +45,10 @@ If model_config is None then **neural_automl/conf/binary_classification_config.j
         "func": "binary_cross_entropy_with_logits"   # currently binari/multiclass/ classification and regression are supported is supported
     },
 
+    "accuracy_params": {
+        "func": "roc_auc/accuracy/mse"
+    },
+
     "layers": [ # model architecture
         {
             "type": "tree",                          
