@@ -219,7 +219,6 @@ def scoring_head(input_size, params):
         layers.append(nn.BatchNorm1d(input_size))
         head = node.get_model(model_config=params['neural_automl'], input_size=input_size)
         layers.append(head)
-        layers.append(nn.Sigmoid())
         return nn.Sequential(*layers)
 
     if "head_layers" not in params:

@@ -129,15 +129,15 @@ class Trainer(nn.Module):
         
         return {'loss': loss}
 
-    def evaluate_classification_error(self, X_test, y_test, device, batch_size=4096):
+    def evaluate_classification_score(self, X_test, y_test, device, batch_size=4096):
         X_test = torch.as_tensor(X_test, device=device)
         y_test = check_numpy(y_test)
         self.model.train(False)
         with torch.no_grad():
             logits = F.softmax(process_in_chunks(self.model, X_test, batch_size=batch_size))
             logits = check_numpy(logits)
-            error_rate = (y_test != np.argmax(logits, axis=1)).mean()
-        return error_rate
+            score = (y_test == np.argmax(logits, axis=1)).mean()
+        return score
 
     def evaluate_mse(self, X_test, y_test, device, batch_size=4096):
         X_test = torch.as_tensor(X_test, device=device)

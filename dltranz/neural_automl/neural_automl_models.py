@@ -48,7 +48,7 @@ def get_model_from_config(model_config, data=None, input_size=None):
                 dims = l.get('dims', -1)
                 aggregations.append(dims)
 
-            elif l['type'] == 'tree' or l['type'] == 'linear':
+            elif l['type'] == 'tree' or l['type'] == 'linear' or l['type'] == 'batchnorm':
                 layer = l
                 break
 
@@ -70,6 +70,9 @@ def get_model_from_config(model_config, data=None, input_size=None):
                 out_shape = [num_trees * num_sub_layers, tree_dim]
 
         elif layer['type'] == 'linear':
+            out_shape = [layer['d_out']]
+
+        elif layer['type'] == 'batchnorm':
             out_shape = [layer['d_out']]
 
         for aggr in aggregations:
@@ -113,6 +116,20 @@ def get_model_from_config(model_config, data=None, input_size=None):
                                              choice_function=lib.entmax15,
                                              bin_function=lib.entmoid15))
 
+        elif layer['type'] == 'batchnorm':
+            # get d_in
+            d_in = layer.get('d_in', False)
+            if i == 0 and not d_in:
+                if data is not None or input_size is not None:
+                    d_in = input_size if input_size is not None else data.shape[-1]
+                else:
+                    check(layer, d_in)
+            if i > 0 and not d_in:
+                d_in = get_prev_layer_output()
+
+            lst_layers.append(nn.BatchNorm1d(d_in))
+            layer['d_out'] = d_in
+
         elif layer['type'] == 'linear':
             d_out = get(layer, 'd_out')
             # get d_in
@@ -139,11 +156,15 @@ def get_model_from_config(model_config, data=None, input_size=None):
             else:
                 raise NotImplementedError(f"unknown aggregation function type {func}")
 
-        elif layer['type'] == 'sigmoid' or layer['type'] == 'relu':
+        elif layer['type'] == 'sigmoid' or layer['type'] == 'relu' or layer['type'] == 'softmax' or layer['type'] == 'log_softmax':
             if layer['type'] == 'sigmoid':
                 lst_layers.append(nn.Sigmoid())
             elif layer['type'] == 'relu':
                 lst_layers.append(nn.ReLU())
+            elif layer['type'] == 'softmax':
+                lst_layers.append(nn.Softmax(dim=-1))
+            elif layer['type'] == 'log_softmax':
+                lst_layers.append(nn.LogSoftmax(dim=-1))
 
         else:
             raise NotImplementedError(f"unknown layer type: {layer['type']}")

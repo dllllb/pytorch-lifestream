@@ -1,15 +1,17 @@
 {
     "device": "cuda",
 
+    "data_aware_initialisation": 10000,
+
     "data_transform_params": {
-        "normalize": true,
-        "quantile_transform": false,
+        "normalize": false,
+        "quantile_transform": true,
         "quantile_noise": 1e-3
     },
 
     "train_params": {
         "batch_size": 64,
-        "n_epoch": 10
+        "n_epoch": 5
     },
 
     "valid_params": {
@@ -23,7 +25,7 @@
     },
 
     "loss_params": {
-        "func": "cross_entropy"
+        "func": "nll"
     },
     
     "accuracy_params": {
@@ -35,7 +37,7 @@
             "type": "tree",
             "num_trees": 128,
             "num_sub_layers": 2,
-            "tree_dim": 3,
+            "tree_dim": 1,
             "tree_depth": 6,
             "flatten_output": false
         },
@@ -46,6 +48,9 @@
         {
             "type": "linear",
             "d_out": 4
+        },
+        {
+            "type": "log_softmax"
         }
     ]
 

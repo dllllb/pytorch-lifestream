@@ -52,6 +52,8 @@ def train_from_config(X_train, y_train, X_valid, y_valid, config=None):
         loss_function = F.binary_cross_entropy
     elif config['loss_params']['func'] == 'cross_entropy':
         loss_function = nn.CrossEntropyLoss()
+    elif config['loss_params']['func'] == 'nll':
+        loss_function = nn.NLLLoss()
     elif config['loss_params']['func'] == 'mse':
         loss_function = nn.MSELoss()
     else:
@@ -104,7 +106,7 @@ def _test(trainer, config, data, epoch, err_history):
     if test_type == 'roc_auc':
         res = trainer.evaluate_binary_auc(data.X_valid, data.y_valid, device=config['device'], batch_size=config['valid_params']['batch_size'])
     elif test_type == 'accuracy':
-        res = trainer.evaluate_classification_error(data.X_valid, data.y_valid, device=config['device'], batch_size=config['valid_params']['batch_size'])
+        res = trainer.evaluate_classification_score(data.X_valid, data.y_valid, device=config['device'], batch_size=config['valid_params']['batch_size'])
     elif test_type == 'mse':
         res = trainer.evaluate_mse(data.X_valid, data.y_valid, device=config['device'], batch_size=config['valid_params']['batch_size'])   
     else:

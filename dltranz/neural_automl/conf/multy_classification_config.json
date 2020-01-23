@@ -23,7 +23,7 @@
     },
 
     "loss_params": {
-        "func": "cross_entropy"
+        "func": "nll"
     },
 
     "accuracy_params": {
@@ -46,6 +46,9 @@
         {
             "type": "linear",
             "d_out": 1
+        },
+        {
+            "type": "log_softmax"
         }
     ]
 

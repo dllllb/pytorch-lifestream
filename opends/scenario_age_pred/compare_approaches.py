@@ -60,9 +60,9 @@ def get_scores(args):
         accuracy = (y_valid == pred).mean()
     else:
         accuracy = train_from_config(X_train.values, 
-                                     y_train.values.astype('float32'), 
+                                     y_train.values.astype('long'), 
                                      X_valid.values, 
-                                     y_valid.values.astype('float32'),
+                                     y_valid.values.astype('long'),
                                      'age.json')
 
     logger.info(f'[{pos:4}:{fold_n}] Finished with accuracy {accuracy:.4f}: {params}')

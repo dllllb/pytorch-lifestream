@@ -20,6 +20,7 @@ If model_config is None then **neural_automl/conf/binary_classification_config.j
     "device": "cuda",
     
     # perform data preprocessing
+    "data_aware_initialisation": 1000                # number of train examples to take for initialisation (default 10000)
     "data_transform_params": {
         "normalize": true,                           # can give comparable results as quantile_transform but faster
         "quantile_transform": false,                 # possible can get higher scores but very time consuming
@@ -51,6 +52,10 @@ If model_config is None then **neural_automl/conf/binary_classification_config.j
 
     "layers": [ # model architecture
         {
+            "type": "batchnorm",                     # if you want you can add this layer  
+            "d_in": n                                # input dimentions (default None). If not set it could be calculated from previous layers 
+        },
+        {
             "type": "tree",                          
             "d_in": n,                               # input dimentions (default None). If not set it could be calculated from previous layers 
             "num_trees": 128,                        # number of trees in layer
@@ -70,14 +75,14 @@ If model_config is None then **neural_automl/conf/binary_classification_config.j
             "d_out": 1                               # output dimention
         },
         {
-           "type": "sigmoid",                        # can be mean or sigmoid or relu
+           "type": "sigmoid",                        # can be mean or sigmoid/relu/softmax/log_softmax
         },
         ...
         ...
         ...
     ]
 
-"loss_params" could be one of: **CrossEntropyLoss** - for multiclass classification or **binary_cross_entropy_with_logits/binary_cross_entropy** for binary classification and **MSELoss** for regression
+"loss_params" could be one of: **cross_entropy/nll** - for multiclass classification or **binary_cross_entropy_with_logits/binary_cross_entropy** for binary classification and **mse** for regression
 
 You also can specify **model_config** as file_name like this: **model_config='binary_classification_config.json'** which should be in **conf** subfolder
 
@@ -88,8 +93,11 @@ If you don't want you can not set input dimention d_in for each layer and then i
 For example in model above, we have next input/output sizes:
 
 ```
-tree layer:
+bathnorm layer:
    d_in = from input data
+   d_out = d_in
+tree layer:
+   d_in = batchnorm layer d_out
    d_out = (num_trees * num_sub_layers, tree_dim) = (batch, 256, 3)
    
 layer aggregation:
@@ -122,7 +130,8 @@ Task                            | NODE ROC_AUC       | XGB ROC_AUC| LINEAR ROC_A
 **Telemed**                     | **0.856**          | 0.848      |                |
 **Sokolov**                     | 0.527              | **0.542**  |                |
 --------------------------------|--------------------|------------|----------------|
-**gender ml embeddings**        | **0.859**          | 0.853      | 0.858          | 
+**gender ml embeddings**        | **0.859**          | 0.853      | 0.858          |
+**age ml embeddings**           | **0.617**          | 0.607      | **0.617**      | 
 
 ## Learn with TrxEncoder Mode
 
@@ -181,6 +190,8 @@ Method                             |              ROC_AUC |
 -----------------------------------|----------------------|
 **gender base model**              | 0.861                |
 **gender neural_automl**           | **0.864**            |
-
+-----------------------------------|----------------------|
+**age base model**                 |                      |
+**age neural_automl**              | **0.62**             |
  
 
