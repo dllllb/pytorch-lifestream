@@ -63,9 +63,9 @@ def train_and_score(args):
     valid_accuracy = (y_valid == model.predict(X_valid)).mean()
     test_accuracy = (y_test == model.predict(X_test)).mean()
 
-    logger.info(f'[{name:4}:{fold_n}] Finished with accuracy valid={valid_accuracy:.4f}, test={test_accuracy:.4f}: {params}')
+    logger.info(f'[{name}:{fold_n}] Finished with accuracy valid={valid_accuracy:.4f}, test={test_accuracy:.4f}: {params}')
 
-    res = params.copy()
+    res = {}
     res['name'] = name
     res['fold_n'] = fold_n
     res['oof_accuracy'] = valid_accuracy
