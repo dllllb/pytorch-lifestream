@@ -99,12 +99,12 @@ def _test(trainer, config, data, epoch, err_history):
 
     test_type = 'roc_auc'
     if config.get('accuracy_params', False):
-        test_type = config['accuracy_parans']['func']
+        test_type = config['accuracy_params']['func']
         
     if test_type == 'roc_auc':
         res = trainer.evaluate_binary_auc(data.X_valid, data.y_valid, device=config['device'], batch_size=config['valid_params']['batch_size'])
     elif test_type == 'accuracy':
-        res = trainer.evaluate_auc(data.X_valid, data.y_valid, device=config['device'], batch_size=config['valid_params']['batch_size'])
+        res = trainer.evaluate_classification_error(data.X_valid, data.y_valid, device=config['device'], batch_size=config['valid_params']['batch_size'])
     elif test_type == 'mse':
         res = trainer.evaluate_mse(data.X_valid, data.y_valid, device=config['device'], batch_size=config['valid_params']['batch_size'])   
     else:

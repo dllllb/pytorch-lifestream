@@ -134,7 +134,7 @@ class Trainer(nn.Module):
         y_test = check_numpy(y_test)
         self.model.train(False)
         with torch.no_grad():
-            logits = process_in_chunks(self.model, X_test, batch_size=batch_size)
+            logits = F.softmax(process_in_chunks(self.model, X_test, batch_size=batch_size))
             logits = check_numpy(logits)
             error_rate = (y_test != np.argmax(logits, axis=1)).mean()
         return error_rate
@@ -151,7 +151,7 @@ class Trainer(nn.Module):
     
     def evaluate_auc(self, X_test, y_test, device, batch_size=512):
         X_test = torch.as_tensor(X_test, device=device)
-        y_test = check_numpy(y_test)
+        y_test = torch.as_tensor(y_test, device=device)
         self.model.train(False)
         with torch.no_grad():
             logits = F.softmax(process_in_chunks(self.model, X_test, batch_size=batch_size), dim=1)
