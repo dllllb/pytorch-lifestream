@@ -34,7 +34,10 @@ def main(args=None):
     columns = conf['output.columns']
 
     train_data = read_dataset(conf['dataset.train_path'], conf)
-    test_data = read_dataset(conf['dataset.test_path'], conf)
+    if conf['dataset'].get('test_path',None) is not None:
+        test_data = read_dataset(conf['dataset.test_path'], conf)
+    else:
+        test_data = []
     score_part_of_data(None, train_data+test_data, columns, model, conf)
 
 
