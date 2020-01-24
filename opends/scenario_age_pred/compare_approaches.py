@@ -10,6 +10,7 @@ from functools import reduce
 from operator import iadd
 
 from scenario_age_pred.features import load_features, load_scores
+from dltranz.neural_automl.neural_automl_tools import train_from_config
 
 logger = logging.getLogger(__name__)
 
@@ -38,7 +39,7 @@ def read_target(conf):
 
 
 def train_and_score(args):
-    name, fold_n, conf, params, train_target, valid_target, test_target = args
+    name, fold_n, conf, params, model_type, train_target, valid_target, test_target = args
 
     logger.info(f'[{name}:{fold_n}] Started: {params}')
 
@@ -52,21 +53,34 @@ def train_and_score(args):
     X_valid = pd.concat([df.reindex(index=valid_target.index) for df in features], axis=1)
     X_test = pd.concat([df.reindex(index=test_target.index) for df in features], axis=1)
 
-    model = xgb.XGBClassifier(
-        objective='multi:softprob',
-        num_class=4,
-        n_jobs=4,
-        seed=conf['model_seed'],
-        n_estimators=300)
+    if model_type == 'xgb':
+        model = xgb.XGBClassifier(
+            objective='multi:softprob',
+            num_class=4,
+            n_jobs=4,
+            seed=conf['model_seed'],
+            n_estimators=300)
+    elif model_type == 'neural_automl':
+        pass
+    else:
+        raise NotImplementedError(f'unknown model type {model_type}')
 
-    model.fit(X_train, y_train)
-    valid_accuracy = (y_valid == model.predict(X_valid)).mean()
-    test_accuracy = (y_test == model.predict(X_test)).mean()
+    if model_type != 'neural_automl':
+        model.fit(X_train, y_train)
+        valid_accuracy = (y_valid == model.predict(X_valid)).mean()
+        test_accuracy = (y_test == model.predict(X_test)).mean()
+    else:
+        valid_accuracy = train_from_config(X_train.values, 
+                                           y_train.values.astype('long'), 
+                                           X_valid.values, 
+                                           y_valid.values.astype('long'),
+                                           'age.json')
 
     logger.info(f'[{name}:{fold_n}] Finished with accuracy valid={valid_accuracy:.4f}, test={test_accuracy:.4f}: {params}')
 
     res = {}
     res['name'] = name
+    res['model_type'] = model_type
     res['fold_n'] = fold_n
     res['oof_accuracy'] = valid_accuracy
     res['test_accuracy'] = test_accuracy
@@ -121,9 +135,11 @@ def main(conf):
             df_target.iloc[i_test]
         ))
 
-    args_list = [(name, fold_n, conf, params, train_target, valid_target, test_target)
+    args_list = [(name, fold_n, conf, params, model_type, train_target, valid_target, test_target)
                  for name, params in approaches_to_train.items()
-                 for fold_n, (train_target, valid_target) in enumerate(folds)]
+                 for fold_n, (train_target, valid_target) in enumerate(folds)
+                 for model_type in ['xgb']
+                 ]
 
     pool = Pool(processes=conf['n_workers'])
     results = pool.map(train_and_score, args_list)

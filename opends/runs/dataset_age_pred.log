@@ -1,8 +1,8 @@
-2020-01-22 13:07:54,609 INFO    load_source_data       : Loaded 26450577 rows from "/mnt/data/ovsov/repo/dltranz/data/age-pred/transactions_train.csv"
-2020-01-22 13:07:58,347 INFO    load_source_data       : Loaded 17667328 rows from "/mnt/data/ovsov/repo/dltranz/data/age-pred/transactions_test.csv"
-2020-01-22 13:07:59,100 INFO    load_source_data       : Loaded 44117905 rows in total
-2020-01-22 13:07:59,287 INFO    trx_to_features        : Found 50000 unique clients
-2020-01-22 13:08:39,731 INFO    trx_to_features        : Encoder stat for "trans_date":
+load_source_data       : Loaded 26450577 rows from "/home/ivan/pycharm_from_local/dltrans/data/age-pred/transactions_train.csv"
+load_source_data       : Loaded 17667328 rows from "/home/ivan/pycharm_from_local/dltrans/data/age-pred/transactions_test.csv"
+load_source_data       : Loaded 44117905 rows in total
+trx_to_features        : Found 50000 unique clients
+trx_to_features        : Encoder stat for "trans_date":
 codes | trx_count
                 cnt  % of total
 trans_date                     
@@ -16,7 +16,7 @@ trans_date
 [558, 638)  4121286    0.093415
 [638, 718)  3679116    0.083393
 [718, 731)   476885    0.010809
-2020-01-22 13:09:14,170 INFO    trx_to_features        : Encoder stat for "small_group":
+trx_to_features        : Encoder stat for "small_group":
 codes | trx_count
                   cnt  % of total
 small_group                      
@@ -30,7 +30,7 @@ small_group
 [60, 68)       296880    0.006729
 [68, 77)       251340    0.005697
 [77, 205)      460848    0.010446
-2020-01-22 13:09:19,097 INFO    trx_to_features        : Encoder stat for "amount_rur":
+trx_to_features        : Encoder stat for "amount_rur":
 codes | trx_count
                  cnt    % of total
 amount_rur                        
@@ -44,7 +44,7 @@ amount_rur
 [0.7, 0.8)      2034  4.610373e-05
 [0.8, 0.9)       185  4.193309e-06
 [0.9, 1.0)         9  2.039988e-07
-2020-01-22 13:09:21,224 INFO    trx_to_features        : Trx count per clients:
+trx_to_features        : Trx count per clients:
 len(trx_list) | client_count
                cnt  % of total
 trx_count                     
@@ -58,12 +58,12 @@ trx_count
 [1043, 1092)  3546     0.07092
 [1092, 1142)  3094     0.06188
 [1142, 1151)   533     0.01066
-2020-01-22 13:09:21,224 INFO    trx_to_features        : Feature collection in progress ...
-2020-01-22 13:10:51,615 INFO    trx_to_features        : Feature names: ['trans_date', 'small_group', 'amount_rur']
-2020-01-22 13:10:51,616 INFO    trx_to_features        : Prepared features for 50000 clients
-2020-01-22 13:10:51,945 INFO    update_with_target     : Target loaded for 30000 clients
-2020-01-22 13:10:52,039 INFO    update_with_target     : Target updated for 50000 clients
-2020-01-22 13:10:52,064 INFO    split_dataset          : Train size: 47000 clients
-2020-01-22 13:10:52,064 INFO    split_dataset          : Test size: 3000 clients
-2020-01-22 13:10:57,866 INFO    save_features          : Saved to: "/mnt/data/ovsov/repo/dltranz/data/age-pred/train_trx.p"
-2020-01-22 13:10:58,096 INFO    save_features          : Saved to: "/mnt/data/ovsov/repo/dltranz/data/age-pred/test_trx.p"
+trx_to_features        : Feature collection in progress ...
+trx_to_features        : Feature names: ['trans_date', 'small_group', 'amount_rur']
+trx_to_features        : Prepared features for 50000 clients
+update_with_target     : Target loaded for 30000 clients
+update_with_target     : Target updated for 50000 clients
+split_dataset          : Train size: 47000 clients
+split_dataset          : Test size: 3000 clients
+save_features          : Saved to: "/home/ivan/pycharm_from_local/dltrans/data/age-pred/train_trx.p"
+save_features          : Saved to: "/home/ivan/pycharm_from_local/dltrans/data/age-pred/test_trx.p"
