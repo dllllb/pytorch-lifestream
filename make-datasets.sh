@@ -9,6 +9,7 @@ python opends/make_datasets.py \
     --cols_log_norm "amount_rur" \
     --target_files train_target.csv \
     --col_target bins \
+    --test_size 0.1 \
     --output_train_path "data/age-pred/train_trx.p" \
     --output_test_path "data/age-pred/test_trx.p" \
     --output_test_ids_path "data/age-pred/test_ids.csv" \
@@ -22,7 +23,7 @@ python opends/make_datasets.py \
     --cols_category "transaction_month" "transaction_day" "merchant_id" "merchant_mcc" \
     --cols_log_norm "transaction_amt" \
     --target_files "stories_reaction_train.csv" \
-    --test_size 0.0 \
+    --test_size 0.1 \
     --output_train_path "data/tinkoff/train_trx.p" \
     --output_test_path "data/tinkoff/test_trx.p" \
     --output_test_ids_path "data/tinkoff/test_ids.csv" \
