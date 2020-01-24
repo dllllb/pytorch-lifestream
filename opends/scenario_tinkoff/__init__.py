@@ -174,6 +174,17 @@ def main(config):
         )
 
         def valid_fn():
+            print('--- Inspect model: ---')
+            for k, v in model.named_parameters():
+                v = v.detach().cpu().numpy()
+                print(f'{k:40}: ', end='')
+
+                if v.size <= 10:
+                    print(v)
+                else:
+                    values_str = [f'{p:7.3f}' for p in np.percentile(v, [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100])]
+                    print('p: % {} %'.format(" ".join(values_str)))
+
             train_predict = model.model_predict(df_log_exclude, df_log_train)
             valid_predict = model.model_predict(df_log_exclude, df_log_valid)
             return {
@@ -193,16 +204,5 @@ def main(config):
     for k, v in scores.items():
         if k.endswith('_reward'):
             logger.info(f'{model.__class__.__name__} valid_predict {k}: {v:.4f}')
-
-    print('--- Inspect model: ---')
-    for k, v in model.named_parameters():
-        v = v.detach().cpu().numpy()
-        print(f'{k:40}: ', end='')
-
-        if v.size <= 10:
-            print(v)
-        else:
-            values_str = [f'{p:7.3f}' for p in np.percentile(v, [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100])]
-            print('p: % {} %'.format(" ".join(values_str)))
 
     save_result(config, scores, train_metrics)

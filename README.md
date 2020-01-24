@@ -96,14 +96,15 @@ python ml_inference.py --conf conf/tinkoff_dataset.hocon conf/tinkoff_inference_
 dltrans/opends $ 
 rm runs/scenario_tinkoff.json
 
-python -m scenario_tinkoff --user_one_for_all_size 32                           --optim_lr 0.004  --device "cuda:1"
-python -m scenario_tinkoff --user_learn_embedding_size 32                       --optim_lr 0.0001 --device "cuda:1"
-python -m scenario_tinkoff --use_user_popular_features                          --optim_lr 0.004  --device "cuda:1"
-python -m scenario_tinkoff --use_trans_common_features --use_trans_mcc_features --optim_lr 0.010  --device "cuda:1"
-python -m scenario_tinkoff --use_embeddings                                     --optim_lr 0.006  --device "cuda:1"
+python -m scenario_tinkoff --device "cuda:1" --user_layers 1 --item_layers 1 --max_epoch 2
+
+python -m scenario_tinkoff --device "cuda:1" --user_layers 1 --item_layers E
+python -m scenario_tinkoff --device "cuda:1" --use_embeddings --user_layers 1T --item_layers E1 --optim_weight_decay 0 --max_epoch 3 --optim_lr 0.009
+python -m scenario_tinkoff --device "cuda:1" --use_trans_common_features --use_trans_mcc_features --user_layers 1T --item_layers E1
+python -m scenario_tinkoff --device "cuda:1" --use_gender --user_layers 1T --item_layers E1
 
 # check the results
-python -m scenario_tinkoff --report_file "runs/scenario_tinkof.csv"
+python -m scenario_tinkoff --report_file "runs/scenario_tinkoff.csv"
 
 cat "runs/scenario_tinkoff.csv"
 ```
