@@ -22,8 +22,11 @@ def parse_args(args=None):
     parser.add_argument('--cols_category', nargs='*', default=[])
     parser.add_argument('--cols_log_norm', nargs='*', default=[])
     parser.add_argument('--col_target', required=False, type=str)
+    parser.add_argument('--test_size', type=float, default=0.1)
 
-    parser.add_argument('--output_path', type=os.path.abspath)
+    parser.add_argument('--output_train_path', type=os.path.abspath)
+    parser.add_argument('--output_test_path', type=os.path.abspath)
+    parser.add_argument('--output_test_ids_path', type=os.path.abspath)
     parser.add_argument('--log_file', type=os.path.abspath)
 
     args = parser.parse_args(args)
@@ -124,6 +127,22 @@ def update_with_target(features, data_path, target_files, col_client_id, col_tar
     return features
 
 
+def split_dataset(all_data, test_size, data_path, target_files, col_client_id):
+    df_target = pd.concat([pd.read_csv(os.path.join(data_path, file)) for file in target_files])
+    s_clients = set(df_target[col_client_id].tolist())
+
+    labeled = [rec for rec in all_data if rec[col_client_id] in s_clients]
+    unlabeled = [rec for rec in all_data if rec[col_client_id] not in s_clients]
+    Nrows_test = int(len(labeled)*test_size)
+    train = labeled[:-Nrows_test] + unlabeled
+    test = labeled[-Nrows_test:]
+
+    logger.info(f'Train size: {len(train)} clients')
+    logger.info(f'Test size: {len(test)} clients')
+
+    return train, test
+
+
 def save_features(df_data, save_path):
     with open(save_path, 'wb') as f:
         pickle.dump(df_data, f)
@@ -163,7 +182,26 @@ if __name__ == '__main__':
             col_target=config.col_target,
         )
 
+    if config.test_size > 0:
+        train, test = split_dataset(
+            all_data=client_features,
+            test_size=config.test_size,
+            data_path=config.data_path,
+            target_files=config.target_files,
+            col_client_id=config.col_client_id
+        )
+    else:
+        train = client_features
+
     save_features(
-        df_data=client_features,
-        save_path=config.output_path,
+        df_data=train,
+        save_path=config.output_train_path,
     )
+
+    if config.test_size > 0:
+        save_features(
+            df_data=test,
+            save_path=config.output_test_path,
+        )
+        test_ids = pd.DataFrame({config.col_client_id: [rec[config.col_client_id] for rec in test]})
+        test_ids.to_csv(config.output_test_ids_path, index=False)

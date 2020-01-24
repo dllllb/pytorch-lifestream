@@ -1,6 +1,7 @@
 {
   dataset: {
-    path: ${script_path}"/../data/age-pred/all_trx.p"
+    train_path: ${script_path}"/../data/age-pred/train_trx.p"
+    test_path: ${script_path}"/../data/age-pred/test_trx.p"
     valid_size: 0.05
 
     preprocessing: {

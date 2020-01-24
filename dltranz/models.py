@@ -73,3 +73,8 @@ def model_by_type(model_type):
         'transf': transformer_model,
     }[model_type]
     return model
+
+
+def freeze_layers(model):
+    for p in model.parameters():
+        p.requires_grad = False

@@ -54,7 +54,7 @@ def prepare_embeddings(seq, conf):
 
 
 def create_data_loaders(conf):
-    with open(conf['dataset.path'], 'rb') as f:
+    with open(conf['dataset.train_path'], 'rb') as f:
         data = pickle.load(f)
     data = list(prepare_embeddings(data, conf))
 

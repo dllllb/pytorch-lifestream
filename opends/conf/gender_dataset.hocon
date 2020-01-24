@@ -1,11 +1,14 @@
 {
   dataset: {
-    path: "../data/gender/all_trx.p"
+    train_path: "../data/gender/train_trx.p"
+    test_path: "../data/gender/test_trx.p"
     valid_size: 0.05
 
     preprocessing: {
         add_seq_len: false
     }
+
+    min_seq_len: 25
   }
   cv_n_split: 5
 
