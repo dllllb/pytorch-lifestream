@@ -9,8 +9,8 @@ from pandas.io.json import json_normalize
 
 import torch
 
-from scenario_tinkoff.data import load_data, log_split_by_date, get_encoder
-from scenario_tinkoff.feature_preparation import load_user_features, load_item_features
+from scenario_tinkoff.data import load_data, log_split_by_date, get_encoder, get_hist_count
+from scenario_tinkoff.feature_preparation import load_user_features, load_item_features, COL_ID
 from scenario_tinkoff.metrics import hit_rate_at_k, label_ranking_average_precision_score, ranking_score, \
     precision_at_k, tinkoff_reward
 from scenario_tinkoff.models import StoriesRecModel, PopularModel, PairwiseMarginRankingLoss, ALSModel
@@ -30,20 +30,18 @@ def parse_args(args):
     parser.add_argument('--device', type=str, default='cuda')
     parser.add_argument('--max_epoch', type=int, default=5)
 
-    parser.add_argument('--optim_weight_decay', type=float, default=0.0001)
+    parser.add_argument('--optim_weight_decay', type=float, nargs='+', default=[0.0001])
     parser.add_argument('--optim_lr', type=float, default=0.01)
-    parser.add_argument('--optim_item_encoder_lr_divisor', type=float, default=1.0)
     parser.add_argument('--lr_step_size', type=int, default=1)
     parser.add_argument('--lr_step_gamma', type=float, default=0.5)
 
     parser.add_argument('--hidden_size', type=int, default=4)
-    parser.add_argument('--user_one_for_all_size', type=int, default=0)
-    parser.add_argument('--user_learn_embedding_size', type=int, default=0)
-    parser.add_argument('--item_one_for_all_size', type=int, default=0)
-    parser.add_argument('--item_learn_embedding_size', type=int, default=4)
+    parser.add_argument('--user_layers', type=str)
+    parser.add_argument('--item_layers', type=str)
 
     parser.add_argument('--use_user_popular_features', action='store_true')
     parser.add_argument('--use_trans_common_features', action='store_true')
+    parser.add_argument('--use_gender', action='store_true')
     parser.add_argument('--use_trans_mcc_features', action='store_true')
     parser.add_argument('--use_embeddings', action='store_true')
     parser.add_argument('--use_item_popular_features', action='store_true')
@@ -99,7 +97,12 @@ def convert_history_file(config):
 
     df = json_normalize(history)
 
-    metric_columns = ['final_score.reward']
+    metric_columns = [
+        'final_score.train_reward', 'final_score.valid_reward',
+        'final_score.valid_reward_at_0_sample',
+        'final_score.valid_reward_at_2_sample',
+        'final_score.valid_reward_at_8_sample',
+    ]
     changing_columns = df.astype(str).nunique()[lambda x: x > 1].index.tolist()
     col_drop = metric_columns + ['metrics']
     columns = metric_columns + [col for col in changing_columns if col not in col_drop]
@@ -143,24 +146,26 @@ def main(config):
     df_log = load_data(config)
     df_log_train, df_log_valid = log_split_by_date(df_log, config.train_size)
 
+    df_train_hist_count = get_hist_count(df_log_train)
+    df_log_valid = pd.merge(df_log_valid, df_train_hist_count, on=COL_ID, how='left')
+    df_log_valid['hist_count'] = df_log_valid['hist_count'].fillna(0)
+
     df_users = load_user_features(config, df_log_train)
     df_items = load_item_features(config, df_log_train)
 
     if config.model_type == 'nn':
-        user_encoder = get_encoder(df_log_train, 'customer_id')
+        user_encoder = get_encoder(df_log_train, 'customer_id', min_count=2)
         item_encoder = get_encoder(df_log_train, 'story_id')
 
         df_log_exclude = None
 
         model = StoriesRecModel(
             hidden_size=config.hidden_size,
-            user_one_for_all_size=config.user_one_for_all_size,
-            user_learn_embedding_size=config.user_learn_embedding_size,
+            user_layers=config.user_layers,
             user_fixed_vector_size=0 if df_users is None else df_users.size,
             user_encoder=user_encoder,
             df_users=df_users,
-            item_one_for_all_size=config.item_one_for_all_size,
-            item_learn_embedding_size=config.item_learn_embedding_size,
+            item_layers=config.item_layers,
             item_fixed_vector_size=0 if df_items is None else df_items.size,
             item_encoder=item_encoder,
             df_items=df_items,
@@ -169,10 +174,13 @@ def main(config):
         )
 
         def valid_fn():
-            predict = model.model_predict(df_log_exclude, df_log_valid)
+            train_predict = model.model_predict(df_log_exclude, df_log_train)
+            valid_predict = model.model_predict(df_log_exclude, df_log_valid)
             return {
-                # 'ranking_score': ranking_score(predict),
-                'reward': tinkoff_reward(predict),
+                'train_reward': tinkoff_reward(train_predict),
+                'valid_reward': tinkoff_reward(valid_predict),
+                **{f'valid_reward_at_{int(k):01d}_sample': v
+                   for k, v in tinkoff_reward(valid_predict, 'hist_count').to_dict().items()}
             }
 
         model.add_valid_fn(valid_fn)
@@ -183,6 +191,18 @@ def main(config):
     scores = train_metrics[-1]
 
     for k, v in scores.items():
-        logger.info(f'{model.__class__.__name__} predict {k}: {v:.4f}')
+        if k.endswith('_reward'):
+            logger.info(f'{model.__class__.__name__} valid_predict {k}: {v:.4f}')
+
+    print('--- Inspect model: ---')
+    for k, v in model.named_parameters():
+        v = v.detach().cpu().numpy()
+        print(f'{k:40}: ', end='')
+
+        if v.size <= 10:
+            print(v)
+        else:
+            values_str = [f'{p:7.3f}' for p in np.percentile(v, [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100])]
+            print('p: % {} %'.format(" ".join(values_str)))
 
     save_result(config, scores, train_metrics)

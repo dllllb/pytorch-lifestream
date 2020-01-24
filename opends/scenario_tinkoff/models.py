@@ -130,10 +130,87 @@ class MixedEmbedding(torch.nn.Module):
         return h_item
 
 
+class UserMixedEmbedding(torch.nn.Module):
+    def __init__(self, layers, item_count,
+                 fixed_vector_size,
+                 hidden_size, norm=False,
+                 trans_use_force=False,
+                 trans_skip=False,
+
+                 ):
+        super().__init__()
+
+        self.eps = 1e-5
+
+        self.layers = layers
+        self.item_count = item_count
+        self.fixed_vector_size = fixed_vector_size
+        self.hidden_size = hidden_size
+        self.norm = norm
+        self.trans_use_force = trans_use_force
+        self.trans_skip = trans_skip
+
+        self.nn_layers = []
+        self._nn_parameters = torch.nn.ParameterList()
+        self._nn_modules = torch.nn.ModuleList()
+
+    def create_layers(self):
+        self.nn_layers = []
+        self._nn_parameters = torch.nn.ParameterList()
+        self._nn_modules = torch.nn.ModuleList()
+
+        for layer_label in self.layers:
+            if layer_label == '1':
+                self.nn_layers.append(None)
+
+            if layer_label == 'F':
+                p = torch.nn.Parameter(torch.randn(1, 1))
+                self.nn_layers.append(p)
+                self._nn_parameters.append(p)
+
+            if layer_label == 'E':
+                m = torch.nn.Embedding(
+                    num_embeddings=self.item_count,
+                    embedding_dim=1,
+                    padding_idx=None,
+                )
+                self.nn_layers.append(m)
+                self._nn_modules.append(m)
+
+            if layer_label == 'T':
+                m = torch.nn.Linear(self.fixed_vector_size, 1)
+                self.nn_layers.append(m)
+                self._nn_modules.append(m)
+
+    @property
+    def output_size(self):
+        return len(self.nn_layers)
+
+    def forward(self, fixed_vectors, item_id):
+        v_item = []
+
+        for layer_label, nn_layer in zip(self.layers, self.nn_layers):
+            if layer_label == '1':
+                v_item.append(torch.ones(len(item_id), 1, device=item_id.device).float())
+
+            if layer_label == 'F':
+                v_item.append(nn_layer.repeat(len(item_id), 1))
+
+            if layer_label == 'E':
+                v_item.append(nn_layer(item_id.long()))
+
+            if layer_label == 'T':
+                v_item.append(nn_layer(fixed_vectors))
+
+        h_item = torch.cat(v_item, dim=1)
+
+        return h_item
+
+
 class StoriesRecModel(torch.nn.Module):
     def __init__(self, hidden_size,
-                 user_one_for_all_size, user_learn_embedding_size, user_fixed_vector_size, user_encoder, df_users,
-                 item_one_for_all_size, item_learn_embedding_size, item_fixed_vector_size, item_encoder, df_items,
+                 user_layers, user_fixed_vector_size, user_encoder, df_users,
+                 item_layers, item_fixed_vector_size, item_encoder, df_items,
                  config, device,
                  ):
         super().__init__()
@@ -152,18 +229,16 @@ class StoriesRecModel(torch.nn.Module):
         if config.use_embedding_as_init:
             raise NotImplementedError()
 
-        self.embed_user = MixedEmbedding(
-            one_for_all_size=user_one_for_all_size,
-            learn_embedding_size=user_learn_embedding_size,
+        self.embed_user = UserMixedEmbedding(
+            layers=user_layers,
             item_count=len(self.user_encoder) + 1,
             fixed_vector_size=user_fixed_vector_size,
             hidden_size=hidden_size,
             trans_skip=True,
         )
 
-        self.embed_item = MixedEmbedding(
-            one_for_all_size=item_one_for_all_size,
-            learn_embedding_size=item_learn_embedding_size,
+        self.embed_item = UserMixedEmbedding(
+            layers=item_layers,
             item_count=len(self.item_encoder) + 1,
             fixed_vector_size=item_fixed_vector_size,
             hidden_size=hidden_size,
@@ -172,35 +247,18 @@ class StoriesRecModel(torch.nn.Module):
         self.embed_user.create_layers()
         self.embed_item.create_layers()
 
+        self.final_bias = torch.nn.Parameter(torch.randn(1))
+
     def add_valid_fn(self, valid_fn):
         self.valid_fn = valid_fn
 
-    def _init_user_embeddings(self, df_embeddings):
-        cust_index = df_embeddings.index.map(self.user_encoder)
-        cust_data = df_embeddings.iloc[~cust_index.isna()].values
-        cust_index = cust_index[~cust_index.isna()].values.astype(int)
-
-        s_dict = self.embed_user.embedding.state_dict()
-        weight = s_dict['weight'].cpu().numpy()
-
-        rand_index = np.array([i for i in range(weight.shape[0]) if i not in cust_index])
-        rand_data = np.random.normal(
-            cust_data.mean(axis=0), cust_data.std(axis=0),
-            (len(rand_index), cust_data.shape[1])
-        )
-
-        weight[cust_index] = cust_data
-        weight[rand_index] = rand_data
-
-        s_dict['weight'] = torch.from_numpy(weight)
-        self.embed_user.embedding.load_state_dict(s_dict)
-        logger.info(f'Loaded {len(cust_index)} vectors to embedding with size {s_dict["weight"].size()}')
-
     def forward(self, t_users, user_id, t_items, item_id):
+        B = user_id.size()[0]
+
         h_user = self.embed_user(t_users, user_id)
         h_item = self.embed_item(t_items, item_id)
 
-        hidden = (h_user * h_item).sum(dim=1)
+        hidden = (h_user * h_item).sum(dim=1) + self.final_bias.repeat(B)
         return hidden
 
     def batch_predict(self, t_users, user_id, t_items, item_id, drop_mask, k):
@@ -237,14 +295,24 @@ class StoriesRecModel(torch.nn.Module):
         logger.info(f'Used model "{self.__class__.__name__}" with parameters: ' +
                     ', '.join([f'{n}: {p.size()}' for n, p in self.named_parameters()]))
 
-        parameters = [
-            {'params': [v for k, v in self.named_parameters() if k.startswith('embed_item.')],
-             'lr': lr / self.config.optim_item_encoder_lr_divisor},
-            {'params': [v for k, v in self.named_parameters() if not k.startswith('embed_item.')],
-             'lr': lr, 'weight_decay': self.config.optim_weight_decay},
-        ]
+        if len(self.config.optim_weight_decay) > 1:
+            logger.info('Used decays [{}]'.format(
+                ", ".join(f'{k}: {decay}' for (k, v), decay in zip(self.named_parameters(),
+                                                                   self.config.optim_weight_decay))
+            ))
 
-        return torch.optim.Adam(parameters, lr=lr, weight_decay=self.config.optim_weight_decay)
+            parameters = [{
+                'params': [v],
+                'weight_decay': decay
+            }
+                for (k, v), decay in zip(self.named_parameters(), self.config.optim_weight_decay)
+            ]
+
+            return torch.optim.Adam(parameters, lr=lr)
+        else:
+            logger.info(f'Used decay = {self.config.optim_weight_decay[0]} for all layers')
+
+            return torch.optim.Adam(self.parameters(), lr=lr, weight_decay=self.config.optim_weight_decay[0])
 
     def _get_scheduler(self, optimizer):
         return torch.optim.lr_scheduler.StepLR(optimizer,

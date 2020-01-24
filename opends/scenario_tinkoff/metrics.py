@@ -108,7 +108,12 @@ def ranking_score(df):
     return df.groupby('customer_id').apply(pair_ranking_rate).mean()
 
 
-def tinkoff_reward(df):
+def tinkoff_reward(df, col_group=None):
     df = df.assign(action=np.sign(df['relevance']))
     df = df.assign(reward=df['event'].map({'dislike': -10, 'skip': -0.1, 'view': 0.1, 'like': 0.5}))
-    return (df['action'] * df['reward']).sum() / (abs(df['reward']).sum())
+
+    if col_group is None:
+        return (df['action'] * df['reward']).sum() / (abs(df['reward']).sum())
+
+    df = df.groupby(col_group).apply(lambda x: (x['action'] * x['reward']).sum() / (abs(x['reward']).sum()))
+    return df.sort_index()

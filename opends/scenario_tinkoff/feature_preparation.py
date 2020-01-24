@@ -6,6 +6,8 @@ import pandas as pd
 
 logger = logging.getLogger(__name__)
 
+COL_ID = 'customer_id'
+
 
 class FeatureList:
     def __init__(self, feature_list):
@@ -123,6 +125,30 @@ def get_embeddings(config):
     return df_embeddings
 
 
+def get_gender(config):
+    df_data = pd.concat([
+        pd.read_csv(os.path.join(config.data_path, 'customer_train.csv')),
+        pd.read_csv(os.path.join(config.data_path, 'customer_test.csv')),
+    ])
+    df_data = df_data.drop_duplicates(COL_ID)
+    df_data = df_data.set_index(COL_ID)
+
+    fields = [
+        'gender_cd',
+        'age',
+        'marital_status_cd',
+    ]
+    df_data = pd.get_dummies(df_data[fields].astype(str), dummy_na=True)
+
+    df_data = pd.concat([
+        df_data,
+        pd.DataFrame(data=np.zeros((1, df_data.shape[1])), columns=df_data.columns, index=[-1])
+    ])
+
+    logger.info(f'Prepared df_embeddings: {df_data.shape}')
+    return df_data
+
+
 def load_user_features(config, df_user_item):
     feature_list = []
 
@@ -134,6 +160,9 @@ def load_user_features(config, df_user_item):
 
     if config.use_embeddings:
         feature_list.append(get_embeddings(config))
+
+    if config.use_gender:
+        feature_list.append(get_gender(config))
 
     if config.use_trans_mcc_features:
         feature_list.append(get_trans_mcc_features(config))
