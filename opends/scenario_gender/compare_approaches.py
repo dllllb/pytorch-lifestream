@@ -1,3 +1,7 @@
+if __name__ == '__main__':
+    import sys
+    sys.path.append('../')
+
 import logging
 import os
 from multiprocessing import Pool
@@ -10,6 +14,7 @@ from sklearn.model_selection import StratifiedKFold
 from functools import reduce
 from operator import iadd
 
+from dltranz.util import group_stat_results
 from scenario_gender.features import load_features, load_scores
 from scenario_gender.features import COL_ID, COL_TARGET
 from dltranz.neural_automl.neural_automl_tools import train_from_config
@@ -171,12 +176,7 @@ def main(conf):
 
     # combine results
     df_results = pd.concat([df_results, df_scores])
-    df_results = pd.concat([
-        df_results.groupby(level='name')[['oof_rocauc_score']].agg([
-            'mean', 'std', lambda x: '[' + ' '.join([f'{i:.3f}' for i in sorted(x)]) + ']']),
-        df_results.groupby(level='name')[['test_rocauc_score']].agg([
-            'mean', 'std', lambda x: '[' + ' '.join([f'{i:.3f}' for i in sorted(x)]) + ']']),
-    ], axis=1).sort_index()
+    df_results = group_stat_results(df_results, 'name', ['oof_rocauc_score', 'test_rocauc_score'])
 
     with pd.option_context(
             'display.float_format', '{:.4f}'.format,

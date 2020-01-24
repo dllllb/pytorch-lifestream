@@ -29,111 +29,9 @@ class RunningAverageItem:
 
 
 class MixedEmbedding(torch.nn.Module):
-    def __init__(self, one_for_all_size,
-                 learn_embedding_size, item_count,
-                 fixed_vector_size,
-                 hidden_size, norm=False,
-                 trans_use_force=False,
-                 trans_skip=False,
-
-                 ):
-        super().__init__()
-
-        self.eps = 1e-5
-
-        self.one_for_all_size = one_for_all_size
-        self.learn_embedding_size = learn_embedding_size
-        self.item_count = item_count
-        self.fixed_vector_size = fixed_vector_size
-        self.hidden_size = hidden_size
-        self.norm = norm
-        self.trans_use_force = trans_use_force
-        self.trans_skip = trans_skip
-
-        self.one_for_all = None
-        self.embedding = None
-        self.transformation = None
-
-    def create_layers(self):
-        if self.one_for_all_size > 0:
-            self.one_for_all = torch.nn.Parameter(torch.randn(1, self.one_for_all_size))
-
-        if self.learn_embedding_size > 0:
-            self.embedding = torch.nn.Embedding(
-                num_embeddings=self.item_count,
-                embedding_dim=self.learn_embedding_size,
-                padding_idx=None,
-            )
-
-        if self.is_transformation_required():
-            self.transformation = torch.nn.Linear(self.transformation_input_size, self.hidden_size, False)
-
-    @property
-    def transformation_input_size(self):
-        in_features = 0
-        if self.one_for_all_size > 0:
-            in_features += self.one_for_all_size
-
-        if self.learn_embedding_size > 0:
-            in_features += self.learn_embedding_size
-
-        if self.fixed_vector_size > 0:
-            in_features += self.fixed_vector_size
-
-        return in_features
-
-    @property
-    def output_size(self):
-        if self.is_transformation_required():
-            return self.hidden_size
-        return self.transformation_input_size
-
-    @property
-    def feature_count(self):
-        in_features = 0
-        if self.one_for_all_size > 0:
-            in_features += 1
-
-        if self.learn_embedding_size > 0:
-            in_features += 1
-
-        if self.fixed_vector_size > 0:
-            in_features += 1
-
-        return in_features
-
-    def is_transformation_required(self):
-        return any([
-            self.feature_count > 1,
-            self.trans_use_force,
-        ]) and not self.trans_skip
-
-    def forward(self, fixed_vectors, item_id):
-        v_item = []
-
-        if self.one_for_all is not None:
-            v_item.append(self.one_for_all.repeat(len(item_id), 1))
-
-        if self.embedding  is not None:
-            v_item.append(self.embedding(item_id.long()))
-
-        if self.fixed_vector_size > 0:
-            v_item.append(fixed_vectors)
-        h_item = torch.cat(v_item, dim=1)
-
-        if self.transformation is not None:
-            h_item = self.transformation(h_item)
-
-        if self.norm:
-            h_item = torch.div(h_item, torch.norm(h_item, dim=1, keepdim=True) + self.eps)
-
-        return h_item
-
-
-class UserMixedEmbedding(torch.nn.Module):
     def __init__(self, layers, item_count,
                  fixed_vector_size,
-                 hidden_size, norm=False,
+                 norm=False,
                  trans_use_force=False,
                  trans_skip=False,
 
@@ -145,7 +43,6 @@ class UserMixedEmbedding(torch.nn.Module):
         self.layers = layers
         self.item_count = item_count
         self.fixed_vector_size = fixed_vector_size
-        self.hidden_size = hidden_size
         self.norm = norm
         self.trans_use_force = trans_use_force
         self.trans_skip = trans_skip
@@ -208,7 +105,7 @@ class UserMixedEmbedding(torch.nn.Module):
 
 
 class StoriesRecModel(torch.nn.Module):
-    def __init__(self, hidden_size,
+    def __init__(self,
                  user_layers, user_fixed_vector_size, user_encoder, df_users,
                  item_layers, item_fixed_vector_size, item_encoder, df_items,
                  config, device,
@@ -226,22 +123,17 @@ class StoriesRecModel(torch.nn.Module):
         self.config = config
         self.device = device
 
-        if config.use_embedding_as_init:
-            raise NotImplementedError()
-
-        self.embed_user = UserMixedEmbedding(
+        self.embed_user = MixedEmbedding(
             layers=user_layers,
             item_count=len(self.user_encoder) + 1,
             fixed_vector_size=user_fixed_vector_size,
-            hidden_size=hidden_size,
             trans_skip=True,
         )
 
-        self.embed_item = UserMixedEmbedding(
+        self.embed_item = MixedEmbedding(
             layers=item_layers,
             item_count=len(self.item_encoder) + 1,
             fixed_vector_size=item_fixed_vector_size,
-            hidden_size=hidden_size,
         )
 
         self.embed_user.create_layers()
@@ -415,7 +307,7 @@ class StoriesRecModel(torch.nn.Module):
                             ] + [(m.name, m.value) for m in running_metrics] + scores})
         return metrics
 
-    def model_predict(self, df_log_exclude, df_log_predict):
+    def model_predict(self, df_log_predict):
         self.to(self.device)
         self.eval()
 
@@ -435,17 +327,6 @@ class StoriesRecModel(torch.nn.Module):
 
         df_scores = df_log_predict.copy()
         df_scores['relevance'] = np.concatenate(s_predicted_relevance)
-
-        if self.config.exclude_seen_items:
-            raise NotImplementedError('exclude_seen_items is not supported')
-
-            df_scores = pd.merge(
-                df_scores,
-                df_log_exclude.drop(columns='relevance').assign(exclude_x=-1),
-                how='left', on=['user_id', 'item_id'])
-            df_scores['exclude_x'] = df_scores['exclude_x'].fillna(0)
-            df_scores['relevance'] = df_scores['relevance'] + df_scores['exclude_x']
-            del df_scores['exclude_x']
 
         return df_scores
 
@@ -829,3 +710,16 @@ class RandomModel:
             k,
     ):
         raise NotImplementedError()
+
+
+def model_inspection(model):
+    print('--- Inspect model: ---')
+    for k, v in model.named_parameters():
+        v = v.detach().cpu().numpy()
+        print(f'{k:40}: ', end='')
+
+        if v.size <= 10:
+            print(v)
+        else:
+            values_str = [f'{p:7.3f}' for p in np.percentile(v, [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100])]
+            print('p: % {} %'.format(" ".join(values_str)))

@@ -42,9 +42,18 @@ sys.stdout.buffer.write(pickle.dumps(df))
 
 
 def load_data(config):
-    df_log = pd.read_csv(os.path.join(config.data_path, 'stories_reaction_train.csv'))
+    data_path = os.path.join(config.data_path, 'stories_reaction_train.csv')
+    df_log = pd.read_csv(data_path)
     df_log['event_dttm'] = pd.to_datetime(df_log['event_dttm'])
-    return df_log
+
+    df_test_ids = pd.read_csv(os.path.join(config.data_path, 'test_ids.csv'))
+    ix_test = df_log[COL_ID].isin(df_test_ids[COL_ID])
+
+    logger.info(f'Loaded {len(df_log)} records from "{data_path}"')
+    logger.info(f'Train size: {(~ix_test).sum():10} records')
+    logger.info(f'Test size:  {ix_test.sum():10} records')
+
+    return df_log[~ix_test], df_log[ix_test]
 
 
 def log_split_by_date(df, test_size):
@@ -76,7 +85,7 @@ def get_encoder(df_log, col, min_count=None):
         encoded_items = all_items.index.tolist()
     else:
         encoded_items = all_items.index.tolist()[:int(len(all_items) * 0.95)]
-        logger.info(f'Found {len(all_items)} {col} - 95% most frequent')
+        logger.info(f'Chosen {len(encoded_items)} {col}: 95% most frequent')
 
     item_encoder = {v: k + 1 for k, v in enumerate(encoded_items)}
     logger.info(f'encoder for {col} : {len(item_encoder)} keys. '

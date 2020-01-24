@@ -96,15 +96,15 @@ python ml_inference.py --conf conf/tinkoff_dataset.hocon conf/tinkoff_inference_
 dltrans/opends $ 
 rm runs/scenario_tinkoff.json
 
-python -m scenario_tinkoff --device "cuda:1" --user_layers 1 --item_layers 1 --max_epoch 2
+python -m scenario_tinkoff train --name 'baseline_const' --user_layers 1 --item_layers 1 --max_epoch 2
 
-python -m scenario_tinkoff --device "cuda:1" --user_layers 1 --item_layers E
-python -m scenario_tinkoff --device "cuda:1" --use_embeddings --user_layers 1T --item_layers E1 --optim_weight_decay 0 --max_epoch 3 --optim_lr 0.009
-python -m scenario_tinkoff --device "cuda:1" --use_trans_common_features --use_trans_mcc_features --user_layers 1T --item_layers E1
-python -m scenario_tinkoff --device "cuda:1" --use_gender --user_layers 1T --item_layers E1
+python -m scenario_tinkoff train --name 'no user features' --user_layers 1 --item_layers E
+python -m scenario_tinkoff train --name 'ml embeddings'  --use_embeddings --user_layers 1T --item_layers E1
+python -m scenario_tinkoff train --name 'transactional stat'  --use_trans_common_features --use_trans_mcc_features --user_layers 1T --item_layers E1
+python -m scenario_tinkoff train --name 'social demograpy' --use_gender --user_layers 1T --item_layers E1
 
 # check the results
-python -m scenario_tinkoff --report_file "runs/scenario_tinkoff.csv"
+python -m scenario_tinkoff convert_history_file --report_file "runs/scenario_tinkoff.csv"
 
 cat "runs/scenario_tinkoff.csv"
 ```
