@@ -12,6 +12,7 @@ from operator import iadd
 
 from scenario_gender.features import load_features, load_scores
 from scenario_gender.features import COL_ID, COL_TARGET
+from dltranz.neural_automl.neural_automl_tools import train_from_config
 
 logger = logging.getLogger(__name__)
 
@@ -63,17 +64,29 @@ def train_and_score(args):
 
     if model_type == 'linear':
         model = LogisticRegression()
-    else:
+    elif model_type == 'xgb':
         model = xgb.XGBClassifier(
             # objective='multi:softprob',
             # num_class=4,
             n_jobs=4,
             seed=conf['model_seed'],
             n_estimators=300)
+    elif model_type == 'neural_automl':
+        pass
+    else:
+        raise NotImplementedError(f'unknown model type {model_type}')
 
-    model.fit(X_train, y_train)
-    valid_rocauc_score = roc_auc_score(y_valid, model.predict_proba(X_valid)[:, 1])
-    test_rocauc_score = roc_auc_score(y_test, model.predict_proba(X_test)[:, 1])
+    if model_type != 'neural_automl':
+        model.fit(X_train, y_train)
+        valid_rocauc_score = roc_auc_score(y_valid, model.predict_proba(X_valid)[:, 1])
+        test_rocauc_score = roc_auc_score(y_test, model.predict_proba(X_test)[:, 1])
+    else:
+        valid_rocauc_score = train_from_config(X_train.values, 
+                                               y_train.values.astype('float32'), 
+                                               X_valid.values, 
+                                               y_valid.values.astype('float32'),
+                                               'gender.json')
+        test_rocauc_score('not supported yet')
 
     logger.info(
         ' '.join([
@@ -82,11 +95,11 @@ def train_and_score(args):
             f'valid={valid_rocauc_score:.4f},',
             f'test={test_rocauc_score:.4f}',
             f': {params}'
-        ])
-    )
+        ]))
 
     res = {}
     res['name'] = '_'.join([model_type, name])
+    res['model_type'] = model_type
     res['fold_n'] = fold_n
     res['oof_rocauc_score'] = valid_rocauc_score
     res['test_rocauc_score'] = test_rocauc_score
