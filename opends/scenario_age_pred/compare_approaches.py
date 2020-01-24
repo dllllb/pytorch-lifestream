@@ -3,10 +3,13 @@ import os
 from multiprocessing import Pool
 
 import pandas as pd
+import numpy as np
 import xgboost as xgb
 from sklearn.model_selection import StratifiedKFold
+from functools import reduce
+from operator import iadd
 
-from scenario_age_pred.features import load_features
+from scenario_age_pred.features import load_features, load_scores
 from dltranz.neural_automl.neural_automl_tools import train_from_config
 
 logger = logging.getLogger(__name__)
@@ -25,22 +28,30 @@ def prepare_parser(parser):
 
 
 def read_target(conf):
-    target = pd.read_csv(os.path.join(conf['data_path'], 'train_target.csv')).set_index('client_id')
-    return target
+    target = pd.read_csv(os.path.join(conf['data_path'], 'train_target.csv'))
+    test_ids = set(pd.read_csv(os.path.join(conf['data_path'], 'test_ids.csv'))['client_id'].tolist())
+    is_test = [(x in test_ids) for x in target['client_id']]
+
+    logger.info(f'Train size: {len(target) - sum(is_test)} clients')
+    logger.info(f'Test size: {sum(is_test)} clients')
+
+    return target[[not x for x in is_test]].set_index('client_id'), target[is_test].set_index('client_id')
 
 
-def get_scores(args):
-    pos, fold_n, conf, params, model_type, train_target, valid_target = args
+def train_and_score(args):
+    name, fold_n, conf, params, model_type, train_target, valid_target, test_target = args
 
-    logger.info(f'[{pos:4}:{fold_n}] Started: {params}')
+    logger.info(f'[{name}:{fold_n}] Started: {params}')
 
     features = load_features(conf, **params)
 
     y_train = train_target['bins']
     y_valid = valid_target['bins']
+    y_test = test_target['bins']
 
     X_train = pd.concat([df.reindex(index=train_target.index) for df in features], axis=1)
     X_valid = pd.concat([df.reindex(index=valid_target.index) for df in features], axis=1)
+    X_test = pd.concat([df.reindex(index=test_target.index) for df in features], axis=1)
 
     if model_type == 'xgb':
         model = xgb.XGBClassifier(
@@ -56,40 +67,65 @@ def get_scores(args):
 
     if model_type != 'neural_automl':
         model.fit(X_train, y_train)
-        pred = model.predict(X_valid)
-        accuracy = (y_valid == pred).mean()
+        valid_accuracy = (y_valid == model.predict(X_valid)).mean()
+        test_accuracy = (y_test == model.predict(X_test)).mean()
     else:
-        accuracy = train_from_config(X_train.values, 
-                                     y_train.values.astype('long'), 
-                                     X_valid.values, 
-                                     y_valid.values.astype('long'),
-                                     'age.json')
+        valid_accuracy = train_from_config(X_train.values, 
+                                           y_train.values.astype('long'), 
+                                           X_valid.values, 
+                                           y_valid.values.astype('long'),
+                                           'age.json')
 
-    logger.info(f'[{pos:4}:{fold_n}] Finished with accuracy {accuracy:.4f}: {params}')
+    logger.info(f'[{name}:{fold_n}] Finished with accuracy valid={valid_accuracy:.4f}, test={test_accuracy:.4f}: {params}')
 
-    res = params.copy()
-    res['pos'] = pos
+    res = {}
+    res['name'] = name
     res['fold_n'] = fold_n
-    res['accuracy'] = accuracy
+    res['oof_accuracy'] = valid_accuracy
+    res['test_accuracy'] = test_accuracy
     return res
+
+
+def get_scores(args):
+    name, conf, params, model_type, df_target, test_target = args
+
+    logger.info(f'[{name}] Scoring started: {params}')
+
+    result = []
+    valid_scores, test_scores = load_scores(conf, **params)
+    for fold_n, (valid_fold, test_fold) in enumerate(zip(valid_scores, test_scores)):
+        valid_fold['pred'] = np.argmax(valid_fold.values, 1)
+        test_fold['pred'] = np.argmax(test_fold.values, 1)
+        valid_fold = valid_fold.merge(df_target, on='client_id', how = 'left')
+        test_fold = test_fold.merge(test_target, on='client_id', how = 'left')
+
+        result.append({
+            'name' : name,
+            'fold_n' : fold_n,
+            'oof_accuracy' : (valid_fold['pred'] == valid_fold['bins']).mean(),
+            'test_accuracy' : (test_fold['pred'] == test_fold['bins']).mean(),
+        })
+
+    return result
 
 
 def main(conf):
     logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)-7s %(funcName)-20s   : %(message)s')
 
-    param_list = [
-        {'use_random': True},
-        {'use_client_agg': True},
-        {'use_small_group_stat': True},
-        {'use_client_agg': True, 'use_small_group_stat': True},
-    ] + [
-        {'metric_learning_embedding_name': file_name} for file_name in conf['ml_embedding_file_names']
-    ] + [
-        {'target_scores_name': file_name} for file_name in conf['target_score_file_names']
-    ]
+    approaches_to_train = {
+        'baseline' : {'use_client_agg': True, 'use_small_group_stat': True},
+        **{
+            f"embeds: {file_name}" : {'metric_learning_embedding_name': file_name} for file_name in conf['ml_embedding_file_names']
+        }
+    }
+    
+    approaches_to_score = {
+        f"scores: {file_name}" : {'target_scores_name': file_name} for file_name in conf['target_score_file_names']
+    }
 
-    df_target = read_target(conf)
-    df_target = df_target
+    df_target, test_target  = read_target(conf)
+
+    # train model on features and score valid and test sets
     folds = []
     skf = StratifiedKFold(n_splits=conf['cv_n_split'], random_state=conf['random_state'], shuffle=True)
     for i_train, i_test in skf.split(df_target, df_target['bins']):
@@ -98,19 +134,29 @@ def main(conf):
             df_target.iloc[i_test]
         ))
 
-    args_list = [(pos, fold_n, conf, params, model_type, train_target, valid_target)
-                 for pos, params in enumerate(param_list)
+    args_list = [(name, fold_n, conf, params, model_type, train_target, valid_target, test_target)
+                 for name, params in approaches_to_train.items()
                  for fold_n, (train_target, valid_target) in enumerate(folds)
                  for model_type in ['xgb', 'neural_automl']
                  ]
 
     pool = Pool(processes=conf['n_workers'])
-    results = pool.map(get_scores, args_list)
-    df_results = pd.DataFrame(results).set_index('pos').drop(columns='fold_n')
+    results = pool.map(train_and_score, args_list)
+    df_results = pd.DataFrame(results).set_index('name')[['oof_accuracy','test_accuracy']]
+
+    # score already trained models on valid and tets sets
+    pool = Pool(processes=conf['n_workers'])
+    args_list = [(name, conf, params, df_target, test_target) for name, params in approaches_to_score.items()]
+    results = reduce(iadd, pool.map(get_scores, args_list))
+    df_scores = pd.DataFrame(results).set_index('name')[['oof_accuracy','test_accuracy']]
+
+    # combine results
+    df_results = pd.concat([df_results, df_scores])
     df_results = pd.concat([
-        df_results.groupby(level='pos')[['accuracy']].agg([
+        df_results.groupby(level='name')[['oof_accuracy']].agg([
             'mean', 'std', lambda x: '[' + ' '.join([f'{i:.3f}' for i in sorted(x)]) + ']']),
-        df_results.drop(columns='accuracy').groupby(level='pos').first(),
+        df_results.groupby(level='name')[['test_accuracy']].agg([
+            'mean', 'std', lambda x: '[' + ' '.join([f'{i:.3f}' for i in sorted(x)]) + ']']),
     ], axis=1).sort_index()
 
     with pd.option_context(

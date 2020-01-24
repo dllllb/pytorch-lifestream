@@ -99,7 +99,7 @@ python -m scenario_tinkoff --use_trans_common_features --use_trans_mcc_features 
 python -m scenario_tinkoff --use_embeddings                                     --optim_lr 0.006
 
 # check the results
-dltrans/opends$ python scenario_tinkoff --report_file "runs/scenario_tinkof.csv"
+dltrans/opends$ python scenario_tinkoff --report_file "runs/scenario_tinkoff.csv"
 
 dltrans/opends$ cat "runs/scenario_tinkoff.csv"
 ```

@@ -1,7 +1,7 @@
-2020-01-09 13:56:33,123 INFO    load_source_data       : Loaded 6849346 rows from "/home/ivan/pycharm_from_local/dltrans/data/gender/transactions.csv"
-2020-01-09 13:56:33,392 INFO    load_source_data       : Loaded 6849346 rows in total
-2020-01-09 13:56:33,503 INFO    trx_to_features        : Found 15000 unique clients
-2020-01-09 13:57:04,645 INFO    trx_to_features        : Encoder stat for "mcc_code":
+2020-01-22 13:12:00,657 INFO    load_source_data       : Loaded 6849346 rows from "/mnt/data/ovsov/repo/dltranz/data/gender/transactions.csv"
+2020-01-22 13:12:00,909 INFO    load_source_data       : Loaded 6849346 rows in total
+2020-01-22 13:12:01,012 INFO    trx_to_features        : Found 15000 unique clients
+2020-01-22 13:12:32,565 INFO    trx_to_features        : Encoder stat for "mcc_code":
 codes | trx_count
                cnt  % of total
 mcc_code                      
@@ -15,7 +15,7 @@ mcc_code
 [55, 63)     33366    0.004871
 [63, 71)     23030    0.003362
 [71, 185)    68774    0.010041
-2020-01-09 13:57:10,079 INFO    trx_to_features        : Encoder stat for "tr_type":
+2020-01-22 13:12:37,970 INFO    trx_to_features        : Encoder stat for "tr_type":
 codes | trx_count
               cnt  % of total
 tr_type                      
@@ -29,7 +29,7 @@ tr_type
 [19, 22)    61529    0.008983
 [22, 25)    39901    0.005826
 [25, 78)    79408    0.011594
-2020-01-09 13:57:15,281 INFO    trx_to_features        : Encoder stat for "term_id":
+2020-01-22 13:12:43,094 INFO    trx_to_features        : Encoder stat for "term_id":
 codes | trx_count
                       cnt  % of total
 term_id                              
@@ -43,7 +43,7 @@ term_id
 [289213, 330529)    41316    0.006032
 [330529, 371845)    41316    0.006032
 [371845, 440340)    68495    0.010000
-2020-01-09 13:57:16,096 INFO    trx_to_features        : Encoder stat for "amount":
+2020-01-22 13:12:43,875 INFO    trx_to_features        : Encoder stat for "amount":
 codes | trx_count
                   cnt  % of total
 amount                           
@@ -57,7 +57,7 @@ amount
 [0.4, 0.6)     880832    0.128601
 [0.6, 0.8)     357492    0.052194
 [0.8, 1.0)       5808    0.000848
-2020-01-09 13:57:16,497 INFO    trx_to_features        : Trx count per clients:
+2020-01-22 13:12:44,288 INFO    trx_to_features        : Trx count per clients:
 len(trx_list) | client_count
                 cnt  % of total
 trx_count                      
@@ -71,9 +71,12 @@ trx_count
 [1500, 1714)     90    0.006000
 [1714, 1929)     55    0.003667
 [1929, 88782)   151    0.010067
-2020-01-09 13:57:16,497 INFO    trx_to_features        : Feature collection in progress ...
-2020-01-09 13:57:44,404 INFO    trx_to_features        : Feature names: ['tr_datetime', 'mcc_code', 'tr_type', 'amount', 'term_id']
-2020-01-09 13:57:44,404 INFO    trx_to_features        : Prepared features for 15000 clients
-2020-01-13 08:22:20,012 INFO    update_with_target     : Target loaded for 8400 clients
-2020-01-13 08:22:20,040 INFO    update_with_target     : Target updated for 15000 clients
-2020-01-09 13:58:05,101 INFO    save_features          : Saved to: "/home/ivan/pycharm_from_local/dltrans/data/gender/all_trx.p"
+2020-01-22 13:12:44,288 INFO    trx_to_features        : Feature collection in progress ...
+2020-01-22 13:13:11,766 INFO    trx_to_features        : Feature names: ['tr_datetime', 'mcc_code', 'tr_type', 'amount', 'term_id']
+2020-01-22 13:13:11,766 INFO    trx_to_features        : Prepared features for 15000 clients
+2020-01-22 13:13:12,121 INFO    update_with_target     : Target loaded for 8400 clients
+2020-01-22 13:13:12,147 INFO    update_with_target     : Target updated for 15000 clients
+2020-01-22 13:13:12,155 INFO    split_dataset          : Train size: 14160 clients
+2020-01-22 13:13:12,155 INFO    split_dataset          : Test size: 840 clients
+2020-01-22 13:13:14,311 INFO    save_features          : Saved to: "/mnt/data/ovsov/repo/dltranz/data/gender/train_trx.p"
+2020-01-22 13:13:14,400 INFO    save_features          : Saved to: "/mnt/data/ovsov/repo/dltranz/data/gender/test_trx.p"
