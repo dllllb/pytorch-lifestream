@@ -80,6 +80,7 @@ def train_and_score(args):
 
     res = {}
     res['name'] = name
+    res['model_type'] = model_type
     res['fold_n'] = fold_n
     res['oof_accuracy'] = valid_accuracy
     res['test_accuracy'] = test_accuracy
@@ -87,7 +88,7 @@ def train_and_score(args):
 
 
 def get_scores(args):
-    name, conf, params, model_type, df_target, test_target = args
+    name, conf, params, df_target, test_target = args
 
     logger.info(f'[{name}] Scoring started: {params}')
 
@@ -137,7 +138,7 @@ def main(conf):
     args_list = [(name, fold_n, conf, params, model_type, train_target, valid_target, test_target)
                  for name, params in approaches_to_train.items()
                  for fold_n, (train_target, valid_target) in enumerate(folds)
-                 for model_type in ['xgb', 'neural_automl']
+                 for model_type in ['xgb']
                  ]
 
     pool = Pool(processes=conf['n_workers'])
