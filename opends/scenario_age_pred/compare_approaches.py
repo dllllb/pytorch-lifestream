@@ -5,6 +5,7 @@ from multiprocessing import Pool
 import pandas as pd
 import numpy as np
 import xgboost as xgb
+import lightgbm as lgb
 from sklearn.model_selection import StratifiedKFold
 from functools import reduce
 from operator import iadd
@@ -60,6 +61,24 @@ def train_and_score(args):
             n_jobs=4,
             seed=conf['model_seed'],
             n_estimators=300)
+    elif model_type == 'lgb':
+        model = lgb.LGBMClassifier(
+            boosting_type='gbdt',
+            objective='multiclass',
+            num_class=4,
+            metric='multi_error',
+            n_estimators=1000,
+            learning_rate=0.02,
+            subsample=0.75,
+            subsample_freq=1,
+            feature_fraction=0.75,
+            max_depth=12,
+            lambda_l1=1,
+            lambda_l2=1,
+            min_data_in_leaf=50,
+            num_leaves=50,
+            random_state=conf['model_seed'],
+            n_jobs=4)
     elif model_type == 'neural_automl':
         pass
     else:
@@ -79,7 +98,7 @@ def train_and_score(args):
     logger.info(f'[{name}:{fold_n}] Finished with accuracy valid={valid_accuracy:.4f}, test={test_accuracy:.4f}: {params}')
 
     res = {}
-    res['name'] = name
+    res['name'] = '_'.join([model_type, name])
     res['model_type'] = model_type
     res['fold_n'] = fold_n
     res['oof_accuracy'] = valid_accuracy
@@ -138,7 +157,7 @@ def main(conf):
     args_list = [(name, fold_n, conf, params, model_type, train_target, valid_target, test_target)
                  for name, params in approaches_to_train.items()
                  for fold_n, (train_target, valid_target) in enumerate(folds)
-                 for model_type in ['xgb']
+                 for model_type in ['xgb','lgb']
                  ]
 
     pool = Pool(processes=conf['n_workers'])
