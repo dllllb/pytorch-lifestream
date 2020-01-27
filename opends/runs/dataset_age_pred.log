@@ -1,5 +1,5 @@
-load_source_data       : Loaded 26450577 rows from "/home/ivan/pycharm_from_local/dltrans/data/age-pred/transactions_train.csv"
-load_source_data       : Loaded 17667328 rows from "/home/ivan/pycharm_from_local/dltrans/data/age-pred/transactions_test.csv"
+load_source_data       : Loaded 26450577 rows from "/mnt/data/ovsov/repo/dltranz/data/age-pred/transactions_train.csv"
+load_source_data       : Loaded 17667328 rows from "/mnt/data/ovsov/repo/dltranz/data/age-pred/transactions_test.csv"
 load_source_data       : Loaded 44117905 rows in total
 trx_to_features        : Found 50000 unique clients
 trx_to_features        : Encoder stat for "trans_date":
@@ -65,5 +65,5 @@ update_with_target     : Target loaded for 30000 clients
 update_with_target     : Target updated for 50000 clients
 split_dataset          : Train size: 47000 clients
 split_dataset          : Test size: 3000 clients
-save_features          : Saved to: "/home/ivan/pycharm_from_local/dltrans/data/age-pred/train_trx.p"
-save_features          : Saved to: "/home/ivan/pycharm_from_local/dltrans/data/age-pred/test_trx.p"
+save_features          : Saved to: "/mnt/data/ovsov/repo/dltranz/data/age-pred/train_trx.p"
+save_features          : Saved to: "/mnt/data/ovsov/repo/dltranz/data/age-pred/test_trx.p"

@@ -1,4 +1,4 @@
-load_source_data       : Loaded 3951115 rows from "/home/ivan/pycharm_from_local/dltrans/data/tinkoff/transactions.csv"
+load_source_data       : Loaded 3951115 rows from "/mnt/data/ovsov/repo/dltranz/data/tinkoff/transactions.csv"
 load_source_data       : Loaded 3951115 rows in total
 trx_to_features        : Found 46948 unique clients
 trx_to_features        : Encoder stat for "transaction_month":
@@ -83,5 +83,5 @@ trx_to_features        : Feature names: ['transaction_month', 'transaction_day',
 trx_to_features        : Prepared features for 46948 clients
 split_dataset          : Train size: 43304 clients
 split_dataset          : Test size: 3644 clients
-save_features          : Saved to: "/home/ivan/pycharm_from_local/dltrans/data/tinkoff/train_trx.p"
-save_features          : Saved to: "/home/ivan/pycharm_from_local/dltrans/data/tinkoff/test_trx.p"
+save_features          : Saved to: "/mnt/data/ovsov/repo/dltranz/data/tinkoff/train_trx.p"
+save_features          : Saved to: "/mnt/data/ovsov/repo/dltranz/data/tinkoff/test_trx.p"
