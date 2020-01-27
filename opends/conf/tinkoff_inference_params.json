@@ -23,5 +23,11 @@
     "models": [
       "models/tinkoff_ml_model.p"
     ]
+  },
+
+  "output": {
+    "path": "../data/tinkoff/embeddings",
+    "format": "pickle",
+    "columns": ["customer_id"]
   }
 }

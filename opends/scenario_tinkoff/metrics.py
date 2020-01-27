@@ -88,6 +88,15 @@ def label_ranking_average_precision_score(df_scores, df_true, reduce=True, desc=
     return float(score)
 
 
+def precision_at_k(df, k):
+    def _precision(df):
+        df = df.sort_values('relevance', ascending=False).iloc[:k].copy()
+        events = df['event'].map({'dislike': 0, 'skip': 0, 'view': 1, 'like': 1}).values
+        return events.mean()
+
+    return df.groupby('customer_id').apply(_precision).mean()
+
+
 def ranking_score(df):
     def pair_ranking_rate(df):
         events = df['event'].map({'dislike': 0, 'skip': 1, 'view': 2, 'like': 3}).values
@@ -97,3 +106,14 @@ def ranking_score(df):
         return right_pairs.sum() / mask.sum() if mask.sum() > 0 else np.NaN
 
     return df.groupby('customer_id').apply(pair_ranking_rate).mean()
+
+
+def tinkoff_reward(df, col_group=None):
+    df = df.assign(action=np.sign(df['relevance']))
+    df = df.assign(reward=df['event'].map({'dislike': -10, 'skip': -0.1, 'view': 0.1, 'like': 0.5}))
+
+    if col_group is None:
+        return (df['action'] * df['reward']).sum() / (abs(df['reward']).sum())
+
+    df = df.groupby(col_group).apply(lambda x: (x['action'] * x['reward']).sum() / (abs(x['reward']).sum()))
+    return df.sort_index()

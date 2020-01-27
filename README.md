@@ -83,25 +83,30 @@ cat runs/scenario_gender.csv
 ## tinkoff dataset
 
 ```sh
+cd dltrans/opends
+
 # Train metric learning model
-dltrans/opends$ python metric_learning.py --conf conf/tinkoff_dataset.hocon conf/tinkoff_train_params.json
+python metric_learning.py --conf conf/tinkoff_dataset.hocon conf/tinkoff_train_params.json
 
 # With pretrained mertic learning model run inference ang take embeddings for each customer
-dltrans/opends$ python ml_inference.py --conf conf/tinkoff_dataset.hocon conf/tinkoff_inference_params.json
+python ml_inference.py --conf conf/tinkoff_dataset.hocon conf/tinkoff_inference_params.json
 
 # Run estimation for different approaches
 # Check some options with `--help` argument
 dltrans/opends $ 
 rm runs/scenario_tinkoff.json
 
-python -m scenario_tinkoff --use_user_popular_features                          --optim_lr 0.004
-python -m scenario_tinkoff --use_trans_common_features --use_trans_mcc_features --optim_lr 0.010
-python -m scenario_tinkoff --use_embeddings                                     --optim_lr 0.006
+python -m scenario_tinkoff train --name 'baseline_const' --user_layers 1 --item_layers 1 --max_epoch 2
+
+python -m scenario_tinkoff train --name 'no user features' --user_layers 1 --item_layers E
+python -m scenario_tinkoff train --name 'ml embeddings'  --use_embeddings --user_layers 1T --item_layers E1
+python -m scenario_tinkoff train --name 'transactional stat'  --use_trans_common_features --use_trans_mcc_features --user_layers 1T --item_layers E1
+python -m scenario_tinkoff train --name 'social demograpy' --use_gender --user_layers 1T --item_layers E1
 
 # check the results
-dltrans/opends$ python scenario_tinkoff --report_file "runs/scenario_tinkoff.csv"
+python -m scenario_tinkoff convert_history_file --report_file "runs/scenario_tinkoff.csv"
 
-dltrans/opends$ cat "runs/scenario_tinkoff.csv"
+cat "runs/scenario_tinkoff.csv"
 ```
 
 ## common scenario (work in progress)
