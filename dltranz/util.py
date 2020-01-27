@@ -160,16 +160,32 @@ def group_stat_results(df, group_col_name, col_agg_metric=None, col_list_metrics
     def values(x):
         return '[' + ' '.join([f'{i:.3f}' for i in sorted(x)]) + ']'
 
+    def t_interval(x, p=0.95):
+        import scipy.stats
+
+        n = len(x)
+        s = x.std(ddof=1)
+
+        return scipy.stats.t.interval(p, n - 1, loc=x.mean(), scale=s / ((n - 1) ** 0.5))
+
+    def t_int_l(x, p=0.95):
+        return t_interval(x, p)[0]
+
+    def t_int_h(x, p=0.95):
+        return t_interval(x, p)[1]
+
     metric_aggregates = []
     metric_names = []
     if col_agg_metric is not None:
         metric_aggregates.extend([
-            df.groupby(group_col_name)[m_col].agg(['mean', 'std', values]) for m_col in col_agg_metric
+            df.groupby(group_col_name)[m_col].agg(['mean', t_int_l, t_int_h, 'std', values])
+            for m_col in col_agg_metric
         ])
         metric_names.extend(col_agg_metric)
     if col_list_metrics is not None:
         metric_aggregates.extend([
-            df.groupby(group_col_name)[m_col].agg([values]) for m_col in col_list_metrics
+            df.groupby(group_col_name)[m_col].agg([values])
+            for m_col in col_list_metrics
         ])
         metric_names.extend(col_list_metrics)
 

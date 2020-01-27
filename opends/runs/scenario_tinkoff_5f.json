@@ -1988,5 +1988,430 @@
         "valid_reward": 0.2476433949169367
       }
     ]
+  },
+  {
+    "name": "ml embeddings v2",
+    "fold_n": 0,
+    "config": {
+      "data_path": "/home/ivan/pycharm_from_local/dltrans/data/tinkoff",
+      "history_file": "/home/ivan/pycharm_from_local/dltrans/opends/runs/scenario_tinkoff_5f.json",
+      "name": "ml embeddings v2",
+      "cv_n_folds": 5,
+      "model_type": "nn",
+      "device": "cuda",
+      "max_epoch": 5,
+      "optim_weight_decay": [
+        0.0001
+      ],
+      "optim_lr": 0.01,
+      "lr_step_size": 1,
+      "lr_step_gamma": 0.5,
+      "loss": "mse",
+      "model_inspection_off": false,
+      "user_layers": "1T",
+      "item_layers": "E1",
+      "use_user_popular_features": false,
+      "use_trans_common_features": false,
+      "use_gender": false,
+      "use_trans_mcc_features": false,
+      "use_embeddings": true,
+      "embedding_file_name": "embeddings_v2.pickle",
+      "use_item_popular_features": false,
+      "train_batch_size": 128,
+      "valid_batch_size": 5000,
+      "train_num_workers": 8,
+      "valid_num_workers": 8
+    },
+    "final_score": {
+      "oof_reward": 0.2285566914007448,
+      "test_reward": 0.2153916886660932
+    },
+    "metrics": [
+      {
+        "epoch": 1.0,
+        "epoch_loss": 1.454220634150941,
+        "loss": 1.0200746952783823,
+        "avg_min_out": -1.2977288206164854,
+        "avg_max_out": 0.2145561290052984,
+        "train_reward": 0.22814601394390055,
+        "valid_reward": 0.15255930695843942
+      },
+      {
+        "epoch": 2.0,
+        "epoch_loss": 1.3888141898735773,
+        "loss": 1.0147022918578505,
+        "avg_min_out": -1.2868148364631518,
+        "avg_max_out": 0.17314330860389804,
+        "train_reward": 0.28110849988089626,
+        "valid_reward": 0.2088262887916854
+      },
+      {
+        "epoch": 3.0,
+        "epoch_loss": 1.379840315011711,
+        "loss": 1.0108258729418718,
+        "avg_min_out": -1.267160937839151,
+        "avg_max_out": 0.15452858328911492,
+        "train_reward": 0.30126641800972,
+        "valid_reward": 0.21275774818352763
+      },
+      {
+        "epoch": 4.0,
+        "epoch_loss": 1.3746087094890782,
+        "loss": 1.0093417134052465,
+        "avg_min_out": -1.2581885855634038,
+        "avg_max_out": 0.14285756097872745,
+        "train_reward": 0.3060573780888338,
+        "valid_reward": 0.2255593597569643
+      },
+      {
+        "epoch": 5.0,
+        "epoch_loss": 1.3715640866429606,
+        "loss": 1.0081534233526679,
+        "avg_min_out": -1.2438687871558558,
+        "avg_max_out": 0.14868521431829573,
+        "train_reward": 0.3110215799443769,
+        "valid_reward": 0.2285566914007448
+      }
+    ]
+  },
+  {
+    "name": "ml embeddings v2",
+    "fold_n": 1,
+    "config": {
+      "data_path": "/home/ivan/pycharm_from_local/dltrans/data/tinkoff",
+      "history_file": "/home/ivan/pycharm_from_local/dltrans/opends/runs/scenario_tinkoff_5f.json",
+      "name": "ml embeddings v2",
+      "cv_n_folds": 5,
+      "model_type": "nn",
+      "device": "cuda",
+      "max_epoch": 5,
+      "optim_weight_decay": [
+        0.0001
+      ],
+      "optim_lr": 0.01,
+      "lr_step_size": 1,
+      "lr_step_gamma": 0.5,
+      "loss": "mse",
+      "model_inspection_off": false,
+      "user_layers": "1T",
+      "item_layers": "E1",
+      "use_user_popular_features": false,
+      "use_trans_common_features": false,
+      "use_gender": false,
+      "use_trans_mcc_features": false,
+      "use_embeddings": true,
+      "embedding_file_name": "embeddings_v2.pickle",
+      "use_item_popular_features": false,
+      "train_batch_size": 128,
+      "valid_batch_size": 5000,
+      "train_num_workers": 8,
+      "valid_num_workers": 8
+    },
+    "final_score": {
+      "oof_reward": 0.2961840935249306,
+      "test_reward": 0.2249132382167116
+    },
+    "metrics": [
+      {
+        "epoch": 1.0,
+        "epoch_loss": 1.4446505416287756,
+        "loss": 1.0969686231041884,
+        "avg_min_out": -1.5848075668130992,
+        "avg_max_out": 0.20849440455339477,
+        "train_reward": 0.2167612617276436,
+        "valid_reward": 0.2151312066702338
+      },
+      {
+        "epoch": 2.0,
+        "epoch_loss": 1.3449264780166172,
+        "loss": 1.088825976093855,
+        "avg_min_out": -1.6106197579362174,
+        "avg_max_out": 0.16944716615874908,
+        "train_reward": 0.2613846123275823,
+        "valid_reward": 0.2500452304056109
+      },
+      {
+        "epoch": 3.0,
+        "epoch_loss": 1.337574302103571,
+        "loss": 1.0855670368330876,
+        "avg_min_out": -1.600325930617036,
+        "avg_max_out": 0.14229598190915385,
+        "train_reward": 0.28901536424589064,
+        "valid_reward": 0.2659971283504183
+      },
+      {
+        "epoch": 4.0,
+        "epoch_loss": 1.3333464328380038,
+        "loss": 1.0857023425729337,
+        "avg_min_out": -1.6068995953354819,
+        "avg_max_out": 0.11184139077978845,
+        "train_reward": 0.3055917237426805,
+        "valid_reward": 0.2885006986654143
+      },
+      {
+        "epoch": 5.0,
+        "epoch_loss": 1.3309421374165804,
+        "loss": 1.0849633747829361,
+        "avg_min_out": -1.592248027828599,
+        "avg_max_out": 0.11488924777315786,
+        "train_reward": 0.30281191531728824,
+        "valid_reward": 0.2961840935249306
+      }
+    ]
+  },
+  {
+    "name": "ml embeddings v2",
+    "fold_n": 2,
+    "config": {
+      "data_path": "/home/ivan/pycharm_from_local/dltrans/data/tinkoff",
+      "history_file": "/home/ivan/pycharm_from_local/dltrans/opends/runs/scenario_tinkoff_5f.json",
+      "name": "ml embeddings v2",
+      "cv_n_folds": 5,
+      "model_type": "nn",
+      "device": "cuda",
+      "max_epoch": 5,
+      "optim_weight_decay": [
+        0.0001
+      ],
+      "optim_lr": 0.01,
+      "lr_step_size": 1,
+      "lr_step_gamma": 0.5,
+      "loss": "mse",
+      "model_inspection_off": false,
+      "user_layers": "1T",
+      "item_layers": "E1",
+      "use_user_popular_features": false,
+      "use_trans_common_features": false,
+      "use_gender": false,
+      "use_trans_mcc_features": false,
+      "use_embeddings": true,
+      "embedding_file_name": "embeddings_v2.pickle",
+      "use_item_popular_features": false,
+      "train_batch_size": 128,
+      "valid_batch_size": 5000,
+      "train_num_workers": 8,
+      "valid_num_workers": 8
+    },
+    "final_score": {
+      "oof_reward": 0.25827994197156934,
+      "test_reward": 0.22795360840032033
+    },
+    "metrics": [
+      {
+        "epoch": 1.0,
+        "epoch_loss": 1.4657442058887955,
+        "loss": 1.0052056887536214,
+        "avg_min_out": -1.5574342393366059,
+        "avg_max_out": 0.19455040312707741,
+        "train_reward": 0.23893596042906218,
+        "valid_reward": 0.2109777297403926
+      },
+      {
+        "epoch": 2.0,
+        "epoch_loss": 1.388192846308474,
+        "loss": 0.998278981845469,
+        "avg_min_out": -1.5077161823578973,
+        "avg_max_out": 0.16303951381974877,
+        "train_reward": 0.2826153338412331,
+        "valid_reward": 0.21969843298579284
+      },
+      {
+        "epoch": 3.0,
+        "epoch_loss": 1.3794276984763751,
+        "loss": 0.9951659241584284,
+        "avg_min_out": -1.4830353554706834,
+        "avg_max_out": 0.13011582282455791,
+        "train_reward": 0.30703564448255416,
+        "valid_reward": 0.2395891981638028
+      },
+      {
+        "epoch": 4.0,
+        "epoch_loss": 1.3744011953519761,
+        "loss": 0.9941851471026563,
+        "avg_min_out": -1.4674910715365859,
+        "avg_max_out": 0.11497061571987535,
+        "train_reward": 0.314121564865679,
+        "valid_reward": 0.25112912969683016
+      },
+      {
+        "epoch": 5.0,
+        "epoch_loss": 1.3713516035481519,
+        "loss": 0.9926009677981641,
+        "avg_min_out": -1.4468202800491845,
+        "avg_max_out": 0.12477614137529162,
+        "train_reward": 0.3179236155877911,
+        "valid_reward": 0.25827994197156934
+      }
+    ]
+  },
+  {
+    "name": "ml embeddings v2",
+    "fold_n": 3,
+    "config": {
+      "data_path": "/home/ivan/pycharm_from_local/dltrans/data/tinkoff",
+      "history_file": "/home/ivan/pycharm_from_local/dltrans/opends/runs/scenario_tinkoff_5f.json",
+      "name": "ml embeddings v2",
+      "cv_n_folds": 5,
+      "model_type": "nn",
+      "device": "cuda",
+      "max_epoch": 5,
+      "optim_weight_decay": [
+        0.0001
+      ],
+      "optim_lr": 0.01,
+      "lr_step_size": 1,
+      "lr_step_gamma": 0.5,
+      "loss": "mse",
+      "model_inspection_off": false,
+      "user_layers": "1T",
+      "item_layers": "E1",
+      "use_user_popular_features": false,
+      "use_trans_common_features": false,
+      "use_gender": false,
+      "use_trans_mcc_features": false,
+      "use_embeddings": true,
+      "embedding_file_name": "embeddings_v2.pickle",
+      "use_item_popular_features": false,
+      "train_batch_size": 128,
+      "valid_batch_size": 5000,
+      "train_num_workers": 8,
+      "valid_num_workers": 8
+    },
+    "final_score": {
+      "oof_reward": 0.2219102416570771,
+      "test_reward": 0.23200249162044315
+    },
+    "metrics": [
+      {
+        "epoch": 1.0,
+        "epoch_loss": 1.4886205724880055,
+        "loss": 1.0937785110420315,
+        "avg_min_out": -1.5878443336690953,
+        "avg_max_out": 0.23361192517994872,
+        "train_reward": 0.24423559371823775,
+        "valid_reward": 0.13472957422324505
+      },
+      {
+        "epoch": 2.0,
+        "epoch_loss": 1.4054121269583952,
+        "loss": 1.0869056759965146,
+        "avg_min_out": -1.5934437668649837,
+        "avg_max_out": 0.19637806199900307,
+        "train_reward": 0.2808358760147268,
+        "valid_reward": 0.15364368657809394
+      },
+      {
+        "epoch": 3.0,
+        "epoch_loss": 1.3974464113445133,
+        "loss": 1.0828928858720448,
+        "avg_min_out": -1.5845948899154383,
+        "avg_max_out": 0.1529878508232346,
+        "train_reward": 0.29940725925728784,
+        "valid_reward": 0.17491787843916723
+      },
+      {
+        "epoch": 4.0,
+        "epoch_loss": 1.3926920557256004,
+        "loss": 1.0820237073290397,
+        "avg_min_out": -1.5871593749773676,
+        "avg_max_out": 0.12133697502139243,
+        "train_reward": 0.30664993495307497,
+        "valid_reward": 0.21413536980855735
+      },
+      {
+        "epoch": 5.0,
+        "epoch_loss": 1.3898383622756403,
+        "loss": 1.0802898255593794,
+        "avg_min_out": -1.5711510448197994,
+        "avg_max_out": 0.12719018551537056,
+        "train_reward": 0.31074620235479083,
+        "valid_reward": 0.2219102416570771
+      }
+    ]
+  },
+  {
+    "name": "ml embeddings v2",
+    "fold_n": 4,
+    "config": {
+      "data_path": "/home/ivan/pycharm_from_local/dltrans/data/tinkoff",
+      "history_file": "/home/ivan/pycharm_from_local/dltrans/opends/runs/scenario_tinkoff_5f.json",
+      "name": "ml embeddings v2",
+      "cv_n_folds": 5,
+      "model_type": "nn",
+      "device": "cuda",
+      "max_epoch": 5,
+      "optim_weight_decay": [
+        0.0001
+      ],
+      "optim_lr": 0.01,
+      "lr_step_size": 1,
+      "lr_step_gamma": 0.5,
+      "loss": "mse",
+      "model_inspection_off": false,
+      "user_layers": "1T",
+      "item_layers": "E1",
+      "use_user_popular_features": false,
+      "use_trans_common_features": false,
+      "use_gender": false,
+      "use_trans_mcc_features": false,
+      "use_embeddings": true,
+      "embedding_file_name": "embeddings_v2.pickle",
+      "use_item_popular_features": false,
+      "train_batch_size": 128,
+      "valid_batch_size": 5000,
+      "train_num_workers": 8,
+      "valid_num_workers": 8
+    },
+    "final_score": {
+      "oof_reward": 0.2328404888033804,
+      "test_reward": 0.2434075875774924
+    },
+    "metrics": [
+      {
+        "epoch": 1.0,
+        "epoch_loss": 1.5127865925658335,
+        "loss": 1.0942737644592992,
+        "avg_min_out": -1.4618218654154407,
+        "avg_max_out": 0.19587686689021327,
+        "train_reward": 0.22687755994107067,
+        "valid_reward": 0.16753199975401695
+      },
+      {
+        "epoch": 2.0,
+        "epoch_loss": 1.4283975237146682,
+        "loss": 1.0877086454142164,
+        "avg_min_out": -1.4558272429860897,
+        "avg_max_out": 0.16786345935460795,
+        "train_reward": 0.2858007252829089,
+        "valid_reward": 0.1992813782076623
+      },
+      {
+        "epoch": 3.0,
+        "epoch_loss": 1.419633544156385,
+        "loss": 1.0852458075525784,
+        "avg_min_out": -1.4529081893911062,
+        "avg_max_out": 0.1277981959426666,
+        "train_reward": 0.3047078631676084,
+        "valid_reward": 0.22202602148837286
+      },
+      {
+        "epoch": 4.0,
+        "epoch_loss": 1.4145912929349589,
+        "loss": 1.0850422299666787,
+        "avg_min_out": -1.4482832238570669,
+        "avg_max_out": 0.10698258138013117,
+        "train_reward": 0.311889863847561,
+        "valid_reward": 0.23906034490331982
+      },
+      {
+        "epoch": 5.0,
+        "epoch_loss": 1.4116306489757726,
+        "loss": 1.0831058954134138,
+        "avg_min_out": -1.426719648276849,
+        "avg_max_out": 0.1202891242988688,
+        "train_reward": 0.3119586685878028,
+        "valid_reward": 0.2328404888033804
+      }
+    ]
   }
 ]

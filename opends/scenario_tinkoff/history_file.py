@@ -58,6 +58,7 @@ def main(config):
         'display.float_format', '{:.4f}'.format,
         'display.max_columns', None,
         'display.expand_frame_repr', False,
+        'display.max_colwidth', 100,
     ):
         logger.info(f'Results:\n{df_results}')
         with open(report_file, 'w') as f:
