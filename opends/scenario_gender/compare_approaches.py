@@ -8,6 +8,7 @@ from multiprocessing import Pool
 
 import pandas as pd
 import xgboost as xgb
+import lightgbm as lgb
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import roc_auc_score
 from sklearn.model_selection import StratifiedKFold
@@ -76,6 +77,22 @@ def train_and_score(args):
             n_jobs=4,
             seed=conf['model_seed'],
             n_estimators=300)
+    elif model_type == 'lgb':
+        model = lgb.LGBMClassifier(
+        n_estimators=500,
+        boosting_type='gbdt',
+        objective='binary',
+        metric='auc',
+        subsample=0.5,
+        subsample_freq=1,
+        learning_rate=0.02,
+        feature_fraction=0.75,
+        max_depth=6,
+        lambda_l1=1,
+        lambda_l2=1,
+        min_data_in_leaf=50,
+        random_state=conf['model_seed']
+    )
     elif model_type == 'neural_automl':
         pass
     else:
@@ -161,7 +178,7 @@ def main(conf):
     args_list = [(name, fold_n, conf, params, model_type, train_target, valid_target, test_target)
                  for name, params in approaches_to_train.items()
                  for fold_n, (train_target, valid_target) in enumerate(folds)
-                 for model_type in ['xgb', 'linear']
+                 for model_type in ['xgb', 'linear','lgb']
                  ]
 
     pool = Pool(processes=conf['n_workers'])
