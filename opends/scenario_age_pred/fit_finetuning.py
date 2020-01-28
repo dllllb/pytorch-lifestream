@@ -47,11 +47,15 @@ def main(_):
     results = []
 
     skf = StratifiedKFold(conf['cv_n_split'])
+    nrows = conf['params'].get('labeled_amount',-1) # semi-supervised setup. default = supervised
+    
     target_values = [rec['target'] for rec in train_data]
     for i, (i_train, i_valid) in enumerate(skf.split(train_data, target_values)):
         logger.info(f'Train fold: {i}')
         i_train_data = [rec for i, rec in enumerate(train_data) if i in i_train]
         i_valid_data = [rec for i, rec in enumerate(train_data) if i in i_valid]
+
+        if nrows > 0: i_train_data = i_train_data[:nrows]
 
         train_ds, valid_ds = create_ds(i_train_data, i_valid_data, conf)
         model, result = run_experiment(train_ds, valid_ds, conf['params'], model_f)

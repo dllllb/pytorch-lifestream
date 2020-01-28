@@ -25,7 +25,7 @@ def prepare_parser(parser):
     parser.add_argument('--ml_embedding_file_names', nargs='+', default=['embeddings.pickle'])
     parser.add_argument('--target_score_file_names', nargs='+', default=['target_scores', 'finetuning_scores'])
     parser.add_argument('--output_file', type=os.path.abspath, default='runs/scenario_age_pred.csv')
-
+    parser.add_argument('--labeled_amount', type=int, default=21_600)
 
 def read_target(conf):
     target = pd.read_csv(os.path.join(conf['data_path'], 'train_target.csv'))
@@ -119,7 +119,7 @@ def main(conf):
             f"embeds: {file_name}" : {'metric_learning_embedding_name': file_name} for file_name in conf['ml_embedding_file_names']
         }
     }
-    
+
     approaches_to_score = {
         f"scores: {file_name}" : {'target_scores_name': file_name} for file_name in conf['target_score_file_names']
     }
@@ -129,9 +129,12 @@ def main(conf):
     # train model on features and score valid and test sets
     folds = []
     skf = StratifiedKFold(n_splits=conf['cv_n_split'], random_state=conf['random_state'], shuffle=True)
+    nrows = conf['labeled_amount'] # semi-supervised setup. default = supervised
+    logger.info(f'labeled_amount: {nrows}')
+
     for i_train, i_test in skf.split(df_target, df_target['bins']):
         folds.append((
-            df_target.iloc[i_train],
+            df_target.iloc[i_train[:nrows]],
             df_target.iloc[i_test]
         ))
 
@@ -149,6 +152,7 @@ def main(conf):
     pool = Pool(processes=conf['n_workers'])
     args_list = [(name, conf, params, df_target, test_target) for name, params in approaches_to_score.items()]
     results = reduce(iadd, pool.map(get_scores, args_list))
+    
     df_scores = pd.DataFrame(results).set_index('name')[['oof_accuracy','test_accuracy']]
 
     # combine results
