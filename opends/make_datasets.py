@@ -2,6 +2,7 @@ import argparse
 import logging
 import os
 import pickle
+from random import Random
 
 import numpy as np
 import pandas as pd
@@ -23,7 +24,7 @@ def parse_args(args=None):
     parser.add_argument('--cols_log_norm', nargs='*', default=[])
     parser.add_argument('--col_target', required=False, type=str)
     parser.add_argument('--test_size', type=float, default=0.1)
-    parser.add_argument('--salt', type=str, default='42')
+    parser.add_argument('--salt', type=int, default=42)
 
     parser.add_argument('--output_train_path', type=os.path.abspath)
     parser.add_argument('--output_test_path', type=os.path.abspath)
@@ -134,9 +135,10 @@ def split_dataset(all_data, test_size, data_path, target_files, col_client_id, s
 
     # shuffle client list
     s_all_data_clients = set(rec[col_client_id] for rec in all_data)
-    s_clients = ((cl_id, hash(str(cl_id) + salt)) for cl_id in s_clients if cl_id in s_all_data_clients)
-    s_clients = sorted(s_clients, key=lambda x: x[1])
-    s_clients = [cl_id for cl_id, _ in s_clients]
+    s_clients = (cl_id for cl_id in s_clients if cl_id in s_all_data_clients)
+    s_clients = sorted(s_clients)
+    s_clients = [cl_id for cl_id in s_clients]
+    Random(salt).shuffle(s_clients)
 
     # split client list
     Nrows_test = int(len(s_clients) * test_size)
