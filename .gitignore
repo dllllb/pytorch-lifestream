@@ -5,3 +5,4 @@ data
 opends/models/
 opends/logs
 deb.env
+.ipynb_checkpoints

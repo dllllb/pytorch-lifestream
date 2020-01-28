@@ -1,5 +1,7 @@
 import argparse
 import logging
+import numpy as np
+import torch
 
 if __name__ == '__main__':
     import sys
@@ -8,6 +10,13 @@ if __name__ == '__main__':
 from scenario_gender import compare_approaches, fit_target, fit_finetuning
 
 logger = logging.getLogger(__name__)
+
+# reproducibility
+np.random.seed(42)
+torch.backends.cudnn.benchmark = False
+torch.backends.cudnn.deterministic = True
+torch.manual_seed(42)
+torch.cuda.manual_seed_all(42)
 
 
 def parse_args(args=None):

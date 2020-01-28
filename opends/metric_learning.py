@@ -23,6 +23,12 @@ from dltranz.util import init_logger, get_conf
 
 logger = logging.getLogger(__name__)
 
+# reproducibility
+np.random.seed(42)
+torch.backends.cudnn.benchmark = False
+torch.backends.cudnn.deterministic = True
+torch.manual_seed(42)
+torch.cuda.manual_seed_all(42)
 
 def prepare_embeddings(seq, conf):
     min_seq_len = conf['dataset'].get('min_seq_len', 1)

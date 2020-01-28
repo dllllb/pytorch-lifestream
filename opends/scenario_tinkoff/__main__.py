@@ -9,6 +9,7 @@ import os
 from copy import deepcopy
 
 import numpy as np
+import torch
 
 from scenario_tinkoff import train_test_nn
 from scenario_tinkoff.data import load_data, log_split_by_date
@@ -16,6 +17,13 @@ from scenario_tinkoff import history_file
 from scenario_tinkoff.history_file import save_result
 
 logger = logging.getLogger(__name__)
+
+# reproducibility
+np.random.seed(42)
+torch.backends.cudnn.benchmark = False
+torch.backends.cudnn.deterministic = True
+torch.manual_seed(42)
+torch.cuda.manual_seed_all(42)
 
 
 def check_random(config):
