@@ -14,12 +14,13 @@ from dltranz.metric_learn.inference_tools import load_model, score_part_of_data
 
 logger = logging.getLogger(__name__)
 
-# reproducibility
-np.random.seed(42)
-torch.backends.cudnn.benchmark = False
-torch.backends.cudnn.deterministic = True
-torch.manual_seed(42)
-torch.cuda.manual_seed_all(42)
+if __name__ == '__main__':
+    # reproducibility
+    np.random.seed(42)
+    torch.backends.cudnn.benchmark = False
+    torch.backends.cudnn.deterministic = True
+    torch.manual_seed(42)
+    torch.cuda.manual_seed_all(42)
 
 
 def read_dataset(path, conf):
