@@ -22,12 +22,13 @@ def train_from_config(X_train, y_train, X_valid, y_valid, config):
     base_path = os.path.join(os.path.dirname(os.path.abspath(__file__)))
     with open(osp.join(base_path, 'conf', config), 'r') as f:
         model_config = json.load(f)
-
     model = node.get_model(model_config, X_train)
-    return 0.5
 
-    #
     data = to_fastai_data(X_train, y_train, X_valid, y_valid)
+    
+    learner = Learner(data, model)
+    learner.fit_one_cycle(10, 1e-2)
+    return 0.5
 
 
 def to_fastai_data(X_train, y_train, X_valid, y_valid):
@@ -57,3 +58,9 @@ def to_fastai_data(X_train, y_train, X_valid, y_valid):
       np.random.randn(1000, 5), 
       np.random.randint(0, 2, (1000,))
       )'''
+
+train_from_config(np.random.randn(10000, 5), 
+                  np.random.randint(0, 2, (10000,)),
+                  np.random.randn(1000, 5), 
+                  np.random.randint(0, 2, (1000,)),
+                  'age.json')
