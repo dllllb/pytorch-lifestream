@@ -2,6 +2,9 @@ from fastai.tabular import *
 import pandas as pd
 import numpy as np
 import os
+import os.path as osp
+import json
+import dltranz.neural_automl.neural_automl_models as node
 
 def train(X_train, y_train, X_valid, y_valid):
     data = to_fastai_data(X_train, y_train, X_valid, y_valid)
@@ -10,8 +13,21 @@ def train(X_train, y_train, X_valid, y_valid):
     learn.fit_one_cycle(10, 1e-2)
     return 0.56
 
+
 def train_from_config(X_train, y_train, X_valid, y_valid, config):
-    pass
+    # getting model
+    if config is None:
+        raise NotImplementedError('you should specify config file')
+
+    base_path = os.path.join(os.path.dirname(os.path.abspath(__file__)))
+    with open(osp.join(base_path, 'conf', config), 'r') as f:
+        model_config = json.load(f)
+
+    model = node.get_model(model_config, X_train)
+    return 0.5
+
+    #
+    data = to_fastai_data(X_train, y_train, X_valid, y_valid)
 
 
 def to_fastai_data(X_train, y_train, X_valid, y_valid):

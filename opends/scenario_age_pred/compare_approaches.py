@@ -99,13 +99,14 @@ def train_and_score(args):
                                                 X_valid.values, 
                                                 y_valid.values.astype('long'),
                                                 'age.json')
-        test_accuracy = 'na'
+        test_accuracy = -1
     elif model_type == 'fastai':
-        valid_accuracy = fai.train(X_train.values, 
-                                   y_train.values.astype('long'), 
-                                   X_valid.values, 
-                                   y_valid.values.astype('long'),)
-        test_accuracy = 'na'
+        valid_accuracy = fai.train_from_config(X_train.values, 
+                                               y_train.values.astype('long'), 
+                                               X_valid.values, 
+                                               y_valid.values.astype('long'),
+                                               'age.json')
+        test_accuracy = -1
 
     logger.info(f'[{name}:{fold_n}] Finished with accuracy valid={valid_accuracy:.4f}, test={test_accuracy:.4f}: {params}')
 
