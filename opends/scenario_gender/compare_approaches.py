@@ -1,39 +1,27 @@
-if __name__ == '__main__':
-    import sys
-    sys.path.append('../')
-
 import logging
 import os
-from multiprocessing import Pool
-
-import pandas as pd
-import xgboost as xgb
-import lightgbm as lgb
-from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import roc_auc_score
-from sklearn.model_selection import StratifiedKFold
 from functools import reduce
+from multiprocessing import Pool
 from operator import iadd
 
-from dltranz.util import group_stat_results
-from scenario_gender.features import load_features, load_scores
-from scenario_gender.features import COL_ID, COL_TARGET
+import lightgbm as lgb
+import pandas as pd
+import xgboost as xgb
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import roc_auc_score
+
 from dltranz.neural_automl.neural_automl_tools import train_from_config
+from dltranz.scenario_cls_tools import prepare_common_parser, read_train_test, get_folds, group_stat_results
+from scenario_gender.const import (
+    COL_ID, COL_TARGET, DEFAULT_DATA_PATH, DEFAULT_RESULT_FILE, DATASET_FILE, TEST_IDS_FILE,
+)
+from scenario_gender.features import load_features, load_scores
 
 logger = logging.getLogger(__name__)
 
 
 def prepare_parser(parser):
-    parser.add_argument('--n_workers', type=int, default=5)
-    parser.add_argument('--cv_n_split', type=int, default=5)
-    parser.add_argument('--data_path', type=os.path.abspath, default='../data/gender/')
-    parser.add_argument('--test_size', type=float, default=0.4)
-    parser.add_argument('--random_state', type=int, default=42)
-    parser.add_argument('--model_seed', type=int, default=42)
-    parser.add_argument('--ml_embedding_file_names', nargs='+', default=['embeddings.pickle'])
-    parser.add_argument('--target_score_file_names', nargs='+', default=['target_scores', 'finetuning_scores'])
-    parser.add_argument('--output_file', type=os.path.abspath, default='runs/scenario_gender.csv')
-    parser.add_argument('--pos', type=int, nargs='*', default=[])
+    return prepare_common_parser(parser, data_path=DEFAULT_DATA_PATH, output_file=DEFAULT_RESULT_FILE)
 
 
 def read_target(conf):
@@ -154,26 +142,20 @@ def main(conf):
     logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)-7s %(funcName)-20s   : %(message)s')
 
     approaches_to_train = {
-        'baseline' : {'use_client_agg': True, 'use_mcc_code_stat': True, 'use_tr_type_stat': True},
+        'baseline': {'use_client_agg': True, 'use_mcc_code_stat': True, 'use_tr_type_stat': True},
         **{
-            f"embeds: {file_name}" : {'metric_learning_embedding_name': file_name} for file_name in conf['ml_embedding_file_names']
+            f"embeds: {file_name}": {'metric_learning_embedding_name': file_name}
+            for file_name in conf['ml_embedding_file_names']
         }
     }
 
     approaches_to_score = {
-        f"scores: {file_name}" : {'target_scores_name': file_name} for file_name in conf['target_score_file_names']
+        f"scores: {file_name}": {'target_scores_name': file_name}
+        for file_name in conf['target_score_file_names']
     }
 
-    df_target, test_target = read_target(conf)
-    
-    # train model on features and score valid and test sets
-    folds = []
-    skf = StratifiedKFold(n_splits=conf['cv_n_split'], random_state=conf['random_state'], shuffle=True)
-    for i_train, i_test in skf.split(df_target, df_target[COL_TARGET]):
-        folds.append((
-            df_target.iloc[i_train],
-            df_target.iloc[i_test]
-        ))
+    df_target, test_target = read_train_test(conf['data_path'], DATASET_FILE, TEST_IDS_FILE, COL_ID)
+    folds = get_folds(df_target, COL_TARGET, conf['cv_n_split'], conf['random_state'])
 
     args_list = [(name, fold_n, conf, params, model_type, train_target, valid_target, test_target)
                  for name, params in approaches_to_train.items()
