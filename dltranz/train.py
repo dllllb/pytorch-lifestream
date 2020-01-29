@@ -172,7 +172,8 @@ def fit_model(model, train_loader, valid_loader, loss, optimizer, scheduler, par
         loss_fn=loss,
         device=device,
         prepare_batch=batch_to_device,
-        output_transform=lambda x, y, y_pred, loss: (loss.item(), x[0].seq_lens if isinstance(x, dict) else x.seq_lens),
+        output_transform=lambda x, y, y_pred, loss: \
+                (loss.item(), x[next(iter(x.keys()))].seq_lens if isinstance(x, dict) else x.seq_lens),
     )
 
     RunningAverage(output_transform=lambda x: x[0]).attach(trainer, 'loss')
