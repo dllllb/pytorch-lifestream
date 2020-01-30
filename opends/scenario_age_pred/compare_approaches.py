@@ -105,7 +105,12 @@ def train_and_score(args):
                                                y_train.values.astype('long'), 
                                                X_valid.values, 
                                                y_valid.values.astype('long'),
-                                               'age.json')
+                                               'age_tabular.json')
+        '''valid_accuracy = fai.train_tabular(X_train.values, 
+                                               y_train.values.astype('long'), 
+                                               X_valid.values, 
+                                               y_valid.values.astype('long'),
+                                               'age_tabular.json')'''
         test_accuracy = -1
 
     logger.info(f'[{name}:{fold_n}] Finished with accuracy valid={valid_accuracy:.4f}, test={test_accuracy:.4f}: {params}')
@@ -172,8 +177,8 @@ def main(conf):
                  for name, params in approaches_to_train.items()
                  for fold_n, (train_target, valid_target) in enumerate(folds)
                  #for model_type in ['xgb','lgb']
-                 #for model_type in ['fastai']
-                 for model_type in ['neural_automl']
+                 for model_type in ['fastai']
+                 #for model_type in ['neural_automl']
                  ]
 
     if conf['pool']:

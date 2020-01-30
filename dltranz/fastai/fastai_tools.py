@@ -18,12 +18,15 @@ class TabularModelWrapper(nn.Module):
     def forward(self, *args):
         return self.m(args[1])
 
-def train(X_train, y_train, X_valid, y_valid):
+def train_tabular(X_train, y_train, X_valid, y_valid, config):
     data = to_fastai_data(X_train, y_train, X_valid, y_valid)
 
-    learn = tabular_learner(data, layers=[200,100], metrics=accuracy)
-    learn.fit_one_cycle(10, 1e-2)
-    return 0.56
+    learn = tabular_learner(data, 
+                            layers=[256, 512, 4], 
+                            metrics=accuracy,
+                            loss_func=nn.NLLLoss())
+    learn.fit_one_cycle(5, 0.004)
+    return -1
 
 
 def train_from_config(X_train, y_train, X_valid, y_valid, config):
@@ -68,7 +71,7 @@ def train_from_config(X_train, y_train, X_valid, y_valid, config):
                       model, 
                       loss_func=loss_function, 
                       metrics=metric)
-    learner.fit_one_cycle(model_config["train_params"]["n_epoch"], 0.004)#1e-2)
+    learner.fit_one_cycle(model_config["train_params"]["n_epoch"], model_config["sgd_params"]["lr"])#1e-2)
     return -1
 
 

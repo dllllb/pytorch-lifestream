@@ -17,16 +17,15 @@
 
     "layers": [
         {
-            "type": "tree",
-            "num_trees": 128,
-            "num_sub_layers": 2,
-            "tree_dim": 1,
-            "tree_depth": 6,
-            "flatten_output": false
+            "type": "batchnorm"
         },
         {
-            "type": "aggregation",
-            "func": "mean"
+            "type": "linear",
+            "d_out": 256
+        },
+        {
+            "type": "linear",
+            "d_out": 512
         },
         {
             "type": "linear",
