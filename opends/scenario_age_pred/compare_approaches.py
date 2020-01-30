@@ -172,7 +172,8 @@ def main(conf):
                  for name, params in approaches_to_train.items()
                  for fold_n, (train_target, valid_target) in enumerate(folds)
                  #for model_type in ['xgb','lgb']
-                 for model_type in ['fastai']
+                 #for model_type in ['fastai']
+                 for model_type in ['neural_automl']
                  ]
 
     if conf['pool']:

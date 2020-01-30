@@ -1,4 +1,16 @@
 {
+    "train_params": {
+        "n_epoch": 5
+    },
+
+    "loss_params": {
+        "func": "nll"
+    },
+    
+    "accuracy_params": {
+        "func": "accuracy"
+    },
+
     "layers": [
         {
             "type": "tree",
