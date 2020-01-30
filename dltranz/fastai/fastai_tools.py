@@ -5,7 +5,7 @@ import os
 import os.path as osp
 import json
 import sys
-sys.path.insert(0, '/mnt/data/molchanov/dltranz')
+
 import dltranz.neural_automl.neural_automl_models as node
 import torch.nn as nn
 

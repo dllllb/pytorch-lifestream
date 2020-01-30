@@ -10,3 +10,4 @@ pytorch-ignite==0.2.1
 tqdm>=4.32.2
 tensorboard>=2.1.0
 xgboost>=0.90
+fastai
