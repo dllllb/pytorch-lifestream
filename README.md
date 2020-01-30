@@ -80,7 +80,7 @@ python -m scenario_gender compare_approaches
 cat runs/scenario_gender.csv
 ```
 
-## tinkoff dataset
+## tinkoff dataset: Story recommendation with cold start
 
 ```sh
 cd dltrans/opends
@@ -108,6 +108,31 @@ python -m scenario_tinkoff convert_history_file --report_file "runs/scenario_tin
 
 cat "runs/scenario_tinkoff.csv"
 ```
+
+## tinkoff dataset: Socio-demographic characteristics by transactions
+Note. This is the same dataset as in previous step.
+You don't need retun metric learning model train and recalculate embeddings.
+Use the ones you have already prepared.
+
+```sh
+cd dltrans/opends
+
+# (If wasn't ran before) Train metric learning model
+python metric_learning.py --conf conf/tinkoff_dataset.hocon conf/tinkoff_train_params.json
+
+# (If wasn't ran before) With pretrained mertic learning model run inference ang take embeddings for each customer
+python ml_inference.py --conf conf/tinkoff_dataset.hocon conf/tinkoff_inference_params.json
+
+
+# Run estimation for different approaches
+# Check some options with `--help` argument
+python -m scenario_tin_cls compare_approaches
+
+# check the results
+cat runs/scenario_tin_cls_*.csv
+
+```
+
 
 ## common scenario (work in progress)
 

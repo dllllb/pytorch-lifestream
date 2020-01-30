@@ -1,6 +1,7 @@
 {
   dataset: {
     train_path: "../data/tinkoff/train_trx.p"
+    test_path: "../data/tinkoff/test_trx.p"
     valid_size: 0.02
 
     preprocessing: {

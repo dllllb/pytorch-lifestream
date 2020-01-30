@@ -5,8 +5,7 @@ import os
 import pandas as pd
 from pandas.io.json import json_normalize
 
-from dltranz.util import group_stat_results
-
+from dltranz.scenario_cls_tools import group_stat_results
 
 logger = logging.getLogger(__name__)
 
