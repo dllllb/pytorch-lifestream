@@ -134,12 +134,12 @@ def train_and_score(kw_params: KWParamsTrainAndScore):
         score_test = kw_params.scorer(model, X_test, y_test)
 
     elif kw_params.model_type == 'neural_automl':
-        valid_accuracy = node.train_from_config(X_train.values, 
-                                                y_train.values.astype('long'), 
-                                                X_valid.values, 
-                                                y_valid.values.astype('long'),
-                                                'age.json')
-        test_accuracy = -1
+        score_valid = node.train_from_config(X_train.values, 
+                                             y_train.values.astype('long'), 
+                                             X_valid.values, 
+                                             y_valid.values.astype('long'),
+                                             'age.json')
+        score_test = -1
 
     elif kw_params.model_type == 'fastai':
         score_valid = fai.train_from_config(X_train.values, 
