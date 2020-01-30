@@ -4,8 +4,7 @@ from glob import glob
 import numpy as np
 import pandas as pd
 
-COL_ID = 'customer_id'
-COL_TARGET = 'gender'
+from scenario_gender.const import DATASET_FILE, COL_ID
 
 
 def df_norm(df):
@@ -13,7 +12,7 @@ def df_norm(df):
 
 
 def _random(conf):
-    all_clients = pd.read_csv(os.path.join(conf['data_path'], 'gender_train.csv')).set_index(COL_ID)
+    all_clients = pd.read_csv(os.path.join(conf['data_path'], DATASET_FILE)).set_index(COL_ID)
     all_clients = all_clients.assign(random=np.random.rand(len(all_clients)))
     return all_clients[['random']]
 
