@@ -8,7 +8,6 @@ import numpy as np
 import pandas as pd
 import xgboost as xgb
 
-from dltranz.util import group_stat_results
 from scenario_age_pred.features import load_features, load_scores
 import dltranz.neural_automl.neural_automl_tools as node
 import dltranz.fastai.fastai_tools as fai
