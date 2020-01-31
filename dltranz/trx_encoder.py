@@ -47,6 +47,20 @@ class NoisyEmbedding(nn.Embedding):
         return x
 
 
+class RBatchNorm(torch.nn.Module):
+    def __init__(self):
+        super().__init__()
+
+        self.bn = torch.nn.BatchNorm1d(1)
+
+    def forward(self, x):
+        B, T, _ = x.size()  # B x T x 1
+        x = x.view(B * T, 1)
+        x = self.bn(x)
+        x = x.view(B, T, 1)
+        return x
+
+
 class IdentityScaler(nn.Module):
     def forward(self, x):
         return x
@@ -80,9 +94,12 @@ class TrxEncoder(nn.Module):
     def __init__(self, config):
 
         super().__init__()
-        self.scalers = OrderedDict(
-            {name: scaler_by_name(scaler_name) for name, scaler_name in config['numeric_values'].items()}
-        )
+        self.scalers = nn.ModuleDict()
+        for name, scaler_name in config['numeric_values'].items():
+            self.scalers[name] = torch.nn.Sequential(
+                RBatchNorm(),
+                scaler_by_name(scaler_name),
+            )
 
         self.embeddings = nn.ModuleDict()
         for emb_name, emb_props in config['embeddings'].items():
