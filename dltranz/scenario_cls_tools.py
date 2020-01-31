@@ -1,6 +1,9 @@
 import logging
 import os
 from collections import namedtuple
+from functools import reduce
+from multiprocessing.pool import Pool
+from operator import iadd
 
 import lightgbm as lgb
 import pandas as pd
@@ -9,8 +12,8 @@ import xgboost as xgb
 from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import StratifiedKFold
 
-import dltranz.neural_automl.neural_automl_tools as node
 import dltranz.fastai.fastai_tools as fai
+import dltranz.neural_automl.neural_automl_tools as node
 
 logger = logging.getLogger(__name__)
 
@@ -68,7 +71,7 @@ KWParamsTrainAndScore = namedtuple('KWParamsTrainAndScore', [
     'fold_n',
     'load_features_f',
     'model_type',
-    'model_seed',
+    'model_params',
     'scorer_name',
     'scorer',
     'col_target',
@@ -100,53 +103,34 @@ def train_and_score(kw_params: KWParamsTrainAndScore):
     X_test = pd.concat([df.fillna(fn) / n for df, fn, n in zip(test_features, df_fn, df_norm)], axis=1)
 
     if kw_params.model_type == 'linear':
-        model = LogisticRegression()
+        model = LogisticRegression(**kw_params.model_params)
     elif kw_params.model_type == 'xgb':
-        model = xgb.XGBClassifier(
-            # objective='multi:softprob',
-            # num_class=4,
-            n_jobs=4,
-            seed=kw_params.model_seed,
-            n_estimators=300)
+        model = xgb.XGBClassifier(**kw_params.model_params)
     elif kw_params.model_type == 'lgb':
-        model = lgb.LGBMClassifier(
-            n_estimators=500,
-            boosting_type='gbdt',
-            objective='binary',
-            metric='auc',
-            subsample=0.5,
-            subsample_freq=1,
-            learning_rate=0.02,
-            feature_fraction=0.75,
-            max_depth=6,
-            lambda_l1=1,
-            lambda_l2=1,
-            min_data_in_leaf=50,
-            random_state=kw_params.model_seed,
-        )
+        model = lgb.LGBMClassifier(**kw_params.model_params)
+    elif kw_params.model_type in ('neural_automl', 'fastai'):
+        pass
+    else:
+        raise NotImplementedError(f'Unknown model type {kw_params.model_type}')
 
-    elif kw_params.model_type not in ['neural_automl', 'fastai']:
-        raise NotImplementedError(f'unknown model type {kw_params.model_type}')
-
-    if kw_params.model_type in ['xgb', 'lgb']:
+    if kw_params.model_type in ['linear', 'xgb', 'lgb']:
         model.fit(X_train, y_train)
         score_valid = kw_params.scorer(model, X_valid, y_valid)
         score_test = kw_params.scorer(model, X_test, y_test)
-
     elif kw_params.model_type == 'neural_automl':
-        score_valid = node.train_from_config(X_train.values, 
-                                             y_train.values.astype('long'), 
-                                             X_valid.values, 
+        score_valid = node.train_from_config(X_train.values,
+                                             y_train.values.astype('long'),
+                                             X_valid.values,
                                              y_valid.values.astype('long'),
                                              'age.json')
         score_test = -1
 
     elif kw_params.model_type == 'fastai':
-        score_valid = fai.train_from_config(X_train.values, 
-                                            y_train.values.astype('long'), 
-                                            X_valid.values, 
+        score_valid = fai.train_from_config(X_train.values,
+                                            y_train.values.astype('long'),
+                                            X_valid.values,
                                             y_valid.values.astype('long'),
-                                               'age_tabular.json')
+                                            'age_tabular.json')
         '''score_valid = fai.train_tabular(X_train.values, 
                                            y_train.values.astype('long'), 
                                            X_valid.values, 
@@ -176,8 +160,6 @@ def group_stat_results(df, group_col_name, col_agg_metric=None, col_list_metrics
         return '[' + ' '.join([f'{i:.3f}' for i in sorted(x)]) + ']'
 
     def t_interval(x, p=0.95):
-        import scipy.stats
-
         n = len(x)
         s = x.std(ddof=1)
 
@@ -206,3 +188,15 @@ def group_stat_results(df, group_col_name, col_agg_metric=None, col_list_metrics
 
     df_results = pd.concat(metric_aggregates, axis=1, keys=metric_names).sort_index()
     return df_results
+
+
+class WPool:
+    def __init__(self, processes):
+        self.processes = processes
+        self.pool = Pool(processes=processes) if self.processes > 0 else None
+
+    def map(self, func, iterable):
+        if self.pool is not None:
+            return self.pool.map(func, iterable)
+        else:
+            return reduce(iadd, map(func, iterable))
