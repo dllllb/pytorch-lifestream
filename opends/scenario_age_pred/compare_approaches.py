@@ -1,5 +1,6 @@
 import logging
-from functools import partial
+from functools import partial, reduce
+from operator import iadd
 
 import numpy as np
 import pandas as pd
@@ -119,7 +120,7 @@ def main(conf):
 
     # score already trained models on valid and test sets
     args_list = [(name, conf, params, df_target, test_target) for name, params in approaches_to_score.items()]
-    results = pool.map(get_scores, args_list)
+    results = reduce(iadd, pool.map(get_scores, args_list))
     df_scores = pd.DataFrame(results).set_index('name')[['oof_accuracy', 'test_accuracy']]
 
     # combine results
