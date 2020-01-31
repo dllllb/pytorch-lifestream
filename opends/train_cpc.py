@@ -29,7 +29,7 @@ def main(args=None):
 
     trx_e = TrxEncoder(conf['trx_encoder'])
     rnn_e = RnnEncoder(8, conf['rnn'])
-    cpc_e = CPC_Ecoder(trx_e, rnn_e)
+    cpc_e = CPC_Ecoder(trx_e, rnn_e, conf['train.cpc'])
 
     return run_experiment(train_data, valid_data, cpc_e, conf)
 

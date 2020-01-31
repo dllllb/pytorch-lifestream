@@ -23,8 +23,6 @@ def tst_params():
         "train": {
             "weight_decay": 0,
             "lr": 0.004,
-            "lr_scheduler.step_size": 10,
-            "lr_scheduler.step_gamma": 0.8,
             "loss": "bce",
             "random_neg": True,
             "batch_size": 32,
@@ -52,6 +50,10 @@ def tst_params():
                 'trans_type': {'in': 11, 'out': 2},
             },
             'numeric_values': {'amount': 'log'}
+        },
+        "lr_scheduler": {
+            "step_size": 10,
+            "step_gamma": 0.8
         }
     }
     return ConfigFactory.from_dict(params)
