@@ -8,12 +8,15 @@ import numpy as np
 import pandas as pd
 import xgboost as xgb
 
-from dltranz.neural_automl.neural_automl_tools import train_from_config
+from scenario_age_pred.features import load_features, load_scores
+import dltranz.neural_automl.neural_automl_tools as node
+import dltranz.fastai.fastai_tools as fai
+
 from dltranz.scenario_cls_tools import prepare_common_parser, read_train_test, get_folds, group_stat_results
 from scenario_age_pred.const import (
     DEFAULT_DATA_PATH, DEFAULT_RESULT_FILE, TEST_IDS_FILE, DATASET_FILE, COL_ID, COL_TARGET,
 )
-from scenario_age_pred.features import load_features, load_scores
+
 
 logger = logging.getLogger(__name__)
 
@@ -62,21 +65,35 @@ def train_and_score(args):
             num_leaves=50,
             random_state=conf['model_seed'],
             n_jobs=4)
-    elif model_type == 'neural_automl':
-        pass
-    else:
+    elif model_type not in ['neural_automl', 'fastai']:
         raise NotImplementedError(f'unknown model type {model_type}')
 
-    if model_type != 'neural_automl':
+    if model_type in ['xgb', 'lgb']:
         model.fit(X_train, y_train)
         valid_accuracy = (y_valid == model.predict(X_valid)).mean()
         test_accuracy = (y_test == model.predict(X_test)).mean()
-    else:
-        valid_accuracy = train_from_config(X_train.values,
-                                           y_train.values.astype('long'),
-                                           X_valid.values,
-                                           y_valid.values.astype('long'),
-                                           'age.json')
+
+    elif model_type == 'neural_automl':
+        valid_accuracy = node.train_from_config(X_train.values, 
+                                                y_train.values.astype('long'), 
+                                                X_valid.values, 
+                                                y_valid.values.astype('long'),
+                                                'age.json')
+        test_accuracy = -1
+
+    elif model_type == 'fastai':
+        valid_accuracy = fai.train_from_config(X_train.values, 
+                                               y_train.values.astype('long'), 
+                                               X_valid.values, 
+                                               y_valid.values.astype('long'),
+                                               'age_tabular.json')
+        '''valid_accuracy = fai.train_tabular(X_train.values, 
+                                               y_train.values.astype('long'), 
+                                               X_valid.values, 
+                                               y_valid.values.astype('long'),
+                                               'age_tabular.json')'''
+        test_accuracy = -1
+
 
     logger.info(
         f'[{name}:{fold_n}] Finished with accuracy valid={valid_accuracy:.4f}, test={test_accuracy:.4f}: {params}')
@@ -138,15 +155,24 @@ def main(conf):
                  for model_type in ['xgb', 'lgb']
                  ]
 
-    pool = Pool(processes=conf['n_workers'])
-    results = pool.map(train_and_score, args_list)
-    df_results = pd.DataFrame(results).set_index('name')[['oof_accuracy', 'test_accuracy']]
+    if conf['n_workers'] > 0:
+        pool = Pool(processes=conf['n_workers'])
+        results = pool.map(train_and_score, args_list)
+        df_results = pd.DataFrame(results).set_index('name')[['oof_accuracy', 'test_accuracy']]
+    else:
+        results = map(train_and_score, args_list)
+        df_results = pd.DataFrame(results).set_index('name')[['oof_accuracy', 'test_accuracy']]
 
-    # score already trained models on valid and test sets
-    pool = Pool(processes=conf['n_workers'])
+    # score already trained models on valid and tets sets
     args_list = [(name, conf, params, df_target, test_target) for name, params in approaches_to_score.items()]
-    results = reduce(iadd, pool.map(get_scores, args_list))
-    df_scores = pd.DataFrame(results).set_index('name')[['oof_accuracy', 'test_accuracy']]
+    if conf['n_workers'] > 0:
+        pool = Pool(processes=conf['n_workers'])
+        results = reduce(iadd, pool.map(get_scores, args_list))
+        df_scores = pd.DataFrame(results).set_index('name')[['oof_accuracy', 'test_accuracy']]
+    else:
+        results = reduce(iadd, map(get_scores, args_list))
+        df_scores = pd.DataFrame(results).set_index('name')[['oof_accuracy', 'test_accuracy']]
+
 
     # combine results
     df_results = pd.concat([df_results, df_scores])
