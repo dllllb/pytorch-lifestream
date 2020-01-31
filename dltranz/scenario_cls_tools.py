@@ -122,7 +122,7 @@ def train_and_score(kw_params: KWParamsTrainAndScore):
                                              y_train.values.astype('long'),
                                              X_valid.values,
                                              y_valid.values.astype('long'),
-                                             'age.json')
+                                             kw_params.model_params)
         score_test = -1
 
     elif kw_params.model_type == 'fastai':
@@ -130,12 +130,12 @@ def train_and_score(kw_params: KWParamsTrainAndScore):
                                             y_train.values.astype('long'),
                                             X_valid.values,
                                             y_valid.values.astype('long'),
-                                            'age_tabular.json')
+                                            kw_params.model_params)
         '''score_valid = fai.train_tabular(X_train.values, 
                                            y_train.values.astype('long'), 
                                            X_valid.values, 
                                            y_valid.values.astype('long'),
-                                           'age_tabular.json')'''
+                                           kw_params.model_params)'''
         score_test = -1
 
     logger.info(
