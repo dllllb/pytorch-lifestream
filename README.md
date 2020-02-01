@@ -35,24 +35,26 @@ pip install -r requirements.txt
 ## age-pred dataset
 
 ```sh
+cd dltrans/opends
+
 # Train metric learning model
-dltrans/opends$ python metric_learning.py --conf conf/age_pred_ml_dataset.hocon conf/age_pred_ml_params_train.json
+python metric_learning.py --conf conf/age_pred_ml_dataset.hocon conf/age_pred_ml_params_train.json
 
 # With pretrained mertic learning model run inference ang take embeddings for each customer
-dltrans/opends$ python ml_inference.py --conf conf/age_pred_ml_dataset.hocon conf/age_pred_ml_params_inference.json
+python ml_inference.py --conf conf/age_pred_ml_dataset.hocon conf/age_pred_ml_params_inference.json
 
 # Train supervised model and save scores to file
-dltrans/opends$ python -m scenario_age_pred fit_target --conf conf/age_pred_target_dataset.hocon conf/age_pred_target_params_train.json
+python -m scenario_age_pred fit_target --conf conf/age_pred_target_dataset.hocon conf/age_pred_target_params_train.json
 
 # Take pretrained ml model and fine tune it in supervised mode and save scores to file
-dltrans/opends$ python -m scenario_age_pred fit_finetuning --conf conf/age_pred_target_dataset.hocon conf/age_pred_finetuning_params_train.json
+python -m scenario_age_pred fit_finetuning --conf conf/age_pred_target_dataset.hocon conf/age_pred_finetuning_params_train.json
 
 # Run estimation for different approaches
 # Check some options with `--help` argument
-dltrans/opends$ python -m scenario_age_pred compare_approaches
+python -m scenario_age_pred compare_approaches
 
 # check the results
-dltrans/opends$ cat runs/scenario_age_pred.csv
+cat runs/scenario_age_pred.csv
 ```
 
 ## gender dataset
