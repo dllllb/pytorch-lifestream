@@ -1,110 +1,22 @@
 import logging
-from functools import reduce
-from multiprocessing import Pool
+from functools import partial, reduce
 from operator import iadd
 
-import lightgbm as lgb
 import numpy as np
 import pandas as pd
-import xgboost as xgb
+from sklearn.metrics import make_scorer, accuracy_score
 
-from scenario_age_pred.features import load_features, load_scores
-import dltranz.neural_automl.neural_automl_tools as node
-import dltranz.fastai.fastai_tools as fai
-
-from dltranz.scenario_cls_tools import prepare_common_parser, read_train_test, get_folds, group_stat_results
+import dltranz.scenario_cls_tools as sct
 from scenario_age_pred.const import (
     DEFAULT_DATA_PATH, DEFAULT_RESULT_FILE, TEST_IDS_FILE, DATASET_FILE, COL_ID, COL_TARGET,
 )
-
+from scenario_age_pred.features import load_features, load_scores
 
 logger = logging.getLogger(__name__)
 
 
 def prepare_parser(parser):
-    return prepare_common_parser(parser, data_path=DEFAULT_DATA_PATH, output_file=DEFAULT_RESULT_FILE)
-
-
-def train_and_score(args):
-    name, fold_n, conf, params, model_type, train_target, valid_target, test_target = args
-
-    logger.info(f'[{name}:{fold_n}] Started: {params}')
-
-    features = load_features(conf, **params)
-
-    y_train = train_target[COL_TARGET]
-    y_valid = valid_target[COL_TARGET]
-    y_test = test_target[COL_TARGET]
-
-    X_train = pd.concat([df.reindex(index=train_target.index) for df in features], axis=1)
-    X_valid = pd.concat([df.reindex(index=valid_target.index) for df in features], axis=1)
-    X_test = pd.concat([df.reindex(index=test_target.index) for df in features], axis=1)
-
-    if model_type == 'xgb':
-        model = xgb.XGBClassifier(
-            objective='multi:softprob',
-            num_class=4,
-            n_jobs=4,
-            seed=conf['model_seed'],
-            n_estimators=300)
-    elif model_type == 'lgb':
-        model = lgb.LGBMClassifier(
-            boosting_type='gbdt',
-            objective='multiclass',
-            num_class=4,
-            metric='multi_error',
-            n_estimators=1000,
-            learning_rate=0.02,
-            subsample=0.75,
-            subsample_freq=1,
-            feature_fraction=0.75,
-            max_depth=12,
-            lambda_l1=1,
-            lambda_l2=1,
-            min_data_in_leaf=50,
-            num_leaves=50,
-            random_state=conf['model_seed'],
-            n_jobs=4)
-    elif model_type not in ['neural_automl', 'fastai']:
-        raise NotImplementedError(f'unknown model type {model_type}')
-
-    if model_type in ['xgb', 'lgb']:
-        model.fit(X_train, y_train)
-        valid_accuracy = (y_valid == model.predict(X_valid)).mean()
-        test_accuracy = (y_test == model.predict(X_test)).mean()
-
-    elif model_type == 'neural_automl':
-        valid_accuracy = node.train_from_config(X_train.values, 
-                                                y_train.values.astype('long'), 
-                                                X_valid.values, 
-                                                y_valid.values.astype('long'),
-                                                'age.json')
-        test_accuracy = -1
-
-    elif model_type == 'fastai':
-        valid_accuracy = fai.train_from_config(X_train.values, 
-                                               y_train.values.astype('long'), 
-                                               X_valid.values, 
-                                               y_valid.values.astype('long'),
-                                               'age_tabular.json')
-        '''valid_accuracy = fai.train_tabular(X_train.values, 
-                                               y_train.values.astype('long'), 
-                                               X_valid.values, 
-                                               y_valid.values.astype('long'),
-                                               'age_tabular.json')'''
-        test_accuracy = -1
-
-
-    logger.info(
-        f'[{name}:{fold_n}] Finished with accuracy valid={valid_accuracy:.4f}, test={test_accuracy:.4f}: {params}')
-
-    res = {}
-    res['name'] = '_'.join([model_type, name])
-    res['model_type'] = model_type
-    res['fold_n'] = fold_n
-    res['oof_accuracy'] = valid_accuracy
-    res['test_accuracy'] = test_accuracy
-    return res
+    sct.prepare_common_parser(parser, data_path=DEFAULT_DATA_PATH, output_file=DEFAULT_RESULT_FILE)
 
 
 def get_scores(args):
@@ -138,6 +50,11 @@ def main(conf):
         **{
             f"embeds: {file_name}": {'metric_learning_embedding_name': file_name}
             for file_name in conf['ml_embedding_file_names']
+        },
+        **{
+            f"embeds: {file_name} and baseline": {
+                'metric_learning_embedding_name': file_name, 'use_client_agg': True, 'use_small_group_stat': True}
+            for file_name in conf['ml_embedding_file_names']
         }
     }
 
@@ -146,42 +63,75 @@ def main(conf):
         for file_name in conf['target_score_file_names']
     }
 
-    df_target, test_target = read_train_test(conf['data_path'], DATASET_FILE, TEST_IDS_FILE, COL_ID)
-    folds = get_folds(df_target, COL_TARGET, conf['cv_n_split'], conf['random_state'])
+    df_target, test_target = sct.read_train_test(conf['data_path'], DATASET_FILE, TEST_IDS_FILE, COL_ID)
+    folds = sct.get_folds(df_target, COL_TARGET, conf['cv_n_split'], conf['random_state'])
 
-    args_list = [(name, fold_n, conf, params, model_type, train_target, valid_target, test_target)
-                 for name, params in approaches_to_train.items()
-                 for fold_n, (train_target, valid_target) in enumerate(folds)
-                 for model_type in ['xgb', 'lgb']
-                 ]
+    model_types = {
+        'xgb': dict(
+            objective='multi:softprob',
+            num_class=4,
+            n_jobs=4,
+            seed=conf['model_seed'],
+            n_estimators=300,
+        ),
+        'linear': dict(),
+        'lgb': dict(
+            n_estimators=1000,
+            boosting_type='gbdt',
+            objective='multiclass',
+            num_class=4,
+            metric='multi_error',
+            learning_rate=0.02,
+            subsample=0.75,
+            subsample_freq=1,
+            feature_fraction=0.75,
+            max_depth=12,
+            lambda_l1=1,
+            lambda_l2=1,
+            min_data_in_leaf=50,
+            num_leaves=50,
+            random_state=conf['model_seed'],
+            n_jobs=4,
+        ),
+    }
 
-    if conf['n_workers'] > 0:
-        pool = Pool(processes=conf['n_workers'])
-        results = pool.map(train_and_score, args_list)
-        df_results = pd.DataFrame(results).set_index('name')[['oof_accuracy', 'test_accuracy']]
-    else:
-        results = map(train_and_score, args_list)
-        df_results = pd.DataFrame(results).set_index('name')[['oof_accuracy', 'test_accuracy']]
+    pool = sct.WPool(processes=conf['n_workers'])
 
-    # score already trained models on valid and tets sets
+    # train and score models
+    args_list = [sct.KWParamsTrainAndScore(
+        name=name,
+        fold_n=fold_n,
+        load_features_f=partial(load_features, conf=conf, **params),
+        model_type=model_type,
+        model_params=model_params,
+        scorer_name='accuracy',
+        scorer=make_scorer(accuracy_score),
+        col_target=COL_TARGET,
+        df_train=train_target,
+        df_valid=valid_target,
+        df_test=test_target,
+    )
+        for name, params in approaches_to_train.items()
+        for fold_n, (train_target, valid_target) in enumerate(folds)
+        for model_type, model_params in model_types.items()
+    ]
+    results = pool.map(sct.train_and_score, args_list)
+    df_results = pd.DataFrame(results).set_index('name')[['oof_accuracy', 'test_accuracy']]
+
+    # score already trained models on valid and test sets
     args_list = [(name, conf, params, df_target, test_target) for name, params in approaches_to_score.items()]
-    if conf['n_workers'] > 0:
-        pool = Pool(processes=conf['n_workers'])
-        results = reduce(iadd, pool.map(get_scores, args_list))
-        df_scores = pd.DataFrame(results).set_index('name')[['oof_accuracy', 'test_accuracy']]
-    else:
-        results = reduce(iadd, map(get_scores, args_list))
-        df_scores = pd.DataFrame(results).set_index('name')[['oof_accuracy', 'test_accuracy']]
-
+    results = reduce(iadd, pool.map(get_scores, args_list))
+    df_scores = pd.DataFrame(results).set_index('name')[['oof_accuracy', 'test_accuracy']]
 
     # combine results
     df_results = pd.concat([df_results, df_scores])
-    df_results = group_stat_results(df_results, 'name', ['oof_accuracy', 'test_accuracy'])
+    df_results = sct.group_stat_results(df_results, 'name', ['oof_accuracy', 'test_accuracy'])
 
     with pd.option_context(
             'display.float_format', '{:.4f}'.format,
             'display.max_columns', None,
             'display.expand_frame_repr', False,
+            'display.max_colwidth', 100,
     ):
         logger.info(f'Results:\n{df_results}')
         with open(conf['output_file'], 'w') as f:
