@@ -101,8 +101,8 @@ def get_lr_scheduler(optimizer, params):
 
             return scheduler
 
-    lr_step_size = params['lr_scheduler.step_size']
-    lr_step_gamma = params['lr_scheduler.step_gamma']
+    lr_step_size = params['lr_scheduler']['step_size']
+    lr_step_gamma = params['lr_scheduler']['step_gamma']
     scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=lr_step_size, gamma=lr_step_gamma)
     return scheduler
 

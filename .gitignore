@@ -3,6 +3,7 @@
 __pycache__
 data
 opends/models/
+.pytest_cache
 opends/logs
 deb.env
 .ipynb_checkpoints
