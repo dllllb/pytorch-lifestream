@@ -64,8 +64,14 @@
   "save_model": false,
 
   "output": {
-    "path": "../data/age-pred/target_scores",
-    "format": "pickle",
+    "valid": {
+      "path": "../data/age-pred/target_scores/valid",
+      "format": "pickle"
+    },
+    "test": {
+      "path": "../data/age-pred/target_scores/test",
+      "format": "pickle"
+    },
     "columns": ["client_id"]
   }
 }

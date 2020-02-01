@@ -4,8 +4,7 @@ from glob import glob
 import numpy as np
 import pandas as pd
 
-COL_ID = 'customer_id'
-COL_TARGET = 'gender'
+from scenario_gender.const import DATASET_FILE, COL_ID
 
 
 def df_norm(df):
@@ -13,7 +12,7 @@ def df_norm(df):
 
 
 def _random(conf):
-    all_clients = pd.read_csv(os.path.join(conf['data_path'], 'gender_train.csv')).set_index(COL_ID)
+    all_clients = pd.read_csv(os.path.join(conf['data_path'], DATASET_FILE)).set_index(COL_ID)
     all_clients = all_clients.assign(random=np.random.rand(len(all_clients)))
     return all_clients[['random']]
 
@@ -66,28 +65,13 @@ def _metric_learning_embeddings(conf, file_name):
     return df
 
 
-def _target_scores(conf, file_path):
-    find_path = os.path.join(conf['data_path'], file_path, '*')
-    pickle_files = glob(find_path)
-
-    if len(pickle_files) == 0:
-        raise AssertionError(f'There are no files in {find_path}')
-
-    df_target_scores = pd.concat([
-        pd.read_pickle(f).set_index(COL_ID)
-        for f in pickle_files
-    ], axis=0)
-    return df_target_scores
-
-
 def load_features(
         conf,
         use_random=False,
         use_client_agg=False,
         use_mcc_code_stat=False,
         use_tr_type_stat=False,
-        metric_learning_embedding_name=None,
-        target_scores_name=None,
+        metric_learning_embedding_name=None
 ):
     features = []
     if use_random:
@@ -105,7 +89,14 @@ def load_features(
     if metric_learning_embedding_name is not None:
         features.append(_metric_learning_embeddings(conf, metric_learning_embedding_name))
 
-    if target_scores_name is not None:
-        features.append(_target_scores(conf, target_scores_name))
-
     return features
+
+
+def load_scores(conf, target_scores_name):
+    valid_files = glob(os.path.join(conf['data_path'], target_scores_name, 'valid', '*'))
+    valid_scores = [pd.read_pickle(f).set_index(COL_ID) for f in valid_files]
+
+    test_files = glob(os.path.join(conf['data_path'], target_scores_name, 'test', '*'))
+    test_scores = [pd.read_pickle(f).set_index(COL_ID) for f in test_files]
+
+    return valid_scores, test_scores

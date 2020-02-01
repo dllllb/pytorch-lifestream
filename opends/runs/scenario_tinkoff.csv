@@ -1,4 +1,0 @@
-   final_score.ranking_score  config.optim_lr  config.use_user_popular_features  config.use_trans_common_features  config.use_trans_mcc_features  config.use_embeddings
-0                     0.5877           0.0040                              True                             False                          False                  False
-1                     0.5411           0.0100                             False                              True                           True                  False
-2                     0.5837           0.0060                             False                             False                          False                   True

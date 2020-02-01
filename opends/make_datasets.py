@@ -2,6 +2,7 @@ import argparse
 import logging
 import os
 import pickle
+from random import Random
 
 import numpy as np
 import pandas as pd
@@ -22,8 +23,12 @@ def parse_args(args=None):
     parser.add_argument('--cols_category', nargs='*', default=[])
     parser.add_argument('--cols_log_norm', nargs='*', default=[])
     parser.add_argument('--col_target', required=False, type=str)
+    parser.add_argument('--test_size', type=float, default=0.1)
+    parser.add_argument('--salt', type=int, default=42)
 
-    parser.add_argument('--output_path', type=os.path.abspath)
+    parser.add_argument('--output_train_path', type=os.path.abspath)
+    parser.add_argument('--output_test_path', type=os.path.abspath)
+    parser.add_argument('--output_test_ids_path', type=os.path.abspath)
     parser.add_argument('--log_file', type=os.path.abspath)
 
     args = parser.parse_args(args)
@@ -124,6 +129,35 @@ def update_with_target(features, data_path, target_files, col_client_id, col_tar
     return features
 
 
+def split_dataset(all_data, test_size, data_path, target_files, col_client_id, salt):
+    df_target = pd.concat([pd.read_csv(os.path.join(data_path, file)) for file in target_files])
+    s_clients = set(df_target[col_client_id].tolist())
+
+    # shuffle client list
+    s_all_data_clients = set(rec[col_client_id] for rec in all_data)
+    s_clients = (cl_id for cl_id in s_clients if cl_id in s_all_data_clients)
+    s_clients = sorted(s_clients)
+    s_clients = [cl_id for cl_id in s_clients]
+    Random(salt).shuffle(s_clients)
+
+    # split client list
+    Nrows_test = int(len(s_clients) * test_size)
+    s_clients_train = s_clients[:-Nrows_test]
+    s_clients_test = s_clients[-Nrows_test:]
+
+    # split data
+    labeled_train = [rec for rec in all_data if rec[col_client_id] in s_clients_train]
+    labeled_test = [rec for rec in all_data if rec[col_client_id] in s_clients_test]
+    unlabeled = [rec for rec in all_data if rec[col_client_id] not in s_clients]
+    train = labeled_train + unlabeled
+    test = labeled_test
+
+    logger.info(f'Train size: {len(train)} clients')
+    logger.info(f'Test size: {len(test)} clients')
+
+    return train, test
+
+
 def save_features(df_data, save_path):
     with open(save_path, 'wb') as f:
         pickle.dump(df_data, f)
@@ -137,7 +171,7 @@ if __name__ == '__main__':
         handlers = [logging.StreamHandler(), logging.FileHandler(config.log_file, mode='w')]
     else:
         handlers = None
-    logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)-7s %(funcName)-20s   : %(message)s',
+    logging.basicConfig(level=logging.INFO, format='%(funcName)-20s   : %(message)s',
                         handlers=handlers)
 
     source_data = load_source_data(
@@ -163,7 +197,27 @@ if __name__ == '__main__':
             col_target=config.col_target,
         )
 
+    if config.test_size > 0:
+        train, test = split_dataset(
+            all_data=client_features,
+            test_size=config.test_size,
+            data_path=config.data_path,
+            target_files=config.target_files,
+            col_client_id=config.col_client_id,
+            salt=config.salt,
+        )
+    else:
+        train = client_features
+
     save_features(
-        df_data=client_features,
-        save_path=config.output_path,
+        df_data=train,
+        save_path=config.output_train_path,
     )
+
+    if config.test_size > 0:
+        save_features(
+            df_data=test,
+            save_path=config.output_test_path,
+        )
+        test_ids = pd.DataFrame({config.col_client_id: [rec[config.col_client_id] for rec in test]})
+        test_ids.to_csv(config.output_test_ids_path, index=False)
