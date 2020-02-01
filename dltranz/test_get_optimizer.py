@@ -23,9 +23,9 @@ def test_get_optimizer_params():
     params = {
         'train.lr': 0.01,
         'train.weight_decay': 0.01,
-        'train.optimiser_params': [
-            ('0.weight', {'lr': 0.001}),
-        ],
+        'train.optimiser_params': {
+            '0.weight': {'lr': 0.001},
+        },
     }
 
     optim = get_optimizer(model, params)
@@ -51,10 +51,10 @@ def test_get_optimizer_2params():
     params = {
         'train.lr': 0.01,
         'train.weight_decay': 0.01,
-        'train.optimiser_params': [
-            ('0.weight', {'lr': 0.001}),
-            ('2.weight', {'lr': 0.001}),
-        ],
+        'train.optimiser_params': {
+            '0.weight': {'lr': 0.001},
+            '2.weight': {'lr': 0.001},
+        },
     }
 
     optim = get_optimizer(model, params)
