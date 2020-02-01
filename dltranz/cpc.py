@@ -3,6 +3,8 @@ import torch
 import torch.nn as nn
 import numpy as np
 
+from ignite.metrics import Loss, RunningAverage
+
 from dltranz.trx_encoder import PaddedBatch
 from dltranz.experiment import update_model_stats
 from dltranz.metric_learn.metric import BatchRecallTop
@@ -89,7 +91,8 @@ def run_experiment(train_ds, valid_ds, model, conf):
 
     loss = CPC_Loss(n_negatives=params['train.cpc.n_negatives'])
 
-    valid_metric = {'BatchRecallTop': BatchRecallTop(k='valid.recall_top_k')}
+    valid_metric = {'loss': RunningAverage(Loss(loss))}
+
     optimizer = get_optimizer(model, params)
     scheduler = get_lr_scheduler(optimizer, params)
 
@@ -115,9 +118,12 @@ def run_experiment(train_ds, valid_ds, model, conf):
 
     results = {
         'exec-sec': exec_sec,
-        'Recall_top_K': metric_values,
+        'metrics': metric_values,
     }
 
-    if conf.get('log_results', True):
-        stats_file = conf['stats.path']
+    stats_file = conf.get('stats.path', None)
+
+    if stats_file is not None:
         update_model_stats(stats_file, params, results)
+    else:
+        return results
