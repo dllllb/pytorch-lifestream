@@ -25,7 +25,7 @@ def prepare_parser(parser):
     parser.add_argument('--ml_embedding_file_names', nargs='+', default=['embeddings.pickle'])
     parser.add_argument('--target_score_file_names', nargs='+', default=['target_scores', 'finetuning_scores'])
     parser.add_argument('--output_file', type=os.path.abspath, default='runs/scenario_age_pred.csv')
-    parser.add_argument('--labeled_amount', type=int, default=21_600)
+
 
 def read_target(conf):
     target = pd.read_csv(os.path.join(conf['data_path'], 'train_target.csv'))
@@ -129,12 +129,10 @@ def main(conf):
     # train model on features and score valid and test sets
     folds = []
     skf = StratifiedKFold(n_splits=conf['cv_n_split'], random_state=conf['random_state'], shuffle=True)
-    nrows = conf['labeled_amount'] # semi-supervised setup. default = supervised
-    logger.info(f'labeled_amount: {nrows}')
 
     for i_train, i_test in skf.split(df_target, df_target['bins']):
         folds.append((
-            df_target.iloc[i_train[:nrows]],
+            df_target.iloc[i_train],
             df_target.iloc[i_test]
         ))
 
