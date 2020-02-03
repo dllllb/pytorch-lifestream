@@ -124,34 +124,33 @@ def main(conf):
         f"scores: {file_name}" : {'target_scores_name': file_name} for file_name in conf['target_score_file_names']
     }
 
-    df_target, test_target  = read_target(conf)
+    pool = sct.WPool(processes=conf['n_workers'])
 
-    # train model on features and score valid and test sets
-    folds = []
-    skf = StratifiedKFold(n_splits=conf['cv_n_split'], random_state=conf['random_state'], shuffle=True)
+    # train and score models
+    args_list = [sct.KWParamsTrainAndScore(
+        name=name,
+        fold_n=fold_n,
+        load_features_f=partial(load_features, conf=conf, **params),
+        model_type=model_type,
+        model_params=model_params,
+        scorer_name='accuracy',
+        scorer=make_scorer(accuracy_score),
+        col_target=COL_TARGET,
+        df_train=train_target,
+        df_valid=valid_target,
+        df_test=test_target,
+    )
+        for name, params in approaches_to_train.items()
+        for fold_n, (train_target, valid_target) in enumerate(folds)
+        for model_type, model_params in model_types.items()
+    ]
+    results = pool.map(sct.train_and_score, args_list)
+    df_results = pd.DataFrame(results).set_index('name')[['oof_accuracy', 'test_accuracy']]
 
-    for i_train, i_test in skf.split(df_target, df_target['bins']):
-        folds.append((
-            df_target.iloc[i_train],
-            df_target.iloc[i_test]
-        ))
-
-    args_list = [(name, fold_n, conf, params, model_type, train_target, valid_target, test_target)
-                 for name, params in approaches_to_train.items()
-                 for fold_n, (train_target, valid_target) in enumerate(folds)
-                 for model_type in ['xgb']
-                 ]
-
-    pool = Pool(processes=conf['n_workers'])
-    results = pool.map(train_and_score, args_list)
-    df_results = pd.DataFrame(results).set_index('name')[['oof_accuracy','test_accuracy']]
-
-    # score already trained models on valid and tets sets
-    pool = Pool(processes=conf['n_workers'])
+    # score already trained models on valid and test sets
     args_list = [(name, conf, params, df_target, test_target) for name, params in approaches_to_score.items()]
     results = reduce(iadd, pool.map(get_scores, args_list))
-    
-    df_scores = pd.DataFrame(results).set_index('name')[['oof_accuracy','test_accuracy']]
+    df_scores = pd.DataFrame(results).set_index('name')[['oof_accuracy', 'test_accuracy']]
 
     # combine results
     df_results = pd.concat([df_results, df_scores])
