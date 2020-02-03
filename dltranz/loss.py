@@ -78,6 +78,35 @@ class BCELoss(nn.Module):
         return self.loss(pred.float(), true.float())
 
 
+class PseudoLabeledLoss(nn.Module):
+    def __init__(self, loss, pl_threshold=0.5, unlabeled_weight=1.):
+        super().__init__()
+        self.loss = loss
+        self.pl_threshold = pl_threshold
+        self.unlabeled_weight = unlabeled_weight
+
+    def forward(self, pred, true):
+        label_pred, unlabel_pred = pred['labeled'], pred['unlabeled']
+        pseudo_labels = torch.argmax(unlabel_pred.detach(), 1)
+
+        # mask pseudo_labels, with confidence > pl_threshold
+        if isinstance(self.loss, nn.NLLLoss):
+            probs = torch.exp(unlabel_pred.detach())
+            mask = (probs.max(1)[0] > self.pl_threshold)
+        elif isinstance(self.loss, nn.BCELoss):
+            probs = unlabel_pred.detach()
+            mask = (probs.max(1)[0] > self.pl_threshold)
+        else:
+            mask = torch.ones(unlabel_pred.shape[0]).bool()
+
+        Lloss = self.loss(label_pred, true)
+        if mask.sum()==0:
+            return Lloss
+        else:
+            Uloss = self.unlabeled_weight * self.loss(unlabel_pred[mask], pseudo_labels[mask])
+            return Lloss + Uloss
+
+
 def get_loss(params):
     loss_type = params['train.loss']
 
@@ -93,6 +122,12 @@ def get_loss(params):
         loss = nn.L1Loss()
     elif loss_type == 'mse':
         loss = nn.MSELoss()
+    elif loss_type == 'pseudo_labeled':
+        loss = PseudoLabeledLoss(
+            loss=get_loss(params['labeled']),
+            pl_threshold=params['pl_threshold'],
+            unlabeled_weight=params['unlabeled_weight']
+        )
     else:
         raise Exception(f'unknown loss type: {loss_type}')
 

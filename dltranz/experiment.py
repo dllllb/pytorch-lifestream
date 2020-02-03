@@ -6,7 +6,7 @@ from time import strftime
 
 import torch
 from ignite.contrib.metrics import ROC_AUC
-from ignite.metrics import Accuracy
+from ignite.metrics import Accuracy, Metric
 from sklearn.metrics import roc_auc_score
 
 from dltranz.ensemble import ModelEnsemble
@@ -39,6 +39,7 @@ def get_epoch_score_metric(metric_name):
     m = {
         'auroc': ROC_AUC,
         'accuracy': Accuracy,
+        'accuracy_labeled' : Accuracy_labeled
     }.get(metric_name)
     if m is not None:
         return m
@@ -172,3 +173,33 @@ def fit_model_ensemble_last_k(model, train_ds, valid_ds, params, handlers):
     score = get_score_metric(params['score_metric'])(true, pred)
 
     return ModelEnsemble(submodels=submodels), score
+
+
+class CustomMetric(Metric):
+    def __init__(self, func):
+        super().__init__(output_transform=lambda x: x)
+        self.func = func
+        self.num_value = 0.0
+        self.denum_value = 0
+
+    def reset(self):
+        self.num_value = 0.0
+        self.denum_value = 0
+
+        super().reset()
+
+    def update(self, output):
+        x, y = output
+        value = self.func(x, y)
+
+        self.num_value += value
+        self.denum_value += 1
+
+    def compute(self):
+        if self.denum_value == 0:
+            return 0.0
+        return self.num_value / self.denum_value
+
+class Accuracy_labeled(CustomMetric):
+    def __init__(self):
+        super().__init__(func = lambda x,y: (torch.argmax(x['labeled'],1) == y).float().mean())
