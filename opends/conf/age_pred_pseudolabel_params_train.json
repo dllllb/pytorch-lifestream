@@ -29,20 +29,11 @@
       "num_classes": 4
     },
     "labeled_amount": 1500,
-    "unlabeled_weight": 1,
-    "pl_threshold" : 1.0,
-    "pretrain": {
-      "device": "cuda",
-      "score_metric": "accuracy",
+    "unlabeled_weight": 0.5,
+    "pl_threshold" : 0.5,
+    "labeled": {
       "train": {
-        "loss": "NLLLoss",
-        "lr": 0.01,
-        "weight_decay": 0.0,
-        "n_epoch": 10
-      },
-      "lr_scheduler": {
-        "step_size": 5,
-        "step_gamma": 0.5
+        "loss": "NLLLoss"
       }
     },
     "train": {
@@ -82,11 +73,11 @@
 
   "output": {
     "valid": {
-      "path": "../data/age-pred/pseudo_labeling_scores/valid",
+      "path": "../data/age-pred/pseudo_labeling/valid",
       "format": "pickle"
     },
     "test": {
-      "path": "../data/age-pred/pseudo_labeling_scores/test",
+      "path": "../data/age-pred/pseudo_labeling/test",
       "format": "pickle"
     },
     "columns": ["client_id"]

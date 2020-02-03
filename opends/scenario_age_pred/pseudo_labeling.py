@@ -1,6 +1,7 @@
 import datetime
 import logging
 import numpy as np
+import random
 import sys
 import torch
 
@@ -27,13 +28,14 @@ class ZipDataset(Dataset):
     def __init__(self, LabeledSet, UnLabeledSet):
         self.LabeledSet = LabeledSet
         self.UnLabeledSet = UnLabeledSet
+        self.n = 0
 
     def __len__(self):
-        return len(self.UnLabeledSet)
+        return len(self.LabeledSet)
 
     def __getitem__(self, i):
-        j = i % len(self.LabeledSet)
-        return (self.LabeledSet[j], self.UnLabeledSet[i])
+        j = random.randint(0,len(self.UnLabeledSet)-1)
+        return (self.LabeledSet[i], self.UnLabeledSet[j])
 
 
 class ModelPLWrapper(nn.Module):
@@ -84,27 +86,8 @@ def create_ds(labeled_data, unlabeled_data, valid_data, conf):
 def run_experiment(labeled_ds, unlabeled_ds, valid_ds, params, model_f):
     model = model_f(params)
 
-     # labeled pre-training
-    labeled_ds = DropoutTrxDataset(labeled_ds, params['train.trx_dropout'], params['train.max_seq_len'])
-    labeled_loader = EpochTrackingDataLoader(
-        labeled_ds,
-        batch_size=params['train.batch_size'],
-        shuffle=True,
-        num_workers=params['train.num_workers'],
-        collate_fn=padded_collate)
-    labeled_loader.preparing_dataset = labeled_ds.core_dataset.delegate.data
-    valid_loader = create_validation_loader(valid_ds, params['valid'])
-
-    metric_name = params['pretrain.score_metric']
-    metric = get_epoch_score_metric(metric_name)()
-    handlers = []
-    loss = get_loss(params['pretrain'])
-    opt = get_optimizer(model, params['pretrain'])
-    scheduler = get_lr_scheduler(opt, params['pretrain'])
-    scores = fit_model(model, labeled_loader, valid_loader, loss, opt, scheduler, \
-        params['pretrain'], {metric_name: metric}, handlers)
-
     # pseudo-labeling training
+    labeled_ds = DropoutTrxDataset(labeled_ds, params['train.trx_dropout'], params['train.max_seq_len'])
     unlabeled_ds = DropoutTrxDataset(unlabeled_ds, params['train.trx_dropout'], params['train.max_seq_len'])
     zip_ds = ZipDataset(labeled_ds, unlabeled_ds)
     zip_loader = EpochTrackingDataLoader(

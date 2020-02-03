@@ -104,7 +104,7 @@ class PseudoLabeledLoss(nn.Module):
             return Lloss
         else:
             Uloss = self.unlabeled_weight * self.loss(unlabel_pred[mask], pseudo_labels[mask])
-            return (Lloss/len(label_pred) + Uloss/mask.sum()) * (len(label_pred) + mask.sum())
+            return Lloss + Uloss
 
 
 def get_loss(params):
@@ -124,7 +124,7 @@ def get_loss(params):
         loss = nn.MSELoss()
     elif loss_type == 'pseudo_labeled':
         loss = PseudoLabeledLoss(
-            loss=get_loss(params['pretrain']),
+            loss=get_loss(params['labeled']),
             pl_threshold=params['pl_threshold'],
             unlabeled_weight=params['unlabeled_weight']
         )
