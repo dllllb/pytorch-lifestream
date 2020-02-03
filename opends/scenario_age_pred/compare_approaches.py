@@ -119,7 +119,7 @@ def main(conf):
             f"embeds: {file_name}" : {'metric_learning_embedding_name': file_name} for file_name in conf['ml_embedding_file_names']
         }
     }
-
+    
     approaches_to_score = {
         f"scores: {file_name}" : {'target_scores_name': file_name} for file_name in conf['target_score_file_names']
     }
