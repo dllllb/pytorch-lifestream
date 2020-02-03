@@ -14,16 +14,7 @@
       }
     },
     "rnn": {
-      "hidden_size": 256,
-      "type": "gru",
-      "bidir": false,
-      "trainable_starter": "static"
-    },
-    "head": {
-      "pred_all_states": false,
-      "pred_all_states_mean": false,
-      "explicit_lengths": false,
-      "norm_input": false
+      "hidden_size": 256
     },
     "train": {
       "random_neg": false,
