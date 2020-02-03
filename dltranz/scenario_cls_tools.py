@@ -29,7 +29,7 @@ def prepare_common_parser(parser, data_path, output_file):
     parser.add_argument('--target_score_file_names', nargs='+', default=['target_scores', 'finetuning_scores'])
     parser.add_argument('--output_file', type=os.path.abspath, default=output_file)
     parser.add_argument('--pos', type=int, nargs='*', default=[])
-
+    parser.add_argument('--labeled_amount', type=int, default=-1)
 
 def read_train_test(data_path, dataset_file, test_ids_file, col_id):
     target = pd.read_csv(os.path.join(data_path, dataset_file))
@@ -55,12 +55,13 @@ def filter_infrequent_target(col_target, df, df_name, keep_values):
     return df[ix]
 
 
-def get_folds(df, col_target, cv_n_split, random_state, ):
+def get_folds(df, col_target, cv_n_split, random_state, labeled_amount=-1):
     folds = []
+    if labeled_amount < 0: labeled_amount = len(df)  # semi-supervised setup. default = supervised
     skf = StratifiedKFold(n_splits=cv_n_split, random_state=random_state, shuffle=True)
     for i_train, i_test in skf.split(df, df[col_target]):
         folds.append((
-            df.iloc[i_train],
+            df.iloc[i_train[:labeled_amount]],
             df.iloc[i_test]
         ))
     return folds
