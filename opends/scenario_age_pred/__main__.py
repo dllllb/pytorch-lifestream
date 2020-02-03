@@ -5,7 +5,8 @@ if __name__ == '__main__':
     import sys
     sys.path.append('../')
 
-from scenario_age_pred import compare_approaches, fit_target, fit_finetuning, pseudo_labeling
+from scenario_age_pred import compare_approaches, fit_target, fit_finetuning
+from scenario_age_pred import pseudo_labeling
 
 logger = logging.getLogger(__name__)
 
