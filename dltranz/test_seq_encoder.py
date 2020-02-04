@@ -45,7 +45,8 @@ def test_simple_config():
             'explicit_lengths': False,
             'pred_all_states': False,
             'pred_all_states_mean': False,
-            'norm_input': False
+            'norm_input': False,
+            'use_batch_norm': False,
         }
     }
 
@@ -72,7 +73,8 @@ def test_concat_lens():
             'explicit_lengths': True,
             'pred_all_states': False,
             'pred_all_states_mean': False,
-            'norm_input': False
+            'norm_input': False,
+            'use_batch_norm': False,
         },
     }
     rnn = tst_rnn_model(config)
@@ -98,7 +100,8 @@ def test_trainable_starter():
             'explicit_lengths': True,
             'pred_all_states': False,
             'pred_all_states_mean': False,
-            'norm_input': False
+            'norm_input': False,
+            'use_batch_norm': False,
         },
     }
     rnn = tst_rnn_model(config)
@@ -124,7 +127,8 @@ def test_rnn_type():
             'explicit_lengths': False,
             'pred_all_states': False,
             'pred_all_states_mean': False,
-            'norm_input': False
+            'norm_input': False,
+            'use_batch_norm': False,
         },
     }
     rnn = tst_rnn_model(config)
@@ -150,7 +154,8 @@ def test_pred_all_states():
             'explicit_lengths': False,
             'pred_all_states': True,
             'pred_all_states_mean': False,
-            'norm_input': False
+            'norm_input': False,
+            'use_batch_norm': False,
         },
     }
 
@@ -177,7 +182,8 @@ def test_pred_all_states_mean():
             'explicit_lengths': False,
             'pred_all_states': True,
             'pred_all_states_mean': True,
-            'norm_input': False
+            'norm_input': False,
+            'use_batch_norm': False,
         },
     }
     rnn = tst_rnn_model(config)
@@ -207,7 +213,8 @@ def test_pred_all_states_no_effect():
             'explicit_lengths': False,
             'pred_all_states': False,
             'pred_all_states_mean': False,
-            'norm_input': False
+            'norm_input': False,
+            'use_batch_norm': False,
         },
     }
     rnn = tst_rnn_model(config)
@@ -231,7 +238,8 @@ def test_pred_all_states_and_concat_lens():
             'explicit_lengths': True,
             'pred_all_states': True,
             'pred_all_states_mean': False,
-            'norm_input': False
+            'norm_input': False,
+            'use_batch_norm': False,
         },
     }
 
@@ -268,7 +276,8 @@ def test_all():
                                 'explicit_lengths': concat_lens,
                                 'pred_all_states': pred_all_states,
                                 'pred_all_states_mean': pred_all_states_mean,
-                                'norm_input': False
+                                'norm_input': False,
+                                'use_batch_norm': False,
                             },
                         }
                         rnn = tst_rnn_model(config)
@@ -333,7 +342,8 @@ def test_transf_seq_encoder():
             'explicit_lengths': False,
             'pred_all_states': False,
             'pred_all_states_mean': False,
-            'norm_input': False
+            'norm_input': False,
+            'use_batch_norm': False,
         },
     }
 

@@ -15,7 +15,7 @@ def test_rnn_model():
             'type': 'gru',
             'bidir': False
         },
-         "trx_encoder": {
+        "trx_encoder": {
             "embeddings_noise": .1,
             "norm_embeddings": False,
             'embeddings': {
@@ -34,7 +34,7 @@ def test_rnn_model():
             "max_seq_len": 30,
             "cpc": {
                 "n_forward_steps": 3,
-                "linear_size": 6, # should be equal to transactions encoder output
+                "linear_size": 6,  # should be equal to transactions encoder output
                 "n_negatives": 4,
                 "embedding_size": 16,  # use ${rnn.hidden_size} in real config
             }
