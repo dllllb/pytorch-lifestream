@@ -26,9 +26,6 @@ class CPC_Ecoder(nn.Module):
         base_embeddings = self.trx_encoder(x)
         context_embeddings = self.seq_encoder(base_embeddings)
 
-        # starting from 1 to ignore initial hidden vector
-        context_embeddings = PaddedBatch(context_embeddings.payload[:,1:], context_embeddings.seq_lens)
-
         me = []
         for l in self.linears:
             me.append(l(context_embeddings.payload))
