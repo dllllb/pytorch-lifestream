@@ -16,7 +16,7 @@ from dltranz.metric_learn.dataset import SplittingDataset, split_strategy
 from dltranz.metric_learn.dataset import TargetEnumeratorDataset, collate_splitted_rows
 from dltranz.metric_learn.losses import get_loss
 from dltranz.metric_learn.metric import BatchRecallTop
-from dltranz.metric_learn.ml_models import rnn_model
+from dltranz.metric_learn.ml_models import rnn_model, ml_model_by_type
 from dltranz.metric_learn.sampling_strategies import get_sampling_strategy
 from dltranz.train import get_optimizer, get_lr_scheduler, fit_model
 from dltranz.util import init_logger, get_conf
@@ -146,7 +146,13 @@ def run_experiment(model, conf):
 def main(args=None):
     conf = get_conf(args)
 
-    model = rnn_model(conf['params'])
+    model_f = ml_model_by_type(conf['params.model_type'])
+    model = model_f(conf['params'])
+
+    # print('-' * 80)
+    # for n, p in model.named_parameters():
+    #     print(f'{n:30}: {p.shape}')
+    # print('-' * 80)
 
     return run_experiment(model, conf)
 
