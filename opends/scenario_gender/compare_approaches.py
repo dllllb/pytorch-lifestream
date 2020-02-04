@@ -99,7 +99,7 @@ def main(conf):
         model_type=model_type,
         model_params=model_params,
         scorer_name='rocauc_score',
-        scorer=make_scorer(roc_auc_score),
+        scorer=make_scorer(roc_auc_score, needs_proba=True),
         col_target=COL_TARGET,
         df_train=train_target,
         df_valid=valid_target,

@@ -27,6 +27,7 @@ def load_model(conf):
         trx_encoder,
         rnn_encoder,
         LastStepEncoder(),
+        torch.nn.BatchNorm1d(input_size),
         torch.nn.Linear(input_size, head_output_size),
         torch.nn.Sigmoid(),
         Squeeze(),

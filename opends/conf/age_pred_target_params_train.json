@@ -26,7 +26,8 @@
       "pred_all_states_mean": false,
       "explicit_lengths": false,
       "norm_input": false,
-      "num_classes": 4
+      "num_classes": 4,
+      "use_batch_norm": false
     },
     "train": {
       "random_neg": false,

@@ -213,6 +213,9 @@ def scoring_head(input_size, params):
     if params['norm_input']:
         layers.append(NormEncoder())
 
+    if params['use_batch_norm']:
+        layers.append(nn.BatchNorm1d(input_size))
+
     if params.get('neural_automl', False):
         if params['pred_all_states']:
             raise AttributeError('neural_automl not supported with `pred_all_states` for now')
