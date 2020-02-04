@@ -2,14 +2,15 @@
   dataset: {
     train_path: "../data/age-pred/train_trx.p"
     test_path: "../data/age-pred/test_trx.p"
-    preprocessing: {
-      add_seq_len: false
-    }
-  }
+    valid_size: 0.05
 
+    preprocessing: {
+        add_seq_len: true
+    }
+
+    min_seq_len: 25
+  }
   cv_n_split: 5
 
   log_ds_stat: false
-
-  stats.path: "runs/age_pred_target_results.json"
 }

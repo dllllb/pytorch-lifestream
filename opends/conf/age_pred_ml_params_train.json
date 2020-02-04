@@ -57,6 +57,10 @@
     }
   },
 
+  "stats": {
+    "path": "runs/age_pred_ml_result.json"
+  },
+
   "save_model": true,
   "model_path": {
     "model": "models/age_pred_ml_model.p"

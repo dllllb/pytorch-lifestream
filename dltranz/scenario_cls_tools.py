@@ -22,13 +22,12 @@ def prepare_common_parser(parser, data_path, output_file):
     parser.add_argument('--n_workers', type=int, default=5)
     parser.add_argument('--cv_n_split', type=int, default=5)
     parser.add_argument('--data_path', type=os.path.abspath, default=data_path)
-    parser.add_argument('--test_size', type=float, default=0.4)
     parser.add_argument('--random_state', type=int, default=42)
     parser.add_argument('--model_seed', type=int, default=42)
-    parser.add_argument('--ml_embedding_file_names', nargs='+', default=['embeddings.pickle'])
-    parser.add_argument('--target_score_file_names', nargs='+', default=['target_scores', 'finetuning_scores'])
+    parser.add_argument('--skip_baselines', action='store_true')
+    parser.add_argument('--ml_embedding_file_names', nargs='*', default=['embeddings.pickle'])
+    parser.add_argument('--target_score_file_names', nargs='*', default=['target_scores', 'finetuning_scores'])
     parser.add_argument('--output_file', type=os.path.abspath, default=output_file)
-    parser.add_argument('--pos', type=int, nargs='*', default=[])
 
 
 def read_train_test(data_path, dataset_file, test_ids_file, col_id):
