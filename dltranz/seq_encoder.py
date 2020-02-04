@@ -75,6 +75,9 @@ class RnnEncoder(nn.Module):
             self.starter_h = nn.Parameter(torch.randn(num_dir, 1, self.hidden_size))
 
     def forward(self, x: PaddedBatch):
+        shape = x.payload.size()
+        assert shape[1] > 0, "Batch can'not have 0 transactions"
+
         # prepare initial state
         if self.trainable_starter == 'static':
             h_0 = self.starter_h.expand(-1, len(x.seq_lens), -1).contiguous()
@@ -85,18 +88,7 @@ class RnnEncoder(nn.Module):
         if self.rnn_type == 'lstm':
             out, _ = self.rnn(x.payload)
         elif self.rnn_type == 'gru':
-            num_dir = 2 if self.bidirectional else 1
-            shape = x.payload.size()
-            if h_0 is not None:
-                starter = h_0.view(shape[0], 1, num_dir * self.hidden_size)
-            else:
-                starter = torch.zeros(shape[0], 1, num_dir * self.hidden_size).to(x.payload.device)
-
-            if shape[1] == 0:
-                out = starter
-            else:
-                out, _ = self.rnn(x.payload, h_0)
-                out = torch.cat([starter, out], dim=1)
+            out, _ = self.rnn(x.payload, h_0)
         else:
             raise Exception(f'wrong rnn type "{self.rnn_type}"')
 
@@ -105,6 +97,8 @@ class RnnEncoder(nn.Module):
 
 class SkipStepEncoder(nn.Module):
     def __init__(self, step_size):
+        raise NotImplementedError('Must be fixed after removing the initial starter')
+
         super().__init__()
         self.step_size = step_size
 
@@ -132,7 +126,7 @@ class ConcatLenEncoder(nn.Module):
         lens = x.seq_lens.unsqueeze(-1).float().to(x.payload.device)
         lens_normed = lens / 200
 
-        h = x.payload[range(len(x.payload)), [l for l in x.seq_lens]]
+        h = x.payload[range(len(x.payload)), [l - 1 for l in x.seq_lens]]
 
         embeddings = torch.cat([h, lens_normed, -torch.log(lens_normed)], -1)
         return embeddings
@@ -140,6 +134,8 @@ class ConcatLenEncoder(nn.Module):
 
 class TimeStepShuffle(nn.Module):
     def forward(self, x: PaddedBatch):
+        raise NotImplementedError('Must be fixed after removing the initial starter')
+
         shuffled = []
         for seq, slen in zip(x.payload, x.seq_lens):
             idx = torch.randperm(slen) + 1
@@ -153,7 +149,7 @@ class TimeStepShuffle(nn.Module):
 
 class LastStepEncoder(nn.Module):
     def forward(self, x: PaddedBatch):
-        h = x.payload[range(len(x.payload)), [l for l in x.seq_lens]]
+        h = x.payload[range(len(x.payload)), [l - 1 for l in x.seq_lens]]
         return h
 
 
@@ -179,7 +175,7 @@ class AllStepsMeanHead(nn.Module):
 
     def forward(self, x: PaddedBatch):
         out = self.head(x.payload)
-        means = torch.tensor([e[1:l].mean() for e, l in zip(out, x.seq_lens)])
+        means = torch.tensor([e[0:l].mean() for e, l in zip(out, x.seq_lens)])
         return means
 
 

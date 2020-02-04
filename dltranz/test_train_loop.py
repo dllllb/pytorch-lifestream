@@ -18,7 +18,8 @@ def tst_params():
             "pred_all_states": False,
             "pred_all_states_mean": False,
             "explicit_lengths": True,
-            "norm_input": False
+            "norm_input": False,
+            'use_batch_norm': False,
         },
         "train": {
             "weight_decay": 0,
