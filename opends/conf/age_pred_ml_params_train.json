@@ -12,6 +12,7 @@
       "trainable_starter": "static"
     },
     "transf": {
+      "shared_layers": false,
       "input_size": 64,
       "n_heads": 2,
       "dim_hidden": 64,

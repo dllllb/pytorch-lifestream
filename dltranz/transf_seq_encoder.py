@@ -34,13 +34,18 @@ class PositionalEncoding(nn.Module):
 class TransformerSeqEncoder(nn.Module):
     def __init__(self, input_size, params):
         super().__init__()
-        enc_layer = TransformerEncoderLayer(
+
+        self.shared_layers = params['shared_layers']
+        self.n_layers = params['n_layers']
+
+        self.enc_layer = TransformerEncoderLayer(
             d_model=input_size,
             nhead=params['n_heads'],
             dim_feedforward=params['dim_hidden'],
             dropout=params['dropout'])
+
         enc_norm = LayerNorm(input_size)
-        self.enc = TransformerEncoder(enc_layer, params['n_layers'], enc_norm)
+        self.enc = TransformerEncoder(self.enc_layer, params['n_layers'], enc_norm)
         self.pe = PositionalEncoding(max_len=params['max_seq_len'], d_model=input_size, dropout=params['dropout'])
         self.use_after_mask = params['use_after_mask']
         self.use_positional_encoding = params['use_positional_encoding']
@@ -65,7 +70,12 @@ class TransformerSeqEncoder(nn.Module):
         if self.use_positional_encoding:
             x_t = self.pe(x_t)
 
-        out = self.enc(x_t, mask)
+        if not self.shared_layers:
+            out = self.enc(x_t, mask)
+        else:
+            out = x_t
+            for _ in range(self.n_layers):
+                out = self.enc_layer(out, mask)
 
         out = torch.transpose(out, 0, 1)
 
