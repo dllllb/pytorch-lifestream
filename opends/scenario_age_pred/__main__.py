@@ -14,8 +14,7 @@ if __name__ == '__main__':
     torch.manual_seed(42)
     torch.cuda.manual_seed_all(42)
 
-from scenario_age_pred import compare_approaches, fit_target, fit_finetuning
-from scenario_age_pred import pseudo_labeling
+from scenario_age_pred import compare_approaches, fit_target, fit_finetuning, pseudo_labeling
 
 logger = logging.getLogger(__name__)
 

@@ -29,7 +29,7 @@
       "num_workers": 16,
       "batch_size": 64,
       "split_strategy": {
-        "split_strategy": "SplitByCount",
+        "split_strategy": "SampleSlices",
         "split_count": 5,
         "cnt_min": 25,
         "cnt_max": 150
@@ -48,7 +48,7 @@
       "batch_size": 1024,
       "num_workers": 16,
       "split_strategy": {
-        "split_strategy": "SplitByCount",
+        "split_strategy": "SampleSlices",
         "split_count": 5,
         "cnt_min": 25,
         "cnt_max": 100
