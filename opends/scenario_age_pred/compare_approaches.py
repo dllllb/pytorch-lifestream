@@ -121,7 +121,10 @@ def main(conf):
             for fold_n, (train_target, valid_target) in enumerate(folds)
             for model_type, model_params in model_types.items()
         ]
-        results = pool.map(sct.train_and_score, args_list)
+        results = []
+        for i, r in enumerate(pool.imap_unordered(sct.train_and_score, args_list)):
+            results.append(r)
+            logger.info(f'Done {i+1:4d} from {len(args_list)}')
         df_results = pd.DataFrame(results).set_index('name')[['oof_accuracy', 'test_accuracy']]
 
     if len(approaches_to_score) > 0:

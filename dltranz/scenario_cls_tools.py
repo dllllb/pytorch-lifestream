@@ -82,68 +82,74 @@ KWParamsTrainAndScore = namedtuple('KWParamsTrainAndScore', [
 
 def train_and_score(kw_params: KWParamsTrainAndScore):
     log_process_id = f'{kw_params.name:20}:{kw_params.model_type:6}:{kw_params.fold_n:2}'
-    logger.info(f'[{log_process_id}] Started')
 
-    features = kw_params.load_features_f()
+    try:
+        logger.info(f'[{log_process_id}] Started')
 
-    y_train = kw_params.df_train[kw_params.col_target]
-    y_valid = kw_params.df_valid[kw_params.col_target]
-    y_test = kw_params.df_test[kw_params.col_target]
+        features = kw_params.load_features_f()
 
-    train_features = [df.reindex(index=kw_params.df_train.index) for df in features]
-    valid_features = [df.reindex(index=kw_params.df_valid.index) for df in features]
-    test_features = [df.reindex(index=kw_params.df_test.index) for df in features]
+        y_train = kw_params.df_train[kw_params.col_target]
+        y_valid = kw_params.df_valid[kw_params.col_target]
+        y_test = kw_params.df_test[kw_params.col_target]
 
-    df_fn = [df.quantile(0.5) for df in train_features]
-    df_norm = [df.max() - df.min() + 1e-5 for df in train_features]
+        train_features = [df.reindex(index=kw_params.df_train.index) for df in features]
+        valid_features = [df.reindex(index=kw_params.df_valid.index) for df in features]
+        test_features = [df.reindex(index=kw_params.df_test.index) for df in features]
 
-    X_train = pd.concat([df.fillna(fn) / n for df, fn, n in zip(train_features, df_fn, df_norm)], axis=1)
-    X_valid = pd.concat([df.fillna(fn) / n for df, fn, n in zip(valid_features, df_fn, df_norm)], axis=1)
-    X_test = pd.concat([df.fillna(fn) / n for df, fn, n in zip(test_features, df_fn, df_norm)], axis=1)
+        df_fn = [df.quantile(0.5) for df in train_features]
+        df_norm = [df.max() - df.min() + 1e-5 for df in train_features]
 
-    if kw_params.model_type == 'linear':
-        model = LogisticRegression(**kw_params.model_params)
-    elif kw_params.model_type == 'xgb':
-        model = xgb.XGBClassifier(**kw_params.model_params)
-    elif kw_params.model_type == 'lgb':
-        model = lgb.LGBMClassifier(**kw_params.model_params)
-    elif kw_params.model_type in ('neural_automl', 'fastai'):
-        pass
-    else:
-        raise NotImplementedError(f'Unknown model type {kw_params.model_type}')
+        X_train = pd.concat([df.fillna(fn) / n for df, fn, n in zip(train_features, df_fn, df_norm)], axis=1)
+        X_valid = pd.concat([df.fillna(fn) / n for df, fn, n in zip(valid_features, df_fn, df_norm)], axis=1)
+        X_test = pd.concat([df.fillna(fn) / n for df, fn, n in zip(test_features, df_fn, df_norm)], axis=1)
 
-    if kw_params.model_type in ['linear', 'xgb', 'lgb']:
-        model.fit(X_train, y_train)
-        score_valid = kw_params.scorer(model, X_valid, y_valid)
-        score_test = kw_params.scorer(model, X_test, y_test)
-    elif kw_params.model_type == 'neural_automl':
-        score_valid = node.train_from_config(X_train.values,
-                                             y_train.values.astype('long'),
-                                             X_valid.values,
-                                             y_valid.values.astype('long'),
-                                             kw_params.model_params)
-        score_test = -1
+        if kw_params.model_type == 'linear':
+            model = LogisticRegression(**kw_params.model_params)
+        elif kw_params.model_type == 'xgb':
+            model = xgb.XGBClassifier(**kw_params.model_params)
+        elif kw_params.model_type == 'lgb':
+            model = lgb.LGBMClassifier(**kw_params.model_params)
+        elif kw_params.model_type in ('neural_automl', 'fastai'):
+            pass
+        else:
+            raise NotImplementedError(f'Unknown model type {kw_params.model_type}')
 
-    elif kw_params.model_type == 'fastai':
-        score_valid = fai.train_from_config(X_train.values,
-                                            y_train.values.astype('long'),
-                                            X_valid.values,
-                                            y_valid.values.astype('long'),
-                                            kw_params.model_params)
-        '''score_valid = fai.train_tabular(X_train.values, 
-                                           y_train.values.astype('long'), 
-                                           X_valid.values, 
-                                           y_valid.values.astype('long'),
-                                           kw_params.model_params)'''
-        score_test = -1
+        if kw_params.model_type in ['linear', 'xgb', 'lgb']:
+            model.fit(X_train, y_train)
+            score_valid = kw_params.scorer(model, X_valid, y_valid)
+            score_test = kw_params.scorer(model, X_test, y_test)
+        elif kw_params.model_type == 'neural_automl':
+            score_valid = node.train_from_config(X_train.values,
+                                                 y_train.values.astype('long'),
+                                                 X_valid.values,
+                                                 y_valid.values.astype('long'),
+                                                 kw_params.model_params)
+            score_test = -1
 
-    logger.info(
-        ' '.join([
-            f'[{log_process_id}]',
-            f'Finished with {kw_params.scorer_name}',
-            f'valid={score_valid:.4f},',
-            f'test={score_test:.4f}'
-        ]))
+        elif kw_params.model_type == 'fastai':
+            score_valid = fai.train_from_config(X_train.values,
+                                                y_train.values.astype('long'),
+                                                X_valid.values,
+                                                y_valid.values.astype('long'),
+                                                kw_params.model_params)
+            '''score_valid = fai.train_tabular(X_train.values, 
+                                               y_train.values.astype('long'), 
+                                               X_valid.values, 
+                                               y_valid.values.astype('long'),
+                                               kw_params.model_params)'''
+            score_test = -1
+
+        logger.info(
+            ' '.join([
+                f'[{log_process_id}]',
+                f'Finished with {kw_params.scorer_name}',
+                f'valid={score_valid:.4f},',
+                f'test={score_test:.4f}'
+            ]))
+    except Exception as ex:
+        logging.exception(f'[{log_process_id}]: exception\n{ex}', exc_info=True)
+        score_valid = None
+        score_test = None
 
     res = {
         'name': '_'.join([kw_params.model_type, kw_params.name]),
@@ -197,5 +203,11 @@ class WPool:
     def map(self, func, iterable):
         if self.pool is not None:
             return self.pool.map(func, iterable)
+        else:
+            return reduce(iadd, map(func, iterable))
+
+    def imap_unordered(self, func, iterable):
+        if self.pool is not None:
+            return self.pool.imap_unordered(func, iterable)
         else:
             return reduce(iadd, map(func, iterable))
