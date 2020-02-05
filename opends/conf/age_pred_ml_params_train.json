@@ -4,11 +4,23 @@
       "name": "default"
     },
     "device": "cuda",
+    "model_type": "rnn",
     "rnn": {
       "type": "gru",
       "hidden_size": 160,
       "bidir": false,
       "trainable_starter": "static"
+    },
+    "transf": {
+      "shared_layers": false,
+      "input_size": 64,
+      "n_heads": 2,
+      "dim_hidden": 64,
+      "dropout": 0.1,
+      "n_layers": 4,
+      "max_seq_len": 1,
+      "use_after_mask": false,
+      "use_positional_encoding": false
     },
     "trx_encoder": {
       "norm_embeddings": false,
@@ -55,6 +67,10 @@
       },
       "max_seq_len": 1200
     }
+  },
+
+  "stats": {
+    "path": "runs/age_pred_ml_result.json"
   },
 
   "save_model": true,

@@ -33,21 +33,22 @@ pip install -r requirements.txt
 # Run scenario
 
 ## age-pred dataset
+### Main scenario, best params
 
 ```sh
 cd dltrans/opends
 
 # Train metric learning model
-python metric_learning.py --conf conf/age_pred_ml_dataset.hocon conf/age_pred_ml_params_train.json
+python metric_learning.py --conf conf/age_pred_dataset.hocon conf/age_pred_ml_params_train.json
 
 # With pretrained mertic learning model run inference ang take embeddings for each customer
-python ml_inference.py --conf conf/age_pred_ml_dataset.hocon conf/age_pred_ml_params_inference.json
+python ml_inference.py --conf conf/age_pred_dataset.hocon conf/age_pred_ml_params_inference.json
 
 # Train supervised model and save scores to file
-python -m scenario_age_pred fit_target --conf conf/age_pred_target_dataset.hocon conf/age_pred_target_params_train.json
+python -m scenario_age_pred fit_target --conf conf/age_pred_dataset.hocon conf/age_pred_target_params_train.json
 
 # Take pretrained ml model and fine tune it in supervised mode and save scores to file
-python -m scenario_age_pred fit_finetuning --conf conf/age_pred_target_dataset.hocon conf/age_pred_finetuning_params_train.json
+python -m scenario_age_pred fit_finetuning --conf conf/age_pred_dataset.hocon conf/age_pred_finetuning_params_train.json
 
 # Run estimation for different approaches
 # Check some options with `--help` argument
@@ -84,6 +85,21 @@ python -m scenario_age_pred compare_approaches \
 --output_file runs/semi_scenario_age_pred_2700.csv
 
 ```
+
+### Test model configurations
+```sh
+cd dltrans/opends
+
+export SC_DEVICE="cuda"
+
+# run all scenarios or selet one
+./scenario_age_pred/bins/*.sh
+
+# check the results
+cat runs/scenario_age_pred_*.csv
+
+```
+
 
 ## gender dataset
 

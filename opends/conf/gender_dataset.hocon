@@ -5,7 +5,7 @@
     valid_size: 0.05
 
     preprocessing: {
-        add_seq_len: false
+        add_seq_len: true
     }
 
     min_seq_len: 25

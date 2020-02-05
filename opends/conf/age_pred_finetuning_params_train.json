@@ -53,6 +53,10 @@
 
   "save_model": false,
 
+  "stats": {
+    "path": "runs/age_pred_target_results.json"
+  },
+
   "output": {
     "valid": {
       "path": "../data/age-pred/finetuning_scores/valid",

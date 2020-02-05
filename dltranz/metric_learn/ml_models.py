@@ -6,10 +6,12 @@ import torch.nn as nn
 
 from torch.autograd import Function
 
+from dltranz.transf_seq_encoder import TransformerSeqEncoder
+
 script_dir = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(os.path.join(script_dir, '../..'))
 
-from dltranz.seq_encoder import RnnEncoder, LastStepEncoder, NormEncoder
+from dltranz.seq_encoder import RnnEncoder, LastStepEncoder, NormEncoder, PerTransTransf
 from dltranz.trx_encoder import TrxEncoder
 
 # TODO: is the same as dltranz.seq_encoder.NormEncoder
@@ -50,6 +52,30 @@ def rnn_model(params):
     n = L2Normalization()
     m = torch.nn.Sequential(p, e, l, n)
     return m
+
+
+def transformer_model(params):
+    p = TrxEncoder(params['trx_encoder'])
+    trx_size = TrxEncoder.output_size(params['trx_encoder'])
+    enc_input_size = params['transf']['input_size']
+    if enc_input_size != trx_size:
+        inp_reshape = PerTransTransf(trx_size, enc_input_size)
+        p = torch.nn.Sequential(p, inp_reshape)
+
+    e = TransformerSeqEncoder(enc_input_size, params['transf'])
+    l = LastStepEncoder()
+    n = L2Normalization()
+    m = torch.nn.Sequential(p, e, l, n)
+    return m
+
+
+def ml_model_by_type(model_type):
+    model = {
+        'rnn': rnn_model,
+        'transf': transformer_model,
+    }[model_type]
+    return model
+
 
 class ModelEmbeddingEnsemble(nn.Module):
     def __init__(self, submodels):

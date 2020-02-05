@@ -22,5 +22,15 @@
     "models": [
       "models/age_pred_ml_model.p"
     ]
+  },
+
+  "stats": {
+    "path": "runs/age_pred_ml_result.json"
+  },
+
+  "output": {
+    "path": "../data/age-pred/embeddings",
+    "format": "pickle",
+    "columns": ["client_id"]
   }
 }
