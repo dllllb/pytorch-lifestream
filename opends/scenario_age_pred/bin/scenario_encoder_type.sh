@@ -356,7 +356,7 @@ python -m scenario_age_pred compare_approaches --output_file "runs/scenario_age_
     "emb__encoder_transf_bs512_2head_064hs_2layers.pickle"        \
     "emb__encoder_transf_bs512_2head_032hs_2layers.pickle"        \
     "emb__encoder_transf_bs256_4head_128hs_4layers.pickle"        \
-    "emb__encoder_transf_bs256_8head_128hs_4layers_shared.pickle" \
+    "emb__encoder_transf_bs256_4head_128hs_4layers_shared.pickle" \
     "emb__encoder_transf_bs256_2head_128hs_4layers.pickle"        \
     "emb__encoder_transf_bs256_4head_064hs_4layers.pickle"        \
     "emb__encoder_transf_bs256_4head_128hs_2layers.pickle"        \
