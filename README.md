@@ -64,19 +64,19 @@ cat runs/scenario_age_pred.csv
 python -m scenario_age_pred fit_target params.labeled_amount=2700 \
 output.test.path="../data/age-pred/target_scores_2700/test" \
 output.valid.path="../data/age-pred/target_scores_2700/valid" \
---conf conf/age_pred_target_dataset.hocon conf/age_pred_target_params_train.json
+--conf conf/age_pred_dataset.hocon conf/age_pred_target_params_train.json
 
 # Take the pretrained self-supervised model and fine tune it on a part of the dataset in supervised mode; save scores to file
 python -m scenario_age_pred fit_finetuning dataset.labeled_amount=2700 \
 output.test.path="../data/age-pred/finetuning_scores_2700/test" \
 output.valid.path="../data/age-pred/finetuning_scores_2700/valid" \
---conf conf/age_pred_target_dataset.hocon conf/age_pred_finetuning_params_train.json
+--conf conf/age_pred_dataset.hocon conf/age_pred_finetuning_params_train.json
 
 # Train semi-supervised model with pseudo_labeling; save scores to file
 python -m scenario_age_pred fit_finetuning dataset.labeled_amount=2700 \
 output.test.path="../data/age-pred/pseudo_labeling_2700/test" \
 output.valid.path="../data/age-pred/pseudo_labeling_2700/valid" \
---conf conf/age_pred_target_dataset.hocon conf/age_pred_finetuning_params_train.json
+--conf conf/age_pred_dataset.hocon conf/age_pred_finetuning_params_train.json
 
 # compare approaches (fit target vs. fit tunning ml model vs. pseudo-labeling vs. ml embeddings vs. baseline(GBDT))
 python -m scenario_age_pred compare_approaches \
