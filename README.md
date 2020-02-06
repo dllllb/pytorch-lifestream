@@ -92,7 +92,7 @@ cd dltrans/opends
 
 export SC_DEVICE="cuda"
 
-# run all scenarios or selet one
+# run all scenarios or select one
 ./scenario_age_pred/bins/*.sh
 
 # check the results
@@ -102,6 +102,7 @@ cat runs/scenario_age_pred_*.csv
 
 
 ## gender dataset
+### Main scenario, best params
 
 ```sh
 cd dltrans/opends
@@ -124,6 +125,20 @@ python -m scenario_gender compare_approaches
 
 # check the results
 cat runs/scenario_gender.csv
+```
+
+### Test model configurations
+
+```sh
+cd dltrans/opends
+
+export SC_DEVICE="cuda"
+
+# run all scenarios or select one
+./scenario_gender/bins/*.sh
+
+# check the results
+cat runs/scenario_gender_*.csv
 ```
 
 ## tinkoff dataset: Story recommendation with cold start
