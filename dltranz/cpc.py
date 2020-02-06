@@ -50,15 +50,13 @@ class CPC_Loss(nn.Module):
 
         possible_negatives = base_embeddings.payload.view(batch_size*max_seq_len, emb_size)
 
-        neg_samples = []
+        mask = len_mask.unsqueeze(0).expand(batch_size, *len_mask.shape).clone()
         for i in range(batch_size):
-            mask = len_mask.clone()
-            mask[i] = 0  # ignoring current sample embeddings
-            sample_ids = torch.multinomial(mask.flatten().float(), self.n_negatives)
-            neg_samples_i = possible_negatives[sample_ids]
-            neg_samples.append(neg_samples_i)
+            mask[i,i] = 0 # ignoring current sample embeddings
 
-        neg_samples = torch.stack(neg_samples, dim=0)
+        mask = mask.reshape(batch_size, -1)
+        sample_ids = torch.multinomial(mask, self.n_negatives)
+        neg_samples = possible_negatives[sample_ids]
 
         step_losses = []
         device=mapped_ctx_embeddings.payload.device
