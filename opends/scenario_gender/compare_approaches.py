@@ -43,82 +43,92 @@ def main(conf):
     logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)-7s %(funcName)-20s   : %(message)s')
 
     approaches_to_train = {
-        'baseline': {'use_client_agg': True, 'use_mcc_code_stat': True, 'use_tr_type_stat': True},
         **{
             f"embeds: {file_name}": {'metric_learning_embedding_name': file_name}
             for file_name in conf['ml_embedding_file_names']
         },
-        **{
-            f"embeds: {file_name} and baseline": {
-                'metric_learning_embedding_name': file_name,
-                'use_client_agg': True, 'use_mcc_code_stat': True, 'use_tr_type_stat': True,
-            }
-            for file_name in conf['ml_embedding_file_names']
-        }
     }
+    if not conf['skip_baselines']:
+        approaches_to_train.update({
+            'baseline': {'use_client_agg': True, 'use_mcc_code_stat': True, 'use_tr_type_stat': True},
+            **{
+                f"embeds: {file_name} and baseline": {
+                    'metric_learning_embedding_name': file_name,
+                    'use_client_agg': True, 'use_mcc_code_stat': True, 'use_tr_type_stat': True,
+                }
+                for file_name in conf['ml_embedding_file_names']
+            }
+        })
 
     approaches_to_score = {
         f"scores: {file_name}": {'target_scores_name': file_name}
         for file_name in conf['target_score_file_names']
     }
 
-    df_target, test_target = sct.read_train_test(conf['data_path'], DATASET_FILE, TEST_IDS_FILE, COL_ID)
-    folds = sct.get_folds(df_target, COL_TARGET, conf['cv_n_split'], conf['random_state'])
-
-    model_types = {
-        'xgb': dict(
-            n_jobs=4,
-            seed=conf['model_seed'],
-            n_estimators=300,
-        ),
-        'linear': dict(),
-        'lgb': dict(
-            n_estimators=500,
-            boosting_type='gbdt',
-            objective='binary',
-            metric='auc',
-            subsample=0.5,
-            subsample_freq=1,
-            learning_rate=0.02,
-            feature_fraction=0.75,
-            max_depth=6,
-            lambda_l1=1,
-            lambda_l2=1,
-            min_data_in_leaf=50,
-            random_state=conf['model_seed'],
-        ),
-    }
-
     pool = sct.WPool(processes=conf['n_workers'])
+    df_results = None
+    df_scores = None
 
-    # train and score models
-    args_list = [sct.KWParamsTrainAndScore(
-        name=name,
-        fold_n=fold_n,
-        load_features_f=partial(load_features, conf=conf, **params),
-        model_type=model_type,
-        model_params=model_params,
-        scorer_name='rocauc_score',
-        scorer=make_scorer(roc_auc_score, needs_proba=True),
-        col_target=COL_TARGET,
-        df_train=train_target,
-        df_valid=valid_target,
-        df_test=test_target,
-    )
-        for name, params in approaches_to_train.items()
-        for fold_n, (train_target, valid_target) in enumerate(folds)
-        for model_type, model_params in model_types.items()
-    ]
-    results = pool.map(sct.train_and_score, args_list)
-    df_results = pd.DataFrame(results).set_index('name')[['oof_rocauc_score', 'test_rocauc_score']]
+    if len(approaches_to_train) > 0:
+        df_target, test_target = sct.read_train_test(conf['data_path'], DATASET_FILE, TEST_IDS_FILE, COL_ID)
+        folds = sct.get_folds(df_target, COL_TARGET, conf['cv_n_split'], conf['random_state'])
 
-    # score already trained models on valid and test sets
-    args_list = [(name, conf, params, df_target, test_target) for name, params in approaches_to_score.items()]
-    results = reduce(iadd, pool.map(get_scores, args_list))
-    df_scores = pd.DataFrame(results).set_index('name')[['oof_rocauc_score', 'test_rocauc_score']]
+        model_types = {
+            'xgb': dict(
+                n_jobs=4,
+                seed=conf['model_seed'],
+                n_estimators=300,
+            ),
+            'linear': dict(),
+            'lgb': dict(
+                n_estimators=500,
+                boosting_type='gbdt',
+                objective='binary',
+                metric='auc',
+                subsample=0.5,
+                subsample_freq=1,
+                learning_rate=0.02,
+                feature_fraction=0.75,
+                max_depth=6,
+                lambda_l1=1,
+                lambda_l2=1,
+                min_data_in_leaf=50,
+                random_state=conf['model_seed'],
+            ),
+        }
+
+        # train and score models
+        args_list = [sct.KWParamsTrainAndScore(
+            name=name,
+            fold_n=fold_n,
+            load_features_f=partial(load_features, conf=conf, **params),
+            model_type=model_type,
+            model_params=model_params,
+            scorer_name='rocauc_score',
+            scorer=make_scorer(roc_auc_score, needs_proba=True),
+            col_target=COL_TARGET,
+            df_train=train_target,
+            df_valid=valid_target,
+            df_test=test_target,
+        )
+            for name, params in approaches_to_train.items()
+            for fold_n, (train_target, valid_target) in enumerate(folds)
+            for model_type, model_params in model_types.items()
+        ]
+        results = []
+        for i, r in enumerate(pool.imap_unordered(sct.train_and_score, args_list)):
+            results.append(r)
+            logger.info(f'Done {i + 1:4d} from {len(args_list)}')
+        df_results = pd.DataFrame(results).set_index('name')[['oof_rocauc_score', 'test_rocauc_score']]
+
+    if len(approaches_to_score) > 0:
+        # score already trained models on valid and test sets
+        args_list = [(name, conf, params, df_target, test_target) for name, params in approaches_to_score.items()]
+        results = reduce(iadd, pool.map(get_scores, args_list))
+        df_scores = pd.DataFrame(results).set_index('name')[['oof_rocauc_score', 'test_rocauc_score']]
 
     # combine results
-    df_results = pd.concat([df_results, df_scores])
+    df_results = pd.concat([df for df in [df_results, df_scores] if df is not None])
     df_results = sct.group_stat_results(df_results, 'name', ['oof_rocauc_score', 'test_rocauc_score'])
 
     with pd.option_context(

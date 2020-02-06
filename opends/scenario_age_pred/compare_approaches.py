@@ -69,7 +69,7 @@ def main(conf):
     pool = sct.WPool(processes=conf['n_workers'])
     df_results = None
     df_scores = None
-    
+
     if len(approaches_to_train) > 0:
         df_target, test_target = sct.read_train_test(conf['data_path'], DATASET_FILE, TEST_IDS_FILE, COL_ID)
         folds = sct.get_folds(df_target, COL_TARGET, conf['cv_n_split'], conf['random_state'], conf.get('labeled_amount',-1))
@@ -124,7 +124,7 @@ def main(conf):
         results = []
         for i, r in enumerate(pool.imap_unordered(sct.train_and_score, args_list)):
             results.append(r)
-            logger.info(f'Done {i+1:4d} from {len(args_list)}')
+            logger.info(f'Done {i + 1:4d} from {len(args_list)}')
         df_results = pd.DataFrame(results).set_index('name')[['oof_accuracy', 'test_accuracy']]
 
     if len(approaches_to_score) > 0:
