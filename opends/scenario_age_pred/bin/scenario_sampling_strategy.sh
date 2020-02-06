@@ -74,7 +74,7 @@ python ml_inference.py \
 
 
 # Compare
-python -m scenario_age_pred compare_approaches --output_file "runs/scenario_age_pred__encoder_types.csv" \
+python -m scenario_age_pred compare_approaches --output_file "runs/scenario_age_pred__smpl_strategy.csv" \
     --skip_baseline --target_score_file_names --ml_embedding_file_names \
     "emb__smpl_strategy_HardNegativePair_bs_512_neg_count_5.pickle" \
     "emb__smpl_strategy_HardNegativePair_bs_512_neg_count_9.pickle" \

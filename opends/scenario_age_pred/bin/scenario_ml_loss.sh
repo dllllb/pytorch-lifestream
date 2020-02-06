@@ -81,7 +81,7 @@ python metric_learning.py \
     params.train.loss="TripletLoss" \
     params.train.margin=0.6 \
     params.train.sampling_strategy="HardTriplets" \
-    params.train.neg_count=5
+    params.train.neg_count=5 \
     model_path.model="models/age_pred_mlm__$SC_SUFFIX.p" \
     --conf conf/age_pred_dataset.hocon conf/age_pred_ml_params_train.json
 python ml_inference.py \
@@ -136,7 +136,7 @@ python ml_inference.py \
 
 
 # Compare
-python -m scenario_age_pred compare_approaches --output_file "runs/scenario_age_pred__encoder_types.csv" \
+python -m scenario_age_pred compare_approaches --output_file "runs/scenario_age_pred__loss.csv" \
     --skip_baseline --target_score_file_names --ml_embedding_file_names \
     "emb__loss_contrastive_margin_0.5.pickle"                      \
     "emb__loss_contrastive_margin_1.0.pickle"                      \

@@ -185,7 +185,7 @@ python ml_inference.py \
 
 
 # Compare
-python -m scenario_age_pred compare_approaches --output_file "runs/scenario_age_pred__encoder_types.csv" \
+python -m scenario_age_pred compare_approaches --output_file "runs/scenario_age_pred__hidden_size.csv" \
     --skip_baseline --target_score_file_names --ml_embedding_file_names \
     "emb__hidden_size_bs_0512_hs_224.pickle"  \
     "emb__hidden_size_bs_0512_hs_192.pickle"  \
