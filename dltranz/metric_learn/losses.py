@@ -98,15 +98,14 @@ class HistogramLoss(torch.nn.Module):
     code based on https://github.com/valerystrizh/pytorch-histogram-loss
     """
     
-    def __init__(self, num_steps = 100, cuda=True):
+    def __init__(self, num_steps = 100, device='cuda'):
         super(HistogramLoss, self).__init__()
         self.step = 2 / (num_steps - 1)
         self.eps = 1 / num_steps
-        self.cuda = cuda
+        self.device = device
         self.t = torch.arange(-1, 1+self.step, self.step).view(-1, 1)
         self.tsize = self.t.size()[0]
-        if self.cuda:
-            self.t = self.t.cuda()
+        self.t = self.t.to(self.device)
         
     def forward(self, embeddings, classes):
         def histogram(inds, size):
@@ -115,9 +114,8 @@ class HistogramLoss(torch.nn.Module):
             indsa = (s_repeat_floor - (self.t - self.step) > -self.eps) & (s_repeat_floor - (self.t - self.step) < self.eps) & inds
 
             assert indsa.nonzero().size()[0] == size, 'Another number of bins should be used'
-            zeros = torch.zeros((1, indsa.size()[1])).byte()
-            if self.cuda:
-                zeros = zeros.cuda()
+            zeros = torch.zeros((1, indsa.size()[1])).bool()
+            zeros = zeros.to(self.device)
             indsb = torch.cat((indsa, zeros))[1:, :]
             s_repeat_[~(indsb|indsa)] = 0
             # indsa corresponds to the first condition of the second equation of the paper
@@ -133,9 +131,8 @@ class HistogramLoss(torch.nn.Module):
         dists = outer_cosine_similarity(embeddings)
         
         assert ((dists > 1 + self.eps).sum().item() + (dists < -1 - self.eps).sum().item()) == 0, 'L2 normalization should be used'
-        s_inds = torch.triu(torch.ones(classes_eq.size()), 1).byte()
-        if self.cuda:
-            s_inds= s_inds.cuda()
+        s_inds = torch.triu(torch.ones(classes_eq.size()), 1).bool()
+        s_inds= s_inds.to(self.device)
         pos_inds = classes_eq[s_inds].repeat(self.tsize, 1)
         neg_inds = ~classes_eq[s_inds].repeat(self.tsize, 1)
         pos_size = classes_eq[s_inds].sum().item()
@@ -151,9 +148,8 @@ class HistogramLoss(torch.nn.Module):
         assert_almost_equal(histogram_neg.sum().item(), 1, decimal=1, 
                             err_msg='Not good negative histogram', verbose=True)
         histogram_pos_repeat = histogram_pos.view(-1, 1).repeat(1, histogram_pos.size()[0])
-        histogram_pos_inds = torch.tril(torch.ones(histogram_pos_repeat.size()), -1).byte()
-        if self.cuda:
-            histogram_pos_inds = histogram_pos_inds.cuda()
+        histogram_pos_inds = torch.tril(torch.ones(histogram_pos_repeat.size()), -1).bool()
+        histogram_pos_inds = histogram_pos_inds.to(self.device)
         histogram_pos_repeat[histogram_pos_inds] = 0
         histogram_pos_cdf = histogram_pos_repeat.sum(0)
         loss = torch.sum(histogram_neg * histogram_pos_cdf)
@@ -222,6 +218,7 @@ def get_loss(params, sampling_strategy):
     elif params['train.loss'] == 'HistogramLoss':
         kwargs = {
             'num_steps' : params.get('train.num_steps', None),
+            'device': torch.device(params['device']),
         }
         kwargs = {k:v for k,v in kwargs.items() if v is not None}
         loss_fn = HistogramLoss(**kwargs)
