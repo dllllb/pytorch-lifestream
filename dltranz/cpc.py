@@ -45,7 +45,7 @@ class CPC_Loss(nn.Module):
         _, _, _, n_forward_steps = mapped_ctx_embeddings.payload.shape
         seq_lens = mapped_ctx_embeddings.seq_lens
 
-        len_mask = torch.ones(batch_size, max_seq_len)
+        len_mask = torch.ones(batch_size, max_seq_len, device=mapped_ctx_embeddings.payload.device)
         for i, l in enumerate(seq_lens):
             len_mask[i, l:] = 0
 
@@ -71,9 +71,9 @@ class CPC_Loss(nn.Module):
             positive_pred_i = ce_i.mul(be_i).sum(axis=-1).exp()
 
             neg_pred_i = ce_i.matmul(neg_samples.transpose(-2, -1))
-            neg_pred_i = neg_pred_i.sum(axis=-1).exp()
+            neg_pred_i = neg_pred_i.exp().sum(axis=-1)
 
-            step_loss = -positive_pred_i.div(neg_pred_i).log().mean()
+            step_loss = -positive_pred_i.div(neg_pred_i + positive_pred_i).log().mean()
             step_losses.append(step_loss)
 
         loss = torch.stack(step_losses).mean()

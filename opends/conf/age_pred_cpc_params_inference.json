@@ -1,0 +1,26 @@
+{
+  "params": {
+    "device": "cuda",
+    "trx_encoder": {
+      "embeddings": {
+        "trans_date": {"in": 800},
+        "small_group": {"in": 250}
+      },
+      "numeric_values": {
+        "amount_rur": "identity"
+      }
+    },
+    "norm_scores": false,
+    "valid": {
+      "batch_size": 1024,
+      "num_workers": 16,
+      "max_seq_len": 1200
+    }
+  },
+
+  "model_path": {
+    "models": [
+      "models/age_pred_cpc_model.p"
+    ]
+  }
+}
