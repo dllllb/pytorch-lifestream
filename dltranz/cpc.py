@@ -45,9 +45,8 @@ class CPC_Loss(nn.Module):
         _, _, _, n_forward_steps = mapped_ctx_embeddings.payload.shape
         seq_lens = mapped_ctx_embeddings.seq_lens
 
-        len_mask = torch.ones(batch_size, max_seq_len, device=mapped_ctx_embeddings.payload.device)
-        for i, l in enumerate(seq_lens):
-            len_mask[i, l:] = 0
+        len_mask = torch.arange(max_seq_len).unsqueeze(0).expand(batch_size,-1)
+        len_mask = (len_mask<seq_lens.unsqueeze(1).expand(-1,max_seq_len)).float()
 
         possible_negatives = base_embeddings.payload.view(batch_size*max_seq_len, emb_size)
 
@@ -62,7 +61,8 @@ class CPC_Loss(nn.Module):
         neg_samples = torch.stack(neg_samples, dim=0)
 
         step_losses = []
-        len_mask_exp = len_mask.unsqueeze(-1).unsqueeze(-1).expand(-1, -1, emb_size, n_forward_steps)
+        device=mapped_ctx_embeddings.payload.device
+        len_mask_exp = len_mask.unsqueeze(-1).unsqueeze(-1).to(device).expand(-1, -1, emb_size, n_forward_steps)
         trimmed_mce = mapped_ctx_embeddings.payload.mul(len_mask_exp)  # zero context vectors by sequence lengths
         for i in range(1, n_forward_steps+1):
             ce_i = trimmed_mce[:,0:max_seq_len-i, :, i-1]
