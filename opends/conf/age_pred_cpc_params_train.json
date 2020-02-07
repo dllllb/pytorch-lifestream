@@ -12,9 +12,7 @@
     },
     "cpc": {
       "n_forward_steps": 12,
-      "linear_size": 33,
-      "n_negatives": 40,
-      "embedding_size": 160
+      "n_negatives": 40
     },
     "trx_encoder": {
       "norm_embeddings": false,

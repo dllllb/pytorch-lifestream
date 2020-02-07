@@ -16,12 +16,12 @@ from dltranz.data_load import create_train_loader, create_validation_loader
 logger = logging.getLogger(__name__)
 
 class CPC_Ecoder(nn.Module):
-    def __init__(self, trx_encoder, seq_encoder, conf):
+    def __init__(self, trx_encoder, seq_encoder, linear_size, conf):
         super().__init__()
         self.trx_encoder = trx_encoder
         self.seq_encoder = seq_encoder
-        embedding_size = conf['embedding_size']
-        linear_size = conf['linear_size']
+        embedding_size = seq_encoder.hidden_size
+        linear_size = linear_size
         self.linears = nn.ModuleList([nn.Linear(embedding_size, linear_size) for i in range(conf['n_forward_steps'])])
 
     def forward(self, x: PaddedBatch):
@@ -115,7 +115,7 @@ def run_experiment(train_ds, valid_ds, model, conf):
 
     params = conf['params']
 
-    loss = CPC_Loss(n_negatives=params['train.cpc.n_negatives'])
+    loss = CPC_Loss(n_negatives=params['cpc.n_negatives'])
 
     valid_metric = {
         'loss': RunningAverage(Loss(loss)),
