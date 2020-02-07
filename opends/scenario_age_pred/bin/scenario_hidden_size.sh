@@ -183,6 +183,146 @@ python ml_inference.py \
     output.path="../data/age-pred/emb__$SC_SUFFIX" \
     --conf conf/age_pred_dataset.hocon conf/age_pred_ml_params_inference.json
 
+# HiddenSize for batch_size=128
+export SC_SUFFIX="hidden_size_bs_0128_hs_800"
+python metric_learning.py \
+    params.device="$SC_DEVICE" \
+    params.train.batch_size=128 \
+    params.rnn.hidden_size=800 \
+    model_path.model="models/age_pred_mlm__$SC_SUFFIX.p" \
+    --conf conf/age_pred_dataset.hocon conf/age_pred_ml_params_train.json
+python ml_inference.py \
+    params.device="$SC_DEVICE" \
+    model_path.model="models/age_pred_mlm__$SC_SUFFIX.p" \
+    output.path="../data/age-pred/emb__$SC_SUFFIX" \
+    --conf conf/age_pred_dataset.hocon conf/age_pred_ml_params_inference.json
+
+export SC_SUFFIX="hidden_size_bs_0128_hs_640"
+python metric_learning.py \
+    params.device="$SC_DEVICE" \
+    params.train.batch_size=128 \
+    params.rnn.hidden_size=640 \
+    model_path.model="models/age_pred_mlm__$SC_SUFFIX.p" \
+    --conf conf/age_pred_dataset.hocon conf/age_pred_ml_params_train.json
+python ml_inference.py \
+    params.device="$SC_DEVICE" \
+    model_path.model="models/age_pred_mlm__$SC_SUFFIX.p" \
+    output.path="../data/age-pred/emb__$SC_SUFFIX" \
+    --conf conf/age_pred_dataset.hocon conf/age_pred_ml_params_inference.json
+
+export SC_SUFFIX="hidden_size_bs_0128_hs_480"
+python metric_learning.py \
+    params.device="$SC_DEVICE" \
+    params.train.batch_size=128 \
+    params.rnn.hidden_size=480 \
+    model_path.model="models/age_pred_mlm__$SC_SUFFIX.p" \
+    --conf conf/age_pred_dataset.hocon conf/age_pred_ml_params_train.json
+python ml_inference.py \
+    params.device="$SC_DEVICE" \
+    model_path.model="models/age_pred_mlm__$SC_SUFFIX.p" \
+    output.path="../data/age-pred/emb__$SC_SUFFIX" \
+    --conf conf/age_pred_dataset.hocon conf/age_pred_ml_params_inference.json
+
+# LR correction
+# HiddenSize for batch_size=256
+export SC_SUFFIX="hidden_size_bs_0256_hs_480_lrd"
+python metric_learning.py \
+    params.device="$SC_DEVICE" \
+    params.train.batch_size=256 \
+    params.rnn.hidden_size=480 \
+    params.train.lr=0.001 \
+    model_path.model="models/age_pred_mlm__$SC_SUFFIX.p" \
+    --conf conf/age_pred_dataset.hocon conf/age_pred_ml_params_train.json
+python ml_inference.py \
+    params.device="$SC_DEVICE" \
+    model_path.model="models/age_pred_mlm__$SC_SUFFIX.p" \
+    output.path="../data/age-pred/emb__$SC_SUFFIX" \
+    --conf conf/age_pred_dataset.hocon conf/age_pred_ml_params_inference.json
+
+export SC_SUFFIX="hidden_size_bs_0256_hs_352_lrd"
+python metric_learning.py \
+    params.device="$SC_DEVICE" \
+    params.train.batch_size=256 \
+    params.rnn.hidden_size=352 \
+    params.train.lr=0.001 \
+    model_path.model="models/age_pred_mlm__$SC_SUFFIX.p" \
+    --conf conf/age_pred_dataset.hocon conf/age_pred_ml_params_train.json
+python ml_inference.py \
+    params.device="$SC_DEVICE" \
+    model_path.model="models/age_pred_mlm__$SC_SUFFIX.p" \
+    output.path="../data/age-pred/emb__$SC_SUFFIX" \
+    --conf conf/age_pred_dataset.hocon conf/age_pred_ml_params_inference.json
+
+export SC_SUFFIX="hidden_size_bs_0256_hs_224_lrd"
+python metric_learning.py \
+    params.device="$SC_DEVICE" \
+    params.train.batch_size=256 \
+    params.rnn.hidden_size=224 \
+    params.train.lr=0.001 \
+    model_path.model="models/age_pred_mlm__$SC_SUFFIX.p" \
+    --conf conf/age_pred_dataset.hocon conf/age_pred_ml_params_train.json
+python ml_inference.py \
+    params.device="$SC_DEVICE" \
+    model_path.model="models/age_pred_mlm__$SC_SUFFIX.p" \
+    output.path="../data/age-pred/emb__$SC_SUFFIX" \
+    --conf conf/age_pred_dataset.hocon conf/age_pred_ml_params_inference.json
+
+export SC_SUFFIX="hidden_size_bs_0256_hs_160_lrd"
+python metric_learning.py \
+    params.device="$SC_DEVICE" \
+    params.train.batch_size=256 \
+    params.rnn.hidden_size=160 \
+    params.train.lr=0.001 \
+    model_path.model="models/age_pred_mlm__$SC_SUFFIX.p" \
+    --conf conf/age_pred_dataset.hocon conf/age_pred_ml_params_train.json
+python ml_inference.py \
+    params.device="$SC_DEVICE" \
+    model_path.model="models/age_pred_mlm__$SC_SUFFIX.p" \
+    output.path="../data/age-pred/emb__$SC_SUFFIX" \
+    --conf conf/age_pred_dataset.hocon conf/age_pred_ml_params_inference.json
+
+# HiddenSize for batch_size=128
+export SC_SUFFIX="hidden_size_bs_0128_hs_800_lrd"
+python metric_learning.py \
+    params.device="$SC_DEVICE" \
+    params.train.batch_size=128 \
+    params.rnn.hidden_size=800 \
+    params.train.lr=0.0005 \
+    model_path.model="models/age_pred_mlm__$SC_SUFFIX.p" \
+    --conf conf/age_pred_dataset.hocon conf/age_pred_ml_params_train.json
+python ml_inference.py \
+    params.device="$SC_DEVICE" \
+    model_path.model="models/age_pred_mlm__$SC_SUFFIX.p" \
+    output.path="../data/age-pred/emb__$SC_SUFFIX" \
+    --conf conf/age_pred_dataset.hocon conf/age_pred_ml_params_inference.json
+
+export SC_SUFFIX="hidden_size_bs_0128_hs_640_lrd"
+python metric_learning.py \
+    params.device="$SC_DEVICE" \
+    params.train.batch_size=128 \
+    params.rnn.hidden_size=640 \
+    params.train.lr=0.0005 \
+    model_path.model="models/age_pred_mlm__$SC_SUFFIX.p" \
+    --conf conf/age_pred_dataset.hocon conf/age_pred_ml_params_train.json
+python ml_inference.py \
+    params.device="$SC_DEVICE" \
+    model_path.model="models/age_pred_mlm__$SC_SUFFIX.p" \
+    output.path="../data/age-pred/emb__$SC_SUFFIX" \
+    --conf conf/age_pred_dataset.hocon conf/age_pred_ml_params_inference.json
+
+export SC_SUFFIX="hidden_size_bs_0128_hs_480_lrd"
+python metric_learning.py \
+    params.device="$SC_DEVICE" \
+    params.train.batch_size=128 \
+    params.rnn.hidden_size=480 \
+    params.train.lr=0.0005 \
+    model_path.model="models/age_pred_mlm__$SC_SUFFIX.p" \
+    --conf conf/age_pred_dataset.hocon conf/age_pred_ml_params_train.json
+python ml_inference.py \
+    params.device="$SC_DEVICE" \
+    model_path.model="models/age_pred_mlm__$SC_SUFFIX.p" \
+    output.path="../data/age-pred/emb__$SC_SUFFIX" \
+    --conf conf/age_pred_dataset.hocon conf/age_pred_ml_params_inference.json
 
 # Compare
 python -m scenario_age_pred compare_approaches --output_file "runs/scenario_age_pred__hidden_size.csv" \
@@ -199,5 +339,15 @@ python -m scenario_age_pred compare_approaches --output_file "runs/scenario_age_
     "emb__hidden_size_bs_0256_hs_352.pickle"  \
     "emb__hidden_size_bs_0256_hs_224.pickle"  \
     "emb__hidden_size_bs_0256_hs_160.pickle"  \
+    "emb__hidden_size_bs_0128_hs_800.pickle"  \
+    "emb__hidden_size_bs_0128_hs_640.pickle"  \
+    "emb__hidden_size_bs_0128_hs_480.pickle"  \
     "emb__hidden_size_bs_1024_hs_096.pickle"  \
-    "emb__hidden_size_bs_1024_hs_064.pickle"
+    "emb__hidden_size_bs_1024_hs_064.pickle"  \
+    "emb__hidden_size_bs_0256_hs_480_lrd.pickle"  \
+    "emb__hidden_size_bs_0256_hs_352_lrd.pickle"  \
+    "emb__hidden_size_bs_0256_hs_224_lrd.pickle"  \
+    "emb__hidden_size_bs_0256_hs_160_lrd.pickle"  \
+    "emb__hidden_size_bs_0128_hs_800_lrd.pickle"  \
+    "emb__hidden_size_bs_0128_hs_640_lrd.pickle"  \
+    "emb__hidden_size_bs_0128_hs_480_lrd.pickle"
