@@ -43,8 +43,9 @@ def main(args=None):
     logger.info(f'Train data len: {len(train_data)}, Valid data len: {len(valid_data)}')
 
     trx_e = TrxEncoder(conf['params.trx_encoder'])
-    rnn_e = RnnEncoder(TrxEncoder.output_size(conf['params.trx_encoder']), conf['params.rnn'])
-    cpc_e = CPC_Ecoder(trx_e, rnn_e, TrxEncoder.output_size(conf['params.trx_encoder']), conf['params.cpc'])
+    trx_e_out_size = TrxEncoder.output_size(conf['params.trx_encoder'])
+    rnn_e = RnnEncoder(trx_e_out_size, conf['params.rnn'])
+    cpc_e = CPC_Ecoder(trx_e, rnn_e, trx_e_out_size, conf['params.cpc'])
 
     run_experiment(train_ds, valid_ds, cpc_e, conf)
 
