@@ -5,6 +5,7 @@ import numpy as np
 
 from ignite.metrics import Loss, RunningAverage
 from torch.autograd import Variable
+from torch.nn import functional as F
 
 from dltranz.trx_encoder import PaddedBatch
 from dltranz.experiment import update_model_stats, CustomMetric
@@ -65,11 +66,11 @@ class CPC_Loss(nn.Module):
             ce_i = trimmed_mce[:,0:max_seq_len-i, :, i-1]
             be_i = base_embeddings.payload[:,i:max_seq_len]
 
-            positive_pred_i = ce_i.mul(be_i).sum(axis=-1).exp()
+            positive_pred_i = ce_i.mul(be_i).sum(axis=-1)
             positive_preds.append(positive_pred_i)
 
             neg_pred_i = ce_i.matmul(neg_samples.transpose(-2, -1))
-            neg_pred_i = neg_pred_i.exp()
+            neg_pred_i = neg_pred_i
             neg_preds.append(neg_pred_i)
 
         return positive_preds, neg_preds
@@ -78,13 +79,10 @@ class CPC_Loss(nn.Module):
         base_embeddings, _, mapped_ctx_embeddings = embeddings
         device=mapped_ctx_embeddings.payload.device
         positive_preds, neg_preds = self._get_preds(base_embeddings, mapped_ctx_embeddings)
-        
+
         step_losses = []
         for positive_pred_i, neg_pred_i in zip(positive_preds, neg_preds):
-
-            step_loss = -positive_pred_i.div(neg_pred_i.sum(axis=-1) + positive_pred_i).log().mean()
-            if torch.isnan(step_loss) or torch.isinf(step_loss): # hot fix
-                step_loss = Variable(torch.tensor(0.).to(device), requires_grad=True)
+            step_loss = -F.log_softmax(torch.cat([positive_pred_i.unsqueeze(-1), neg_pred_i], dim=-1), dim=-1)[:,:,0].mean()
             step_losses.append(step_loss)
 
         loss = torch.stack(step_losses).mean()
@@ -101,7 +99,7 @@ class CPC_Loss(nn.Module):
         len_mask = torch.arange(max_seq_len).unsqueeze(0).expand(batch_size,-1)
         len_mask = (len_mask<seq_lens.unsqueeze(1).expand(-1,max_seq_len)).float()
 
-        total, accurate = 0, 0 
+        total, accurate = 0, 0
         for i, (positive_pred_i, neg_pred_i) in enumerate(zip(positive_preds, neg_preds)):
             i_mask = len_mask[:,(i+1):max_seq_len].to(device)
             total += i_mask.sum().item()
@@ -121,7 +119,7 @@ def run_experiment(train_ds, valid_ds, model, conf):
 
     valid_metric = {
         'loss': RunningAverage(Loss(loss)),
-        'cpc accuracy': CustomMetric(lambda x,y: loss.cpc_accuracy(x, y))
+        'cpc accuracy': CustomMetric(lambda outputs, y: loss.cpc_accuracy(outputs, y))
     }
 
     optimizer = get_optimizer(model, params)

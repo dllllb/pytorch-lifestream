@@ -44,7 +44,7 @@ def main(args=None):
 
     trx_e = TrxEncoder(conf['params.trx_encoder'])
     rnn_e = RnnEncoder(TrxEncoder.output_size(conf['params.trx_encoder']), conf['params.rnn'])
-    cpc_e = CPC_Ecoder(trx_e, rnn_e, conf['params.train.cpc'])
+    cpc_e = CPC_Ecoder(trx_e, rnn_e, conf['params.cpc'])
 
     run_experiment(train_ds, valid_ds, cpc_e, conf)
 
