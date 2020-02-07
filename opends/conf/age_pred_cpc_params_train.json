@@ -4,6 +4,12 @@
       "name": "default"
     },
     "device": "cuda",
+    "rnn": {
+      "type": "gru",
+      "hidden_size": 160,
+      "bidir": false,
+      "trainable_starter": "static"
+    },
     "cpc": {
       "n_forward_steps": 12,
       "linear_size": 33,
@@ -29,7 +35,7 @@
       "num_workers": 16,
       "batch_size": 64,
       "trx_dropout": 0.01,
-      "max_seq_len": 300,
+      "max_seq_len": 1200,
       "lr": 0.001,
       "weight_decay": 0.0,
       "n_epoch": 10
@@ -37,7 +43,7 @@
     "valid": {
       "batch_size": 64,
       "num_workers": 16,
-      "max_seq_len": 300
+      "max_seq_len": 1200
     }
   },
 
