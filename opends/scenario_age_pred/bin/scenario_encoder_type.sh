@@ -1,16 +1,4 @@
 # LSTM encoder
-export SC_SUFFIX="encoder_lstm"
-python metric_learning.py \
-    params.device="$SC_DEVICE" \
-    params.rnn.type="lstm" \
-    model_path.model="models/age_pred_mlm__$SC_SUFFIX.p" \
-    --conf conf/age_pred_dataset.hocon conf/age_pred_ml_params_train.json
-python ml_inference.py \
-    params.device="$SC_DEVICE" \
-    model_path.model="models/age_pred_mlm__$SC_SUFFIX.p" \
-    output.path="../data/age-pred/emb__$SC_SUFFIX" \
-    --conf conf/age_pred_dataset.hocon conf/age_pred_ml_params_inference.json
-
 export SC_SUFFIX="encoder_lstm_hs128"
 python metric_learning.py \
     params.device="$SC_DEVICE" \
@@ -56,19 +44,6 @@ python ml_inference.py \
 
 #
 # GRU encoder
-export SC_SUFFIX="encoder_gru"
-python metric_learning.py \
-    params.device="$SC_DEVICE" \
-    params.rnn.type="gru" \
-    model_path.model="models/age_pred_mlm__$SC_SUFFIX.p" \
-    --conf conf/age_pred_dataset.hocon conf/age_pred_ml_params_train.json
-python ml_inference.py \
-    params.device="$SC_DEVICE" \
-    model_path.model="models/age_pred_mlm__$SC_SUFFIX.p" \
-    output.path="../data/age-pred/emb__$SC_SUFFIX" \
-    --conf conf/age_pred_dataset.hocon conf/age_pred_ml_params_inference.json
-
-
 export SC_SUFFIX="encoder_gru_hs128"
 python metric_learning.py \
     params.device="$SC_DEVICE" \
@@ -343,11 +318,9 @@ python ml_inference.py \
 # Compare
 python -m scenario_age_pred compare_approaches --output_file "runs/scenario_age_pred__encoder_types.csv" \
     --skip_baseline --target_score_file_names --ml_embedding_file_names \
-    "emb__encoder_lstm.pickle"                                    \
     "emb__encoder_lstm_hs128.pickle"                              \
     "emb__encoder_lstm_short.pickle"                              \
     "emb__encoder_lstm_long.pickle"                               \
-    "emb__encoder_gru.pickle"                                     \
     "emb__encoder_gru_hs128.pickle"                               \
     "emb__encoder_gru_short.pickle"                               \
     "emb__encoder_gru_long.pickle"                                \
