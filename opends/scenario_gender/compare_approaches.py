@@ -134,6 +134,7 @@ def main(conf):
     with pd.option_context(
             'display.float_format', '{:.4f}'.format,
             'display.max_columns', None,
+            'display.max_rows', None,
             'display.expand_frame_repr', False,
             'display.max_colwidth', 100,
     ):
