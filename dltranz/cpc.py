@@ -12,6 +12,7 @@ from dltranz.experiment import update_model_stats, CustomMetric
 from dltranz.metric_learn.metric import BatchRecallTop
 from dltranz.train import get_optimizer, get_lr_scheduler, fit_model
 from dltranz.data_load import create_train_loader, create_validation_loader
+from dltranz.seq_encoder import LastStepEncoder
 
 logger = logging.getLogger(__name__)
 
@@ -52,8 +53,8 @@ class CPC_Loss(nn.Module):
         possible_negatives = base_embeddings.payload.view(batch_size*max_seq_len, emb_size)
 
         mask = len_mask.unsqueeze(0).expand(batch_size, *len_mask.shape).clone()
-        for i in range(batch_size):
-            mask[i,i] = 0 # ignoring current sample embeddings
+        #for i in range(batch_size):
+        #    mask[i,i] = 0 # ignoring current sample embeddings
 
         mask = mask.reshape(batch_size, -1)
         sample_ids = torch.multinomial(mask, self.n_negatives)
@@ -140,10 +141,6 @@ def run_experiment(train_ds, valid_ds, model, conf):
         train_handlers=[])
 
     exec_sec = time.time() - start
-
-    if conf.get('save_model', False):
-        torch.save(model, conf['model_path.model'])
-        logger.info(f'Model saved to "{conf["model_path.model"]}"')
 
     results = {
         'exec-sec': exec_sec,

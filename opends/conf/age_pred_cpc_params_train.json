@@ -6,7 +6,7 @@
     "device": "cuda",
     "rnn": {
       "type": "gru",
-      "hidden_size": 256,
+      "hidden_size": 512,
       "bidir": false,
       "trainable_starter": "static"
     },
@@ -14,29 +14,29 @@
       "norm_embeddings": false,
       "embeddings_noise": 0.003,
       "embeddings": {
-        "trans_date": {"in": 800, "out": 63},
-        "small_group": {"in": 250, "out": 64}
+        "trans_date": {"in": 800, "out": 127},
+        "small_group": {"in": 250, "out": 128}
       },
       "numeric_values": {
         "amount_rur": "identity"
       }
     },
     "cpc": {
-      "n_forward_steps": 12,
+      "n_forward_steps": 6,
       "n_negatives": 40
     },
     "lr_scheduler": {
-      "step_size": 30,
-      "step_gamma": 0.9025
+      "step_size": 5,
+      "step_gamma": 0.5
     },
     "train": {
       "num_workers": 16,
       "batch_size": 64,
       "trx_dropout": 0.01,
       "max_seq_len": 1200,
-      "lr": 0.001,
+      "lr": 0.002,
       "weight_decay": 0.0,
-      "n_epoch": 10
+      "n_epoch": 30
     },
     "valid": {
       "batch_size": 64,

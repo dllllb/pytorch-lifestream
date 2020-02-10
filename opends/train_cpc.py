@@ -49,11 +49,11 @@ def main(args=None):
 
     run_experiment(train_ds, valid_ds, cpc_e, conf)
 
-    l = LastStepEncoder()
-    model = torch.nn.Sequential(trx_e, rnn_e, l)
-
     if conf.get('save_model', False):
-        torch.save(model, conf['model_path.model'])
+        l = LastStepEncoder()
+        enc_agr_model = torch.nn.Sequential(trx_e, rnn_e, l)
+
+        torch.save(enc_agr_model, conf['model_path.model'])
         logger.info(f'Model saved to "{conf["model_path.model"]}"')
 
 if __name__ == '__main__':
