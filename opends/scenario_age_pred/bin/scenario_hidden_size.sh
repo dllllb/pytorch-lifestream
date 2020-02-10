@@ -379,6 +379,7 @@ python -m scenario_age_pred compare_approaches --output_file "runs/scenario_age_
     "emb__hidden_size_bs_0128_hs_224.pickle"  \
     "emb__hidden_size_bs_0128_hs_160.pickle"  \
     "emb__hidden_size_bs_0128_hs_096.pickle"  \
+    "emb__hidden_size_bs_0128_hs_064.pickle"  \
     "emb__hidden_size_bs_0064_hs_1600.pickle" \
     "emb__hidden_size_bs_0064_hs_1200.pickle" \
     "emb__hidden_size_bs_0064_hs_800.pickle"  \
