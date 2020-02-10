@@ -24,6 +24,10 @@ def test_rnn_model():
             },
             'numeric_values': {'amount': 'log'}
         },
+        "cpc": {
+            "n_forward_steps": 3,
+            "n_negatives": 4,
+        }
         "train": {
             "weight_decay": 0,
             "lr": 0.004,
@@ -32,12 +36,6 @@ def test_rnn_model():
             "trx_dropout": .1,
             "n_epoch": 1,
             "max_seq_len": 30,
-            "cpc": {
-                "n_forward_steps": 3,
-                "linear_size": 6,  # should be equal to transactions encoder output
-                "n_negatives": 4,
-                "embedding_size": 16,  # use ${rnn.hidden_size} in real config
-            }
         },
         "valid": {
             "batch_size": 32,
@@ -55,7 +53,7 @@ def test_rnn_model():
 
     trx_e = TrxEncoder(config['trx_encoder'])
     rnn_e = RnnEncoder(TrxEncoder.output_size(config['trx_encoder']), config['rnn'])
-    cpc_e = CPC_Ecoder(trx_e, rnn_e, config['train']['cpc'])
+    cpc_e = CPC_Ecoder(trx_e, rnn_e, 6, config['train']['cpc'])
 
     train_data = gen_trx_data((torch.rand(1000)*60+1).long())
     train_ds = TrxDataset(train_data)
