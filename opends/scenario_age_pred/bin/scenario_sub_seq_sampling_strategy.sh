@@ -3,7 +3,6 @@ export SC_STRATEGY="SampleRandom"
 python metric_learning.py \
     params.train.split_strategy.split_strategy=$SC_STRATEGY \
     params.valid.split_strategy.split_strategy=$SC_STRATEGY \
-    params.train.sampling_strategy="HardNegativePair" \
     model_path.model="models/age_pred_mlm__$SC_SUFFIX.p" \
     --conf conf/age_pred_dataset.hocon conf/age_pred_ml_params_train.json
 python ml_inference.py \
@@ -17,7 +16,6 @@ export SC_STRATEGY="SplitRandom"
 python metric_learning.py \
     params.train.split_strategy.split_strategy=$SC_STRATEGY \
     params.valid.split_strategy.split_strategy=$SC_STRATEGY \
-    params.train.sampling_strategy="HardNegativePair" \
     model_path.model="models/age_pred_mlm__$SC_SUFFIX.p" \
     --conf conf/age_pred_dataset.hocon conf/age_pred_ml_params_train.json
 python ml_inference.py \
