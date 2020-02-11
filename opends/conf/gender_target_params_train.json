@@ -59,7 +59,7 @@
   "save_model": false,
 
   "stats": {
-    "path": "runs/age_pred_target_results.json"
+    "path": "runs/gender_target_results.json"
   },
 
   "output": {
