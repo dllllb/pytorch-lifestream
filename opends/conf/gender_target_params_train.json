@@ -2,7 +2,7 @@
   "params": {
     "device": "cuda",
 
-    "model_type": "trellisnet",
+    "model_type": "rnn",
     "ensemble_size": 1,
     "trx_encoder": {
       "norm_embeddings": true,
@@ -20,17 +20,6 @@
       "type": "gru",
       "bidir": false,
       "trainable_starter": "static"
-    },
-    "trellisnet": {
-      "ninp": 16,
-      "nhid": 128,
-      "nout": 48,
-      "nlevels": 100,
-      "kernel_size": 2,
-      "dropouth": 0.25,
-      "wnorm": true,
-      "aux_frequency": 20,
-      "dilation": [1]
     },
     "head": {
       "pred_all_states": false,
