@@ -11,7 +11,7 @@ from torch.utils.data import Dataset
 from torch.utils.data.dataloader import DataLoader
 from sklearn.model_selection import StratifiedKFold
 
-from dltranz.data_load import TrxDataset, ConvertingTrxDataset, DropoutTrxDataset, create_validation_loader, padded_collate, padded_collate_ipoteka
+from dltranz.data_load import TrxDataset, ConvertingTrxDataset, DropoutTrxDataset, create_validation_loader, padded_collate
 from dltranz.experiment import get_epoch_score_metric, update_model_stats
 from dltranz.loss import get_loss
 from dltranz.metric_learn.inference_tools import infer_part_of_data, save_scores
