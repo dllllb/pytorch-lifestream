@@ -1,0 +1,62 @@
+[
+    {
+        "results": {
+            "exec-sec": 11266.238463878632,
+            "metrics": {
+                "loss": 0.9607653412234068,
+                "cpc accuracy": 0.9273401205953414
+            }
+        },
+        "params": {
+            "experiment": {
+                "name": "default"
+            },
+            "device": "cuda",
+            "rnn": {
+                "type": "gru",
+                "hidden_size": 512,
+                "bidir": false,
+                "trainable_starter": "static"
+            },
+            "trx_encoder": {
+                "norm_embeddings": false,
+                "embeddings_noise": 0.003,
+                "embeddings": {
+                    "trans_date": {
+                        "in": 800,
+                        "out": 127
+                    },
+                    "small_group": {
+                        "in": 250,
+                        "out": 128
+                    }
+                },
+                "numeric_values": {
+                    "amount_rur": "identity"
+                }
+            },
+            "cpc": {
+                "n_forward_steps": 6,
+                "n_negatives": 40
+            },
+            "lr_scheduler": {
+                "step_size": 5,
+                "step_gamma": 0.5
+            },
+            "train": {
+                "num_workers": 16,
+                "batch_size": 64,
+                "trx_dropout": 0.01,
+                "max_seq_len": 1200,
+                "lr": 0.002,
+                "weight_decay": 0.0,
+                "n_epoch": 30
+            },
+            "valid": {
+                "batch_size": 64,
+                "num_workers": 16,
+                "max_seq_len": 1200
+            }
+        }
+    }
+]

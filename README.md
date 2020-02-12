@@ -50,6 +50,10 @@ python -m scenario_age_pred fit_target --conf conf/age_pred_dataset.hocon conf/a
 # Take pretrained ml model and fine tune it in supervised mode and save scores to file
 python -m scenario_age_pred fit_finetuning --conf conf/age_pred_dataset.hocon conf/age_pred_finetuning_params_train.json
 
+# Train Contrastive Predictive Coding (CPC) model; inference 
+python train_cpc.py --conf conf/age_pred_dataset.hocon conf/age_pred_cpc_params_train.json
+python ml_inference.py --conf conf/age_pred_dataset.hocon conf/age_pred_cpc_params_inference.json
+
 # Run estimation for different approaches
 # Check some options with `--help` argument
 python -m scenario_age_pred compare_approaches
@@ -118,6 +122,10 @@ python -m scenario_gender fit_target --conf conf/gender_dataset.hocon conf/gende
 
 # Take pretrained ml model and fine tune it in supervised mode and save scores to file
 python -m scenario_gender fit_finetuning --conf conf/gender_dataset.hocon conf/gender_finetuning_params_train.json
+
+# Train Contrastive Predictive Coding (CPC) model; inference 
+python train_cpc.py --conf conf/gender_dataset.hocon conf/gender_cpc_params_train.json
+python ml_inference.py --conf conf/gender_dataset.hocon conf/gender_cpc_params_inference.json
 
 # Run estimation for different approaches
 # Check some options with `--help` argument
