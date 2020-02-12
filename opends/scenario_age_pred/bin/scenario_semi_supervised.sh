@@ -1,12 +1,14 @@
 for SC_AMOUNT in 337 675 1350 2700 5400 10800 21600
 do
 	python -m scenario_age_pred fit_target \
+        params.device="$SC_DEVICE" \
         params.labeled_amount=$SC_AMOUNT \
         output.test.path="../data/age-pred/target_scores_$SC_AMOUNT"/test \
         output.valid.path="../data/age-pred/target_scores_$SC_AMOUNT"/valid \
         --conf conf/age_pred_dataset.hocon conf/age_pred_target_params_train.json
 
     python -m scenario_age_pred fit_finetuning \
+        params.device="$SC_DEVICE" \
         params.labeled_amount=$SC_AMOUNT \
         params.rnn.hidden_size=160 \
         output.test.path="../data/age-pred/finetuning_scores_$SC_AMOUNT"/test \
@@ -14,6 +16,7 @@ do
         --conf conf/age_pred_dataset.hocon conf/age_pred_finetuning_params_train.json
 
     python -m scenario_age_pred fit_finetuning \
+        params.device="$SC_DEVICE" \
         params.labeled_amount=$SC_AMOUNT \
         params.rnn.hidden_size=160 \
         params.pretrained_model_path="models/age_pred_cpc_model.p" \
@@ -22,6 +25,7 @@ do
         --conf conf/age_pred_dataset.hocon conf/age_pred_finetuning_params_train.json
 
     python -m scenario_age_pred pseudo_labeling \
+        params.device="$SC_DEVICE" \
         params.labeled_amount=$SC_AMOUNT \
         output.test.path="../data/age-pred/pseudo_labeling_$SC_AMOUNT"/test \
         output.valid.path="../data/age-pred/pseudo_labeling_$SC_AMOUNT"/valid \
