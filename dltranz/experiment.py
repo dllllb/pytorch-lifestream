@@ -39,6 +39,7 @@ def get_epoch_score_metric(metric_name):
     m = {
         'auroc': ROC_AUC,
         'accuracy': Accuracy,
+        'auroc_labeled': ROC_AUC_labeled,
         'accuracy_labeled' : Accuracy_labeled
     }.get(metric_name)
     if m is not None:
@@ -203,3 +204,8 @@ class CustomMetric(Metric):
 class Accuracy_labeled(CustomMetric):
     def __init__(self):
         super().__init__(func = lambda x,y: (torch.argmax(x['labeled'],1) == y).float().mean())
+
+
+class ROC_AUC_labeled(CustomMetric):
+    def __init__(self):
+        super().__init__(func = lambda x,y: roc_auc_score(y.cpu().numpy(), x['labeled'].cpu().numpy()))

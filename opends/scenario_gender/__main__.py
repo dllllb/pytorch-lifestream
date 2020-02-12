@@ -14,7 +14,7 @@ if __name__ == '__main__':
     torch.manual_seed(42)
     torch.cuda.manual_seed_all(42)
 
-from scenario_gender import compare_approaches, fit_target, fit_finetuning
+from scenario_gender import compare_approaches, fit_target, fit_finetuning, pseudo_labeling
 
 logger = logging.getLogger(__name__)
 
@@ -23,7 +23,7 @@ def parse_args(args=None):
     parser = argparse.ArgumentParser()
     subparsers = parser.add_subparsers()
 
-    for module in [compare_approaches, fit_target, fit_finetuning]:
+    for module in [compare_approaches, fit_target, fit_finetuning, pseudo_labeling]:
         sub_parser = subparsers.add_parser(module.__name__.split('.')[-1])
         sub_parser.set_defaults(func=module.main)
         module.prepare_parser(sub_parser)
