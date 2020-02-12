@@ -8,14 +8,14 @@ do
 
     python -m scenario_age_pred fit_finetuning \
         params.labeled_amount=$SC_AMOUNT \
-        params.rnn.hidden_size=800 \
+        params.rnn.hidden_size=160 \
         output.test.path="../data/age-pred/finetuning_scores_$SC_AMOUNT"/test \
         output.valid.path="../data/age-pred/finetuning_scores_$SC_AMOUNT"/valid \
         --conf conf/age_pred_dataset.hocon conf/age_pred_finetuning_params_train.json
 
     python -m scenario_age_pred fit_finetuning \
         params.labeled_amount=$SC_AMOUNT \
-        params.rnn.hidden_size=512 \
+        params.rnn.hidden_size=160 \
         params.pretrained_model_path="models/age_pred_cpc_model.p" \
         output.test.path="../data/age-pred/finetuning_cpc_scores_$SC_AMOUNT"/test \
         output.valid.path="../data/age-pred/finetuning_cpc_scores_$SC_AMOUNT"/valid \
