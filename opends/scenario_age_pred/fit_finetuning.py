@@ -21,7 +21,7 @@ def load_model(conf):
     head_output_size = 4
 
     model = torch.nn.Sequential(
-        pre_model[:-1],
+        pre_model[:3],
         torch.nn.BatchNorm1d(input_size),
         torch.nn.Linear(input_size, head_output_size),
         torch.nn.LogSoftmax(dim=1),

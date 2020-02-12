@@ -26,10 +26,11 @@
       "pred_all_states_mean": false,
       "explicit_lengths": false,
       "norm_input": false,
-      "num_classes": 4
+      "num_classes": 4,
+      "use_batch_norm": false
     },
     "labeled_amount": 1500,
-    "unlabeled_weight": 0.5,
+    "unlabeled_weight": 0.1,
     "pl_threshold" : 0.5,
     "labeled": {
       "train": {
