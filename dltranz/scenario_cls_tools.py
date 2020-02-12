@@ -28,7 +28,7 @@ def prepare_common_parser(parser, data_path, output_file):
     parser.add_argument('--skip_emb_baselines', action='store_true')
     parser.add_argument('--skip_linear', action='store_true')
     parser.add_argument('--skip_xgboost', action='store_true')
-    parser.add_argument('--ml_embedding_file_names', nargs='*', default=['embeddings.pickle'])
+    parser.add_argument('--ml_embedding_file_names', nargs='*', default=['embeddings.pickle', 'embeddings_cpc.pickle'])
     parser.add_argument('--target_score_file_names', nargs='*', default=['target_scores', 'finetuning_scores'])
     parser.add_argument('--output_file', type=os.path.abspath, default=output_file)
     parser.add_argument('--labeled_amount', type=int, default=-1)
