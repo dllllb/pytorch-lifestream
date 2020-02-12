@@ -51,13 +51,15 @@ def main(conf):
     if not conf['skip_baselines']:
         approaches_to_train.update({
             'baseline': {'use_client_agg': True, 'use_mcc_code_stat': True, 'use_tr_type_stat': True},
-            **{
-                f"embeds: {file_name} and baseline": {
-                    'metric_learning_embedding_name': file_name,
-                    'use_client_agg': True, 'use_mcc_code_stat': True, 'use_tr_type_stat': True,
-                }
-                for file_name in conf['ml_embedding_file_names']
+        })
+
+    if not conf['skip_baselines'] and not conf['skip_emb_baselines']:
+        approaches_to_train.update({
+            f"embeds: {file_name} and baseline": {
+                'metric_learning_embedding_name': file_name,
+                'use_client_agg': True, 'use_mcc_code_stat': True, 'use_tr_type_stat': True,
             }
+            for file_name in conf['ml_embedding_file_names']
         })
 
     approaches_to_score = {
@@ -71,7 +73,7 @@ def main(conf):
 
     if len(approaches_to_train) > 0:
         df_target, test_target = sct.read_train_test(conf['data_path'], DATASET_FILE, TEST_IDS_FILE, COL_ID)
-        folds = sct.get_folds(df_target, COL_TARGET, conf['cv_n_split'], conf['random_state'])
+        folds = sct.get_folds(df_target, COL_TARGET, conf['cv_n_split'], conf['random_state'], conf.get('labeled_amount',-1))
 
         model_types = {
             'xgb': dict(
@@ -96,6 +98,10 @@ def main(conf):
                 random_state=conf['model_seed'],
             ),
         }
+        if conf['skip_linear']:
+            model_types = {k:v for k,v in model_types.items() if k!='linear'}
+        if conf['skip_xgboost']:
+            model_types = {k:v for k,v in model_types.items() if k!='xgb'}
 
         # train and score models
         args_list = [sct.KWParamsTrainAndScore(

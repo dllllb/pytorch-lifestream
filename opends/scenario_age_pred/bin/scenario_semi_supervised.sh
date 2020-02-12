@@ -29,6 +29,7 @@ do
 
     # Compare
     python -m scenario_age_pred compare_approaches \
+        --skip_emb_baselines --skip_linear --skip_xgboost 
         --target_score_file_names \
             target_scores_$SC_AMOUNT \
             finetuning_scores_$SC_AMOUNT \

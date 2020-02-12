@@ -54,12 +54,15 @@ def main(conf):
     if not conf['skip_baselines']:
         approaches_to_train.update({
             'baseline': {'use_client_agg': True, 'use_small_group_stat': True},
-            **{
-                f"embeds: {file_name} and baseline": {
-                    'metric_learning_embedding_name': file_name, 'use_client_agg': True, 'use_small_group_stat': True}
-                for file_name in conf['ml_embedding_file_names']
-            }
         })
+
+    if not conf['skip_baselines'] and not conf['skip_emb_baselines']:
+        approaches_to_train.update({
+            f"embeds: {file_name} and baseline": {
+                'metric_learning_embedding_name': file_name, 'use_client_agg': True, 'use_small_group_stat': True}
+            for file_name in conf['ml_embedding_file_names']
+        })
+
 
     approaches_to_score = {
         f"scores: {file_name}": {'target_scores_name': file_name}
@@ -102,6 +105,10 @@ def main(conf):
                 n_jobs=4,
             ),
         }
+        if conf['skip_linear']:
+            model_types = {k:v for k,v in model_types.items() if k!='linear'}
+        if conf['skip_xgboost']:
+            model_types = {k:v for k,v in model_types.items() if k!='xgb'}
 
         # train and score models
         args_list = [sct.KWParamsTrainAndScore(
