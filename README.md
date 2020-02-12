@@ -93,7 +93,7 @@ cd dltrans/opends
 export SC_DEVICE="cuda"
 
 # run all scenarios or select one
-./scenario_age_pred/bins/*.sh
+./scenario_age_pred/bin/*.sh
 
 # check the results
 cat runs/scenario_age_pred_*.csv
@@ -135,7 +135,7 @@ cd dltrans/opends
 export SC_DEVICE="cuda"
 
 # run all scenarios or select one
-./scenario_gender/bins/*.sh
+./scenario_gender/bin/*.sh
 
 # check the results
 cat runs/scenario_gender_*.csv
