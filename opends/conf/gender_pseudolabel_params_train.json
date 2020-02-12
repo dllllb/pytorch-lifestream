@@ -5,14 +5,14 @@
     "model_type": "rnn",
     "ensemble_size": 1,
     "trx_encoder": {
-      "norm_embeddings": false,
+      "norm_embeddings": true,
       "embeddings_noise": 0.003,
       "embeddings": {
-        "trans_date": {"in": 800, "out": 8},
-        "small_group": {"in": 250, "out": 16}
+        "mcc_code": {"in": 200, "out": 48},
+        "tr_type": {"in": 100, "out": 24}
       },
       "numeric_values": {
-        "amount_rur": "identity"
+        "amount": "identity"
       }
     },
     "rnn": {
@@ -26,40 +26,34 @@
       "pred_all_states_mean": false,
       "explicit_lengths": false,
       "norm_input": false,
-      "num_classes": 4,
-      "use_batch_norm": false
+      "use_batch_norm": true
     },
     "labeled_amount": 1500,
     "unlabeled_weight": 0.1,
     "pl_threshold" : 0.5,
     "labeled": {
       "train": {
-        "loss": "NLLLoss"
+        "loss": "bce"
       }
     },
     "train": {
       "random_neg": false,
-      "trx_dropout": 0.005,
+      "trx_dropout": 0.01,
       "max_seq_len": 1200,
-      "SubsamplingDataset": {
-        "min_seq_len_s": 30,
-        "min_seq_len_e": 500,
-        "max_seq_len_s": 120,
-        "max_seq_len_e": 1000,
-        "crop_proba_init": 1.0,
-        "crop_proba_gamma": 1.0,
-        "total_n_epoch": 35
+      "clip_seq": {
+        "min_len": 250,
+        "max_len": 350
       },
       "batch_size": 32,
       "num_workers": 16,
       "loss": "pseudo_labeled",
-      "lr": 0.01,
+      "lr": 0.005,
       "weight_decay": 0.0,
-      "n_epoch": 35
+      "n_epoch": 10
     },
     "lr_scheduler": {
-      "step_size": 5,
-      "step_gamma": 0.5
+      "step_size": 1,
+      "step_gamma": 0.90
     },
     "valid": {
       "max_seq_len": 1200,
@@ -67,20 +61,25 @@
       "num_workers": 8
     },
     "norm_scores": false,
-    "score_metric": "accuracy_labeled"
+    "score_metric": "auroc_labeled"
   },
 
   "save_model": false,
 
+  "stats": {
+    "path": "runs/gender_target_results.json"
+  },
+
   "output": {
+    "path": "../data/gender/target_scores",
     "valid": {
-      "path": "../data/age-pred/pseudo_labeling/valid",
+      "path": "../data/gender/target_scores/valid",
       "format": "pickle"
     },
     "test": {
-      "path": "../data/age-pred/pseudo_labeling/test",
+      "path": "../data/gender/target_scores/test",
       "format": "pickle"
     },
-    "columns": ["client_id"]
+    "columns": ["customer_id"]
   }
 }

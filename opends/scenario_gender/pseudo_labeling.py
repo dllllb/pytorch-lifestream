@@ -19,7 +19,7 @@ from dltranz.models import model_by_type
 from dltranz.seq_encoder import PaddedBatch
 from dltranz.train import get_optimizer, get_lr_scheduler, fit_model
 from dltranz.util import init_logger, get_conf
-from scenario_age_pred.fit_target import read_consumer_data, EpochTrackingDataLoader, SubsamplingDataset
+from scenario_gender.fit_target import read_consumer_data, ClippingDataset
 
 logger = logging.getLogger(__name__)
 
@@ -72,9 +72,15 @@ def prepare_parser(parser):
 
 
 def create_ds(labeled_data, unlabeled_data, valid_data, conf):
-    if 'SubsamplingDataset' in conf['params.train']:
-        labeled_data = SubsamplingDataset(labeled_data, **conf['params.train.SubsamplingDataset'])
-        unlabeled_data = SubsamplingDataset(unlabeled_data, **conf['params.train.SubsamplingDataset'])
+    if 'clip_seq' in conf['params.train']:
+        labeled_data = ClippingDataset(labeled_data,
+                                     min_len=conf['params.train.clip_seq.min_len'],
+                                     max_len=conf['params.train.clip_seq.max_len'],
+                                     )
+        unlabeled_data = ClippingDataset(unlabeled_data,
+                                    min_len=conf['params.train.clip_seq.min_len'],
+                                    max_len=conf['params.train.clip_seq.max_len'],
+                                    )
 
     labeled_ds = ConvertingTrxDataset(TrxDataset(labeled_data, y_dtype=np.int64))
     unlabeled_ds = ConvertingTrxDataset(TrxDataset(unlabeled_data, y_dtype=np.int64))
@@ -90,7 +96,7 @@ def run_experiment(labeled_ds, unlabeled_ds, valid_ds, params, model_f):
     labeled_ds = DropoutTrxDataset(labeled_ds, params['train.trx_dropout'], params['train.max_seq_len'])
     unlabeled_ds = DropoutTrxDataset(unlabeled_ds, params['train.trx_dropout'], params['train.max_seq_len'])
     zip_ds = ZipDataset(labeled_ds, unlabeled_ds)
-    zip_loader = EpochTrackingDataLoader(
+    zip_loader = DataLoader(
         zip_ds,
         batch_size=params['train.batch_size'],
         shuffle=True,
