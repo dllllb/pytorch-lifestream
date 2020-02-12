@@ -115,4 +115,5 @@ python -m scenario_gender compare_approaches --output_file "runs/scenario_gender
     "emb__hidden_size_bs_0128_hs_0512.pickle" \
     "emb__hidden_size_bs_0128_hs_0256.pickle" \
     "emb__hidden_size_bs_0128_hs_0128.pickle" \
-    "emb__hidden_size_bs_0128_hs_0064.pickle"
+    "emb__hidden_size_bs_0128_hs_0064.pickle" \
+    "emb__hidden_size_bs_0128_hs_0032.pickle"
