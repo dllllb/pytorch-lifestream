@@ -29,8 +29,8 @@
       "use_batch_norm": true
     },
     "labeled_amount": 1500,
-    "unlabeled_weight": 0.1,
-    "pl_threshold" : 0.5,
+    "unlabeled_weight": 0.0,
+    "pl_threshold" : 1.0,
     "labeled": {
       "train": {
         "loss": "bce"

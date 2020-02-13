@@ -87,7 +87,10 @@ class PseudoLabeledLoss(nn.Module):
 
     def forward(self, pred, true):
         label_pred, unlabel_pred = pred['labeled'], pred['unlabeled']
-        pseudo_labels = torch.argmax(unlabel_pred.detach(), 1)
+        if unlabel_pred.dim()>1:
+            pseudo_labels = torch.argmax(unlabel_pred.detach(), 1)
+        else:
+            pseudo_labels = unlabel_pred.detach()
 
         # mask pseudo_labels, with confidence > pl_threshold
         if isinstance(self.loss, nn.NLLLoss):
