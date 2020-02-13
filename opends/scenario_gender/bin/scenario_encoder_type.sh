@@ -1,23 +1,8 @@
 # LSTM encoder
-export SC_SUFFIX="encoder_lstm_hs128"
-python metric_learning.py \
-    params.device="$SC_DEVICE" \
-    params.rnn.type="lstm" \
-    params.rnn.hidden_size=128 \
-    model_path.model="models/gender_mlm__$SC_SUFFIX.p" \
-    --conf conf/gender_dataset.hocon conf/gender_ml_params_train.json
-python ml_inference.py \
-    params.device="$SC_DEVICE" \
-    model_path.model="models/gender_mlm__$SC_SUFFIX.p" \
-    output.path="../data/gender/emb__$SC_SUFFIX" \
-    --conf conf/gender_dataset.hocon conf/gender_ml_params_inference.json
-
 export SC_SUFFIX="encoder_lstm_short"
 python metric_learning.py \
     params.device="$SC_DEVICE" \
     params.rnn.type="lstm" \
-    params.train.split_strategy.cnt_min=15 \
-    params.train.split_strategy.cnt_max=75 \
     model_path.model="models/gender_mlm__$SC_SUFFIX.p" \
     --conf conf/gender_dataset.hocon conf/gender_ml_params_train.json
 python ml_inference.py \
@@ -44,25 +29,10 @@ python ml_inference.py \
 
 #
 # GRU encoder
-export SC_SUFFIX="encoder_gru_hs128"
-python metric_learning.py \
-    params.device="$SC_DEVICE" \
-    params.rnn.type="gru" \
-    params.rnn.hidden_size=128 \
-    model_path.model="models/gender_mlm__$SC_SUFFIX.p" \
-    --conf conf/gender_dataset.hocon conf/gender_ml_params_train.json
-python ml_inference.py \
-    params.device="$SC_DEVICE" \
-    model_path.model="models/gender_mlm__$SC_SUFFIX.p" \
-    output.path="../data/gender/emb__$SC_SUFFIX" \
-    --conf conf/gender_dataset.hocon conf/gender_ml_params_inference.json
-
 export SC_SUFFIX="encoder_gru_short"
 python metric_learning.py \
     params.device="$SC_DEVICE" \
     params.rnn.type="gru" \
-    params.train.split_strategy.cnt_min=15 \
-    params.train.split_strategy.cnt_max=75 \
     model_path.model="models/gender_mlm__$SC_SUFFIX.p" \
     --conf conf/gender_dataset.hocon conf/gender_ml_params_train.json
 python ml_inference.py \
@@ -234,10 +204,8 @@ python ml_inference.py \
 # Compare
 python -m scenario_gender compare_approaches --output_file "runs/scenario_gender__encoder_types.csv" \
     --skip_baseline --target_score_file_names --ml_embedding_file_names \
-    "emb__encoder_lstm_hs128.pickle"                         \
     "emb__encoder_lstm_short.pickle"                         \
     "emb__encoder_lstm_long.pickle"                          \
-    "emb__encoder_gru_hs128.pickle"                          \
     "emb__encoder_gru_short.pickle"                          \
     "emb__encoder_gru_long.pickle"                           \
     "emb__encoder_transf_bs128_8head_128hs_6layers.pickle"   \
