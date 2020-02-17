@@ -47,10 +47,13 @@ python ml_inference.py --conf conf/age_pred_dataset.hocon conf/age_pred_ml_param
 # Train supervised model and save scores to file
 python -m scenario_age_pred fit_target --conf conf/age_pred_dataset.hocon conf/age_pred_target_params_train.json
 
+# Train special model for fine-tunnig 
+# it is quite smaller, than one which is used for embeddings extraction, due to insufficiency labeled data to fine-tune a big model. 
+python metric_learning.py --conf conf/age_pred_dataset.hocon conf/age_pred_ml_fintuning_train.json.json
 # Take pretrained ml model and fine tune it in supervised mode and save scores to file
 python -m scenario_age_pred fit_finetuning --conf conf/age_pred_dataset.hocon conf/age_pred_finetuning_params_train.json
 
-# Train Contrastive Predictive Coding (CPC) model; inference 
+# Train Contrastive Predictive Coding (CPC) model; inference
 python train_cpc.py --conf conf/age_pred_dataset.hocon conf/age_pred_cpc_params_train.json
 python ml_inference.py --conf conf/age_pred_dataset.hocon conf/age_pred_cpc_params_inference.json
 # fine tune CPC model in supervised mode and save scores to file
