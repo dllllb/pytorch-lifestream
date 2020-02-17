@@ -38,25 +38,25 @@ pip install -r requirements.txt
 ```sh
 cd dltrans/opends
 
-# Train metric learning model
+# Train the metric learning model
 python metric_learning.py --conf conf/age_pred_dataset.hocon conf/age_pred_ml_params_train.json
 
-# With pretrained mertic learning model run inference ang take embeddings for each customer
+# Run inference with the pretrained mertic learning model and take embeddings for each customer
 python ml_inference.py --conf conf/age_pred_dataset.hocon conf/age_pred_ml_params_inference.json
 
-# Train supervised model and save scores to file
+# Train a supervised model and save scores to the file
 python -m scenario_age_pred fit_target --conf conf/age_pred_dataset.hocon conf/age_pred_target_params_train.json
 
-# Train special model for fine-tunnig 
+# Train a special model for fine-tuning 
 # it is quite smaller, than one which is used for embeddings extraction, due to insufficiency labeled data to fine-tune a big model. 
 python metric_learning.py --conf conf/age_pred_dataset.hocon conf/age_pred_ml_fintuning_train.json.json
-# Take pretrained ml model and fine tune it in supervised mode and save scores to file
+# Take the pretrained metric learning model and fine tune it in supervised mode; save scores to the file
 python -m scenario_age_pred fit_finetuning --conf conf/age_pred_dataset.hocon conf/age_pred_finetuning_params_train.json
 
-# Train Contrastive Predictive Coding (CPC) model; inference
+# Train the Contrastive Predictive Coding (CPC) model; inference
 python train_cpc.py --conf conf/age_pred_dataset.hocon conf/age_pred_cpc_params_train.json
 python ml_inference.py --conf conf/age_pred_dataset.hocon conf/age_pred_cpc_params_inference.json
-# fine tune CPC model in supervised mode and save scores to file
+# fine tune the CPC model in supervised mode and save scores to the file
 python -m scenario_age_pred fit_finetuning \
     params.pretrained_model_path="models/age_pred_cpc_model.p" \
     output.test.path="../data/age-pred/finetuning_cpc_scores_$SC_AMOUNT"/test \
@@ -106,22 +106,22 @@ cat runs/scenario_age_pred_*.csv
 ```sh
 cd dltrans/opends
 
-# Train metric learning model
+# Train the metric learning model
 python metric_learning.py --conf conf/gender_dataset.hocon conf/gender_ml_params_train.json
 
-# With pretrained mertic learning model run inference ang take embeddings for each customer
+# Run inference with the pretrained mertic learning model and take embeddings for each customer
 python ml_inference.py --conf conf/gender_dataset.hocon conf/gender_ml_params_inference.json
 
-# Train supervised model and save scores to file
+# Train a supervised model and save scores to the file
 python -m scenario_gender fit_target --conf conf/gender_dataset.hocon conf/gender_target_params_train.json
 
-# Take pretrained ml model and fine tune it in supervised mode and save scores to file
+# Take the pretrained metric learning model and fine tune it in supervised mode; save scores to the file
 python -m scenario_gender fit_finetuning --conf conf/gender_dataset.hocon conf/gender_finetuning_params_train.json
 
-# Train Contrastive Predictive Coding (CPC) model; inference 
+# Train the Contrastive Predictive Coding (CPC) model; inference 
 python train_cpc.py --conf conf/gender_dataset.hocon conf/gender_cpc_params_train.json
 python ml_inference.py --conf conf/gender_dataset.hocon conf/gender_cpc_params_inference.json
-# fine tune CPC model in supervised mode and save scores to file
+# fine tune the CPC model in supervised mode and save scores to the file
 python -m scenario_gender fit_finetuning \
     params.pretrained_model_path="models/gender_cpc_model.p" \
     output.test.path="../data/gender/finetuning_cpc_scores"/test \
@@ -201,10 +201,10 @@ Use the ones you have already prepared.
 ```sh
 cd dltrans/opends
 
-# (If wasn't ran before) Train metric learning model
+# (If wasn't ran before) Train the metric learning model
 python metric_learning.py --conf conf/tinkoff_dataset.hocon conf/tinkoff_train_params.json
 
-# (If wasn't ran before) With pretrained mertic learning model run inference ang take embeddings for each customer
+# (If wasn't ran before) # Run inference with the pretrained mertic learning model and take embeddings for each customer
 python ml_inference.py --conf conf/tinkoff_dataset.hocon conf/tinkoff_inference_params.json
 
 
