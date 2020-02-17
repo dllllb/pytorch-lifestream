@@ -41,7 +41,7 @@ cd dltrans/opends
 # Train the metric learning model
 python metric_learning.py --conf conf/age_pred_dataset.hocon conf/age_pred_ml_params_train.json
 
-# Run inference with the pretrained mertic learning model and take embeddings for each customer
+# Run inference with the pretrained mertic learning model and get embeddings for each customer
 python ml_inference.py --conf conf/age_pred_dataset.hocon conf/age_pred_ml_params_inference.json
 
 # Train a supervised model and save scores to the file
@@ -109,7 +109,7 @@ cd dltrans/opends
 # Train the metric learning model
 python metric_learning.py --conf conf/gender_dataset.hocon conf/gender_ml_params_train.json
 
-# Run inference with the pretrained mertic learning model and take embeddings for each customer
+# Run inference with the pretrained mertic learning model and get embeddings for each customer
 python ml_inference.py --conf conf/gender_dataset.hocon conf/gender_ml_params_inference.json
 
 # Train a supervised model and save scores to the file
