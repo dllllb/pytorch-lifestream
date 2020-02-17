@@ -1,4 +1,13 @@
-for SC_AMOUNT in 337 675 1350 2700 5400 10800 21600
+
+# train special model for fine-tunnig in semi-supervised setup 
+# it is quite smaller, than one which is used in supervised setup, due to insufficiency labeled data to train a big model. 
+python metric_learning.py \
+    params.device="$SC_DEVICE" \
+    params.rnn.hidden_size=160 \
+	params.model_path="models/age_pred_ml_model_ss_ft.p" \
+	--conf conf/age_pred_dataset.hocon conf/age_pred_ml_params_train.json
+
+for SC_AMOUNT in 337 675 1350 2700 5400 10800
 do
 	python -m scenario_age_pred fit_target \
         params.device="$SC_DEVICE" \
@@ -11,6 +20,7 @@ do
         params.device="$SC_DEVICE" \
         params.labeled_amount=$SC_AMOUNT \
         params.rnn.hidden_size=160 \
+        params.pretrained_model_path="models/age_pred_ml_model_ss_ft.p" \
         output.test.path="../data/age-pred/finetuning_scores_$SC_AMOUNT"/test \
         output.valid.path="../data/age-pred/finetuning_scores_$SC_AMOUNT"/valid \
         --conf conf/age_pred_dataset.hocon conf/age_pred_finetuning_params_train.json

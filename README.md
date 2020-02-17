@@ -53,6 +53,12 @@ python -m scenario_age_pred fit_finetuning --conf conf/age_pred_dataset.hocon co
 # Train Contrastive Predictive Coding (CPC) model; inference 
 python train_cpc.py --conf conf/age_pred_dataset.hocon conf/age_pred_cpc_params_train.json
 python ml_inference.py --conf conf/age_pred_dataset.hocon conf/age_pred_cpc_params_inference.json
+# fine tune CPC model in supervised mode and save scores to file
+python -m scenario_age_pred fit_finetuning \
+    params.pretrained_model_path="models/age_pred_cpc_model.p" \
+    output.test.path="../data/age-pred/finetuning_cpc_scores_$SC_AMOUNT"/test \
+    output.valid.path="../data/age-pred/finetuning_cpc_scores_$SC_AMOUNT"/valid \
+    --conf conf/age_pred_dataset.hocon conf/age_pred_finetuning_params_train.json
 
 # Run estimation for different approaches
 # Check some options with `--help` argument
@@ -64,29 +70,15 @@ cat runs/scenario_age_pred.csv
 
 ### Semi-supervised setup
 ```sh
-# Train a supervised model on a part of the dataset and save scores to file
-python -m scenario_age_pred fit_target params.labeled_amount=2700 \
-output.test.path="../data/age-pred/target_scores_2700/test" \
-output.valid.path="../data/age-pred/target_scores_2700/valid" \
---conf conf/age_pred_dataset.hocon conf/age_pred_target_params_train.json
+cd dltrans/opends
 
-# Take the pretrained self-supervised model and fine tune it on a part of the dataset in supervised mode; save scores to file
-python -m scenario_age_pred fit_finetuning dataset.labeled_amount=2700 \
-output.test.path="../data/age-pred/finetuning_scores_2700/test" \
-output.valid.path="../data/age-pred/finetuning_scores_2700/valid" \
---conf conf/age_pred_dataset.hocon conf/age_pred_finetuning_params_train.json
+export SC_DEVICE="cuda"
 
-# Train semi-supervised model with pseudo_labeling; save scores to file
-python -m scenario_age_pred fit_finetuning dataset.labeled_amount=2700 \
-output.test.path="../data/age-pred/pseudo_labeling_2700/test" \
-output.valid.path="../data/age-pred/pseudo_labeling_2700/valid" \
---conf conf/age_pred_dataset.hocon conf/age_pred_finetuning_params_train.json
+# run semi supervised scenario
+./scenario_age_pred/bin/scenario_semi_supervised.sh
 
-# compare approaches (fit target vs. fit tunning ml model vs. pseudo-labeling vs. ml embeddings vs. baseline(GBDT))
-python -m scenario_age_pred compare_approaches \
---labeled_amount 2700 \
---target_score_file_names target_scores_2700 finetuning_scores_2700 pseudo_labeling_2700 \
---output_file runs/semi_scenario_age_pred_2700.csv
+# check the results
+cat runs/semi_scenario_age_pred_*.csv
 
 ```
 
@@ -126,6 +118,12 @@ python -m scenario_gender fit_finetuning --conf conf/gender_dataset.hocon conf/g
 # Train Contrastive Predictive Coding (CPC) model; inference 
 python train_cpc.py --conf conf/gender_dataset.hocon conf/gender_cpc_params_train.json
 python ml_inference.py --conf conf/gender_dataset.hocon conf/gender_cpc_params_inference.json
+# fine tune CPC model in supervised mode and save scores to file
+python -m scenario_gender fit_finetuning \
+    params.pretrained_model_path="models/gender_cpc_model.p" \
+    output.test.path="../data/gender/finetuning_cpc_scores"/test \
+    output.valid.path="../data/gender/finetuning_cpc_scores"/valid \
+    --conf conf/gender_dataset.hocon conf/gender_finetuning_params_train.json
 
 # Run estimation for different approaches
 # Check some options with `--help` argument
@@ -133,6 +131,20 @@ python -m scenario_gender compare_approaches
 
 # check the results
 cat runs/scenario_gender.csv
+```
+
+### Semi-supervised setup
+```sh
+cd dltrans/opends
+
+export SC_DEVICE="cuda"
+
+# run semi supervised scenario
+./scenario_gender/bin/scenario_semi_supervised.sh
+
+# check the results
+cat runs/semi_scenario_gender_*.csv
+
 ```
 
 ### Test model configurations
