@@ -1,3 +1,4 @@
+
 if __name__ == '__main__':
     import sys
     import os
@@ -11,6 +12,7 @@ import torch
 from dltranz.util import init_logger, get_conf
 from metric_learning import prepare_embeddings
 from dltranz.metric_learn.inference_tools import load_model, score_part_of_data
+from dltranz.metric_learn.ml_models import ml_model_by_type
 
 logger = logging.getLogger(__name__)
 
@@ -40,7 +42,11 @@ def read_dataset(path, conf):
 def main(args=None):
     conf = get_conf(args)
 
-    model = load_model(conf)
+    model_f = ml_model_by_type(conf['params.model_type'])
+    model = model_f(conf['params'])
+    model_d = load_model(conf)
+    model.load_state_dict(model_d)
+
     columns = conf['output.columns']
 
     train_data = read_dataset(conf['dataset.train_path'], conf)

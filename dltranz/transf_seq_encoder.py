@@ -37,6 +37,10 @@ class TransformerSeqEncoder(nn.Module):
 
         self.shared_layers = params['shared_layers']
         self.n_layers = params['n_layers']
+        self.use_after_mask = params['use_after_mask']
+        self.use_positional_encoding = params['use_positional_encoding']
+
+        self.starter = torch.nn.Parameter(torch.randn(1, 1, input_size)) if params['train_starter'] else None
 
         self.enc_layer = TransformerEncoderLayer(
             d_model=input_size,
@@ -47,8 +51,6 @@ class TransformerSeqEncoder(nn.Module):
         enc_norm = LayerNorm(input_size)
         self.enc = TransformerEncoder(self.enc_layer, params['n_layers'], enc_norm)
         self.pe = PositionalEncoding(max_len=params['max_seq_len'], d_model=input_size, dropout=params['dropout'])
-        self.use_after_mask = params['use_after_mask']
-        self.use_positional_encoding = params['use_positional_encoding']
 
     @staticmethod
     def generate_square_subsequent_mask(sz):
@@ -60,7 +62,11 @@ class TransformerSeqEncoder(nn.Module):
         return mask
 
     def forward(self, x):
+        batch_size = x.payload.size()[0]
         x_t = torch.transpose(x.payload, 0, 1)
+
+        if self.starter is not None:
+            x_t = torch.cat([self.starter.expand(1, batch_size, -1), x_t], dim=0)
 
         if self.use_after_mask:
             mask = self.generate_square_subsequent_mask(x_t.size(0)).to(x_t.device)
