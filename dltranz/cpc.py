@@ -185,9 +185,9 @@ class CPCLossV2(torch.nn.Module):
         k_pos_samples = self.k_pos_samples
         n = embeddings.size()[0] // k_pos_samples
         h = embeddings.size()[1]
-        m_neg_samples = self.m_neg_samples
+        m_neg_samples = min(self.m_neg_samples, k_pos_samples * (n - 1))
 
-        assert m_neg_samples <= (n - 1) * k_pos_samples, (m_neg_samples, (n - 1) * k_pos_samples)
+        # assert m_neg_samples <= (n - 1) * k_pos_samples, (m_neg_samples, (n - 1) * k_pos_samples)
 
         # pos pred
         history_x_indexes = (torch.arange(n * k_pos_samples) + 1) % k_pos_samples != 0

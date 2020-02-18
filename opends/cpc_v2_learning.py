@@ -78,5 +78,6 @@ if __name__ == '__main__':
     init_logger(__name__)
     init_logger('dltranz')
     init_logger('dataset_preparation')
+    init_logger('metric_learning')
 
     main()

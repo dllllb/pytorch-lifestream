@@ -63,6 +63,10 @@ python -m scenario_age_pred fit_finetuning \
     output.valid.path="../data/age-pred/finetuning_cpc_scores_$SC_AMOUNT"/valid \
     --conf conf/age_pred_dataset.hocon conf/age_pred_finetuning_params_train.json
 
+# Train the Contrastive Predictive Coding (CPC v2) model; inference
+python cpc_v2_learning.py params.device="$SC_DEVICE" --conf conf/age_pred_dataset.hocon conf/age_pred_cpcv2_params_train.json
+python ml_inference.py params.device="$SC_DEVICE" --conf conf/age_pred_dataset.hocon conf/age_pred_cpcv2_params_inference.json
+
 # Run estimation for different approaches
 # Check some options with `--help` argument
 python -m scenario_age_pred compare_approaches
