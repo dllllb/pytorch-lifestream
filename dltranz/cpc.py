@@ -167,19 +167,20 @@ class CPCShellV2(torch.nn.Module):
 
     def forward(self, x):
         z = self.encoder(x)
-
-        return z, self.linear_predictor
+        return z
 
 
 class CPCLossV2(torch.nn.Module):
-    def __init__(self, k_pos_samples, m_neg_samples):
+    def __init__(self, k_pos_samples, m_neg_samples, linear_predictor):
         super(CPCLossV2, self).__init__()
 
         self.k_pos_samples = k_pos_samples
         self.m_neg_samples = m_neg_samples
 
+        self.linear_predictor = linear_predictor
+
     def forward(self, embeddings, target):
-        embeddings, linear_predictor = embeddings
+        embeddings = embeddings
 
         k_pos_samples = self.k_pos_samples
         n = embeddings.size()[0] // k_pos_samples
@@ -195,7 +196,7 @@ class CPCLossV2(torch.nn.Module):
         hist_x = embeddings[history_x_indexes].reshape(n, -1)  # shape: [n, embedding_size * (k - 1)]
         hist_y = embeddings[history_y_indexes]
 
-        predicts = linear_predictor(hist_x)
+        predicts = self.linear_predictor(hist_x)
         positive_pred_logit = predicts.mul(hist_y).sum(axis=-1)
 
         # negatives
@@ -212,4 +213,4 @@ class CPCLossV2(torch.nn.Module):
         loss = torch.nn.functional.log_softmax(
             torch.cat([positive_pred_logit.unsqueeze(-1), neg_logit], dim=-1),
             dim=-1)[:, 0]
-        return -1.0 * loss.mean()
+        return -1.0 * loss.mean(), None

@@ -1,28 +1,23 @@
-from dltranz.cpc import CPCShellV2
-from metric_learning import create_data_loaders
-
 if __name__ == '__main__':
     import sys
     import os
     sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 
 import logging
-import pickle
 
 import numpy as np
 import torch
-from torch.utils.data import DataLoader
 
-from dltranz.data_load import ConvertingTrxDataset, DropoutTrxDataset
 from dltranz.experiment import update_model_stats
-from dltranz.metric_learn.dataset import SplittingDataset, split_strategy
-from dltranz.metric_learn.dataset import TargetEnumeratorDataset, collate_splitted_rows
 from dltranz.metric_learn.losses import get_loss
 from dltranz.metric_learn.metric import BatchRecallTop
-from dltranz.metric_learn.ml_models import rnn_model, ml_model_by_type
+from dltranz.metric_learn.ml_models import ml_model_by_type
 from dltranz.metric_learn.sampling_strategies import get_sampling_strategy
 from dltranz.train import get_optimizer, get_lr_scheduler, fit_model
 from dltranz.util import init_logger, get_conf
+
+from dltranz.cpc import CPCShellV2
+from metric_learning import create_data_loaders
 
 logger = logging.getLogger(__name__)
 
@@ -44,9 +39,7 @@ def run_experiment(model, conf):
 
     train_loader, valid_loader = create_data_loaders(conf)
 
-    sampling_strategy = get_sampling_strategy(params)
-    loss = get_loss(params, sampling_strategy)
-    loss.to(torch.device(conf['params.device']))
+    loss = get_loss(params, sampling_strategy=None, kw_params={'linear_predictor': model.linear_predictor})
 
     valid_metric = {'BatchRecallTop': BatchRecallTop(k=params['valid.split_strategy.split_count'] - 1)}
     optimizer = get_optimizer(model, params)

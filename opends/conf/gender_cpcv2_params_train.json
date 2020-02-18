@@ -59,7 +59,7 @@
       "loss": "CPCLoss",
       "lr": 0.002,
       "weight_decay": 0.0,
-      "n_epoch": 300
+      "n_epoch": 100
     },
     "valid": {
       "batch_size": 1024,
@@ -76,7 +76,7 @@
 
   "save_model": true,
   "model_path": {
-    "model": "models/gender_ml_model.p"
+    "model": "models/gender_cpcv2_model.p"
   },
 
   "stats": {

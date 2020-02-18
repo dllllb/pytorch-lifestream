@@ -33,6 +33,7 @@
         "amount": "identity"
       }
     },
+    "use_normalization_layer": true,
     "lr_scheduler": {
       "step_size": 10,
       "step_gamma": 0.9025

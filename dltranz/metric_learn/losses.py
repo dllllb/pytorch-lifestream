@@ -189,7 +189,7 @@ class MarginLoss(torch.nn.Module):
         return loss.sum(), len(positive_pairs) + len(negative_pairs)
 
 
-def get_loss(params, sampling_strategy):
+def get_loss(params, sampling_strategy, kw_params=None):
     
     if params['train.loss'] == 'ContrastiveLoss':
         kwargs = {
@@ -237,6 +237,7 @@ def get_loss(params, sampling_strategy):
         kwargs = {
             'k_pos_samples': params.get('cpc.k_pos_samples', None),
             'm_neg_samples': params.get('cpc.m_neg_samples', None),
+            'linear_predictor': kw_params['linear_predictor'],
         }
         kwargs = {k: v for k, v in kwargs.items() if v is not None}
         loss_fn = CPCLossV2(**kwargs)
@@ -246,4 +247,4 @@ def get_loss(params, sampling_strategy):
     def loss(*args, **kwargs):
         return loss_fn(*args, **kwargs)[0]
             
-    return loss_fn
+    return loss

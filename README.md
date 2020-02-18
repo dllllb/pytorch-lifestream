@@ -112,10 +112,10 @@ cat runs/scenario_age_pred_*.csv
 cd dltrans/opends
 
 # Train metric learning model
-python metric_learning.py --conf conf/gender_dataset.hocon conf/gender_ml_params_train.json
+python metric_learning.py params.device="$SC_DEVICE" --conf conf/gender_dataset.hocon conf/gender_ml_params_train.json
 
 # With pretrained mertic learning model run inference ang take embeddings for each customer
-python ml_inference.py --conf conf/gender_dataset.hocon conf/gender_ml_params_inference.json
+python ml_inference.py params.device="$SC_DEVICE" --conf conf/gender_dataset.hocon conf/gender_ml_params_inference.json
 
 # Train supervised model and save scores to file
 python -m scenario_gender fit_target --conf conf/gender_dataset.hocon conf/gender_target_params_train.json
@@ -124,8 +124,12 @@ python -m scenario_gender fit_target --conf conf/gender_dataset.hocon conf/gende
 python -m scenario_gender fit_finetuning --conf conf/gender_dataset.hocon conf/gender_finetuning_params_train.json
 
 # Train Contrastive Predictive Coding (CPC) model; inference 
-python train_cpc.py --conf conf/gender_dataset.hocon conf/gender_cpc_params_train.json
-python ml_inference.py --conf conf/gender_dataset.hocon conf/gender_cpc_params_inference.json
+python train_cpc.py params.device="$SC_DEVICE" --conf conf/gender_dataset.hocon conf/gender_cpc_params_train.json
+python ml_inference.py params.device="$SC_DEVICE" --conf conf/gender_dataset.hocon conf/gender_cpc_params_inference.json
+
+# Train Contrastive Predictive Coding (CPC v2) model; inference 
+python cpc_v2_learning.py params.device="$SC_DEVICE" --conf conf/gender_dataset.hocon conf/gender_cpcv2_params_train.json
+python ml_inference.py params.device="$SC_DEVICE" --conf conf/gender_dataset.hocon conf/gender_cpcv2_params_inference.json
 
 # Run estimation for different approaches
 # Check some options with `--help` argument
