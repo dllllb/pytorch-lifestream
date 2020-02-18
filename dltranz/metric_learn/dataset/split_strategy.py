@@ -19,10 +19,11 @@ class NoSplit(AbsSplit):
 
 
 class SampleSlices(AbsSplit):
-    def __init__(self, split_count, cnt_min, cnt_max):
+    def __init__(self, split_count, cnt_min, cnt_max, is_sorted=False):
         self.split_count = split_count
         self.cnt_min = cnt_min
         self.cnt_max = cnt_max
+        self.is_sorted = is_sorted
 
     def split(self, dates):
         date_len = dates.shape[0]
@@ -31,7 +32,11 @@ class SampleSlices(AbsSplit):
         lengths = np.random.randint(self.cnt_min, self.cnt_max, self.split_count)
         available_start_pos = date_len - lengths
         start_pos = (np.random.rand(self.split_count) * available_start_pos).astype(int)
-        return [date_range[s:s + l] for s, l in zip(start_pos, lengths)]
+        if not self.is_sorted:
+            return [date_range[s:s + l] for s, l in zip(start_pos, lengths)]
+
+        ix_sort = np.argsort(start_pos)
+        return [date_range[s:s + l] for s, l in zip(start_pos[ix_sort], lengths[ix_sort])]
 
 
 class SampleRandom(AbsSplit):
