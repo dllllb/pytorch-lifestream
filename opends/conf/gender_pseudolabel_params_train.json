@@ -29,8 +29,8 @@
       "use_batch_norm": true
     },
     "labeled_amount": 1500,
-    "unlabeled_weight": 0.1,
-    "pl_threshold" : 0.5,
+    "unlabeled_weight": 1.0,
+    "pl_threshold" : 0.8,
     "labeled": {
       "train": {
         "loss": "bce"
@@ -44,12 +44,12 @@
         "min_len": 250,
         "max_len": 350
       },
-      "batch_size": 32,
+      "batch_size": 16,
       "num_workers": 16,
       "loss": "pseudo_labeled",
       "lr": 0.005,
       "weight_decay": 0.0,
-      "n_epoch": 10
+      "n_epoch": 20
     },
     "lr_scheduler": {
       "step_size": 1,

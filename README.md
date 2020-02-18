@@ -38,21 +38,30 @@ pip install -r requirements.txt
 ```sh
 cd dltrans/opends
 
-# Train metric learning model
+# Train the metric learning model
 python metric_learning.py --conf conf/age_pred_dataset.hocon conf/age_pred_ml_params_train.json
 
-# With pretrained mertic learning model run inference ang take embeddings for each customer
+# Run inference with the pretrained mertic learning model and get embeddings for each customer
 python ml_inference.py --conf conf/age_pred_dataset.hocon conf/age_pred_ml_params_inference.json
 
-# Train supervised model and save scores to file
+# Train a supervised model and save scores to the file
 python -m scenario_age_pred fit_target --conf conf/age_pred_dataset.hocon conf/age_pred_target_params_train.json
 
-# Take pretrained ml model and fine tune it in supervised mode and save scores to file
+# Train a special model for fine-tuning 
+# it is quite smaller, than one which is used for embeddings extraction, due to insufficiency labeled data to fine-tune a big model. 
+python metric_learning.py --conf conf/age_pred_dataset.hocon conf/age_pred_ml_fintuning_train.json.json
+# Take the pretrained metric learning model and fine tune it in supervised mode; save scores to the file
 python -m scenario_age_pred fit_finetuning --conf conf/age_pred_dataset.hocon conf/age_pred_finetuning_params_train.json
 
-# Train Contrastive Predictive Coding (CPC) model; inference 
+# Train the Contrastive Predictive Coding (CPC) model; inference
 python train_cpc.py --conf conf/age_pred_dataset.hocon conf/age_pred_cpc_params_train.json
 python ml_inference.py --conf conf/age_pred_dataset.hocon conf/age_pred_cpc_params_inference.json
+# fine tune the CPC model in supervised mode and save scores to the file
+python -m scenario_age_pred fit_finetuning \
+    params.pretrained_model_path="models/age_pred_cpc_model.p" \
+    output.test.path="../data/age-pred/finetuning_cpc_scores_$SC_AMOUNT"/test \
+    output.valid.path="../data/age-pred/finetuning_cpc_scores_$SC_AMOUNT"/valid \
+    --conf conf/age_pred_dataset.hocon conf/age_pred_finetuning_params_train.json
 
 # Run estimation for different approaches
 # Check some options with `--help` argument
@@ -64,29 +73,15 @@ cat runs/scenario_age_pred.csv
 
 ### Semi-supervised setup
 ```sh
-# Train a supervised model on a part of the dataset and save scores to file
-python -m scenario_age_pred fit_target params.labeled_amount=2700 \
-output.test.path="../data/age-pred/target_scores_2700/test" \
-output.valid.path="../data/age-pred/target_scores_2700/valid" \
---conf conf/age_pred_dataset.hocon conf/age_pred_target_params_train.json
+cd dltrans/opends
 
-# Take the pretrained self-supervised model and fine tune it on a part of the dataset in supervised mode; save scores to file
-python -m scenario_age_pred fit_finetuning dataset.labeled_amount=2700 \
-output.test.path="../data/age-pred/finetuning_scores_2700/test" \
-output.valid.path="../data/age-pred/finetuning_scores_2700/valid" \
---conf conf/age_pred_dataset.hocon conf/age_pred_finetuning_params_train.json
+export SC_DEVICE="cuda"
 
-# Train semi-supervised model with pseudo_labeling; save scores to file
-python -m scenario_age_pred fit_finetuning dataset.labeled_amount=2700 \
-output.test.path="../data/age-pred/pseudo_labeling_2700/test" \
-output.valid.path="../data/age-pred/pseudo_labeling_2700/valid" \
---conf conf/age_pred_dataset.hocon conf/age_pred_finetuning_params_train.json
+# run semi supervised scenario
+./scenario_age_pred/bin/scenario_semi_supervised.sh
 
-# compare approaches (fit target vs. fit tunning ml model vs. pseudo-labeling vs. ml embeddings vs. baseline(GBDT))
-python -m scenario_age_pred compare_approaches \
---labeled_amount 2700 \
---target_score_file_names target_scores_2700 finetuning_scores_2700 pseudo_labeling_2700 \
---output_file runs/semi_scenario_age_pred_2700.csv
+# check the results
+cat runs/semi_scenario_age_pred_*.csv
 
 ```
 
@@ -111,25 +106,31 @@ cat runs/scenario_age_pred_*.csv
 ```sh
 cd dltrans/opends
 
-# Train metric learning model
-python metric_learning.py params.device="$SC_DEVICE" --conf conf/gender_dataset.hocon conf/gender_ml_params_train.json
+# Train the metric learning model
+python metric_learning.py --conf conf/gender_dataset.hocon conf/gender_ml_params_train.json
 
-# With pretrained mertic learning model run inference ang take embeddings for each customer
-python ml_inference.py params.device="$SC_DEVICE" --conf conf/gender_dataset.hocon conf/gender_ml_params_inference.json
+# Run inference with the pretrained mertic learning model and get embeddings for each customer
+python ml_inference.py --conf conf/gender_dataset.hocon conf/gender_ml_params_inference.json
 
-# Train supervised model and save scores to file
+# Train a supervised model and save scores to the file
 python -m scenario_gender fit_target --conf conf/gender_dataset.hocon conf/gender_target_params_train.json
 
-# Take pretrained ml model and fine tune it in supervised mode and save scores to file
+# Take the pretrained metric learning model and fine tune it in supervised mode; save scores to the file
 python -m scenario_gender fit_finetuning --conf conf/gender_dataset.hocon conf/gender_finetuning_params_train.json
 
-# Train Contrastive Predictive Coding (CPC) model; inference 
-python train_cpc.py params.device="$SC_DEVICE" --conf conf/gender_dataset.hocon conf/gender_cpc_params_train.json
-python ml_inference.py params.device="$SC_DEVICE" --conf conf/gender_dataset.hocon conf/gender_cpc_params_inference.json
+# Train the Contrastive Predictive Coding (CPC) model; inference 
+python train_cpc.py --conf conf/gender_dataset.hocon conf/gender_cpc_params_train.json
+python ml_inference.py --conf conf/gender_dataset.hocon conf/gender_cpc_params_inference.json
+# fine tune the CPC model in supervised mode and save scores to the file
+python -m scenario_gender fit_finetuning \
+    params.pretrained_model_path="models/gender_cpc_model.p" \
+    output.test.path="../data/gender/finetuning_cpc_scores"/test \
+    output.valid.path="../data/gender/finetuning_cpc_scores"/valid \
+    --conf conf/gender_dataset.hocon conf/gender_finetuning_params_train.json
 
-# Train Contrastive Predictive Coding (CPC v2) model; inference 
-python cpc_v2_learning.py params.device="$SC_DEVICE" --conf conf/gender_dataset.hocon conf/gender_cpcv2_params_train.json
-python ml_inference.py params.device="$SC_DEVICE" --conf conf/gender_dataset.hocon conf/gender_cpcv2_params_inference.json
+# Train the Contrastive Predictive Coding (CPC v2) model; inference 
+python cpc_v2_learning.py --conf conf/gender_dataset.hocon conf/gender_cpcv2_params_train.json
+python ml_inference.py --conf conf/gender_dataset.hocon conf/gender_cpcv2_params_inference.json
 
 # Run estimation for different approaches
 # Check some options with `--help` argument
@@ -137,6 +138,20 @@ python -m scenario_gender compare_approaches
 
 # check the results
 cat runs/scenario_gender.csv
+```
+
+### Semi-supervised setup
+```sh
+cd dltrans/opends
+
+export SC_DEVICE="cuda"
+
+# run semi supervised scenario
+./scenario_gender/bin/scenario_semi_supervised.sh
+
+# check the results
+cat runs/semi_scenario_gender_*.csv
+
 ```
 
 ### Test model configurations
@@ -190,10 +205,10 @@ Use the ones you have already prepared.
 ```sh
 cd dltrans/opends
 
-# (If wasn't ran before) Train metric learning model
+# (If wasn't ran before) Train the metric learning model
 python metric_learning.py --conf conf/tinkoff_dataset.hocon conf/tinkoff_train_params.json
 
-# (If wasn't ran before) With pretrained mertic learning model run inference ang take embeddings for each customer
+# (If wasn't ran before) # Run inference with the pretrained mertic learning model and take embeddings for each customer
 python ml_inference.py --conf conf/tinkoff_dataset.hocon conf/tinkoff_inference_params.json
 
 

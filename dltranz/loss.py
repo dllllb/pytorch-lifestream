@@ -87,15 +87,20 @@ class PseudoLabeledLoss(nn.Module):
 
     def forward(self, pred, true):
         label_pred, unlabel_pred = pred['labeled'], pred['unlabeled']
-        pseudo_labels = torch.argmax(unlabel_pred.detach(), 1)
+        if isinstance(self.loss, nn.NLLLoss):
+            pseudo_labels = torch.argmax(unlabel_pred.detach(), 1)
+        elif isinstance(self.loss, BCELoss):
+            pseudo_labels = (unlabel_pred.detach() > 0.5).type(torch.int64)
+        else:
+            raise Exception(f'unknown loss type: {self.loss}')
 
         # mask pseudo_labels, with confidence > pl_threshold
         if isinstance(self.loss, nn.NLLLoss):
             probs = torch.exp(unlabel_pred.detach())
             mask = (probs.max(1)[0] > self.pl_threshold)
-        elif isinstance(self.loss, nn.BCELoss):
+        elif isinstance(self.loss, BCELoss):
             probs = unlabel_pred.detach()
-            mask = (probs.max(1)[0] > self.pl_threshold)
+            mask = abs(probs - (1 - pseudo_labels)) > self.pl_threshold
         else:
             mask = torch.ones(unlabel_pred.shape[0]).bool()
 
@@ -104,7 +109,7 @@ class PseudoLabeledLoss(nn.Module):
             return Lloss
         else:
             Uloss = self.unlabeled_weight * self.loss(unlabel_pred[mask], pseudo_labels[mask])
-            return Lloss + Uloss
+            return (Lloss + Uloss) / (1 + self.unlabeled_weight)
 
 
 def get_loss(params):
