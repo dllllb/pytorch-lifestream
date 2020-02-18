@@ -48,7 +48,7 @@
     "norm_scores": false,
     "score_metric": "accuracy",
 
-    "pretrained_model_path": "models/age_pred_ml_model.p"
+    "pretrained_model_path": "models/age_pred_ml_ft_model.p"
   },
 
   "save_model": false,

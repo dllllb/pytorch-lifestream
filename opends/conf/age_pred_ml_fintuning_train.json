@@ -70,7 +70,7 @@
   },
 
   "stats": {
-    "path": "runs/age_pred_ml_result.json"
+    "path": "runs/age_pred_ml_ft_result.json"
   },
 
   "save_model": true,

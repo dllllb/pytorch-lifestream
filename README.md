@@ -49,7 +49,7 @@ python -m scenario_age_pred fit_target --conf conf/age_pred_dataset.hocon conf/a
 
 # Train a special model for fine-tuning 
 # it is quite smaller, than one which is used for embeddings extraction, due to insufficiency labeled data to fine-tune a big model. 
-python metric_learning.py --conf conf/age_pred_dataset.hocon conf/age_pred_ml_fintuning_train.json.json
+python metric_learning.py --conf conf/age_pred_dataset.hocon conf/age_pred_ml_fintuning_train.json
 # Take the pretrained metric learning model and fine tune it in supervised mode; save scores to the file
 python -m scenario_age_pred fit_finetuning --conf conf/age_pred_dataset.hocon conf/age_pred_finetuning_params_train.json
 
