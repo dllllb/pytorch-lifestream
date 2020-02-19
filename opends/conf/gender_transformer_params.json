@@ -15,7 +15,7 @@
       "n_layers": 6,
       "use_positional_encoding": false,
       "max_seq_len": 1200,
-      "use_after_mask": false,
+      "use_after_mask": false
     },
     "trx_encoder": {
       "norm_embeddings": false,
@@ -29,8 +29,8 @@
       }
     },
     "lr_scheduler": {
-      "step_size": 10,
-      "step_gamma": 0.9025
+      "step_size": 1000,
+      "step_gamma": 1
     },
     "train": {
       "num_workers": 8,
@@ -50,7 +50,7 @@
       "beta": 0.4,
       "lr": 0.002,
       "weight_decay": 0.0,
-      "n_epoch": 1000,
+      "n_epoch": 200,
       "checkpoints": {
         "save_interval": 25,
         "n_saved": 1000,
