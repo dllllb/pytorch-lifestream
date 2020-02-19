@@ -1,6 +1,0 @@
-DEFAULT_DATA_PATH = '../data/gender/'
-DEFAULT_RESULT_FILE = 'runs/scenario_gender.csv'
-TEST_IDS_FILE = 'test_ids.csv'
-DATASET_FILE = 'gender_train.csv'
-COL_ID = 'customer_id'
-COL_TARGET = 'gender'
