@@ -5,6 +5,11 @@
     },
     "device": "cuda",
     "model_type": "rnn",
+    "cpc": {
+      "embedding_size": 256,
+      "k_pos_samples": 4,
+      "m_neg_samples": 300
+    },
     "rnn": {
       "type": "gru",
       "hidden_size": 256,
@@ -33,7 +38,7 @@
         "amount": "identity"
       }
     },
-    "use_normalization_layer": true,
+    "use_normalization_layer": false,
     "lr_scheduler": {
       "step_size": 10,
       "step_gamma": 0.9025
@@ -43,20 +48,18 @@
       "batch_size": 128,
       "split_strategy": {
         "split_strategy": "SampleSlices",
-        "split_count": 5,
+        "split_count": 4,
         "cnt_min": 15,
-        "cnt_max": 75
+        "cnt_max": 75,
+        "is_sorted": true
       },
-      "sampling_strategy": "HardNegativePair",
+      "sampling_strategy": "AllPositivePair",
       "trx_dropout": 0.01,
       "max_seq_len": 1200,
-      "neg_count": 5,
-      "loss": "MarginLoss",
-      "margin": 0.2,
-      "beta": 0.4,
+      "loss": "CPCLoss",
       "lr": 0.002,
       "weight_decay": 0.0,
-      "n_epoch": 150
+      "n_epoch": 100
     },
     "valid": {
       "batch_size": 1024,
@@ -73,7 +76,7 @@
 
   "save_model": true,
   "model_path": {
-    "model": "models/gender_ml_model.p"
+    "model": "models/gender_cpcv2_model.p"
   },
 
   "stats": {

@@ -3,6 +3,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from numpy.testing import assert_almost_equal
 
+from dltranz.cpc import CPCLossV2
 from .metric import outer_cosine_similarity
 
 
@@ -187,7 +188,8 @@ class MarginLoss(torch.nn.Module):
         
         return loss.sum(), len(positive_pairs) + len(negative_pairs)
 
-def get_loss(params, sampling_strategy):
+
+def get_loss(params, sampling_strategy, kw_params=None):
     
     if params['train.loss'] == 'ContrastiveLoss':
         kwargs = {
@@ -231,9 +233,16 @@ def get_loss(params, sampling_strategy):
         }
         kwargs = {k:v for k,v in kwargs.items() if v is not None}
         loss_fn = MarginLoss(**kwargs)
-    
+    elif params['train.loss'] == 'CPCLoss':
+        kwargs = {
+            'k_pos_samples': params.get('cpc.k_pos_samples', None),
+            'm_neg_samples': params.get('cpc.m_neg_samples', None),
+            'linear_predictor': kw_params['linear_predictor'],
+        }
+        kwargs = {k: v for k, v in kwargs.items() if v is not None}
+        loss_fn = CPCLossV2(**kwargs)
     else:
-         raise AttributeError(f'wrong loss "{params["train.loss"]}"')    
+        raise AttributeError(f'wrong loss "{params["train.loss"]}"')
 
     def loss(*args, **kwargs):
         return loss_fn(*args, **kwargs)[0]

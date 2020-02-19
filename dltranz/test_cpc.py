@@ -27,7 +27,7 @@ def test_rnn_model():
         "cpc": {
             "n_forward_steps": 3,
             "n_negatives": 4,
-        }
+        },
         "train": {
             "weight_decay": 0,
             "lr": 0.004,

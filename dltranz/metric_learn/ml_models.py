@@ -46,11 +46,14 @@ class BinarizationLayer(nn.Module):
 
 
 def rnn_model(params):
-    p = TrxEncoder(params['trx_encoder'])
-    e = RnnEncoder(TrxEncoder.output_size(params['trx_encoder']), params['rnn'])
-    l = LastStepEncoder()
-    n = L2Normalization()
-    m = torch.nn.Sequential(p, e, l, n)
+    layers = [
+        TrxEncoder(params['trx_encoder']),
+        RnnEncoder(TrxEncoder.output_size(params['trx_encoder']), params['rnn']),
+        LastStepEncoder(),
+    ]
+    if params['use_normalization_layer']:
+        layers.append(L2Normalization())
+    m = torch.nn.Sequential(*layers)
     return m
 
 
@@ -64,8 +67,11 @@ def transformer_model(params):
 
     e = TransformerSeqEncoder(enc_input_size, params['transf'])
     l = LastStepEncoder()
-    n = L2Normalization()
-    m = torch.nn.Sequential(p, e, l, n)
+    layers = [p, e, l]
+
+    if params['use_normalization_layer']:
+        layers.append(L2Normalization())
+    m = torch.nn.Sequential(*layers)
     return m
 
 
