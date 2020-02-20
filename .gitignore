@@ -7,3 +7,5 @@ opends/models/
 opends/logs
 deb.env
 .ipynb_checkpoints
+experiments/*/runs
+experiments/*/models
