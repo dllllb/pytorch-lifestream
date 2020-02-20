@@ -5,16 +5,29 @@
     "model_type": "rnn",
     "ensemble_size": 1,
     "trx_encoder": {
+      "norm_embeddings": false,
+      "embeddings_noise": 0.003,
       "embeddings": {
-        "trans_date": {"in": 800},
-        "small_group": {"in": 250}
+        "trans_date": {"in": 800, "out": 8},
+        "small_group": {"in": 250, "out": 16}
       },
       "numeric_values": {
         "amount_rur": "identity"
       }
     },
     "rnn": {
-      "hidden_size": 160
+      "hidden_size": 48,
+      "type": "gru",
+      "bidir": false,
+      "trainable_starter": "static"
+    },
+    "head": {
+      "pred_all_states": false,
+      "pred_all_states_mean": false,
+      "explicit_lengths": false,
+      "norm_input": false,
+      "num_classes": 4,
+      "use_batch_norm": false
     },
     "train": {
       "random_neg": false,
@@ -22,23 +35,23 @@
       "max_seq_len": 1200,
       "SubsamplingDataset": {
         "min_seq_len_s": 30,
-        "min_seq_len_e": 300,
+        "min_seq_len_e": 500,
         "max_seq_len_s": 120,
-        "max_seq_len_e": 700,
+        "max_seq_len_e": 1000,
         "crop_proba_init": 1.0,
         "crop_proba_gamma": 1.0,
-        "total_n_epoch": 15
+        "total_n_epoch": 35
       },
       "batch_size": 32,
       "num_workers": 16,
       "loss": "NLLLoss",
-      "lr": 0.002,
+      "lr": 0.01,
       "weight_decay": 0.0,
-      "n_epoch": 13
+      "n_epoch": 35
     },
     "lr_scheduler": {
       "step_size": 5,
-      "step_gamma": 0.4
+      "step_gamma": 0.5
     },
     "valid": {
       "max_seq_len": 1200,
@@ -46,24 +59,18 @@
       "num_workers": 8
     },
     "norm_scores": false,
-    "score_metric": "accuracy",
-
-    "pretrained_model_path": "models/age_pred_ml_ft_model.p"
+    "score_metric": "accuracy"
   },
 
   "save_model": false,
 
-  "stats": {
-    "path": "runs/age_pred_target_results.json"
-  },
-
   "output": {
     "valid": {
-      "path": "../data/age-pred/finetuning_scores/valid",
+      "path": "data/target_scores/valid",
       "format": "pickle"
     },
     "test": {
-      "path": "../data/age-pred/finetuning_scores/test",
+      "path": "data/target_scores/test",
       "format": "pickle"
     },
     "columns": ["client_id"]

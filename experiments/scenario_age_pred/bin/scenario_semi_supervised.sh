@@ -1,57 +1,57 @@
 
 # train special model for fine-tunnig in semi-supervised setup 
 # it is quite smaller, than one which is used in supervised setup, due to insufficiency labeled data to train a big model. 
-python metric_learning.py \
+python ../../metric_learning.py \
     params.device="$SC_DEVICE" \
     params.rnn.hidden_size=160 \
 	params.model_path="models/age_pred_ml_model_ss_ft.p" \
-	--conf conf/age_pred_dataset.hocon conf/age_pred_ml_params_train.json
+	--conf "conf/dataset.hocon" "conf/mles_params.json"
 
 for SC_AMOUNT in 337 675 1350 2700 5400 10800
 do
 	python -m scenario_age_pred fit_target \
         params.device="$SC_DEVICE" \
         params.labeled_amount=$SC_AMOUNT \
-        output.test.path="../data/age-pred/target_scores_$SC_AMOUNT"/test \
-        output.valid.path="../data/age-pred/target_scores_$SC_AMOUNT"/valid \
-        --conf conf/age_pred_dataset.hocon conf/age_pred_target_params_train.json
+        output.test.path="data/target_scores_$SC_AMOUNT"/test \
+        output.valid.path="data/target_scores_$SC_AMOUNT"/valid \
+        --conf "conf/dataset.hocon" conf/fit_target_params.json
 
     python -m scenario_age_pred fit_finetuning \
         params.device="$SC_DEVICE" \
         params.labeled_amount=$SC_AMOUNT \
         params.rnn.hidden_size=160 \
         params.pretrained_model_path="models/age_pred_ml_model_ss_ft.p" \
-        output.test.path="../data/age-pred/finetuning_scores_$SC_AMOUNT"/test \
-        output.valid.path="../data/age-pred/finetuning_scores_$SC_AMOUNT"/valid \
-        --conf conf/age_pred_dataset.hocon conf/age_pred_finetuning_params_train.json
+        output.test.path="data/mles_finetuning_scores_$SC_AMOUNT"/test \
+        output.valid.path="data/mles_finetuning_scores_$SC_AMOUNT"/valid \
+        --conf "conf/dataset.hocon" conf/fit_finetuning_on_mles_params.json
 
     python -m scenario_age_pred fit_finetuning \
         params.device="$SC_DEVICE" \
         params.labeled_amount=$SC_AMOUNT \
         params.rnn.hidden_size=160 \
-        params.pretrained_model_path="models/age_pred_cpc_model.p" \
-        output.test.path="../data/age-pred/finetuning_cpc_scores_$SC_AMOUNT"/test \
-        output.valid.path="../data/age-pred/finetuning_cpc_scores_$SC_AMOUNT"/valid \
-        --conf conf/age_pred_dataset.hocon conf/age_pred_finetuning_params_train.json
+        params.pretrained_model_path="models/cpc_model.p" \
+        output.test.path="data/cpc_finetuning_scores_$SC_AMOUNT"/test \
+        output.valid.path="data/cpc_finetuning_scores_$SC_AMOUNT"/valid \
+        --conf "conf/dataset.hocon" conf/fit_finetuning_on_cpc_params.json
 
     python -m scenario_age_pred pseudo_labeling \
         params.device="$SC_DEVICE" \
         params.labeled_amount=$SC_AMOUNT \
-        output.test.path="../data/age-pred/pseudo_labeling_$SC_AMOUNT"/test \
-        output.valid.path="../data/age-pred/pseudo_labeling_$SC_AMOUNT"/valid \
-        --conf conf/age_pred_dataset.hocon conf/age_pred_pseudolabel_params_train.json
+        output.test.path="data/pseudo_labeling_$SC_AMOUNT"/test \
+        output.valid.path="data/pseudo_labeling_$SC_AMOUNT"/valid \
+        --conf "conf/dataset.hocon" conf/pseudolabel_params.json
 
     # Compare
     python -m scenario_age_pred compare_approaches \
-        --skip_emb_baselines --skip_linear --skip_xgboost \
-        --target_score_file_names \
+        --add_baselines --models "lgb" \
+        --score_file_names \
             target_scores_$SC_AMOUNT \
-            finetuning_scores_$SC_AMOUNT \
-            finetuning_cpc_scores_$SC_AMOUNT \
+            mles_finetuning_scores_$SC_AMOUNT \
+            cpc_finetuning_scores_$SC_AMOUNT \
             pseudo_labeling_$SC_AMOUNT \
         --labeled_amount $SC_AMOUNT \
-        --output_file runs/semi_scenario_age_pred_$SC_AMOUNT.csv \
-        --ml_embedding_file_names "embeddings.pickle" "embeddings_cpc.pickle"
+        --output_file results/semi_scenario_age_pred_$SC_AMOUNT.csv \
+        --embedding_file_names "embeddings.pickle" "embeddings_cpc.pickle"
 done
 
 

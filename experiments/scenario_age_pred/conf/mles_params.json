@@ -7,10 +7,11 @@
     "model_type": "rnn",
     "rnn": {
       "type": "gru",
-      "hidden_size": 160,
+      "hidden_size": 800,
       "bidir": false,
       "trainable_starter": "static"
     },
+    "use_normalization_layer" : true,
     "transf": {
       "shared_layers": false,
       "input_size": 64,
@@ -39,23 +40,24 @@
     },
     "train": {
       "num_workers": 16,
-      "batch_size": 512,
+      "batch_size": 64,
       "split_strategy": {
         "split_strategy": "SampleSlices",
         "split_count": 5,
         "cnt_min": 25,
-        "cnt_max": 600
+        "cnt_max": 150
       },
       "sampling_strategy": "HardNegativePair",
       "trx_dropout": 0.01,
       "max_seq_len": 1200,
-      "neg_count": 5,
+      "neg_count": 2,
       "loss": "ContrastiveLoss",
       "margin": 0.5,
       "lr": 0.002,
       "weight_decay": 0.0,
-      "n_epoch": 100
+      "n_epoch": 1
     },
+    "norm_scores": false,
     "valid": {
       "batch_size": 1024,
       "num_workers": 16,
@@ -70,11 +72,17 @@
   },
 
   "stats": {
-    "path": "runs/age_pred_ml_ft_result.json"
+    "path": "runs/age_pred_ml_result.json"
   },
 
   "save_model": true,
   "model_path": {
-    "model": "models/age_pred_ml_model.p"
+    "model": "models/mles_model.p"
+  },
+
+  "output": {
+    "path": "data/mles_embeddings",
+    "format": "pickle",
+    "columns": ["client_id"]
   }
 }

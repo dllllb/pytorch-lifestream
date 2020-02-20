@@ -60,6 +60,7 @@
       "weight_decay": 0.0,
       "n_epoch": 100
     },
+    "norm_scores": false,
     "valid": {
       "batch_size": 1024,
       "num_workers": 16,
@@ -79,6 +80,12 @@
 
   "save_model": true,
   "model_path": {
-    "model": "models/age_pred_cpcv2_model.p"
+    "model": "models/cpc_v2_model.p"
+  },
+
+  "output": {
+    "path": "data/cpc_v2_embeddings",
+    "format": "pickle",
+    "columns": ["client_id"]
   }
 }

@@ -19,7 +19,7 @@ from dltranz.models import model_by_type
 from dltranz.seq_encoder import PaddedBatch
 from dltranz.train import get_optimizer, get_lr_scheduler, fit_model
 from dltranz.util import init_logger, get_conf
-from experiments.scenario_age_pred.fit_target import read_consumer_data, EpochTrackingDataLoader, SubsamplingDataset
+from scenario_age_pred.fit_target import read_consumer_data, EpochTrackingDataLoader, SubsamplingDataset
 
 logger = logging.getLogger(__name__)
 

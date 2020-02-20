@@ -5,7 +5,7 @@ import torch
 
 if __name__ == '__main__':
     import sys
-    sys.path.append('../')
+    sys.path.append('../../')
 
     # reproducibility
     np.random.seed(42)
@@ -14,7 +14,8 @@ if __name__ == '__main__':
     torch.manual_seed(42)
     torch.cuda.manual_seed_all(42)
 
-from experiments.scenario_age_pred import compare_approaches, fit_target, pseudo_labeling, fit_finetuning
+from scenario_age_pred import fit_target, pseudo_labeling, fit_finetuning
+from scenario_age_pred import compare_approaches
 
 logger = logging.getLogger(__name__)
 

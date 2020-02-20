@@ -4,7 +4,7 @@ from glob import glob
 import numpy as np
 import pandas as pd
 
-from experiments.scenario_age_pred.const import DATASET_FILE, COL_ID
+from scenario_age_pred.const import DATASET_FILE, COL_ID
 
 
 def _random(conf):

@@ -7,7 +7,7 @@ from sklearn.model_selection import StratifiedKFold
 from dltranz.experiment import update_model_stats
 from dltranz.metric_learn.inference_tools import infer_part_of_data, save_scores
 from dltranz.util import init_logger, get_conf
-from experiments.scenario_age_pred.fit_target import create_ds, run_experiment, read_consumer_data
+from scenario_age_pred.fit_target import create_ds, run_experiment, read_consumer_data
 
 logger = logging.getLogger(__name__)
 

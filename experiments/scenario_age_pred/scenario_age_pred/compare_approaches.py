@@ -7,10 +7,10 @@ import pandas as pd
 from sklearn.metrics import make_scorer, accuracy_score
 
 import dltranz.scenario_cls_tools as sct
-from experiments.scenario_age_pred.const import (
+from scenario_age_pred.const import (
     DEFAULT_DATA_PATH, DEFAULT_RESULT_FILE, TEST_IDS_FILE, DATASET_FILE, COL_ID, COL_TARGET,
 )
-from experiments.scenario_age_pred.features import load_features, load_scores
+from scenario_age_pred.features import load_features, load_scores
 
 logger = logging.getLogger(__name__)
 
@@ -48,32 +48,31 @@ def main(conf):
     approaches_to_train = {
         **{
             f"embeds: {file_name}": {'metric_learning_embedding_name': file_name}
-            for file_name in conf['ml_embedding_file_names']
+            for file_name in conf['embedding_file_names']
         },
     }
-    if not conf['skip_baselines']:
+    if conf['add_baselines']:
         approaches_to_train.update({
             'baseline': {'use_client_agg': True, 'use_small_group_stat': True},
         })
 
-    if not conf['skip_baselines'] and not conf['skip_emb_baselines']:
+    if conf['add_baselines'] and conf['add_emb_baselines']:
         approaches_to_train.update({
             f"embeds: {file_name} and baseline": {
                 'metric_learning_embedding_name': file_name, 'use_client_agg': True, 'use_small_group_stat': True}
-            for file_name in conf['ml_embedding_file_names']
+            for file_name in conf['embedding_file_names']
         })
-
 
     approaches_to_score = {
         f"scores: {file_name}": {'target_scores_name': file_name}
-        for file_name in conf['target_score_file_names']
+        for file_name in conf['score_file_names']
     }
 
     pool = sct.WPool(processes=conf['n_workers'])
     df_results = None
     df_scores = None
-    
-    df_target, test_target = sct.read_train_test(conf['data_path'], DATASET_FILE, TEST_IDS_FILE, COL_ID)    
+
+    df_target, test_target = sct.read_train_test(conf['data_path'], DATASET_FILE, TEST_IDS_FILE, COL_ID)
     if len(approaches_to_train) > 0:
         folds = sct.get_folds(df_target, COL_TARGET, conf['cv_n_split'], conf['random_state'], conf.get('labeled_amount',-1))
 
@@ -105,10 +104,6 @@ def main(conf):
                 n_jobs=4,
             ),
         }
-        if conf['skip_linear']:
-            model_types = {k:v for k,v in model_types.items() if k!='linear'}
-        if conf['skip_xgboost']:
-            model_types = {k:v for k,v in model_types.items() if k!='xgb'}
 
         # train and score models
         args_list = [sct.KWParamsTrainAndScore(
@@ -126,7 +121,7 @@ def main(conf):
         )
             for name, params in approaches_to_train.items()
             for fold_n, (train_target, valid_target) in enumerate(folds)
-            for model_type, model_params in model_types.items()
+            for model_type, model_params in model_types.items() if model_type in conf['models']
         ]
         results = []
         for i, r in enumerate(pool.imap_unordered(sct.train_and_score, args_list)):
