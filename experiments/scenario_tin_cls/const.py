@@ -1,5 +1,5 @@
-DEFAULT_DATA_PATH = '../data/tinkoff/'
-DEFAULT_RESULT_FILE = 'runs/scenario_tin_cls.csv'
+DEFAULT_DATA_PATH = 'data/'
+DEFAULT_RESULT_FILE = 'results/scenario_tin_cls.csv'
 TEST_IDS_FILE = 'test_ids.csv'
 DATASET_FILE = 'customer_train.csv'
 COL_ID = 'customer_id'

@@ -23,6 +23,8 @@ def prepare_parser(parser):
 
 
 def main(conf):
+    raise NotImplementedError('Update required based on "age_pred" of "gender" scenario')
+
     logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)-7s %(funcName)-20s   : %(message)s')
 
     pool = Pool(processes=conf['n_workers'])
