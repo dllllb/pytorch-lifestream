@@ -6,7 +6,7 @@
     "device": "cuda",
     "model_type": "transf",
     "transf": {
-      "train_starter": true,
+      "train_starter": false,
       "shared_layers": false,
       "input_size": 256,
       "n_heads": 8,
@@ -30,7 +30,12 @@
     },
     "lr_scheduler": {
       "step_size": 1000,
-      "step_gamma": 1
+      "step_gamma": 1,
+      "_warmup": {
+        "warmup_start_value": 0.00001,
+        "warmup_end_value":  0.001,
+        "warmup_duration": 5
+      }
     },
     "train": {
       "num_workers": 8,
@@ -48,11 +53,11 @@
       "loss": "MarginLoss",
       "margin": 0.2,
       "beta": 0.4,
-      "lr": 0.002,
+      "lr": 0.001,
       "weight_decay": 0.0,
-      "n_epoch": 200,
+      "n_epoch": 90,
       "checkpoints": {
-        "save_interval": 25,
+        "save_interval": 15,
         "n_saved": 1000,
         "dirname": "models/gender_checkpoints/",
         "filename_prefix": "transf",
