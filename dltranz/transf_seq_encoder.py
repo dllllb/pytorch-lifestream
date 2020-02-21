@@ -38,6 +38,7 @@ class TransformerSeqEncoder(nn.Module):
         self.shared_layers = params['shared_layers']
         self.n_layers = params['n_layers']
         self.use_after_mask = params['use_after_mask']
+        self.use_src_key_padding_mask = params['use_src_key_padding_mask']
         self.use_positional_encoding = params['use_positional_encoding']
 
         self.starter = torch.nn.Parameter(torch.randn(1, 1, input_size)) if params['train_starter'] else None
@@ -63,25 +64,32 @@ class TransformerSeqEncoder(nn.Module):
 
     def forward(self, x):
         batch_size = x.payload.size()[0]
+        seq_len_max = x.payload.size()[1]
         x_t = torch.transpose(x.payload, 0, 1)
 
         if self.starter is not None:
             x_t = torch.cat([self.starter.expand(1, batch_size, -1), x_t], dim=0)
 
         if self.use_after_mask:
-            mask = self.generate_square_subsequent_mask(x_t.size(0)).to(x_t.device)
+            mask = self.generate_square_subsequent_mask(x_t.size(0)).to(x_t.device).t()
         else:
             mask = None
+
+        if self.use_src_key_padding_mask:
+            src_key_padding_mask = torch.stack([torch.BoolTensor([False] * l + [True] * (seq_len_max - l))
+                                                for l in x.seq_lens]).to(x.payload.device)
+        else:
+            src_key_padding_mask = None
 
         if self.use_positional_encoding:
             x_t = self.pe(x_t)
 
         if not self.shared_layers:
-            out = self.enc(x_t, mask)
+            out = self.enc(x_t, mask=mask, src_key_padding_mask=src_key_padding_mask)
         else:
             out = x_t
             for _ in range(self.n_layers):
-                out = self.enc_layer(out, mask)
+                out = self.enc_layer(out, mask=mask, src_key_padding_mask=src_key_padding_mask)
 
         out = torch.transpose(out, 0, 1)
 
