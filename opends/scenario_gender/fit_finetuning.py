@@ -31,15 +31,21 @@ def load_model(conf):
 
     head_output_size = 1
 
-    model = torch.nn.Sequential(
+    layers = [
         trx_encoder,
         rnn_encoder,
         step_select_encoder,
-        torch.nn.BatchNorm1d(input_size),
+    ]
+    if conf['use_batch_norm']:
+        layers.append(torch.nn.BatchNorm1d(input_size))
+
+    layers.extend([
         torch.nn.Linear(input_size, head_output_size),
         torch.nn.Sigmoid(),
         Squeeze(),
-    )
+    ])
+
+    model = torch.nn.Sequential(*layers)
     return model
 
 
