@@ -19,14 +19,22 @@ def load_model(conf):
     pre_model = torch.load(pretrained_model_path)
     trx_encoder = pre_model[0]
     rnn_encoder = pre_model[1]
+    step_select_encoder = pre_model[2]
 
-    input_size = conf['rnn.hidden_size']
+    model_type = conf['model_type']
+    if model_type == 'rnn':
+        input_size = conf['rnn.hidden_size']
+    elif model_type == 'transf':
+        input_size = conf['transf.input_size']
+    else:
+        raise NotImplementedError(f'NotImplementedError for model_type="{model_type}"')
+
     head_output_size = 1
 
     model = torch.nn.Sequential(
         trx_encoder,
         rnn_encoder,
-        LastStepEncoder(),
+        step_select_encoder,
         torch.nn.BatchNorm1d(input_size),
         torch.nn.Linear(input_size, head_output_size),
         torch.nn.Sigmoid(),
