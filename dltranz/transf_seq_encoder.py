@@ -71,7 +71,7 @@ class TransformerSeqEncoder(nn.Module):
             x_t = torch.cat([self.starter.expand(1, batch_size, -1), x_t], dim=0)
 
         if self.use_after_mask:
-            mask = self.generate_square_subsequent_mask(x_t.size(0)).to(x_t.device).t()
+            mask = self.generate_square_subsequent_mask(x_t.size(0)).to(x_t.device)
         else:
             mask = None
 
