@@ -102,7 +102,7 @@ def main(conf):
                 min_data_in_leaf=50,
                 num_leaves=50,
                 random_state=conf['model_seed'],
-                n_jobs=4,
+                n_jobs=8,
             ),
         }
         if conf['skip_linear']:
