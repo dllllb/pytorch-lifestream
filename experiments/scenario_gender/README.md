@@ -88,10 +88,10 @@ python ../../ml_inference.py    params.device="$SC_DEVICE" --conf conf/dataset.h
 
 python -m scenario_gender fit_finetuning \
     params.device="$SC_DEVICE" \
-    --conf conf/gender_dataset.hocon conf/gender_transformer_finetuning.json
+    --conf conf/dataset.hocon conf/transformer_finetuning.json
 
 # Check some options with `--help` argument
-python -m scenario_age_pred compare_approaches --n_workers 1 \
+python -m scenario_gender compare_approaches --n_workers 3 \
     --add_baselines --add_emb_baselines \
     --embedding_file_names "transf_embeddings.pickle" \
     --score_file_names "transf_finetuning_scores"
