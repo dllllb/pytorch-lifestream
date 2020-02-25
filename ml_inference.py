@@ -36,10 +36,12 @@ def read_dataset(path, conf):
 def main(args=None):
     conf = get_conf(args)
 
-    model_f = ml_model_by_type(conf['params.model_type'])
-    model = model_f(conf['params'])
+    # model_f = ml_model_by_type(conf['params.model_type'])
+    # model = model_f(conf['params'])
     # model_d = load_model(conf)
     # model.load_state_dict(model_d)
+
+    model = load_model(conf)
 
     columns = conf['output.columns']
 
