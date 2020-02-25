@@ -31,6 +31,8 @@ def update_model_stats(stats_file, params, results):
 
     stats.append({'results': results, 'params': params})
 
+    save_dir = os.path.dirname(stats_file)
+    os.makedirs(save_dir, exist_ok=True)
     with open(stats_file, 'w') as f:
         json.dump(stats, f, indent=4)
 
