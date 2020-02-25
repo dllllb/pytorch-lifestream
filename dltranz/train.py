@@ -110,7 +110,14 @@ def get_lr_scheduler(optimizer, params):
         scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=lr_step_size, gamma=lr_step_gamma)
         logger.info('StepLR lr_scheduler used')
 
-    scheduler = LRScheduler(scheduler)
+    if 'warmup' in params['lr_scheduler']:
+        wrapper = LRScheduler
+        # optimiser param groups are not supported with LRScheduler
+    else:
+        wrapper = SchedulerWrapper
+        # create_lr_scheduler_with_warmup don't works with SchedulerWrapper
+    scheduler = wrapper(scheduler)
+
     if 'warmup' in params['lr_scheduler']:
         scheduler = create_lr_scheduler_with_warmup(scheduler, **params['lr_scheduler.warmup'])
         logger.info('LR warmup used')
