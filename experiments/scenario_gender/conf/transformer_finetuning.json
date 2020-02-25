@@ -43,7 +43,7 @@
     "norm_scores": false,
     "score_metric": "auroc",
 
-    "pretrained_model_path": "models/gender_transf_for_finetuning_model.p",
+    "pretrained_model_path": "models/transf_model.p",
     "use_batch_norm": false
   },
 
@@ -51,11 +51,11 @@
 
   "output": {
     "valid": {
-      "path": "../data/gender/transf_finetuning_scores/valid",
+      "path": "data/transf_finetuning_scores/valid",
       "format": "pickle"
     },
     "test": {
-      "path": "../data/gender/transf_finetuning_scores/test",
+      "path": "data/transf_finetuning_scores/test",
       "format": "pickle"
     },
     "columns": ["customer_id"]

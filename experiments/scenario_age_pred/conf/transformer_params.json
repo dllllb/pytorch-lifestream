@@ -6,7 +6,7 @@
     "device": "cuda",
     "model_type": "transf",
     "transf": {
-      "train_starter": false,
+      "train_starter": true,
       "shared_layers": false,
       "input_size": 256,
       "n_heads": 8,
@@ -29,10 +29,11 @@
         "amount_rur": "identity"
       }
     },
+    "use_normalization_layer": true,
     "lr_scheduler": {
       "step_size": 1000,
       "step_gamma": 1,
-      "_warmup": {
+      "# warmup": {
         "warmup_start_value": 0.00001,
         "warmup_end_value":  0.001,
         "warmup_duration": 5
@@ -56,10 +57,10 @@
       "lr": 0.0005,
       "weight_decay": 0.0,
       "n_epoch": 60,
-      "checkpoints": {
+      "# checkpoints": {
         "save_interval": 5,
         "n_saved": 1000,
-        "dirname": "models/age_pred_checkpoints/",
+        "dirname": "models/checkpoints/",
         "filename_prefix": "transf",
         "create_dir": true
       }
@@ -79,16 +80,16 @@
   },
 
   "stats": {
-    "path": "runs/age_pred_ml_result.json"
+    "path": "runs/transf_result.json"
   },
 
   "save_model": true,
   "model_path": {
-    "model": "models/age_pred_transf_model.p"
+    "model": "models/transf_model.p"
   },
 
   "output": {
-    "path": "../data/age-pred/transf_embeddings",
+    "path": "data/transf_embeddings",
     "format": "pickle",
     "columns": ["client_id"]
   }

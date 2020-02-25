@@ -38,8 +38,8 @@ def main(args=None):
 
     model_f = ml_model_by_type(conf['params.model_type'])
     model = model_f(conf['params'])
-    model_d = load_model(conf)
-    model.load_state_dict(model_d)
+    # model_d = load_model(conf)
+    # model.load_state_dict(model_d)
 
     columns = conf['output.columns']
 

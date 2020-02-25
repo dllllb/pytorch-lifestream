@@ -1,5 +1,6 @@
 import logging
 import pickle
+import os
 
 import numpy as np
 import torch
@@ -131,12 +132,16 @@ def run_experiment(model, conf):
     optimizer = get_optimizer(model, params)
     scheduler = get_lr_scheduler(optimizer, params)
 
-    checkpoint = CheckpointHandler(
-        model=model,
-        **conf['params.train.checkpoints']
-    )
+    train_handlers = []
+    if 'checkpoints' in conf['params.train']:
+        checkpoint = CheckpointHandler(
+            model=model,
+            **conf['params.train.checkpoints']
+        )
+        train_handlers.append(checkpoint)
+
     metric_values = fit_model(model, train_loader, valid_loader, loss, optimizer, scheduler, params, valid_metric,
-                              train_handlers=[checkpoint])
+                              train_handlers=train_handlers)
 
     exec_sec = time.time() - start
 
