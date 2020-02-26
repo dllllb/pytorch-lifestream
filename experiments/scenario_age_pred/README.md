@@ -91,9 +91,14 @@ export SC_DEVICE="cuda"
 python ../../metric_learning.py params.device="$SC_DEVICE" --conf conf/dataset.hocon conf/transformer_params.json
 python ../../ml_inference.py    params.device="$SC_DEVICE" --conf conf/dataset.hocon conf/transformer_params.json
 
+python -m scenario_age_pred fit_finetuning \
+    params.device="$SC_DEVICE" \
+    --conf conf/dataset.hocon conf/fit_finetuning_on_transf_params.json
+
 # Check some options with `--help` argument
 python -m scenario_age_pred compare_approaches --n_workers 1 \
     --add_baselines --add_emb_baselines \
-    --embedding_file_names "transf_embeddings.pickle"
+    --embedding_file_names "transf_embeddings.pickle" \
+    --score_file_names "transf_finetuning_scores"
 
 ```
