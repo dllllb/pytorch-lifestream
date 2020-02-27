@@ -96,6 +96,7 @@ def main(conf):
                 lambda_l2=1,
                 min_data_in_leaf=50,
                 random_state=conf['model_seed'],
+                n_jobs=8,
             ),
         }
 

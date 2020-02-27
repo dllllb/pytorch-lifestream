@@ -58,7 +58,7 @@
       "loss": "CPCLoss",
       "lr": 0.002,
       "weight_decay": 0.0,
-      "n_epoch": 100
+      "n_epoch": 50
     },
     "norm_scores": false,
     "valid": {

@@ -16,16 +16,34 @@ def load_model(conf):
     pretrained_model_path = conf['pretrained_model_path']
 
     pre_model = torch.load(pretrained_model_path)
+    trx_encoder = pre_model[0]
+    rnn_encoder = pre_model[1]
+    step_select_encoder = pre_model[2]
 
-    input_size = conf['rnn.hidden_size']
+    model_type = conf['model_type']
+    if model_type == 'rnn':
+        input_size = conf['rnn.hidden_size']
+    elif model_type == 'transf':
+        input_size = conf['transf.input_size']
+    else:
+        raise NotImplementedError(f'NotImplementedError for model_type="{model_type}"')
+
     head_output_size = 4
 
-    model = torch.nn.Sequential(
-        pre_model[:3],
-        torch.nn.BatchNorm1d(input_size),
+    layers = [
+        trx_encoder,
+        rnn_encoder,
+        step_select_encoder,
+    ]
+    if conf['use_batch_norm']:
+        layers.append(torch.nn.BatchNorm1d(input_size))
+
+    layers.extend([
         torch.nn.Linear(input_size, head_output_size),
         torch.nn.LogSoftmax(dim=1),
-    )
+    ])
+
+    model = torch.nn.Sequential(*layers)
     return model
 
 
@@ -49,7 +67,7 @@ def main(_):
 
     skf = StratifiedKFold(conf['cv_n_split'])
     nrows = conf['params'].get('labeled_amount',-1) # semi-supervised setup. default = supervised
-    
+
     target_values = [rec['target'] for rec in train_data]
     for i, (i_train, i_valid) in enumerate(skf.split(train_data, target_values)):
         logger.info(f'Train fold: {i}')
