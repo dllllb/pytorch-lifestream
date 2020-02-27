@@ -51,7 +51,7 @@
       "sampling_strategy": "HardNegativePair",
       "trx_dropout": 0.01,
       "max_seq_len": 1200,
-      "neg_count": 2,
+      "neg_count": 5,
       "loss": "ContrastiveLoss",
       "margin": 0.5,
       "lr": 0.0005,
