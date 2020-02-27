@@ -45,10 +45,11 @@ _NUM_PERCENTILE_LIST = [0, 10, 25, 50, 75, 90, 100]
 
 def _num_features(col, val):
     val_orig = val
+    val = val if len(val) > 0 else np.zeros(1)
     return {
-        f'{col}_count': len(val),
-        f'{col}_sum': val_orig.sum(),
-        f'{col}_std': val_orig.std(),
+        f'{col}_count': len(val_orig),
+        f'{col}_sum': val.sum(),
+        f'{col}_std': val.std(),
         f'{col}_mean': val.mean(),
         **{f'{col}_p{p_level}': val
            for val, p_level in zip(np.percentile(val, _NUM_PERCENTILE_LIST), _NUM_PERCENTILE_LIST)}
@@ -65,16 +66,16 @@ def _cross_features(col_embed, col_num, val_embed, val_num, size):
     def norm_row(a, agg_func):
         return a / (agg_func(a) + 1e-5)
 
-    val_num_orig = val_num
-
     seq_len = len(val_embed)
+    if seq_len == 0:
+        seq_len = 1
 
     m_cnt = np.zeros((seq_len, size), np.float)
     m_sum = np.zeros((seq_len, size), np.float)
     ix = np.arange(seq_len)
 
     m_cnt[(ix, val_embed)] = 1
-    m_sum[(ix, val_embed)] = val_num_orig
+    m_sum[(ix, val_embed)] = val_num
 
     return {
         **{f'{col_embed}_X_{col_num}_{k}_cnt': v for k, v in enumerate(norm_row(m_cnt.sum(axis=0), np.sum))},

@@ -28,6 +28,17 @@ def get_data():
                 'num2': np.array([10.0, 5.0, 3.0, 4.0, 4.0]),
             }
         },
+        {
+            'client_id': 3,
+            'target': 0,
+            'event_time': np.array([]),
+            'feature_arrays': {
+                'cat1': np.array([], dtype=np.int),
+                'cat2': np.array([], dtype=np.int),
+                'num1': np.array([]),
+                'num2': np.array([]),
+            }
+        },
     ]
 
 
@@ -81,3 +92,12 @@ def test_make_trx_features():
     np.testing.assert_almost_equal(rec['cat2_X_num1_0_sum'], 50.0 / 510.0)
     np.testing.assert_almost_equal(rec['cat1_X_num2_2_sum'], 8.0 / 26.0)
     np.testing.assert_almost_equal(rec['cat2_X_num2_20_sum'], 5.0 / 26.0)
+
+    rec = next(seq)
+    assert type(rec) is dict
+    assert len(rec) == expected_feature_num
+    assert rec['num1_sum'] == 0.0
+    assert rec['num2_sum'] == 0.0
+    np.testing.assert_almost_equal(rec['cat1_X_num1_0_sum'], 0.0)
+    np.testing.assert_almost_equal(rec['cat1_X_num1_0_std'], 0.0)
+
