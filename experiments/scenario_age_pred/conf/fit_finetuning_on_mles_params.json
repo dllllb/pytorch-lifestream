@@ -48,7 +48,8 @@
     "norm_scores": false,
     "score_metric": "accuracy",
 
-    "pretrained_model_path": "models/mles_model_for_finetuning.p"
+    "pretrained_model_path": "models/mles_model_for_finetuning.p",
+    "use_batch_norm": true
   },
 
   "save_model": false,

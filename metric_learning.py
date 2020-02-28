@@ -16,6 +16,8 @@ from dltranz.metric_learn.ml_models import rnn_model, ml_model_by_type
 from dltranz.metric_learn.sampling_strategies import get_sampling_strategy
 from dltranz.train import get_optimizer, get_lr_scheduler, fit_model
 from dltranz.util import init_logger, get_conf
+from ignite.engine import Events
+from ignite.handlers import ModelCheckpoint
 
 logger = logging.getLogger(__name__)
 
@@ -105,6 +107,15 @@ def create_data_loaders(conf):
     return train_loader, valid_loader
 
 
+class CheckpointHandler:
+    def __init__(self, model, **model_checkpoint_params):
+        self.handler = ModelCheckpoint(**model_checkpoint_params)
+        self.model = model
+
+    def __call__(self, train_engine, valid_engine, optimizer):
+        train_engine.add_event_handler(Events.EPOCH_COMPLETED, self.handler, {'model': self.model})
+
+
 def run_experiment(model, conf):
     import time
     start = time.time()
@@ -121,8 +132,16 @@ def run_experiment(model, conf):
     optimizer = get_optimizer(model, params)
     scheduler = get_lr_scheduler(optimizer, params)
 
+    train_handlers = []
+    if 'checkpoints' in conf['params.train']:
+        checkpoint = CheckpointHandler(
+            model=model,
+            **conf['params.train.checkpoints']
+        )
+        train_handlers.append(checkpoint)
+
     metric_values = fit_model(model, train_loader, valid_loader, loss, optimizer, scheduler, params, valid_metric,
-                              train_handlers=[])
+                              train_handlers=train_handlers)
 
     exec_sec = time.time() - start
 
@@ -149,11 +168,6 @@ def main(args=None):
 
     model_f = ml_model_by_type(conf['params.model_type'])
     model = model_f(conf['params'])
-
-    # print('-' * 80)
-    # for n, p in model.named_parameters():
-    #     print(f'{n:30}: {p.shape}')
-    # print('-' * 80)
 
     return run_experiment(model, conf)
 

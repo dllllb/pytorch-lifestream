@@ -153,6 +153,12 @@ class LastStepEncoder(nn.Module):
         return h
 
 
+class FirstStepEncoder(nn.Module):
+    def forward(self, x: PaddedBatch):
+        h = x.payload[:, 0, :]  # [B, T, H] -> [B, H]
+        return h
+
+
 class NormEncoder(nn.Module):
     def forward(self, x: torch.Tensor):
         return x / x.pow(2).sum(dim=1).pow(0.5).unsqueeze(-1).expand(*x.size())

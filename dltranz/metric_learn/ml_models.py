@@ -12,7 +12,7 @@ from dltranz.transf_seq_encoder import TransformerSeqEncoder
 script_dir = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(os.path.join(script_dir, '../..'))
 
-from dltranz.seq_encoder import RnnEncoder, LastStepEncoder, NormEncoder, PerTransTransf
+from dltranz.seq_encoder import RnnEncoder, LastStepEncoder, PerTransTransf, FirstStepEncoder
 from dltranz.trx_encoder import TrxEncoder
 
 # TODO: is the same as dltranz.seq_encoder.NormEncoder
@@ -67,7 +67,7 @@ def transformer_model(params):
         p = torch.nn.Sequential(p, inp_reshape)
 
     e = TransformerSeqEncoder(enc_input_size, params['transf'])
-    l = LastStepEncoder()
+    l = FirstStepEncoder()
     layers = [p, e, l]
 
     if params['use_normalization_layer']:

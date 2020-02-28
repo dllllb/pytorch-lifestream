@@ -2,7 +2,8 @@ import logging
 import warnings
 
 import torch
-from ignite.contrib.handlers import ProgressBar, LRScheduler
+from ignite.contrib.handlers import ProgressBar, LRScheduler, create_lr_scheduler_with_warmup
+from ignite.contrib.handlers.param_scheduler import ParamScheduler
 from ignite.metrics import RunningAverage
 import numpy as np
 import pandas as pd
@@ -15,6 +16,8 @@ from dltranz.seq_encoder import PaddedBatch
 from ignite.engine import Engine, Events, create_supervised_trainer, create_supervised_evaluator
 import ignite
 from bisect import bisect_right
+
+logger = logging.getLogger(__name__)
 
 
 def batch_to_device(batch, device, non_blocking):
@@ -87,6 +90,7 @@ class MultiGammaScheduler(torch.optim.lr_scheduler.MultiStepLR):
 
 def get_lr_scheduler(optimizer, params):
     if 'scheduler' in params:
+        # TODO: check the this code branch
         if params['scheduler.current'] != '':
             scheduler_type = params['scheduler.current']
 
@@ -99,11 +103,25 @@ def get_lr_scheduler(optimizer, params):
                                          gamma=scheduler_params['gamma'],
                                          last_epoch=scheduler_params['last_epoch'])
 
-            return scheduler
+            logger.info('MultiGammaScheduler used')
+    else:
+        lr_step_size = params['lr_scheduler']['step_size']
+        lr_step_gamma = params['lr_scheduler']['step_gamma']
+        scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=lr_step_size, gamma=lr_step_gamma)
+        logger.info('StepLR lr_scheduler used')
 
-    lr_step_size = params['lr_scheduler']['step_size']
-    lr_step_gamma = params['lr_scheduler']['step_gamma']
-    scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=lr_step_size, gamma=lr_step_gamma)
+    if 'warmup' in params['lr_scheduler']:
+        wrapper = LRScheduler
+        # optimiser param groups are not supported with LRScheduler
+    else:
+        wrapper = SchedulerWrapper
+        # create_lr_scheduler_with_warmup don't works with SchedulerWrapper
+    scheduler = wrapper(scheduler)
+
+    if 'warmup' in params['lr_scheduler']:
+        scheduler = create_lr_scheduler_with_warmup(scheduler, **params['lr_scheduler.warmup'])
+        logger.info('LR warmup used')
+
     return scheduler
 
 
@@ -196,7 +214,7 @@ def fit_model(model, train_loader, valid_loader, loss, optimizer, scheduler, par
 
     trainer.add_event_handler(Events.EPOCH_STARTED, PrepareEpoch(train_loader))
 
-    trainer.add_event_handler(Events.EPOCH_COMPLETED, SchedulerWrapper(scheduler))
+    trainer.add_event_handler(Events.EPOCH_COMPLETED, scheduler)
 
     @trainer.on(Events.EPOCH_COMPLETED)
     def log_training_results(engine):

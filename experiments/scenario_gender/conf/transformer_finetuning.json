@@ -1,0 +1,63 @@
+{
+  "params": {
+    "device": "cuda",
+
+    "model_type": "transf",
+    "ensemble_size": 1,
+    "trx_encoder": {
+      "embeddings": {
+        "mcc_code": {"in": 200},
+        "tr_type": {"in": 100}
+      },
+      "numeric_values": {
+        "amount": "identity"
+      }
+    },
+    "transf": {
+      "input_size": 256
+    },
+    "train": {
+      "random_neg": false,
+      "trx_dropout": 0.01,
+      "max_seq_len": 1200,
+      "clip_seq": {
+        "min_len": 250,
+        "max_len": 350
+      },
+      "batch_size": 32,
+      "num_workers": 16,
+      "loss": "bce",
+      "lr": 0.0001,
+      "weight_decay": 0.0,
+      "n_epoch": 8
+    },
+    "lr_scheduler": {
+      "step_size": 1,
+      "step_gamma": 0.60
+    },
+    "valid": {
+      "max_seq_len": 1200,
+      "batch_size": 63,
+      "num_workers": 8
+    },
+    "norm_scores": false,
+    "score_metric": "auroc",
+
+    "pretrained_model_path": "models/transf_model.p",
+    "use_batch_norm": false
+  },
+
+  "save_model": false,
+
+  "output": {
+    "valid": {
+      "path": "data/transf_finetuning_scores/valid",
+      "format": "pickle"
+    },
+    "test": {
+      "path": "data/transf_finetuning_scores/test",
+      "format": "pickle"
+    },
+    "columns": ["customer_id"]
+  }
+}
