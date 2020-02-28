@@ -33,6 +33,8 @@ def get_conf():
                 'embeddings': {
                     'cat1': {'in': 8}
                 },
+                'was_logified': False,
+                'log_scale_factor': 1.0
             }
         }
     }

@@ -14,8 +14,7 @@
         "amount_rur": "identity"
       },
       "was_logified": true,
-      "log_scale_factor": 14,
-      "norm_lines": false
+      "log_scale_factor": 14
     },
     "lr_scheduler": {
       "step_size": 30,
@@ -38,7 +37,7 @@
       "margin": 0.5,
       "lr": 0.002,
       "weight_decay": 0.0,
-      "n_epoch": 1
+      "n_epoch": 3
     },
     "norm_scores": false,
     "valid": {

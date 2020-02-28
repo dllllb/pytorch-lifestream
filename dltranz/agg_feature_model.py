@@ -13,7 +13,6 @@ class AggFeatureModel(torch.nn.Module):
         self.embeddings = OrderedDict(config['embeddings'].items())
         self.was_logified = config['was_logified']
         self.log_scale_factor = config['log_scale_factor']
-        self.norm_lines = config['norm_lines']
 
         self.eps = 1e-9
 
@@ -74,28 +73,16 @@ class AggFeatureModel(torch.nn.Module):
                 # counts over val_embed
                 mask = (1.0 - ohe[0]).unsqueeze(0)  # 0, 1, 1, 1, ..., 1
                 e_cnt = ohe_transform.sum(dim=1) * mask
-                if self.norm_lines:
-                    t = e_cnt.div(e_cnt.sum(dim=1, keepdim=True) + self.eps)
-                else:
-                    t = e_cnt
-                processed.append(t)
+                processed.append(e_cnt)
 
                 # sum over val_embed
                 e_sum = m_sum.sum(dim=1)
                 e_mean = e_sum.div(e_cnt + 1e-9)
-                if self.norm_lines:
-                    t = e_mean.div(e_mean.sum(dim=1, keepdim=True) + self.eps)
-                else:
-                    t = e_mean
-                processed.append(t)
+                processed.append(e_mean)
 
                 a = torch.clamp(m_sum.pow(2).sum(dim=1) - m_sum.sum(dim=1).pow(2).div(e_cnt + 1e-9), min=0.0)
                 e_std = a.div(torch.clamp(e_cnt - 1, min=0) + 1e-9).pow(0.5)
-                if self.norm_lines:
-                    t = e_std.div(e_std.sum(dim=1, keepdim=True) + self.eps)
-                else:
-                    t = e_std
-                processed.append(t)
+                processed.append(e_std)
 
             # n_unique
             for col_embed, options_embed in self.embeddings.items():
