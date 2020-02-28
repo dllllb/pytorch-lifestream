@@ -1,5 +1,6 @@
 import logging
 import pickle
+import os
 
 import numpy as np
 import torch
@@ -129,7 +130,9 @@ def run_experiment(model, conf):
         save_dir = os.path.dirname(conf['model_path.model'])
         os.makedirs(save_dir, exist_ok=True)
 
-        torch.save(model, conf['model_path.model'])
+        m_encoder = model[0] if conf['model_path.only_encoder'] else model
+
+        torch.save(m_encoder, conf['model_path.model'])
         logger.info(f'Model saved to "{conf["model_path.model"]}"')
 
     results = {

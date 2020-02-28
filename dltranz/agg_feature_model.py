@@ -11,6 +11,9 @@ class AggFeatureModel(torch.nn.Module):
 
         self.numeric_values = OrderedDict(config['numeric_values'].items())
         self.embeddings = OrderedDict(config['embeddings'].items())
+        self.was_logified = config.get('was_logified', False)
+        self.log_scale_factor = config.get('log_scale_factor', 1.0)
+        self.norm_lines = config['norm_lines']
 
         self.eps = 1e-9
 
@@ -35,25 +38,34 @@ class AggFeatureModel(torch.nn.Module):
         :return:
         """
         feature_arrays = x.payload
-        processed = [x.seq_lens.float().unsqueeze(1)]  # count
+        device = next(iter(feature_arrays.values()))
+        seq_lens = x.seq_lens.to(device)
+        if (seq_lens == 0).any():
+            raise Exception('seq_lens == 0')
+
+        processed = [seq_lens.float().unsqueeze(1)]  # count
 
         for col_num, options_num in self.numeric_values.items():
             # take array with numerical feature and convert it to original scale
-            val_orig = feature_arrays[col_num]
-            if options_num.get('was_logified', False):
-                val_orig = torch.exp1m(torch.abs(val_orig)) * torch.sign(val_orig)
+            val_orig = feature_arrays[col_num].float()
+            if any((
+                    type(options_num) is str and self.was_logified,
+                    type(options_num) is dict and options_num.get('was_logified', False),
+            )):
+                #
+                val_orig = torch.expm1(self.log_scale_factor * torch.abs(val_orig)) * torch.sign(val_orig)
 
             # trans_common_features
             processed.append(val_orig.sum(dim=1).unsqueeze(1))  # sum
-            processed.append(val_orig.sum(dim=1).div(x.seq_lens).unsqueeze(1))  # mean
-            processed.append((val_orig.pow(2).sum(dim=1) - val_orig.sum(dim=1).pow(2).div(x.seq_lens)).div(
-                x.seq_lens - 1 + self.eps).pow(0.5).unsqueeze(1))  # std
+            processed.append(val_orig.sum(dim=1).div(seq_lens).unsqueeze(1))  # mean
+            a = torch.clamp(val_orig.pow(2).sum(dim=1) - val_orig.sum(dim=1).pow(2).div(seq_lens), min=0.0)
+            processed.append(a.div(torch.clamp(seq_lens - 1, min=0.0) + self.eps).pow(0.5).unsqueeze(1))  # std
 
             # TODO: percentiles
 
             # embeddings features (like mcc)
             for col_embed, options_embed in self.embeddings.items():
-                ohe = self.ohe_buffer[col_embed]
+                ohe = getattr(self, f'ohe_{col_embed}')
                 val_embed = feature_arrays[col_embed]
 
                 ohe_transform = ohe[val_embed.flatten()].view(*val_embed.size(), -1)  # B, T, size
@@ -62,19 +74,31 @@ class AggFeatureModel(torch.nn.Module):
                 # counts over val_embed
                 mask = (1.0 - ohe[0]).unsqueeze(0)  # 0, 1, 1, 1, ..., 1
                 e_cnt = ohe_transform.sum(dim=1) * mask
-                processed.append(e_cnt.div(e_cnt.sum(dim=1, keepdim=True) + self.eps))
+                if self.norm_lines:
+                    t = e_cnt.div(e_cnt.sum(dim=1, keepdim=True) + self.eps)
+                else:
+                    t = e_cnt
+                processed.append(t)
 
                 # sum over val_embed
                 e_sum = m_sum.sum(dim=1) * mask
-                processed.append(e_sum.div(e_sum.sum(dim=1, keepdim=True) + self.eps))
+                if self.norm_lines:
+                    t = e_sum.div(e_sum.sum(dim=1, keepdim=True) + self.eps)
+                else:
+                    t = e_sum
+                processed.append(t)
 
-                e_std = (m_sum.pow(2).sum(dim=1) - m_sum.sum(dim=1).pow(2).div(e_cnt + 1e-9)).div(
-                    (torch.clamp(e_cnt - 1, min=0) + 1e-9)).pow(0.5)
-                processed.append(e_std.div(e_std.sum(dim=1, keepdim=True) + self.eps))
+                a = torch.clamp(m_sum.pow(2).sum(dim=1) - m_sum.sum(dim=1).pow(2).div(e_cnt + 1e-9), min=0.0)
+                e_std = a.div(torch.clamp(e_cnt - 1, min=0) + 1e-9).pow(0.5)
+                if self.norm_lines:
+                    t = e_std.div(e_std.sum(dim=1, keepdim=True) + self.eps)
+                else:
+                    t = e_std
+                processed.append(t)
 
             # n_unique
             for col_embed, options_embed in self.embeddings.items():
-                ohe = self.ohe_buffer[col_embed]
+                ohe = getattr(self, f'ohe_{col_embed}')
                 val_embed = feature_arrays[col_embed]
 
                 ohe_transform = ohe[val_embed.flatten()].view(*val_embed.size(), -1)  # B, T, size
@@ -84,6 +108,10 @@ class AggFeatureModel(torch.nn.Module):
                 e_cnt = ohe_transform.sum(dim=1) * mask
 
                 processed.append(e_cnt.gt(0.0).float().sum(dim=1, keepdim=True))
+
+        for i, t in enumerate(processed):
+            if torch.isnan(t).any():
+                raise Exception(f'nan in {i}')
 
         out = torch.cat(processed, 1)
         return out
