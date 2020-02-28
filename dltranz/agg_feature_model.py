@@ -11,8 +11,8 @@ class AggFeatureModel(torch.nn.Module):
 
         self.numeric_values = OrderedDict(config['numeric_values'].items())
         self.embeddings = OrderedDict(config['embeddings'].items())
-        self.was_logified = config.get('was_logified', False)
-        self.log_scale_factor = config.get('log_scale_factor', 1.0)
+        self.was_logified = config['was_logified']
+        self.log_scale_factor = config['log_scale_factor']
         self.norm_lines = config['norm_lines']
 
         self.eps = 1e-9
@@ -69,7 +69,7 @@ class AggFeatureModel(torch.nn.Module):
                 val_embed = feature_arrays[col_embed]
 
                 ohe_transform = ohe[val_embed.flatten()].view(*val_embed.size(), -1)  # B, T, size
-                m_sum = ohe_transform * val_embed.unsqueeze(-1)  # B, T, size
+                m_sum = ohe_transform * val_orig.unsqueeze(-1)  # B, T, size
 
                 # counts over val_embed
                 mask = (1.0 - ohe[0]).unsqueeze(0)  # 0, 1, 1, 1, ..., 1
@@ -81,11 +81,12 @@ class AggFeatureModel(torch.nn.Module):
                 processed.append(t)
 
                 # sum over val_embed
-                e_sum = m_sum.sum(dim=1) * mask
+                e_sum = m_sum.sum(dim=1)
+                e_mean = e_sum.div(e_cnt + 1e-9)
                 if self.norm_lines:
-                    t = e_sum.div(e_sum.sum(dim=1, keepdim=True) + self.eps)
+                    t = e_mean.div(e_mean.sum(dim=1, keepdim=True) + self.eps)
                 else:
-                    t = e_sum
+                    t = e_mean
                 processed.append(t)
 
                 a = torch.clamp(m_sum.pow(2).sum(dim=1) - m_sum.sum(dim=1).pow(2).div(e_cnt + 1e-9), min=0.0)
