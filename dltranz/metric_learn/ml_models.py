@@ -6,6 +6,7 @@ import torch.nn as nn
 
 from torch.autograd import Function
 
+from dltranz.agg_feature_model import AggFeatureModel
 from dltranz.transf_seq_encoder import TransformerSeqEncoder
 
 script_dir = os.path.dirname(os.path.realpath(__file__))
@@ -75,10 +76,24 @@ def transformer_model(params):
     return m
 
 
+def agg_feature_model(params):
+    layers = [
+        torch.nn.Sequential(
+            AggFeatureModel(params['trx_encoder']),
+        ),
+        torch.nn.BatchNorm1d(AggFeatureModel.output_size(params['trx_encoder'])),
+    ]
+    if params['use_normalization_layer']:
+        layers.append(L2Normalization())
+    m = torch.nn.Sequential(*layers)
+    return m
+
+
 def ml_model_by_type(model_type):
     model = {
         'rnn': rnn_model,
         'transf': transformer_model,
+        'agg_features': agg_feature_model,
     }[model_type]
     return model
 

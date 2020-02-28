@@ -102,3 +102,19 @@ python -m scenario_age_pred compare_approaches --n_workers 1 \
     --score_file_names "transf_finetuning_scores"
 
 ```
+
+# New baseline via AggFeatureModel
+
+```sh
+cd experiments/scenario_age_pred
+export SC_DEVICE="cuda"
+
+# Prepare agg feature encoder and take embedidngs; inference
+python ../../metric_learning.py params.device="$SC_DEVICE" --conf conf/dataset.hocon conf/agg_features_params.json
+python ../../ml_inference.py    params.device="$SC_DEVICE" --conf conf/dataset.hocon conf/agg_features_params.json
+
+python -m scenario_age_pred compare_approaches --n_workers 5 \
+    --add_baselines --add_emb_baselines \
+    --embedding_file_names "agg_feat_embed.pickle"
+
+```

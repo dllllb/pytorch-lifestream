@@ -4,35 +4,17 @@
       "name": "default"
     },
     "device": "cuda",
-    "model_type": "rnn",
-    "rnn": {
-      "type": "gru",
-      "hidden_size": 800,
-      "bidir": false,
-      "trainable_starter": "static"
-    },
+    "model_type": "agg_features",
     "use_normalization_layer" : true,
-    "transf": {
-      "shared_layers": false,
-      "input_size": 64,
-      "n_heads": 2,
-      "dim_hidden": 64,
-      "dropout": 0.1,
-      "n_layers": 4,
-      "max_seq_len": 1,
-      "use_after_mask": false,
-      "use_positional_encoding": false
-    },
     "trx_encoder": {
-      "norm_embeddings": false,
-      "embeddings_noise": 0.003,
       "embeddings": {
-        "trans_date": {"in": 800, "out": 16},
-        "small_group": {"in": 250, "out": 16}
+        "small_group": {"in": 250}
       },
       "numeric_values": {
         "amount_rur": "identity"
-      }
+      },
+      "was_logified": true,
+      "log_scale_factor": 14
     },
     "lr_scheduler": {
       "step_size": 30,
@@ -55,7 +37,7 @@
       "margin": 0.5,
       "lr": 0.002,
       "weight_decay": 0.0,
-      "n_epoch": 100
+      "n_epoch": 3
     },
     "norm_scores": false,
     "valid": {
@@ -72,17 +54,17 @@
   },
 
   "stats": {
-    "path": "runs/age_pred_ml_result.json"
+    "path": "runs/agg_features_result.json"
   },
 
   "save_model": true,
   "model_path": {
-    "model": "models/mles_model.p",
-    "only_encoder": false
+    "model": "models/agg_features_model.p",
+    "only_encoder": true
   },
 
   "output": {
-    "path": "data/mles_embeddings",
+    "path": "data/agg_feat_embed",
     "format": "pickle",
     "columns": ["client_id"]
   }

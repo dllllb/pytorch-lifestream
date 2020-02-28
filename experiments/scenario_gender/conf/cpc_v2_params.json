@@ -77,7 +77,8 @@
 
   "save_model": true,
   "model_path": {
-    "model": "models/cpc_v2_model.p"
+    "model": "models/cpc_v2_model.p",
+    "only_encoder": false
   },
 
   "output": {

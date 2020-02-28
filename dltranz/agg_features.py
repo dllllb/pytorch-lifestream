@@ -1,4 +1,8 @@
 """
+It's better use dltranz.agg_feature_model.AggFeatureModel
+This is faster.
+
+
 This module prepare baseline features from standard dataset.
 `Standard dataset` means iterable with dictionaries:
     {

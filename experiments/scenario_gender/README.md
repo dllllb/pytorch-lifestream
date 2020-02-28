@@ -97,3 +97,19 @@ python -m scenario_gender compare_approaches --n_workers 3 \
     --score_file_names "transf_finetuning_scores"
 
 ```
+
+# New baseline via AggFeatureModel
+
+```sh
+cd experiments/scenario_gender
+export SC_DEVICE="cuda"
+
+# Prepare agg feature encoder and take embedidngs; inference
+python ../../metric_learning.py params.device="$SC_DEVICE" --conf conf/dataset.hocon conf/agg_features_params.json
+python ../../ml_inference.py    params.device="$SC_DEVICE" --conf conf/dataset.hocon conf/agg_features_params.json
+
+python -m scenario_gender compare_approaches --n_workers 4 \
+    --add_baselines --add_emb_baselines \
+    --embedding_file_names "agg_feat_embed.pickle"
+
+```
