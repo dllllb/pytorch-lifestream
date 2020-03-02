@@ -38,11 +38,11 @@ class AggFeatureModel(torch.nn.Module):
         """
         feature_arrays = x.payload
         device = next(iter(feature_arrays.values()))
-        seq_lens = x.seq_lens.to(device)
-        if (seq_lens == 0).any():
-            raise Exception('seq_lens == 0')
+        seq_lens = x.seq_lens.to(device).float()
+        # if (seq_lens == 0).any():
+        #     raise Exception('seq_lens == 0')
 
-        processed = [seq_lens.float().unsqueeze(1)]  # count
+        processed = [seq_lens.unsqueeze(1)]  # count
 
         for col_num, options_num in self.numeric_values.items():
             # take array with numerical feature and convert it to original scale
@@ -56,8 +56,8 @@ class AggFeatureModel(torch.nn.Module):
 
             # trans_common_features
             processed.append(val_orig.sum(dim=1).unsqueeze(1))  # sum
-            processed.append(val_orig.sum(dim=1).div(seq_lens).unsqueeze(1))  # mean
-            a = torch.clamp(val_orig.pow(2).sum(dim=1) - val_orig.sum(dim=1).pow(2).div(seq_lens), min=0.0)
+            processed.append(val_orig.sum(dim=1).div(seq_lens + self.eps).unsqueeze(1))  # mean
+            a = torch.clamp(val_orig.pow(2).sum(dim=1) - val_orig.sum(dim=1).pow(2).div(seq_lens + self.eps), min=0.0)
             processed.append(a.div(torch.clamp(seq_lens - 1, min=0.0) + self.eps).pow(0.5).unsqueeze(1))  # std
 
             # TODO: percentiles
@@ -65,7 +65,7 @@ class AggFeatureModel(torch.nn.Module):
             # embeddings features (like mcc)
             for col_embed, options_embed in self.embeddings.items():
                 ohe = getattr(self, f'ohe_{col_embed}')
-                val_embed = feature_arrays[col_embed]
+                val_embed = feature_arrays[col_embed].long()
 
                 ohe_transform = ohe[val_embed.flatten()].view(*val_embed.size(), -1)  # B, T, size
                 m_sum = ohe_transform * val_orig.unsqueeze(-1)  # B, T, size
@@ -87,7 +87,7 @@ class AggFeatureModel(torch.nn.Module):
             # n_unique
             for col_embed, options_embed in self.embeddings.items():
                 ohe = getattr(self, f'ohe_{col_embed}')
-                val_embed = feature_arrays[col_embed]
+                val_embed = feature_arrays[col_embed].long()
 
                 ohe_transform = ohe[val_embed.flatten()].view(*val_embed.size(), -1)  # B, T, size
 
