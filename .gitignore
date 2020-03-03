@@ -9,3 +9,4 @@ deb.env
 .ipynb_checkpoints
 experiments/*/runs
 experiments/*/models
+*.egg-info
