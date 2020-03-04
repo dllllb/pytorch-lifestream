@@ -12,7 +12,7 @@ from dltranz.transf_seq_encoder import TransformerSeqEncoder
 script_dir = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(os.path.join(script_dir, '../..'))
 
-from dltranz.seq_encoder import RnnEncoder, LastStepEncoder, PerTransTransf, FirstStepEncoder
+from dltranz.seq_encoder import RnnEncoder, LastStepEncoder, PerTransTransf, FirstStepEncoder, PaddedBatch
 from dltranz.trx_encoder import TrxEncoder
 
 # TODO: is the same as dltranz.seq_encoder.NormEncoder
@@ -98,11 +98,32 @@ def ml_model_by_type(model_type):
     return model
 
 
+
+class MeLESModel(torch.nn.Module):
+    def __init__(self, params):
+        super().__init__()
+        self.p = TrxEncoder(params['trx_encoder'])
+        self.e = RnnEncoder(TrxEncoder.output_size(params['trx_encoder']), params['rnn'])
+        self.l = torch.nn.Sequential(LastStepEncoder(), L2Normalization())
+
+    def forward(self, padded_x, h_0=None):
+        outputs = self.l(self.e(self.p(padded_x), h_0))
+        return outputs
+
+
 class ModelEmbeddingEnsemble(nn.Module):
     def __init__(self, submodels):
         super(ModelEmbeddingEnsemble, self).__init__()
         self.models = nn.ModuleList(submodels)
 
-    def forward(self, *args):
-        out = torch.cat([m(*args) for m in self.models], dim=1)
+    def forward(self, x: PaddedBatch, h_0: torch.Tensor = None):
+        """
+        x - PaddedBatch of transactions sequences
+        h_0 - previous state of embeddings (initial size for GRU). torch Tensor of shape (batch_size, embedding_size)
+        """
+        if h_0 is not None:
+            h_0_splitted = torch.chunk(h_0, len(self.models), -1)
+            out = torch.cat([m(x, h.contiguous()) for m, h in zip(self.models, h_0_splitted)], dim=-1)
+        else:
+            out = torch.cat([m(x) for i, m in enumerate(self.models)], dim=-1)
         return out
