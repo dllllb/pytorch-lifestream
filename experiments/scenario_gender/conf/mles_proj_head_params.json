@@ -1,0 +1,83 @@
+{
+  "params": {
+    "experiment": {
+      "name": "default"
+    },
+    "device": "cuda",
+    "model_type": "rnn",
+    "rnn": {
+      "type": "gru",
+      "hidden_size": 256,
+      "bidir": false,
+      "trainable_starter": "static"
+    },
+    "trx_encoder": {
+      "norm_embeddings": false,
+      "embeddings_noise": 0.003,
+      "embeddings": {
+        "mcc_code": {"in": 200, "out": 48},
+        "tr_type": {"in": 100, "out": 24}
+      },
+      "numeric_values": {
+        "amount": "identity"
+      }
+    },
+    "projection_head": {
+      "output_size": 256
+    },
+    "use_normalization_layer": true,
+    "lr_scheduler": {
+      "step_size": 10,
+      "step_gamma": 0.9025
+    },
+    "train": {
+      "num_workers": 8,
+      "batch_size": 128,
+      "split_strategy": {
+        "split_strategy": "SampleSlices",
+        "split_count": 5,
+        "cnt_min": 15,
+        "cnt_max": 75
+      },
+      "sampling_strategy": "HardNegativePair",
+      "trx_dropout": 0.01,
+      "max_seq_len": 1200,
+      "neg_count": 5,
+      "loss": "MarginLoss",
+      "margin": 0.2,
+      "beta": 0.4,
+      "lr": 0.002,
+      "weight_decay": 0.0,
+      "n_epoch": 150
+    },
+    "norm_scores": false,
+    "valid": {
+      "batch_size": 1024,
+      "num_workers": 16,
+      "split_strategy": {
+        "split_strategy": "SampleSlices",
+        "split_count": 5,
+        "cnt_min": 25,
+        "cnt_max": 100
+      },
+      "max_seq_len": 1200
+    }
+  },
+
+  "save_model": true,
+  "model_path": {
+    "model": "models/mles_hi_model.p",
+    "only_encoder": true
+  },
+
+  "output": {
+    "path": "data/mles_hi_embeddings",
+    "format": "pickle",
+    "columns": ["customer_id"]
+  },
+
+  "stats": {
+    "path": "runs/mles_result.json"
+  }
+
+}
