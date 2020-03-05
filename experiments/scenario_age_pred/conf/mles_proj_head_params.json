@@ -11,6 +11,9 @@
       "bidir": false,
       "trainable_starter": "static"
     },
+    "projection_head": {
+      "output_size": 256
+    },
     "use_normalization_layer" : true,
     "trx_encoder": {
       "norm_embeddings": false,
