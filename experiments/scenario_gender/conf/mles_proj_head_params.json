@@ -7,7 +7,7 @@
     "model_type": "rnn",
     "rnn": {
       "type": "gru",
-      "hidden_size": 256,
+      "hidden_size": 1024,
       "bidir": false,
       "trainable_starter": "static"
     },
@@ -23,7 +23,7 @@
       }
     },
     "projection_head": {
-      "output_size": 256
+      "output_size": 64
     },
     "use_normalization_layer": true,
     "lr_scheduler": {
@@ -66,12 +66,12 @@
 
   "save_model": true,
   "model_path": {
-    "model": "models/mles_hi_model.p",
+    "model": "models/mles_proj_head_model.p",
     "only_encoder": true
   },
 
   "output": {
-    "path": "data/mles_hi_embeddings",
+    "path": "data/mles_proj_head_embeddings",
     "format": "pickle",
     "columns": ["customer_id"]
   },
