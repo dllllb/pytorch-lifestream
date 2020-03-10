@@ -103,6 +103,22 @@ python -m scenario_age_pred compare_approaches --n_workers 1 \
 
 ```
 
+### Projection head network (like SimCLR)
+```sh
+cd experiments/scenario_age_pred
+export SC_DEVICE="cuda"
+
+# Train the encoder on transformer and take embedidngs; inference
+python ../../metric_learning.py params.device="$SC_DEVICE" --conf conf/dataset.hocon conf/mles_proj_head_params.json
+python ../../ml_inference.py    params.device="$SC_DEVICE" --conf conf/dataset.hocon conf/mles_proj_head_params.json
+
+# Check some options with `--help` argument
+python -m scenario_age_pred compare_approaches --n_workers 3 \
+    --add_baselines --add_emb_baselines \
+    --embedding_file_names "mles_proj_head_embeddings.pickle"
+
+```
+
 # New baseline via AggFeatureModel
 
 ```sh

@@ -1,4 +1,5 @@
 # coding: utf-8
+import logging
 import os
 import sys
 import torch
@@ -14,6 +15,9 @@ sys.path.append(os.path.join(script_dir, '../..'))
 
 from dltranz.seq_encoder import RnnEncoder, LastStepEncoder, PerTransTransf, FirstStepEncoder
 from dltranz.trx_encoder import TrxEncoder
+
+logger = logging.getLogger(__name__)
+
 
 # TODO: is the same as dltranz.seq_encoder.NormEncoder
 class L2Normalization(nn.Module):
@@ -47,13 +51,23 @@ class BinarizationLayer(nn.Module):
 
 
 def rnn_model(params):
-    layers = [
+    encoder_layers = [
         TrxEncoder(params['trx_encoder']),
         RnnEncoder(TrxEncoder.output_size(params['trx_encoder']), params['rnn']),
         LastStepEncoder(),
     ]
+
+    layers = [torch.nn.Sequential(*encoder_layers)]
+    if 'projection_head' in params:
+        logger.info('projection_head included')
+        layers.extend([
+            torch.nn.Linear(params['rnn.hidden_size'], params['rnn.hidden_size']),
+            torch.nn.ReLU(),
+            torch.nn.Linear(params['rnn.hidden_size'], params['projection_head.output_size']),
+        ])
     if params['use_normalization_layer']:
         layers.append(L2Normalization())
+        logger.info('L2Normalization included')
     m = torch.nn.Sequential(*layers)
     return m
 
