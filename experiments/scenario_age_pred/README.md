@@ -113,7 +113,7 @@ python ../../metric_learning.py params.device="$SC_DEVICE" --conf conf/dataset.h
 python ../../ml_inference.py    params.device="$SC_DEVICE" --conf conf/dataset.hocon conf/mles_proj_head_params.json
 
 # Check some options with `--help` argument
-python -m scenario_age_pres compare_approaches --n_workers 3 \
+python -m scenario_age_pred compare_approaches --n_workers 3 \
     --add_baselines --add_emb_baselines \
     --embedding_file_names "mles_proj_head_embeddings.pickle"
 
