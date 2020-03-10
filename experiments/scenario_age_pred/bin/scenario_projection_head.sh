@@ -2,11 +2,11 @@ for PRJ_SIZE in 256 128 064
 do
     for RNN_SIZE in 1600 0800 0400
     do
-        export SC_SUFFIX="projection_head_rnn${RNN_SIZE}_prh256"
+        export SC_SUFFIX="projection_head_rnn${RNN_SIZE}_prh${PRJ_SIZE}"
         python ../../metric_learning.py \
             params.device="$SC_DEVICE" \
             params.rnn.hidden_size=${RNN_SIZE} \
-            params.projection_head.output_size=256 \
+            params.projection_head.output_size=${PRJ_SIZE} \
             model_path.model="models/age_pred_mlm__$SC_SUFFIX.p" \
             --conf "conf/dataset.hocon" "conf/mles_proj_head_params.json"
         python ../../ml_inference.py \
