@@ -18,7 +18,7 @@ do
 done
 
 # Compare
-python -m scenario_age_pred compare_approaches --output_file "results/scenario_age_pred__hidden_size.csv" \
+python -m scenario_age_pred compare_approaches --output_file "results/scenario_age_pred__proj_head.csv" \
     --embedding_file_names \
     "emb__projection_head_rnn1600_prh256.pickle" \
     "emb__projection_head_rnn0800_prh256.pickle" \
