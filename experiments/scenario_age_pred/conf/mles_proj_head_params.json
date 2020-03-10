@@ -7,12 +7,12 @@
     "model_type": "rnn",
     "rnn": {
       "type": "gru",
-      "hidden_size": 800,
+      "hidden_size": 400,
       "bidir": false,
       "trainable_starter": "static"
     },
     "projection_head": {
-      "output_size": 256
+      "output_size": 128
     },
     "use_normalization_layer" : true,
     "trx_encoder": {
@@ -69,12 +69,12 @@
 
   "save_model": true,
   "model_path": {
-    "model": "models/mles_model.p",
+    "model": "models/mles_proj_head_model.p",
     "only_encoder": false
   },
 
   "output": {
-    "path": "data/mles_embeddings",
+    "path": "data/mles_proj_head_embeddings",
     "format": "pickle",
     "columns": ["client_id"]
   }
