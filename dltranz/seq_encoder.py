@@ -74,15 +74,13 @@ class RnnEncoder(nn.Module):
             num_dir = 2 if self.bidirectional else 1
             self.starter_h = nn.Parameter(torch.randn(num_dir, 1, self.hidden_size))
 
-    def forward(self, x: PaddedBatch):
+    def forward(self, x: PaddedBatch, h_0: torch.Tensor = None):
         shape = x.payload.size()
         assert shape[1] > 0, "Batch can'not have 0 transactions"
 
         # prepare initial state
-        if self.trainable_starter == 'static':
+        if h_0 is None and self.trainable_starter == 'static':
             h_0 = self.starter_h.expand(-1, len(x.seq_lens), -1).contiguous()
-        else:
-            h_0 = None
 
         # pass-through rnn
         if self.rnn_type == 'lstm':
@@ -164,6 +162,11 @@ class NormEncoder(nn.Module):
         return x / x.pow(2).sum(dim=1).pow(0.5).unsqueeze(-1).expand(*x.size())
 
 
+class PayloadEncoder(nn.Module):
+    def forward(self, x: PaddedBatch):
+        return x.payload
+
+
 class AllStepsHead(nn.Module):
     def __init__(self, head):
         super().__init__()
@@ -217,6 +220,14 @@ def scoring_head(input_size, params):
 
     if params['use_batch_norm']:
         layers.append(nn.BatchNorm1d(input_size))
+
+    if params.get('neural_automl', False):
+        if params['pred_all_states']:
+            raise AttributeError('neural_automl not supported with `pred_all_states` for now')
+        layers.append(nn.BatchNorm1d(input_size))
+        head = node.get_model(model_config=params['neural_automl'], input_size=input_size)
+        layers.append(head)
+        return nn.Sequential(*layers)
 
     if params.get('neural_automl', False):
         if params['pred_all_states']:

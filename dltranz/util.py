@@ -1,8 +1,13 @@
 import argparse
-from glob import glob
+import itertools
 import logging
 import os
-import itertools
+import pickle
+import subprocess
+import sys
+from glob import glob
+
+import pandas as pd
 
 logger = logging.getLogger(__name__)
 
@@ -17,8 +22,10 @@ def block_iterator(iterator, size):
     if bucket:
         yield bucket
 
+
 def cycle_block_iterator(iterator, size):
     return block_iterator(itertools.cycle(iterator), size)
+
 
 class ListSubset:
     def __init__(self, delegate, idx_to_take):
@@ -78,6 +85,19 @@ def get_conf(args=None):
     return conf
 
 
+def config_coalesce(conf, *keys, default=None, raise_if_missing=False):
+    from pyhocon import ConfigMissingException
+    for k in keys:
+        try:
+            v = conf[k]
+            return v
+        except ConfigMissingException:
+            pass
+    if raise_if_missing:
+        raise ConfigMissingException(f'These keys are not found: [{keys}]')
+    return default
+
+
 def get_data_files(params):
     path_wc = params['path_wc']
 
@@ -102,6 +122,57 @@ def get_data_files(params):
     else:
         logger.info(f'All {len(files)} files are available')
     return sorted(files)
+
+
+def _read_parquet(file_name):
+    py_script = f"""
+import pandas as pd
+import pickle
+import sys
+
+df = pd.read_parquet('{file_name}')
+sys.stdout.buffer.write(pickle.dumps(df))
+    """
+    p = subprocess.Popen([sys.executable, '-c', py_script], stdout=subprocess.PIPE)
+    data, _ = p.communicate()
+    return pickle.loads(data)
+
+
+def _write_parquet(df, file_name):
+    py_script = f"""
+import pandas as pd
+import pickle
+import sys
+
+df = pickle.loads(sys.stdin.buffer.read())
+df.to_parquet('{file_name}')
+    """
+    p = subprocess.Popen([sys.executable, '-c', py_script], stdin=subprocess.PIPE)
+    p.communicate(pickle.dumps(df))
+
+
+def read_pandas(file_name):
+    ext = os.path.splitext(file_name)[1]
+    if ext == '.csv':
+        return pd.read_csv(file_name)
+    elif ext == '.pickle':
+        return pd.read_pickle(file_name)
+    elif ext == '.parquet':
+        return _read_parquet(file_name)
+    else:
+        raise NotImplementedError(f'Unknown file extension: {ext}')
+
+
+def write_pandas(df, file_name):
+    ext = os.path.splitext(file_name)[1]
+    if ext == '.csv':
+        df.to_csv(file_name, sep=',', header=True, index=False)
+    elif ext == '.pickle':
+        df.to_pickle(file_name)
+    elif ext == '.parquet':
+        return _write_parquet(df, file_name)
+    else:
+        raise NotImplementedError(f'Unknown file extension: {ext}')
 
 
 def plot_arrays(a, b, title=None):
