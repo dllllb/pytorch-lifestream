@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 def load_model(conf):
     pretrained_model_path = conf['pretrained_model_path']
 
-    pre_model = torch.load(pretrained_model_path)
+    pre_model = torch.load(pretrained_model_path)[0]
     trx_encoder = pre_model[0]
     rnn_encoder = pre_model[1]
     step_select_encoder = pre_model[2]

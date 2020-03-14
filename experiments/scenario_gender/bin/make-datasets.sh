@@ -4,7 +4,7 @@ python ../../make_datasets.py \
     --data_path data/ \
     --trx_files transactions.csv \
     --col_client_id "customer_id" \
-    --cols_event_time "tr_datetime" \
+    --cols_event_time "#gender" "tr_datetime" \
     --cols_category "mcc_code" "tr_type" "term_id" \
     --cols_log_norm "amount" \
     --target_files gender_train.csv \

@@ -74,14 +74,54 @@ def trx_to_features(df_data, print_dataset_info,
         del rec['feature_arrays']['event_time']
         return rec
 
+    def _td_default(df, cols_event_time):
+        df_event_time = df[cols_event_time].drop_duplicates()
+        df_event_time = df_event_time.sort_values(cols_event_time)
+        df_event_time['event_time'] = np.arange(len(df_event_time))
+        df = pd.merge(df, df_event_time, on=cols_event_time)
+        logger.info('Default time transformation')
+        return df
+
+    def _td_float(df, col_event_time):
+        df['event_time'] = df[col_event_time].astype(float)
+        logger.info('To-float time transformation')
+        return df
+
+    def _td_gender(df, col_event_time):
+        """Gender-dataset-like transformation
+
+        'd hh:mm:ss' -> float where integer part is day number and fractional part is seconds from day begin
+        '1 00:00:00' -> 1.0
+        '1 12:00:00' -> 1.5
+        '1 01:00:00' -> 1 + 1 / 24
+        '2 23:59:59' -> 1.99
+        '432 12:00:00' -> 432.5
+
+        :param df:
+        :param col_event_time:
+        :return:
+        """
+        padded_time = df[col_event_time].str.pad(15, 'left', '0')
+        day_part = padded_time.str[:6].astype(float)
+        time_part = pd.to_datetime(padded_time.str[7:], format='%H:%M:%S').values.astype(int) // 1e9
+        time_part = time_part % (24 * 60 * 60) / (24 * 60 * 60)
+        df['event_time'] = day_part + time_part
+        logger.info('Gender-dataset-like time transformation')
+        return df
+
     if print_dataset_info:
         logger.info(f'Found {df_data[col_client_id].nunique()} unique clients')
 
     # event_time mapping
-    df_event_time = df_data[cols_event_time].drop_duplicates()
-    df_event_time = df_event_time.sort_values(cols_event_time)
-    df_event_time['event_time'] = np.arange(len(df_event_time))
-    df_data = pd.merge(df_data, df_event_time, on=cols_event_time)
+    if cols_event_time[0][0] == '#':
+        if cols_event_time[0] == '#float':
+            df_data = _td_float(df_data, cols_event_time[1])
+        elif cols_event_time[0] == '#gender':
+            df_data = _td_gender(df_data, cols_event_time[1])
+        else:
+            raise NotImplementedError(f'Unknown type of data transformation: "{cols_event_time[0]}"')
+    else:
+        df_data = _td_default(df_data, cols_event_time)
 
     for col in cols_category:
         df_data[col] = encode_col(df_data[col])
@@ -98,8 +138,12 @@ def trx_to_features(df_data, print_dataset_info,
         df = df_data.groupby(col_client_id)['event_time'].count()
         logger.info(f'Trx count per clients:\nlen(trx_list) | client_count\n{pd_hist(df, "trx_count")}')
 
+    # column filter
+    used_columns = [col for col in df_data.columns
+                    if col in cols_category + cols_log_norm + ['event_time', col_client_id]]
+
     logger.info('Feature collection in progress ...')
-    features = df_data \
+    features = df_data[used_columns] \
         .assign(et_index=lambda x: x['event_time']) \
         .set_index([col_client_id, 'et_index']).sort_index() \
         .groupby(col_client_id).apply(lambda x: {k: np.array(v) for k, v in x.to_dict(orient='list').items()}) \

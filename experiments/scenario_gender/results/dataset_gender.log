@@ -1,6 +1,7 @@
 load_source_data       : Loaded 6849346 rows from "/mnt/data/ovsov/repo/dltranz/data/gender/transactions.csv"
 load_source_data       : Loaded 6849346 rows in total
 trx_to_features        : Found 15000 unique clients
+_init_num_threads      : Note: NumExpr detected 24 cores but "NUMEXPR_MAX_THREADS" not set, so enforcing safe limit of 8.
 trx_to_features        : Encoder stat for "mcc_code":
 codes | trx_count
                cnt  % of total
@@ -72,7 +73,7 @@ trx_count
 [1714, 1929)     55    0.003667
 [1929, 88782)   151    0.010067
 trx_to_features        : Feature collection in progress ...
-trx_to_features        : Feature names: ['tr_datetime', 'mcc_code', 'tr_type', 'amount', 'term_id']
+trx_to_features        : Feature names: ['mcc_code', 'tr_type', 'amount', 'term_id']
 trx_to_features        : Prepared features for 15000 clients
 update_with_target     : Target loaded for 8400 clients
 update_with_target     : Target updated for 15000 clients

@@ -4,7 +4,7 @@ python ../../make_datasets.py \
     --data_path data/ \
     --trx_files transactions_train.csv transactions_test.csv \
     --col_client_id "client_id" \
-    --cols_event_time "trans_date" \
+    --cols_event_time "#float" "trans_date" \
     --cols_category "trans_date" "small_group" \
     --cols_log_norm "amount_rur" \
     --target_files train_target.csv \
