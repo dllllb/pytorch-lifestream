@@ -48,7 +48,7 @@
     "score_metric": "auroc",
 
     "pretrained_model_path": "models/mles_model.p",
-    "use_batch_norm": false
+    "use_batch_norm": true
   },
 
   "save_model": false,
