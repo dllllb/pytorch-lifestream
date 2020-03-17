@@ -6,6 +6,7 @@ from sklearn.model_selection import StratifiedKFold
 
 from dltranz.experiment import update_model_stats
 from dltranz.metric_learn.inference_tools import infer_part_of_data, save_scores
+from dltranz.trx_encoder import TrxEncoder
 from dltranz.util import init_logger, get_conf
 from scenario_age_pred.fit_target import create_ds, run_experiment, read_consumer_data
 
@@ -16,6 +17,8 @@ def load_model(conf):
     pretrained_model_path = conf['pretrained_model_path']
 
     pre_model = torch.load(pretrained_model_path)
+    if not isinstance(pre_model[0], TrxEncoder):
+        pre_model = pre_model[0]
     trx_encoder = pre_model[0]
     rnn_encoder = pre_model[1]
     step_select_encoder = pre_model[2]

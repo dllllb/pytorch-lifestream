@@ -1,4 +1,5 @@
 import logging
+import os
 
 import numpy as np
 import torch
@@ -46,6 +47,9 @@ def run_experiment(model, conf):
     exec_sec = time.time() - start
 
     if conf.get('save_model', False):
+        save_dir = os.path.dirname(conf['model_path.model'])
+        os.makedirs(save_dir, exist_ok=True)
+
         torch.save(model.encoder, conf['model_path.model'])
         logger.info(f'Model saved to "{conf["model_path.model"]}"')
 

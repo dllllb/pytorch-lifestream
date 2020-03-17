@@ -2,6 +2,7 @@ load_source_data       : Loaded 26450577 rows from "/mnt/data/ovsov/repo/dltranz
 load_source_data       : Loaded 17667328 rows from "/mnt/data/ovsov/repo/dltranz/data/age-pred/transactions_test.csv"
 load_source_data       : Loaded 44117905 rows in total
 trx_to_features        : Found 50000 unique clients
+_td_float              : To-float time transformation
 trx_to_features        : Encoder stat for "trans_date":
 codes | trx_count
                 cnt  % of total
