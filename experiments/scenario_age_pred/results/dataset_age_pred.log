@@ -68,3 +68,4 @@ split_dataset          : Train size: 47000 clients
 split_dataset          : Test size: 3000 clients
 save_features          : Saved to: "/mnt/data/ovsov/repo/dltranz/data/age-pred/train_trx.p"
 save_features          : Saved to: "/mnt/data/ovsov/repo/dltranz/data/age-pred/test_trx.p"
+<module>               : Data collected in 194 sec (0:03:14.827643)
