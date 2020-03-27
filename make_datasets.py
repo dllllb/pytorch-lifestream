@@ -1,4 +1,5 @@
 import argparse
+import datetime
 import logging
 import os
 import pickle
@@ -209,6 +210,7 @@ def save_features(df_data, save_path):
 
 
 if __name__ == '__main__':
+    _start = datetime.datetime.now()
     config = parse_args()
 
     if config.log_file is not None:
@@ -265,3 +267,6 @@ if __name__ == '__main__':
         )
         test_ids = pd.DataFrame({config.col_client_id: [rec[config.col_client_id] for rec in test]})
         test_ids.to_csv(config.output_test_ids_path, index=False)
+
+    _duration = datetime.datetime.now() - _start
+    logger.info(f'Data collected in {_duration.seconds} sec ({_duration})')
