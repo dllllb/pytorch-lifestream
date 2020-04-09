@@ -11,7 +11,7 @@ from torch.utils.data import Dataset
 from torch.utils.data.dataloader import DataLoader
 
 from dltranz.data_load import TrxDataset, ConvertingTrxDataset, DropoutTrxDataset, padded_collate, \
-    create_validation_loader
+    create_validation_loader, read_data_gen
 from dltranz.loss import get_loss
 from dltranz.models import model_by_type
 from dltranz.train import get_optimizer, get_lr_scheduler, fit_model
@@ -96,15 +96,13 @@ class EpochTrackingDataLoader(DataLoader):
 def read_consumer_data(path, conf):
     logger.info(f'Data loading...')
 
-    with open(path, 'rb') as f:
-        data = pickle.load(f)
-    logger.info(f'Loaded raw data: {len(data)}')
+    data = read_data_gen(path)
+    data = (rec for rec in data if rec['target'] is not None and not np.isnan(rec['target']))
+    data = prepare_embeddings(data, conf)
+    data = list(data)
 
-    data = [rec for rec in data if rec['target'] is not None]
     logger.info(f'Loaded data with target: {len(data)}')
 
-    data = list(prepare_embeddings(data, conf))
-    logger.info(f'Fit data to config')
 
     return data
 

@@ -5,6 +5,7 @@ spark-submit \
     --name "Age Make Dataset" \
     --driver-memory 200G \
     --conf spark.sql.shuffle.partitions=100 \
+    --conf spark.sql.parquet.compression.codec="snappy" \
     --conf spark.ui.port=4041 \
     --conf spark.local.dir="data/.spark_local_dir" \
     ../../make_datasets_spark.py \

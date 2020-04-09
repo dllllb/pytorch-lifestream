@@ -1,9 +1,12 @@
+import os
+import pickle
 import random
 from functools import partial
 from collections import defaultdict
 from multiprocessing.pool import Pool
 
 import numpy as np
+import pyarrow.parquet as pq
 import torch
 from torch.utils.data import WeightedRandomSampler, Sampler, Dataset
 from torch.utils.data.dataloader import DataLoader
@@ -96,6 +99,37 @@ def features2torch(seq):
     for rec in seq:
         rec['feature_arrays'] = {k: torch.from_numpy(to_torch_compatible(v)) for k, v in rec['feature_arrays'].items()}
         yield rec
+
+
+def read_pyarrow_file(path, use_threads=True):
+    p_table = pq.read_table(
+        source=path,
+        use_threads=use_threads,
+    )
+
+    col_indexes = [n for n in p_table.column_names]
+
+    def get_records():
+        for rb in p_table.to_batches():
+            col_arrays = [rb.column(i) for i, _ in enumerate(col_indexes)]
+            col_arrays = [a.to_numpy(zero_copy_only=False) for a in col_arrays]
+            for row in zip(*col_arrays):
+                rec = {n: a for n, a in zip(col_indexes, row)}
+                yield rec
+
+    return get_records()
+
+
+def read_data_gen(path):
+    ext = os.path.splitext(path)[1]
+    if ext == '.p':
+        with open(path, 'rb') as f:
+            data = pickle.load(f)
+            return iter(data)
+    elif ext == '.parquet':
+        return read_pyarrow_file(path, True)
+    else:
+        raise NotImplementedError(f'Unknown input file extension: "{ext}"')
 
 
 class DropoutTrxDatasetIpoteka(Dataset):

@@ -3,6 +3,7 @@ import pickle
 import numpy as np
 import torch
 
+from dltranz.data_load import read_data_gen
 from dltranz.util import init_logger, get_conf
 from metric_learning import prepare_embeddings
 from dltranz.metric_learn.inference_tools import load_model, score_part_of_data
@@ -19,17 +20,19 @@ if __name__ == '__main__':
     torch.cuda.manual_seed_all(42)
 
 
+def fill_target(seq):
+    for rec in seq:
+        rec['target'] = -1
+        yield rec
+
+
 def read_dataset(path, conf):
-    with open(path, 'rb') as f:
-        data = pickle.load(f)
+    data = read_data_gen(path)
+    data = fill_target(data)
+    data = prepare_embeddings(data, conf)
+    data = list(data)
 
     logger.info(f'loaded {len(data)} records')
-
-    for rec in data:
-        rec['target'] = -1
-
-    data = list(prepare_embeddings(data, conf))
-
     return data
 
 
@@ -46,7 +49,7 @@ def main(args=None):
     columns = conf['output.columns']
 
     train_data = read_dataset(conf['dataset.train_path'], conf)
-    if conf['dataset'].get('test_path',None) is not None:
+    if conf['dataset'].get('test_path', None) is not None:
         test_data = read_dataset(conf['dataset.test_path'], conf)
     else:
         test_data = []
