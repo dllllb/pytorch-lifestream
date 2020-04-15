@@ -1,4 +1,5 @@
 import logging
+import os
 import pickle
 import numpy as np
 import torch
@@ -39,12 +40,16 @@ def read_dataset(path, conf):
 def main(args=None):
     conf = get_conf(args)
 
-    # model_f = ml_model_by_type(conf['params.model_type'])
-    # model = model_f(conf['params'])
-    # model_d = load_model(conf)
-    # model.load_state_dict(model_d)
-
-    model = load_model(conf)
+    ext = os.path.splitext(conf['model_path.model'])[1]
+    if ext == '.pth':
+        model_f = ml_model_by_type(conf['params.model_type'])
+        model = model_f(conf['params'])
+        model_d = load_model(conf)
+        model.load_state_dict(model_d)
+    elif ext == '.p':
+        model = load_model(conf)
+    else:
+        raise NotImplementedError(f'Unknown model file extension: "{ext}"')
 
     columns = conf['output.columns']
 
