@@ -110,7 +110,7 @@ def encode_col(df, col_name, df_encoder):
 
 
 def log_transform(df, col_name):
-    df = df.withColumn(col_name, F.signum(F.col(col_name)) * F.log(F.abs(F.col(col_name))))
+    df = df.withColumn(col_name, F.signum(F.col(col_name)) * F.log(F.abs(F.col(col_name)) + F.lit(1)))
     return df
 
 
