@@ -110,7 +110,7 @@ def encode_col(df, col_name, df_encoder):
 
 
 def log_transform(df, col_name):
-    df = df.withColumn(col_name, F.signum(F.col(col_name)) * F.log(F.abs(F.col(col_name))))
+    df = df.withColumn(col_name, F.signum(F.col(col_name)) * F.log(F.abs(F.col(col_name)) + F.lit(1)))
     return df
 
 
@@ -225,8 +225,10 @@ def trx_to_features(df_data, print_dataset_info,
 
 def update_with_target(features, data_path, target_files, col_client_id, col_target):
     df_target = load_source_data(data_path, target_files)
-    df_target = df_target.withColumn(col_client_id, F.col(col_client_id).cast('int'))
-    df_target = df_target.select(col_client_id, col_target)
+    df_target = df_target.select(
+        F.col(col_client_id).cast('int').alias(col_client_id),
+        F.col(col_target).cast('int').alias('target'),
+    )
     df_target = df_target.repartition(1)
 
     features = features.join(df_target, on=col_client_id, how='left')

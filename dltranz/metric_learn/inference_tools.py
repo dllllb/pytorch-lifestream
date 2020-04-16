@@ -41,6 +41,8 @@ def load_model(conf):
         logger.info(f'Model loaded from "{path}"')
         return model
     elif 'models' in conf['model_path']:
+        raise NotImplementedError()
+
         path = conf['model_path.models']
         models = [torch.load(p) for p in path]
         logger.info(f'Models loaded from "{path}"')

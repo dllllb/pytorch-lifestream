@@ -6,7 +6,7 @@ import numpy as np
 import torch
 from torch.utils.data import DataLoader
 
-from dltranz.data_load import ConvertingTrxDataset, DropoutTrxDataset
+from dltranz.data_load import ConvertingTrxDataset, DropoutTrxDataset, read_data_gen
 from dltranz.experiment import update_model_stats
 from dltranz.metric_learn.dataset import SplittingDataset, split_strategy
 from dltranz.metric_learn.dataset import TargetEnumeratorDataset, collate_splitted_rows
@@ -41,12 +41,13 @@ def prepare_embeddings(seq, conf):
         if seq_len < min_seq_len:
             continue
 
-        feature_arrays = rec['feature_arrays']
+        if 'feature_arrays' in rec:
+            feature_arrays = rec['feature_arrays']
+            feature_arrays = {k: v for k, v in feature_arrays.items() if k in feature_keys}
+        else:
+            feature_arrays = {k: v for k, v in rec.items() if k in feature_keys}
 
         # TODO: datetime processing. Take date-time features
-
-        # drop unused fields
-        feature_arrays = {k: v for k, v in feature_arrays.items() if k in feature_keys}
 
         # shift embeddings to 1, 0 is padding value
         feature_arrays = {k: v + (1 if k in embeddings else 0) for k, v in feature_arrays.items()}
@@ -60,9 +61,9 @@ def prepare_embeddings(seq, conf):
 
 
 def create_data_loaders(conf):
-    with open(conf['dataset.train_path'], 'rb') as f:
-        data = pickle.load(f)
-    data = list(prepare_embeddings(data, conf))
+    data = read_data_gen(conf['dataset.train_path'])
+    data = prepare_embeddings(data, conf)
+    data = list(data)
 
     valid_ix = np.arange(len(data))
     valid_ix = np.random.choice(valid_ix, size=int(len(data) * conf['dataset.valid_size']), replace=False)
