@@ -1,6 +1,7 @@
 import logging
 import pickle
 import os
+import random
 
 import numpy as np
 import torch
@@ -63,7 +64,11 @@ def prepare_embeddings(seq, conf):
 def create_data_loaders(conf):
     data = read_data_gen(conf['dataset.train_path'])
     data = prepare_embeddings(data, conf)
+    data = sorted(data, key=lambda x: x.get('client_id', x.get('customer_id')))
+    random.Random(conf['dataset.client_list_shuffle_seed']).shuffle(data)
     data = list(data)
+    if 'client_list_keep_count' in conf['dataset']:
+        data = data[:conf['dataset.client_list_keep_count']]
 
     valid_ix = np.arange(len(data))
     valid_ix = np.random.choice(valid_ix, size=int(len(data) * conf['dataset.valid_size']), replace=False)
