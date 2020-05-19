@@ -239,10 +239,13 @@ def scoring_head(input_size, params):
 
     if "head_layers" not in params:
         head_output_size = params.get('num_classes', 1)
-        if head_output_size == 1:
-            h = nn.Sequential(nn.Linear(input_size, head_output_size), nn.Sigmoid(), Squeeze())
+        if params.get('objective', 'classification') == 'classification':
+            if head_output_size == 1:
+                h = nn.Sequential(nn.Linear(input_size, head_output_size), nn.Sigmoid(), Squeeze())
+            else:
+                h = nn.Sequential(nn.Linear(input_size, head_output_size), nn.LogSoftmax(dim=1))
         else:
-            h = nn.Sequential(nn.Linear(input_size, head_output_size), nn.LogSoftmax(dim=1))
+            h = nn.Sequential(nn.Linear(input_size, head_output_size), Squeeze())
         if params['pred_all_states']:
             if params['pred_all_states_mean']:
                 h = AllStepsMeanHead(h)

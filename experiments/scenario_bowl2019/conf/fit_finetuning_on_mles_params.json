@@ -1,0 +1,75 @@
+{
+  "params": {
+    "device": "cuda",
+
+    "model_type": "rnn",
+    "ensemble_size": 1,
+    "trx_encoder": {
+      "embeddings": {
+        "event_id": {"in": 500},
+        "event_code": {"in": 50},
+        "event_type": {"in": 6},
+        "title": {"in": 50},
+        "world": {"in": 6},
+        "correct": {"in": 4}
+      },
+      "numeric_values": {
+      }
+    },
+    "rnn": {
+      "hidden_size": 32
+    },
+    "train": {
+      "random_neg": false,
+      "trx_dropout": 0.005,
+      "max_seq_len": 1200,
+      "SubsamplingDataset": {
+        "min_seq_len_s": 30,
+        "min_seq_len_e": 300,
+        "max_seq_len_s": 120,
+        "max_seq_len_e": 700,
+        "crop_proba_init": 1.0,
+        "crop_proba_gamma": 1.0,
+        "total_n_epoch": 15
+      },
+      "batch_size": 32,
+      "num_workers": 16,
+      "loss": "mse",
+      "lr": 0.002,
+      "weight_decay": 0.0,
+      "n_epoch": 15
+    },
+    "lr_scheduler": {
+      "step_size": 5,
+      "step_gamma": 0.4
+    },
+    "valid": {
+      "max_seq_len": 1200,
+      "batch_size": 512,
+      "num_workers": 8
+    },
+    "norm_scores": false,
+    "score_metric": "kappa",
+
+    "pretrained_model_path": "models/bowl2019_mlm__hidden_size_bs_0064_hs_0032.p",
+    "use_batch_norm": true
+  },
+
+  "save_model": false,
+
+  "stats": {
+    "path": "runs/bowl2019_target_results.json"
+  },
+
+  "output": {
+    "valid": {
+      "path": "data/mles_finetuning_scores/valid",
+      "format": "pickle"
+    },
+    "test": {
+      "path": "data/mles_finetuning_scores/test",
+      "format": "pickle"
+    },
+    "columns": ["game_session"]
+  }
+}
