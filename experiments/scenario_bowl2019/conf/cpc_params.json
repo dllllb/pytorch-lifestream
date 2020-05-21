@@ -14,11 +14,12 @@
       "norm_embeddings": false,
       "embeddings_noise": 0.003,
       "embeddings": {
-        "event_id": {"in": 500, "out": 64},
-        "event_code": {"in": 50, "out": 64},
-        "event_type": {"in": 6, "out": 32},
-        "title": {"in": 50, "out": 64},
-        "world": {"in": 6, "out": 32}
+        "event_id": {"in": 500, "out": 16},
+        "event_code": {"in": 50, "out": 8},
+        "event_type": {"in": 6, "out": 8},
+        "title": {"in": 50, "out": 8},
+        "world": {"in": 6, "out": 8},
+        "correct": {"in": 4, "out": 2}
       },
       "numeric_values": {
       }
@@ -35,7 +36,7 @@
       "num_workers": 16,
       "batch_size": 64,
       "trx_dropout": 0.01,
-      "max_seq_len": 1200,
+      "max_seq_len": 5000,
       "lr": 0.002,
       "weight_decay": 0.0,
       "n_epoch": 15
@@ -44,7 +45,7 @@
     "valid": {
       "batch_size": 64,
       "num_workers": 16,
-      "max_seq_len": 1200
+      "max_seq_len": 5000
     }
   },
 

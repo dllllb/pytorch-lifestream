@@ -1,7 +1,7 @@
 # Get data
 
 ```sh
-cd experiments/scenario_age_pred
+cd experiments/scenario_bowl2019
 
 # download datasets
 bin/get-data.sh

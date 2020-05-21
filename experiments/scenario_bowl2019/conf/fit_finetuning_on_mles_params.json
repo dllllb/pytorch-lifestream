@@ -17,7 +17,7 @@
       }
     },
     "rnn": {
-      "hidden_size": 32
+      "hidden_size": 256
     },
     "train": {
       "random_neg": false,
@@ -34,7 +34,7 @@
       },
       "batch_size": 32,
       "num_workers": 16,
-      "loss": "mse",
+      "loss": "NLLLoss",
       "lr": 0.002,
       "weight_decay": 0.0,
       "n_epoch": 15
@@ -49,9 +49,9 @@
       "num_workers": 8
     },
     "norm_scores": false,
-    "score_metric": "kappa",
+    "score_metric": "accuracy",
 
-    "pretrained_model_path": "models/bowl2019_mlm__hidden_size_bs_0064_hs_0032.p",
+    "pretrained_model_path": "models/mles_model_ft.p",
     "use_batch_norm": true
   },
 

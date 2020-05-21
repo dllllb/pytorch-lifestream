@@ -29,16 +29,16 @@ def get_scores(args):
     result = []
     valid_scores, test_scores = load_scores(conf, **params)
     for fold_n, (valid_fold, test_fold) in enumerate(zip(valid_scores, test_scores)):
-        valid_fold['pred'] = valid_fold.values
-        test_fold['pred'] = test_fold.values
+        valid_fold['pred'] = np.argmax(valid_fold.values, 1)
+        test_fold['pred'] = np.argmax(test_fold.values, 1)
         valid_fold = valid_fold.merge(df_target, on=COL_ID, how='left')
         test_fold = test_fold.merge(test_target, on=COL_ID, how='left')
 
         result.append({
             'name': name,
             'fold_n': fold_n,
-            'oof_kappa': eval_kappa_regression(valid_fold[COL_TARGET], valid_fold['pred']),
-            'test_kappa': eval_kappa_regression(test_fold[COL_TARGET], test_fold['pred']),
+            'oof_accuracy': (valid_fold['pred'] == valid_fold[COL_TARGET]).mean(),
+            'test_accuracy': (test_fold['pred'] == test_fold[COL_TARGET]).mean(),
         })
 
     return result
@@ -80,7 +80,7 @@ def main(conf):
 
         model_types = {
             'xgb': dict(
-                objective='reg:squarederror',
+                objective='multi:softprob',
                 n_jobs=4,
                 seed=conf['model_seed'],
                 n_estimators=600,                
@@ -92,14 +92,12 @@ def main(conf):
                 gamma=0.25,
                 alpha=1,
             ),
-            'linear': dict(
-                objective='regression'
-            ),
+            'linear': dict(),
             'lgb': dict(
                 n_estimators=1000,
                 boosting_type='gbdt',
-                objective='regression',
-                metric='rmse',
+                objective='multiclass',
+                metric='multi_error',
                 learning_rate=0.01,
                 subsample=0.75,
                 subsample_freq=1,
@@ -121,8 +119,8 @@ def main(conf):
             load_features_f=partial(load_features, conf=conf, **params),
             model_type=model_type,
             model_params=model_params,
-            scorer_name='kappa',
-            scorer=make_scorer(eval_kappa_regression),
+            scorer_name='accuracy',
+            scorer=make_scorer(accuracy_score),
             col_target=COL_TARGET,
             df_train=train_target,
             df_valid=valid_target,
@@ -136,17 +134,17 @@ def main(conf):
         for i, r in enumerate(pool.imap_unordered(sct.train_and_score, args_list)):
             results.append(r)
             logger.info(f'Done {i + 1:4d} from {len(args_list)}')
-        df_results = pd.DataFrame(results).set_index('name')[['oof_kappa', 'test_kappa']]
+        df_results = pd.DataFrame(results).set_index('name')[['oof_accuracy', 'test_accuracy']]
 
     if len(approaches_to_score) > 0:
         # score already trained models on valid and test sets
         args_list = [(name, conf, params, df_target, test_target) for name, params in approaches_to_score.items()]
         results = reduce(iadd, pool.map(get_scores, args_list))
-        df_scores = pd.DataFrame(results).set_index('name')[['oof_kappa', 'test_kappa']]
+        df_scores = pd.DataFrame(results).set_index('name')[['oof_accuracy', 'test_accuracy']]
 
     # combine results
     df_results = pd.concat([df for df in [df_results, df_scores] if df is not None])
-    df_results = sct.group_stat_results(df_results, 'name', ['oof_kappa', 'test_kappa'])
+    df_results = sct.group_stat_results(df_results, 'name', ['oof_accuracy', 'test_accuracy'])
 
     with pd.option_context(
             'display.float_format', '{:.4f}'.format,

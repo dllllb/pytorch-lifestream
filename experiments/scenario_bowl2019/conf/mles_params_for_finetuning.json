@@ -7,7 +7,7 @@
     "model_type": "rnn",
     "rnn": {
       "type": "gru",
-      "hidden_size": 200,
+      "hidden_size": 256,
       "bidir": false,
       "trainable_starter": "static"
     },
@@ -69,7 +69,7 @@
 
   "save_model": true,
   "model_path": {
-    "model": "models/mles_model.p",
+    "model": "models/mles_model_ft.p",
     "only_encoder": false
   },
 
