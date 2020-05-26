@@ -1,0 +1,290 @@
+load_source_data       : Loaded 45786568 rows from "scenario_x5/data/purchases.csv"
+load_source_data       : Loaded 45786568 rows in total
+join_dict              : Join with "scenario_x5/data/products.csv" done. New 10 columns joined
+trx_to_features        : Found 400162 unique clients
+_td_datetime           : Datetime-to-unix-timestamp time transformation
+trx_to_features        : Encoder stat for "netto":
+codes | trx_count
+                 cnt    % of total
+netto                             
+[0.0, 0.7)  44151895  9.644353e-01
+[0.7, 1.4)   1470286  3.211630e-02
+[1.4, 2.1)    150195  3.280796e-03
+[2.1, 2.8)      1092  2.385318e-05
+[2.8, 3.5)      4958  1.083004e-04
+[3.5, 4.2)        32  6.989944e-07
+[4.2, 4.9)       172  3.757095e-06
+[4.9, 5.6)       869  1.898207e-05
+[5.6, 6.3)       360  7.863687e-06
+[6.3, 7.0)       192  4.193966e-06
+trx_to_features        : Encoder stat for "regular_points_received":
+codes | trx_count
+                              cnt    % of total
+regular_points_received                        
+[0.0, 0.8)               10250118  2.238674e-01
+[0.8, 1.6)               12744905  2.783547e-01
+[1.6, 2.3)                9177143  2.004331e-01
+[2.3, 3.1)                9945019  2.172039e-01
+[3.1, 3.9)                3056268  6.675032e-02
+[3.9, 4.7)                 519555  1.134732e-02
+[4.7, 5.4)                  83186  1.816821e-03
+[5.4, 6.2)                   9990  2.181863e-04
+[6.2, 7.0)                    373  8.146494e-06
+[7.0, 7.8)                     11  2.402451e-07
+trx_to_features        : Encoder stat for "express_points_received":
+codes | trx_count
+                              cnt  % of total
+express_points_received                      
+[0.0, 0.6)               45729438    0.998782
+[0.6, 1.1)                      0    0.000000
+[1.1, 1.7)                      0    0.000000
+[1.7, 2.3)                   1416    0.000031
+[2.3, 2.9)                   4687    0.000102
+[2.9, 3.4)                  21473    0.000469
+[3.4, 4.0)                   3147    0.000069
+[4.0, 4.6)                  18589    0.000406
+[4.6, 5.1)                   6436    0.000141
+[5.1, 5.7)                      0    0.000000
+trx_to_features        : Encoder stat for "regular_points_spent":
+codes | trx_count
+                         cnt  % of total
+regular_points_spent                    
+[-8.5, -7.7)              96    0.000032
+[-7.7, -6.8)            6894    0.002295
+[-6.8, -6.0)           65891    0.021934
+[-6.0, -5.1)          313523    0.104365
+[-5.1, -4.3)          620056    0.206403
+[-4.3, -3.4)          855996    0.284943
+[-3.4, -2.6)          583431    0.194212
+[-2.6, -1.7)          356100    0.118538
+[-1.7, -0.9)          148485    0.049427
+[-0.9, 0.0)            53625    0.017851
+trx_to_features        : Encoder stat for "express_points_spent":
+codes | trx_count
+                         cnt  % of total
+express_points_spent                    
+[-5.7, -5.1)               2    0.000004
+[-5.1, -4.6)             607    0.001203
+[-4.6, -4.0)            2898    0.005745
+[-4.0, -3.4)          387183    0.767491
+[-3.4, -2.9)           26349    0.052230
+[-2.9, -2.3)           83017    0.164560
+[-2.3, -1.7)            2078    0.004119
+[-1.7, -1.1)            1192    0.002363
+[-1.1, -0.6)            1153    0.002286
+[-0.6, 0.0)                0    0.000000
+trx_to_features        : Encoder stat for "purchase_sum":
+codes | trx_count
+                   cnt  % of total
+purchase_sum                      
+[0.0, 1.0)       27374    0.000598
+[1.0, 2.1)       16325    0.000357
+[2.1, 3.1)       62361    0.001362
+[3.1, 4.2)      895164    0.019551
+[4.2, 5.2)     4945995    0.108023
+[5.2, 6.3)    17096499    0.373396
+[6.3, 7.3)    16886304    0.368805
+[7.3, 8.4)     5575988    0.121782
+[8.4, 9.4)      278451    0.006081
+[9.4, 10.5)       2107    0.000046
+trx_to_features        : Encoder stat for "product_quantity":
+codes | trx_count
+                       cnt    % of total
+product_quantity                        
+[0.0, 1.0)        37265679  8.138998e-01
+[1.0, 1.9)         8172396  1.784889e-01
+[1.9, 2.9)          330428  7.216702e-03
+[2.9, 3.8)           16565  3.617873e-04
+[3.8, 4.8)            1388  3.031457e-05
+[4.8, 5.8)              99  2.162206e-06
+[5.8, 6.7)              10  2.184047e-07
+[6.7, 7.7)               0  0.000000e+00
+[7.7, 8.7)               0  0.000000e+00
+[8.7, 9.6)               2  4.368093e-08
+trx_to_features        : Encoder stat for "trn_sum_from_iss":
+codes | trx_count
+                       cnt    % of total
+trn_sum_from_iss                        
+[0.0, 1.0)          727977  1.589936e-02
+[1.0, 2.1)         2074935  4.531755e-02
+[2.1, 3.1)         4295388  9.381328e-02
+[3.1, 4.2)        21239505  4.638807e-01
+[4.2, 5.2)        14388310  3.142474e-01
+[5.2, 6.3)         2897351  6.327950e-02
+[6.3, 7.3)          153290  3.347925e-03
+[7.3, 8.4)            9266  2.023738e-04
+[8.4, 9.4)             510  1.113864e-05
+[9.4, 10.5)             36  7.862568e-07
+trx_to_features        : Encoder stat for "trn_sum_from_red":
+codes | trx_count
+                       cnt    % of total
+trn_sum_from_red                        
+[0.0, 0.9)        42777905  9.342894e-01
+[0.9, 1.8)          123276  2.692405e-03
+[1.8, 2.7)           85845  1.874895e-03
+[2.7, 3.6)          657960  1.437015e-02
+[3.6, 4.5)         1301773  2.843133e-02
+[4.5, 5.4)          704991  1.539733e-02
+[5.4, 6.4)          127225  2.778653e-03
+[6.4, 7.3)            7042  1.538006e-04
+[7.3, 8.2)             536  1.170649e-05
+[8.2, 9.1)              15  3.276070e-07
+trx_to_features        : Encoder stat for "store_id":
+codes | trx_count
+                     cnt  % of total
+store_id                            
+[1, 1463)       10998153    0.240205
+[1463, 2925)     7270321    0.158787
+[2925, 4387)     5934911    0.129621
+[4387, 5849)     5058616    0.110483
+[5849, 7312)     4389303    0.095864
+[7312, 8774)     3788777    0.082749
+[8774, 10236)    3234147    0.070635
+[10236, 11698)   2667603    0.058262
+[11698, 13161)   1986435    0.043385
+[13161, 13883)    458302    0.010010
+trx_to_features        : Encoder stat for "product_id":
+codes | trx_count
+                     cnt  % of total
+product_id                          
+[1, 2492)       30603430    0.668393
+[2492, 4983)     6494886    0.141851
+[4983, 7474)     3274847    0.071524
+[7474, 9965)     1875685    0.040966
+[9965, 12456)    1180378    0.025780
+[12456, 14947)    774817    0.016922
+[14947, 17438)    523147    0.011426
+[17438, 19929)    356190    0.007779
+[19929, 22420)    245316    0.005358
+[22420, 42531)    457872    0.010000
+trx_to_features        : Encoder stat for "level_1":
+codes | trx_count
+              cnt  % of total
+level_1                      
+[1, 2)   25989977    0.567633
+[2, 3)   18400065    0.401866
+[3, 4)    1390052    0.030359
+[4, 5)       6474    0.000141
+trx_to_features        : Encoder stat for "level_2":
+codes | trx_count
+               cnt  % of total
+level_2                       
+[1, 3)    14517751    0.317074
+[3, 6)    15866997    0.346543
+[6, 9)     7940737    0.173429
+[9, 12)    2825075    0.061701
+[12, 14)   1267016    0.027672
+[14, 17)   1549341    0.033838
+[17, 20)    569716    0.012443
+[20, 23)    412803    0.009016
+[23, 26)    345835    0.007553
+[26, 44)    491297    0.010730
+trx_to_features        : Encoder stat for "level_3":
+codes | trx_count
+                 cnt  % of total
+level_3                         
+[1, 13)     19677061    0.429756
+[13, 26)     9424985    0.205846
+[26, 39)     6323927    0.138118
+[39, 52)     3709504    0.081017
+[52, 64)     2350404    0.051334
+[64, 77)     1580555    0.034520
+[77, 90)     1091521    0.023839
+[90, 103)     722147    0.015772
+[103, 116)    437049    0.009545
+[116, 203)    469415    0.010252
+trx_to_features        : Encoder stat for "level_4":
+codes | trx_count
+                 cnt  % of total
+level_4                         
+[1, 47)     25485993    0.556626
+[47, 94)     8439231    0.184317
+[94, 141)    4064250    0.088765
+[141, 188)   2538890    0.055451
+[188, 234)   1785181    0.038989
+[234, 281)   1343058    0.029333
+[281, 328)    852767    0.018625
+[328, 375)    500210    0.010925
+[375, 422)    318075    0.006947
+[422, 790)    458913    0.010023
+trx_to_features        : Encoder stat for "segment_id":
+codes | trx_count
+                 cnt  % of total
+segment_id                      
+[1, 11)     14303941    0.312405
+[11, 21)     7817405    0.170736
+[21, 31)     6478823    0.141501
+[31, 41)     4720437    0.103097
+[41, 52)     4296755    0.093843
+[52, 62)     3028500    0.066144
+[62, 72)     2275348    0.049695
+[72, 82)     1355517    0.029605
+[82, 93)     1009754    0.022053
+[93, 118)     500088    0.010922
+trx_to_features        : Encoder stat for "brand_id":
+codes | trx_count
+                   cnt  % of total
+brand_id                          
+[1, 222)      33458630    0.730752
+[222, 443)     4776160    0.104314
+[443, 664)     2659765    0.058091
+[664, 885)     1658168    0.036215
+[885, 1106)    1073755    0.023451
+[1106, 1327)    680605    0.014865
+[1327, 1548)    465890    0.010175
+[1548, 1769)    322941    0.007053
+[1769, 1991)    232732    0.005083
+[1991, 4268)    457922    0.010001
+trx_to_features        : Encoder stat for "vendor_id":
+codes | trx_count
+                   cnt  % of total
+vendor_id                         
+[1, 167)      35705468    0.779824
+[167, 333)     4070539    0.088902
+[333, 500)     2058824    0.044966
+[500, 666)     1259358    0.027505
+[666, 832)      807616    0.017639
+[832, 999)      548469    0.011979
+[999, 1165)     392060    0.008563
+[1165, 1331)    279787    0.006111
+[1331, 1498)    206244    0.004504
+[1498, 3184)    458203    0.010007
+trx_to_features        : Encoder stat for "is_own_trademark":
+codes | trx_count
+                       cnt  % of total
+is_own_trademark                      
+[1, 2)            38807738    0.847579
+[2, 3)             6978830    0.152421
+trx_to_features        : Encoder stat for "is_alcohol":
+codes | trx_count
+                 cnt  % of total
+is_alcohol                      
+[1, 2)      45016044    0.983171
+[2, 3)        770524    0.016829
+trx_to_features        : Trx count per clients:
+len(trx_list) | client_count
+                cnt  % of total
+trx_count                      
+[1, 55)      129179    0.322817
+[55, 109)    112170    0.280311
+[109, 163)    67800    0.169431
+[163, 217)    38870    0.097136
+[217, 271)    22066    0.055143
+[271, 325)    12335    0.030825
+[325, 379)     7100    0.017743
+[379, 433)     4140    0.010346
+[433, 488)     2480    0.006197
+[488, 2514)    4022    0.010051
+trx_to_features        : Feature collection in progress ...
+trx_to_features        : Feature names: ['client_id', 'regular_points_received', 'express_points_received', 'regular_points_spent', 'express_points_spent', 'purchase_sum', 'product_quantity', 'trn_sum_from_iss', 'trn_sum_from_red', 'netto', 'event_time', 'store_id', 'product_id', 'level_1', 'level_2', 'level_3', 'level_4', 'segment_id', 'brand_id', 'vendor_id', 'is_own_trademark', 'is_alcohol', 'trx_count']
+trx_to_features        : Prepared features for 400162 clients
+load_source_data       : Loaded 400162 rows from "scenario_x5/data/clients.csv"
+load_source_data       : Loaded 400162 rows in total
+update_with_target     : Target updated for 400162 clients
+load_source_data       : Loaded 400162 rows from "scenario_x5/data/clients.csv"
+load_source_data       : Loaded 400162 rows in total
+split_dataset          : Train size: 360146 clients
+split_dataset          : Test size: 40016 clients
+save_features          : Saved to: "scenario_x5/data/train_trx.parquet"
+save_features          : Saved to: "scenario_x5/data/test_trx.parquet"
+<module>               : Data collected in 4491 sec (1:14:51.436064)
