@@ -25,4 +25,4 @@ spark-submit \
     --log_file "results/dataset_x5.log"
 
 #  4491 sec (1:14:51) with    --print_dataset_info
-#  sec without --print_dataset_info
+#   851 sec (0:14:11) without --print_dataset_info
