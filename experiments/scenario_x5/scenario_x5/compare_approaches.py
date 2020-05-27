@@ -9,13 +9,25 @@ import dltranz.scenario_cls_tools as sct
 from scenario_x5.const import (
     COL_ID, COL_TARGET, DEFAULT_DATA_PATH, DEFAULT_RESULT_FILE, DATASET_FILE, TEST_IDS_FILE,
 )
-# from scenario_x5.features import load_features, load_scores
+from scenario_x5.features import load_features, load_scores
 
 logger = logging.getLogger(__name__)
 
 
 def prepare_parser(parser):
     sct.prepare_common_parser(parser, data_path=DEFAULT_DATA_PATH, output_file=DEFAULT_RESULT_FILE)
+
+
+def filter_target(df, col_target_name):
+    mapping = {
+        'F': 0,
+        'M': 1,
+    }
+
+    if col_target_name == 'gender':
+        return df[lambda x: x[col_target_name].isin(mapping.keys())]
+    else:
+        raise AttributeError(f'Unknown col_target_name: {col_target_name}')
 
 
 def get_scores(args):
@@ -48,19 +60,6 @@ def main(conf):
             for file_name in conf['embedding_file_names']
         },
     }
-    if conf['add_baselines']:
-        approaches_to_train.update({
-            'baseline': {'use_client_agg': True, 'use_mcc_code_stat': True, 'use_tr_type_stat': True},
-        })
-
-    if conf['add_baselines'] and conf['add_emb_baselines']:
-        approaches_to_train.update({
-            f"embeds: {file_name} and baseline": {
-                'metric_learning_embedding_name': file_name,
-                'use_client_agg': True, 'use_mcc_code_stat': True, 'use_tr_type_stat': True,
-            }
-            for file_name in conf['embedding_file_names']
-        })
 
     approaches_to_score = {
         f"scores: {file_name}": {'target_scores_name': file_name}
@@ -72,6 +71,8 @@ def main(conf):
     df_scores = None
 
     df_target, test_target = sct.read_train_test(conf['data_path'], DATASET_FILE, TEST_IDS_FILE, COL_ID)
+    df_target = filter_target(df_target, COL_TARGET)
+    test_target = filter_target(test_target, COL_TARGET)
     if len(approaches_to_train) > 0:
         folds = sct.get_folds(df_target, COL_TARGET, conf['cv_n_split'], conf['random_state'], conf.get('labeled_amount',-1))
 

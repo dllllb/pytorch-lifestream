@@ -35,12 +35,6 @@ def prepare_target_gender(data):
         yield rec
 
 
-def event_time_to_features(data):
-    for rec in data:
-        rec['feature_arrays']['event_time'] = rec['event_time']
-        yield rec
-
-
 def read_consumer_data(path, conf, is_train):
     logger.info(f'Data loading...')
 
@@ -57,7 +51,6 @@ def read_consumer_data(path, conf, is_train):
 
     data = (rec for rec in data if rec['target'] is not None and not np.isnan(rec['target']))
     data = prepare_embeddings(data, conf, is_train=is_train)
-    data = event_time_to_features(data)
     data = list(data)
 
     logger.info(f'Loaded data with target: {len(data)}')

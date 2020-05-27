@@ -58,13 +58,15 @@ def prepare_embeddings(seq, conf, is_train=True):
         for e_name, e_params in conf['params.trx_encoder.embeddings'].items():
             feature_arrays[e_name] = feature_arrays[e_name].clip(0, e_params['in'] - 1)
 
+        feature_arrays['event_time'] = rec['event_time']
+
         rec['feature_arrays'] = feature_arrays
         yield rec
 
 
 def create_data_loaders(conf):
     data = read_data_gen(conf['dataset.train_path'])
-    data = prepare_embeddings(data, conf)
+    data = prepare_embeddings(data, conf, is_train=True)
     data = sorted(data, key=lambda x: x.get('client_id', x.get('customer_id')))
     random.Random(conf['dataset.client_list_shuffle_seed']).shuffle(data)
     data = list(data)

@@ -22,7 +22,7 @@
       },
       "positions": {
         "event_time": {"out_size":  16}
-      },
+      }
     },
     "transf": {
       "train_starter": true,
