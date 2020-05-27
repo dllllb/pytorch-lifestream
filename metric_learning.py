@@ -31,7 +31,8 @@ if __name__ == '__main__':
     torch.cuda.manual_seed_all(42)
 
 
-def prepare_embeddings(seq, conf):
+# TODO: use `is_train=False` when inference and validation
+def prepare_embeddings(seq, conf, is_train=True):
     min_seq_len = conf['dataset'].get('min_seq_len', 1)
     embeddings = list(conf['params.trx_encoder.embeddings'].keys())
 
@@ -39,7 +40,7 @@ def prepare_embeddings(seq, conf):
 
     for rec in seq:
         seq_len = len(rec['event_time'])
-        if seq_len < min_seq_len:
+        if is_train and seq_len < min_seq_len:
             continue
 
         if 'feature_arrays' in rec:
