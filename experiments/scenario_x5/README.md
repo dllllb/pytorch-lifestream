@@ -16,6 +16,11 @@ bin/make-datasets.sh
 cd experiments/scenario_x5
 export SC_DEVICE="cuda"
 
+# Prepare agg feature encoder and take embedidngs; inference
+python ../../metric_learning.py params.device="$SC_DEVICE" --conf conf/dataset.hocon conf/agg_features_params.json
+python ../../ml_inference.py    params.device="$SC_DEVICE" --conf conf/dataset.hocon conf/agg_features_params.json
+
+
 # Train a supervised model and save scores to the file
 python -m scenario_x5 fit_target params.device="$SC_DEVICE" --conf conf/dataset.hocon conf/fit_target_params.json
 
@@ -32,7 +37,8 @@ python ../../ml_inference.py    params.device="$SC_DEVICE" --conf conf/dataset.h
 
 # Run estimation for different approaches
 # Check some options with `--help` argument
-python -m scenario_x5 compare_approaches --n_workers 1 \
+python -m scenario_x5 compare_approaches --n_workers 2 \
+    --baseline_name "agg_feat_embed.pickle" \
     --embedding_file_names "mles_embeddings.pickle" \
     --score_file_names "target_scores"
 

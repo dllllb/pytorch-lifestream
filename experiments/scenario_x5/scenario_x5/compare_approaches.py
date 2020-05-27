@@ -60,6 +60,16 @@ def main(conf):
             for file_name in conf['embedding_file_names']
         },
     }
+    if conf['baseline_name']:
+        approaches_to_train.update({
+            'baseline': {'metric_learning_embedding_name': conf['baseline_name']},
+        })
+        approaches_to_train.update({
+            f"embeds: {file_name} and baseline": {
+                'metric_learning_embedding_name': [file_name, conf['baseline_name']]
+            }
+            for file_name in conf['embedding_file_names']
+        })
 
     approaches_to_score = {
         f"scores: {file_name}": {'target_scores_name': file_name}

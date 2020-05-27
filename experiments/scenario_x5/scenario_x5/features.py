@@ -18,8 +18,14 @@ def load_features(
     features = []
 
     if metric_learning_embedding_name is not None:
-        features.append(_metric_learning_embeddings(conf, metric_learning_embedding_name))
+        if type(metric_learning_embedding_name) is not list:
+            metric_learning_embedding_name = [metric_learning_embedding_name]
+        for f_name in metric_learning_embedding_name:
+            features.append(_metric_learning_embeddings(conf, f_name))
 
+    if len(features) > 1:
+        for i, df in enumerate(features):
+            df.columns = [f'{col}__{i}' for col in df.columns]
     return features
 
 
