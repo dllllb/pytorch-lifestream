@@ -193,7 +193,6 @@ def join_dict(df, data_path, df_dict_name, col_id):
     for col in df_dict.columns:
         if col == col_id:
             continue
-        df = df.withColumn(col, F.coalesce(F.col(col), F.lit('#NO_DATA#')))
         col_counter += 1
     logger.info(f'Join with "{path}" done. New {col_counter} columns joined')
     return df
