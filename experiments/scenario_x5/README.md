@@ -27,11 +27,9 @@ python -m scenario_x5 fit_target params.device="$SC_DEVICE" --conf conf/dataset.
 
 # Train the MeLES encoder and take embedidngs; inference
 python ../../metric_learning.py params.device="$SC_DEVICE" --conf conf/dataset.hocon conf/mles_params.json
-python ../../ml_inference.py    params.device="$SC_DEVICE" --conf conf/dataset.hocon conf/mles_params.json
-# 
-# 
+python ../../ml_inference.py    params.device="$SC_DEVICE" --conf conf/dataset.hocon conf/mles_params.json 
 # Fine tune the MeLES model in supervised mode and save scores to the file
-# python -m scenario_gender fit_finetuning params.device="$SC_DEVICE" --conf conf/dataset.hocon conf/fit_finetuning_on_mles_params.json
+python -m scenario_x5 fit_finetuning params.device="$SC_DEVICE" --conf conf/dataset.hocon conf/fit_finetuning_on_mles_params.json
 
 
 
@@ -40,7 +38,7 @@ python ../../ml_inference.py    params.device="$SC_DEVICE" --conf conf/dataset.h
 python -m scenario_x5 compare_approaches --n_workers 2 \
     --baseline_name "agg_feat_embed.pickle" \
     --embedding_file_names "mles_embeddings.pickle" \
-    --score_file_names "target_scores"
+    --score_file_names "target_scores" "mles_finetuning_scores"
 
 
 # check the results

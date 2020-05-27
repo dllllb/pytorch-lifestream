@@ -2,6 +2,7 @@ import logging
 import pickle
 import os
 import random
+from itertools import islice
 
 import numpy as np
 import torch
@@ -66,6 +67,7 @@ def prepare_embeddings(seq, conf, is_train=True):
 
 def create_data_loaders(conf):
     data = read_data_gen(conf['dataset.train_path'])
+    data = islice(data, 50000)
     data = prepare_embeddings(data, conf, is_train=True)
     data = sorted(data, key=lambda x: x.get('client_id', x.get('customer_id')))
     random.Random(conf['dataset.client_list_shuffle_seed']).shuffle(data)
