@@ -84,18 +84,18 @@ class AggFeatureModel(torch.nn.Module):
                 e_std = a.div(torch.clamp(e_cnt - 1, min=0) + 1e-9).pow(0.5)
                 processed.append(e_std)
 
-            # n_unique
-            for col_embed, options_embed in self.embeddings.items():
-                ohe = getattr(self, f'ohe_{col_embed}')
-                val_embed = feature_arrays[col_embed].long()
+        # n_unique
+        for col_embed, options_embed in self.embeddings.items():
+            ohe = getattr(self, f'ohe_{col_embed}')
+            val_embed = feature_arrays[col_embed].long()
 
-                ohe_transform = ohe[val_embed.flatten()].view(*val_embed.size(), -1)  # B, T, size
+            ohe_transform = ohe[val_embed.flatten()].view(*val_embed.size(), -1)  # B, T, size
 
-                # counts over val_embed
-                mask = (1.0 - ohe[0]).unsqueeze(0)  # 0, 1, 1, 1, ..., 1
-                e_cnt = ohe_transform.sum(dim=1) * mask
+            # counts over val_embed
+            mask = (1.0 - ohe[0]).unsqueeze(0)  # 0, 1, 1, 1, ..., 1
+            e_cnt = ohe_transform.sum(dim=1) * mask
 
-                processed.append(e_cnt.gt(0.0).float().sum(dim=1, keepdim=True))
+            processed.append(e_cnt.gt(0.0).float().sum(dim=1, keepdim=True))
 
         for i, t in enumerate(processed):
             if torch.isnan(t).any():
