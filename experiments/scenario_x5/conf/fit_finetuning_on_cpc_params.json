@@ -1,0 +1,74 @@
+{
+  "col_target_name": "target_gender",
+
+  "params": {
+    "device": "cuda",
+
+    "model_type": "rnn",
+    "ensemble_size": 1,
+    "trx_encoder": {
+      "norm_embeddings": false,
+      "embeddings_noise": 0.003,
+      "embeddings": {
+        "level_4": {"in": 800, "out": 4},
+        "segment_id": {"in": 150, "out": 4},
+        "is_own_trademark": {"in": 3, "out": 2},
+        "is_alcohol": {"in": 3, "out": 2}
+      },
+      "numeric_values": {
+        "netto": "identity",
+        "purchase_sum": "identity",
+        "trn_sum_from_iss": "identity"
+      },
+      "positions": {
+        "event_time": {"out_size":  16}
+      }
+    },
+    "rnn": {
+      "hidden_size": 64
+    },
+    "train": {
+      "random_neg": false,
+      "trx_dropout": 0.01,
+      "max_seq_len": 800,
+      "batch_size": 32,
+      "num_workers": 16,
+      "loss": "bce",
+      "lr": 0.0015,
+      "optimiser_params": {
+        "0.": {"lr": 0.0001},
+        "1.": {"lr": 0.0001}
+      },
+      "weight_decay": 0.0,
+      "n_epoch": 4
+    },
+    "lr_scheduler": {
+      "step_size": 1,
+      "step_gamma": 0.60
+    },
+    "valid": {
+      "max_seq_len": 800,
+      "batch_size": 512,
+      "num_workers": 8
+    },
+    "norm_scores": false,
+    "score_metric": "auroc",
+
+    "pretrained_model_path": "models/cpc_model.p",
+    "use_batch_norm": false
+  },
+
+  "save_model": false,
+
+  "output": {
+    "valid": {
+      "path": "data/cpc_finetuning_scores/valid",
+      "format": "pickle"
+    },
+    "test": {
+      "path": "data/cpc_finetuning_scores/test",
+      "format": "pickle"
+    },
+    "columns": ["client_id"]
+  }
+}
