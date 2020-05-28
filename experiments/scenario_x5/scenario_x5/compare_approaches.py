@@ -1,8 +1,10 @@
 import logging
+import os
 from functools import partial, reduce
 from operator import iadd
 
 import pandas as pd
+from glob import glob
 from sklearn.metrics import roc_auc_score, make_scorer
 
 import dltranz.scenario_cls_tools as sct
@@ -51,13 +53,25 @@ def get_scores(args):
     return result
 
 
+def expand_path(data_path, wc_paths):
+    data_path = os.path.join(data_path, '')  # ensure `/` at the end
+
+    embedding_file_names = []
+    for path in wc_paths:
+        for n_path in glob(data_path + path):
+            embedding_file_names.append(n_path[len(data_path):])
+    logger.info(f'Found {len(embedding_file_names)} embedding files: [{embedding_file_names}]')
+    return embedding_file_names
+
+
 def main(conf):
     logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)-7s %(funcName)-20s   : %(message)s')
 
+    embedding_file_names = expand_path(conf['data_path'], conf['embedding_file_names'])
     approaches_to_train = {
         **{
             f"embeds: {file_name}": {'metric_learning_embedding_name': file_name}
-            for file_name in conf['embedding_file_names']
+            for file_name in embedding_file_names
         },
     }
     if conf['baseline_name']:
@@ -68,7 +82,7 @@ def main(conf):
             f"embeds: {file_name} and baseline": {
                 'metric_learning_embedding_name': [file_name, conf['baseline_name']]
             }
-            for file_name in conf['embedding_file_names']
+            for file_name in embedding_file_names
         })
 
     approaches_to_score = {
@@ -84,6 +98,7 @@ def main(conf):
     df_target = filter_target(df_target, COL_TARGET)
     test_target = filter_target(test_target, COL_TARGET)
     if len(approaches_to_train) > 0:
+        logger.info(f'Found {len(approaches_to_train)} options for `train_and_score`')
         folds = sct.get_folds(df_target, COL_TARGET, conf['cv_n_split'], conf['random_state'], conf.get('labeled_amount',-1))
 
         model_types = {
