@@ -67,7 +67,8 @@ def prepare_embeddings(seq, conf, is_train=True):
 
 def create_data_loaders(conf):
     data = read_data_gen(conf['dataset.train_path'])
-    # data = islice(data, 50000)
+    if 'max_rows' in conf['dataset']:
+        data = islice(data, conf['dataset.max_rows'])
     data = prepare_embeddings(data, conf, is_train=True)
     data = sorted(data, key=lambda x: x.get('client_id', x.get('customer_id')))
     random.Random(conf['dataset.client_list_shuffle_seed']).shuffle(data)

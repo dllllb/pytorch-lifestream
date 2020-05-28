@@ -42,7 +42,8 @@ def read_consumer_data(path, conf, is_train):
 
     data = read_data_gen(path)
 
-    # data = islice(data, 20000)
+    if 'max_rows' in conf['dataset']:
+        data = islice(data, conf['dataset.max_rows'])
 
     if col_target_name == 'target_gender':
         data = prepare_target_gender(data)

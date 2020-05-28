@@ -1,5 +1,8 @@
 import pickle
 import logging
+import random
+from itertools import islice
+
 import numpy as np
 import torch
 
@@ -8,7 +11,7 @@ from dltranz.trx_encoder import TrxEncoder
 from dltranz.metric_learn.dataset import create_train_data_loader, create_valid_data_loader
 from dltranz.cpc import CPC_Ecoder, run_experiment
 from dltranz.util import init_logger, get_conf
-from dltranz.data_load import TrxDataset, ConvertingTrxDataset
+from dltranz.data_load import TrxDataset, ConvertingTrxDataset, read_data_gen
 from metric_learning import prepare_embeddings
 
 logger = logging.getLogger(__name__)
@@ -20,12 +23,24 @@ def create_ds(train_data, valid_data, conf):
 
     return train_ds, valid_ds
 
+
+def target_rm(seq):
+    for rec in seq:
+        rec['target'] = -1
+        yield rec
+
+
 def main(args=None):
     conf = get_conf(args)
 
-    with open(conf['dataset.train_path'], 'rb') as f:
-        data = pickle.load(f)
-    data = list(prepare_embeddings(data, conf))
+    data = read_data_gen(conf['dataset.train_path'])
+    if 'max_rows' in conf['dataset']:
+        data = islice(data, conf['dataset.max_rows'])
+    data = target_rm(data)
+    data = prepare_embeddings(data, conf, is_train=True)
+    data = sorted(data, key=lambda x: x.get('client_id', x.get('customer_id')))
+    random.Random(conf['dataset.client_list_shuffle_seed']).shuffle(data)
+    data = list(data)
 
     valid_ix = np.arange(len(data))
     valid_ix = np.random.choice(valid_ix, size=int(len(data) * conf['dataset.valid_size']), replace=False)

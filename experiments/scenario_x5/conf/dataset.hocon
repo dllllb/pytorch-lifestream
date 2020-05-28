@@ -1,5 +1,6 @@
 {
   dataset: {
+    max_rows: 50000
     train_path: "data/train_trx.parquet"
     test_path: "data/test_trx.parquet"
     valid_size: 0.05
