@@ -17,34 +17,34 @@
       }
     },
     "rnn": {
-      "hidden_size": 256
+      "hidden_size": 64
     },
     "train": {
       "random_neg": false,
       "trx_dropout": 0.005,
-      "max_seq_len": 1200,
+      "max_seq_len": 5000,
       "SubsamplingDataset": {
-        "min_seq_len_s": 30,
-        "min_seq_len_e": 300,
-        "max_seq_len_s": 120,
-        "max_seq_len_e": 700,
-        "crop_proba_init": 1.0,
+        "min_seq_len_s": 500,
+        "min_seq_len_e": 500,
+        "max_seq_len_s": 3000,
+        "max_seq_len_e": 3000,
+        "crop_proba_init": 0.0,
         "crop_proba_gamma": 1.0,
         "total_n_epoch": 15
       },
-      "batch_size": 32,
+      "batch_size": 64,
       "num_workers": 16,
       "loss": "NLLLoss",
-      "lr": 0.002,
+      "lr": 0.001,
       "weight_decay": 0.0,
-      "n_epoch": 15
+      "n_epoch": 10
     },
     "lr_scheduler": {
-      "step_size": 5,
+      "step_size": 10,
       "step_gamma": 0.4
     },
     "valid": {
-      "max_seq_len": 1200,
+      "max_seq_len": 5000,
       "batch_size": 512,
       "num_workers": 8
     },

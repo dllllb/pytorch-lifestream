@@ -47,10 +47,10 @@ python ../../ml_inference.py \
     --conf "conf/dataset.hocon" "conf/mles_params.json"
 
 # Compare
-python -m scenario_bowl2019 compare_approaches --output_file "results/scenario_bowl2019__hidden_size.csv" \
+python -m scenario_bowl2019 compare_approaches --output_file "results/scenario_bowl2019__hidden_size_II.csv" \
     --embedding_file_names \
     "emb__hidden_size_0160.pickle" \
     "emb__hidden_size_0080.pickle" \
     "emb__hidden_size_0040.pickle" \
     "emb__hidden_size_0020.pickle"
-            
+

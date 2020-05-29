@@ -55,13 +55,13 @@ def main(conf):
     }
     if conf['add_baselines']:
         approaches_to_train.update({
-            'baseline': {'use_client_agg': True, 'use_small_group_stat': True},
+            'baseline': {'use_handcrafted_features': True},
         })
 
     if conf['add_baselines'] and conf['add_emb_baselines']:
         approaches_to_train.update({
             f"embeds: {file_name} and baseline": {
-                'metric_learning_embedding_name': file_name, 'use_client_agg': True, 'use_small_group_stat': True}
+                'metric_learning_embedding_name': file_name, 'use_handcrafted_features': True}
             for file_name in conf['embedding_file_names']
         })
 
@@ -83,7 +83,7 @@ def main(conf):
                 objective='multi:softprob',
                 n_jobs=4,
                 seed=conf['model_seed'],
-                n_estimators=600,                
+                n_estimators=600,
                 learning_rate=0.01,
                 max_depth=6,
                 subsample=0.75,

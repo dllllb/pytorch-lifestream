@@ -1,30 +1,7 @@
-                                                       oof_kappa                                                         test_kappa                                                        
-                                                            mean t_int_l t_int_h    std                           values       mean t_int_l t_int_h    std                           values
-name                                                                                                                                                                                       
-lgb_embeds: emb__hidden_size_bs_0064_hs_0032.pickle       0.5610  0.5471  0.5750 0.0101  [0.549 0.555 0.561 0.564 0.576]     0.5547  0.5486  0.5609 0.0044  [0.549 0.552 0.554 0.558 0.561]
-lgb_embeds: emb__hidden_size_bs_0064_hs_0064.pickle       0.5531  0.5449  0.5613 0.0059  [0.548 0.548 0.552 0.556 0.562]     0.5313  0.5201  0.5424 0.0080  [0.521 0.527 0.530 0.537 0.541]
-lgb_embeds: emb__hidden_size_bs_0064_hs_0096.pickle       0.5420  0.5184  0.5656 0.0170  [0.518 0.540 0.540 0.547 0.565]     0.5033  0.4951  0.5114 0.0059  [0.498 0.499 0.499 0.509 0.510]
-lgb_embeds: emb__hidden_size_bs_0064_hs_0160.pickle       0.5525  0.5438  0.5613 0.0063  [0.543 0.552 0.552 0.557 0.559]     0.5393  0.5349  0.5438 0.0032  [0.537 0.537 0.538 0.541 0.544]
-lgb_embeds: emb__hidden_size_bs_0064_hs_0224.pickle       0.5561  0.5452  0.5670 0.0079  [0.542 0.557 0.559 0.559 0.562]     0.5201  0.5167  0.5236 0.0025  [0.518 0.519 0.519 0.522 0.523]
-lgb_embeds: emb__hidden_size_bs_0064_hs_0480.pickle          nan     nan     nan    nan            [nan nan nan nan nan]        nan     nan     nan    nan            [nan nan nan nan nan]
-lgb_embeds: emb__hidden_size_bs_0064_hs_0800.pickle          nan     nan     nan    nan            [nan nan nan nan nan]        nan     nan     nan    nan            [nan nan nan nan nan]
-lgb_embeds: emb__hidden_size_bs_0064_hs_1200.pickle          nan     nan     nan    nan            [nan nan nan nan nan]        nan     nan     nan    nan            [nan nan nan nan nan]
-lgb_embeds: emb__hidden_size_bs_0064_hs_1600.pickle          nan     nan     nan    nan            [nan nan nan nan nan]        nan     nan     nan    nan            [nan nan nan nan nan]
-linear_embeds: emb__hidden_size_bs_0064_hs_0032.pickle    0.4516  0.4318  0.4715 0.0143  [0.429 0.450 0.451 0.464 0.465]     0.4668  0.4619  0.4716 0.0035  [0.463 0.464 0.467 0.469 0.472]
-linear_embeds: emb__hidden_size_bs_0064_hs_0064.pickle    0.5051  0.4963  0.5139 0.0064  [0.498 0.502 0.502 0.512 0.512]     0.4894  0.4866  0.4921 0.0020  [0.486 0.489 0.490 0.490 0.492]
-linear_embeds: emb__hidden_size_bs_0064_hs_0096.pickle    0.5134  0.4903  0.5365 0.0167  [0.490 0.507 0.517 0.517 0.536]     0.4730  0.4692  0.4769 0.0028  [0.470 0.472 0.473 0.473 0.478]
-linear_embeds: emb__hidden_size_bs_0064_hs_0160.pickle    0.5280  0.5107  0.5454 0.0125  [0.514 0.522 0.523 0.537 0.545]     0.5185  0.5118  0.5253 0.0049  [0.515 0.515 0.517 0.519 0.527]
-linear_embeds: emb__hidden_size_bs_0064_hs_0224.pickle    0.5319  0.5207  0.5431 0.0081  [0.525 0.525 0.528 0.539 0.542]     0.5052  0.4997  0.5108 0.0040  [0.501 0.503 0.505 0.505 0.512]
-linear_embeds: emb__hidden_size_bs_0064_hs_0480.pickle       nan     nan     nan    nan            [nan nan nan nan nan]        nan     nan     nan    nan            [nan nan nan nan nan]
-linear_embeds: emb__hidden_size_bs_0064_hs_0800.pickle       nan     nan     nan    nan            [nan nan nan nan nan]        nan     nan     nan    nan            [nan nan nan nan nan]
-linear_embeds: emb__hidden_size_bs_0064_hs_1200.pickle       nan     nan     nan    nan            [nan nan nan nan nan]        nan     nan     nan    nan            [nan nan nan nan nan]
-linear_embeds: emb__hidden_size_bs_0064_hs_1600.pickle       nan     nan     nan    nan            [nan nan nan nan nan]        nan     nan     nan    nan            [nan nan nan nan nan]
-xgb_embeds: emb__hidden_size_bs_0064_hs_0032.pickle       0.5561  0.5373  0.5749 0.0135  [0.539 0.550 0.555 0.563 0.575]     0.5499  0.5443  0.5555 0.0040  [0.545 0.547 0.551 0.551 0.556]
-xgb_embeds: emb__hidden_size_bs_0064_hs_0064.pickle       0.5517  0.5410  0.5624 0.0077  [0.545 0.547 0.549 0.554 0.564]     0.5290  0.5221  0.5358 0.0049  [0.522 0.528 0.529 0.530 0.535]
-xgb_embeds: emb__hidden_size_bs_0064_hs_0096.pickle       0.5395  0.5189  0.5601 0.0148  [0.520 0.535 0.539 0.542 0.561]     0.5057  0.4986  0.5128 0.0051  [0.501 0.502 0.503 0.510 0.512]
-xgb_embeds: emb__hidden_size_bs_0064_hs_0160.pickle       0.5500  0.5396  0.5604 0.0075  [0.539 0.548 0.550 0.553 0.560]     0.5331  0.5271  0.5390 0.0043  [0.530 0.530 0.532 0.533 0.540]
-xgb_embeds: emb__hidden_size_bs_0064_hs_0224.pickle       0.5522  0.5412  0.5632 0.0079  [0.541 0.549 0.554 0.555 0.562]     0.5158  0.5115  0.5201 0.0031  [0.512 0.513 0.517 0.518 0.519]
-xgb_embeds: emb__hidden_size_bs_0064_hs_0480.pickle          nan     nan     nan    nan            [nan nan nan nan nan]        nan     nan     nan    nan            [nan nan nan nan nan]
-xgb_embeds: emb__hidden_size_bs_0064_hs_0800.pickle          nan     nan     nan    nan            [nan nan nan nan nan]        nan     nan     nan    nan            [nan nan nan nan nan]
-xgb_embeds: emb__hidden_size_bs_0064_hs_1200.pickle          nan     nan     nan    nan            [nan nan nan nan nan]        nan     nan     nan    nan            [nan nan nan nan nan]
-xgb_embeds: emb__hidden_size_bs_0064_hs_1600.pickle          nan     nan     nan    nan            [nan nan nan nan nan]        nan     nan     nan    nan            [nan nan nan nan nan]
+                                         oof_accuracy                                                         test_accuracy                                                        
+                                                 mean t_int_l t_int_h    std                           values          mean t_int_l t_int_h    std                           values
+name                                                                                                                                                                               
+lgb_embeds: emb__hidden_size_0020.pickle       0.6041  0.5984  0.6097 0.0041  [0.600 0.600 0.605 0.607 0.608]        0.5826  0.5786  0.5866 0.0029  [0.578 0.582 0.583 0.585 0.585]
+lgb_embeds: emb__hidden_size_0040.pickle       0.6170  0.6087  0.6252 0.0060  [0.609 0.615 0.615 0.622 0.624]        0.5981  0.5925  0.6037 0.0040  [0.595 0.596 0.596 0.601 0.604]
+lgb_embeds: emb__hidden_size_0080.pickle       0.6167  0.6137  0.6197 0.0022  [0.614 0.615 0.617 0.619 0.619]        0.5986  0.5928  0.6043 0.0041  [0.595 0.595 0.598 0.601 0.605]
+lgb_embeds: emb__hidden_size_0160.pickle       0.6041  0.5933  0.6150 0.0078  [0.596 0.598 0.605 0.606 0.616]        0.5738  0.5697  0.5779 0.0030  [0.570 0.573 0.573 0.576 0.577]

@@ -7,7 +7,7 @@
     "model_type": "rnn",
     "rnn": {
       "type": "gru",
-      "hidden_size": 800,
+      "hidden_size": 64,
       "bidir": false,
       "trainable_starter": "static"
     },
@@ -28,16 +28,16 @@
     },
     "lr_scheduler": {
       "step_size": 30,
-      "step_gamma": 0.9025
+      "step_gamma": 0.8
     },
     "train": {
       "num_workers": 16,
-      "batch_size": 64,
+      "batch_size": 256,
       "split_strategy": {
         "split_strategy": "SampleSlices",
         "split_count": 5,
-        "cnt_min": 25,
-        "cnt_max": 150
+        "cnt_min": 300,
+        "cnt_max": 1500
       },
       "sampling_strategy": "HardNegativePair",
       "trx_dropout": 0.01,
@@ -56,8 +56,8 @@
       "split_strategy": {
         "split_strategy": "SampleSlices",
         "split_count": 5,
-        "cnt_min": 25,
-        "cnt_max": 100
+        "cnt_min": 300,
+        "cnt_max": 1500
       },
       "max_seq_len": 5000
     }
