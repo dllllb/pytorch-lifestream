@@ -165,7 +165,7 @@ def main(conf):
             'display.max_columns', None,
             'display.max_rows', None,
             'display.expand_frame_repr', False,
-            'display.max_colwidth', 100,
+            'display.max_colwidth', 200,
     ):
         logger.info(f'Results:\n{df_results}')
         with open(conf['output_file'], 'w') as f:

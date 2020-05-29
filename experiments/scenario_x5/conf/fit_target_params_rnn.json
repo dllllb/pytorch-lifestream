@@ -28,7 +28,7 @@
         "regular_points_received": "identity",
         "regular_points_spent":  "identity"
       },
-      "positions": {
+      "_positions": {
         "event_time": {"out_size":  16}
       }
     },
@@ -48,17 +48,19 @@
     },
     "train": {
       "random_neg": false,
-      "trx_dropout": 0.01,
+      "trx_dropout": 0.03,
       "max_seq_len": 800,
       "batch_size": 32,
       "num_workers": 16,
       "loss": "bce",
-      "lr": 0.001,
+      "lr": 0.002,
       "weight_decay": 0.0,
-      "n_epoch": 6
+      "n_epoch": 7,
+      "same_time_shuffle": true,
+      "all_time_shuffle": false
     },
     "lr_scheduler": {
-      "step_size": 100,
+      "step_size": 3,
       "step_gamma": 0.5
     },
     "valid": {
@@ -74,11 +76,11 @@
 
   "output": {
     "valid": {
-      "path": "data/target_scores_rnn/valid",
+      "path": "data/target_scores_rnn_stshuffle/valid",
       "format": "pickle"
     },
     "test": {
-      "path": "data/target_scores_rnn/test",
+      "path": "data/target_scores_rnn_stshuffle/test",
       "format": "pickle"
     },
     "columns": ["client_id"]
