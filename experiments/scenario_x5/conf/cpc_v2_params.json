@@ -27,17 +27,16 @@
       "norm_embeddings": false,
       "embeddings_noise": 0.003,
       "embeddings": {
+        "level_3": {"in": 200, "out": 4},
         "level_4": {"in": 800, "out": 4},
-        "segment_id": {"in": 150, "out": 4},
-        "is_own_trademark": {"in": 3, "out": 2},
-        "is_alcohol": {"in": 3, "out": 2}
+        "segment_id": {"in": 120, "out": 4}
       },
       "numeric_values": {
         "netto": "identity",
-        "purchase_sum": "identity",
-        "trn_sum_from_iss": "identity"
+        "product_quantity":  "identity",
+        "regular_points_received": "identity",
       },
-      "positions": {
+      "_positions": {
         "event_time": {"out_size":  16}
       }
     },

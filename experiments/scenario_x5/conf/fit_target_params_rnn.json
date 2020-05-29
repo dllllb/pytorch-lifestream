@@ -10,23 +10,14 @@
       "norm_embeddings": false,
       "embeddings_noise": 0.003,
       "embeddings": {
-        "level_2": {"in": 45, "out": 2},
         "level_3": {"in": 200, "out": 4},
         "level_4": {"in": 800, "out": 4},
-        "segment_id": {"in": 120, "out": 4},
-        "is_own_trademark": {"in": 3, "out": 2},
-        "is_alcohol": {"in": 3, "out": 2},
-        "brand_id": {"in": 2000, "out": 2},
-        "vendor_id": {"in": 1500, "out": 2}
+        "segment_id": {"in": 120, "out": 4}
       },
       "numeric_values": {
         "netto": "identity",
-        "purchase_sum": "identity",
-        "trn_sum_from_iss": "identity",
         "product_quantity":  "identity",
-        "trn_sum_from_red": "identity",
         "regular_points_received": "identity",
-        "regular_points_spent":  "identity"
       },
       "_positions": {
         "event_time": {"out_size":  16}
@@ -49,6 +40,8 @@
     "train": {
       "random_neg": false,
       "trx_dropout": 0.03,
+      "same_time_shuffle": false,
+      "all_time_shuffle": true,
       "max_seq_len": 800,
       "batch_size": 32,
       "num_workers": 16,
@@ -56,8 +49,6 @@
       "lr": 0.002,
       "weight_decay": 0.0,
       "n_epoch": 7,
-      "same_time_shuffle": true,
-      "all_time_shuffle": false
     },
     "lr_scheduler": {
       "step_size": 3,
@@ -76,11 +67,11 @@
 
   "output": {
     "valid": {
-      "path": "data/target_scores_rnn_stshuffle/valid",
+      "path": "data/target_scores_rnn/valid",
       "format": "pickle"
     },
     "test": {
-      "path": "data/target_scores_rnn_stshuffle/test",
+      "path": "data/target_scores_rnn/test",
       "format": "pickle"
     },
     "columns": ["client_id"]
