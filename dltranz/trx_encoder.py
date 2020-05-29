@@ -138,7 +138,7 @@ class TrxEncoder(nn.Module):
                 noise_scale=config['embeddings_noise'])
 
         self.pos = nn.ModuleDict()
-        for pos_name, pos_params in config['positions'].items():
+        for pos_name, pos_params in config.get('positions', {}).items():
             self.pos[pos_name] = FloatPositionalEncoding(**pos_params)
 
     def forward(self, x: PaddedBatch):
@@ -161,7 +161,7 @@ class TrxEncoder(nn.Module):
         nv = config.get('numeric_values', dict())
         sz = len(nv.keys())
         sz += sum(econf['out'] for econf in config.get('embeddings', dict()).values() if not econf.get('disabled', False))
-        sz += sum(pos_params['out_size'] for pos_params in config['positions'].values())
+        sz += sum(pos_params['out_size'] for pos_params in config.get('positions', {}).values())
         return sz
 
 
