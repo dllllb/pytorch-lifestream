@@ -1,18 +1,14 @@
 import datetime
 import logging
-import math
 import sys
-import random
-from copy import deepcopy
 from itertools import islice
 
 import numpy as np
 from sklearn.model_selection import StratifiedKFold
-from torch.utils.data import Dataset
 from torch.utils.data.dataloader import DataLoader
 
 from dltranz.data_load import TrxDataset, ConvertingTrxDataset, DropoutTrxDataset, padded_collate, \
-    create_validation_loader, read_data_gen
+    create_validation_loader, read_data_gen, SameTimeShuffleDataset, AllTimeShuffleDataset
 from dltranz.loss import get_loss
 from dltranz.models import model_by_type
 from dltranz.train import get_optimizer, get_lr_scheduler, fit_model
@@ -70,6 +66,13 @@ def run_experiment(train_ds, valid_ds, params, model_f):
     model = model_f(params)
 
     train_ds = DropoutTrxDataset(train_ds, params['train.trx_dropout'], params['train.max_seq_len'])
+    if params['train.same_time_shuffle']:
+        train_ds = SameTimeShuffleDataset(train_ds)
+        logger.info('SameTimeShuffle used')
+    if params['train.all_time_shuffle']:
+        train_ds = AllTimeShuffleDataset(train_ds)
+        logger.info('AllTimeShuffle used')
+
     train_loader = DataLoader(
         train_ds,
         batch_size=params['train.batch_size'],

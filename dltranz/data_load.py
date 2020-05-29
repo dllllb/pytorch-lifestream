@@ -197,6 +197,57 @@ class DropoutTrxDataset(Dataset):
         return new_x, y
 
 
+class AllTimeShuffleDataset(Dataset):
+    """Shuffle all transactions in event sequence
+    """
+    def __init__(self, dataset, event_time_name='event_time'):
+        self.dataset = dataset
+        self.event_time_name = event_time_name
+
+    def __len__(self):
+        return len(self.dataset)
+
+    @staticmethod
+    def get_perm_ix(event_time):
+        n = len(event_time)
+        return torch.randperm(n)
+
+    def __getitem__(self, item):
+        x, y = self.dataset[item]
+        ix = self.get_perm_ix(x[self.event_time_name])
+        new_x = {k: v[ix] for k, v in x.items()}
+        return new_x, y
+
+
+class SameTimeShuffleDataset(Dataset):
+    """Split sequences on intervals with equal event times. Shuffle events in each split independently
+    """
+    def __init__(self, dataset, event_time_name='event_time'):
+        self.dataset = dataset
+        self.event_time_name = event_time_name
+
+    def __len__(self):
+        return len(self.dataset)
+
+    @staticmethod
+    def get_perm_ix(event_time):
+        ix = []
+        pos = 0
+        for time in torch.unique(event_time, sorted=True):
+            mask = event_time == time
+            n = mask.sum()
+            _ix = torch.randperm(n)
+            ix.append(_ix + pos)
+            pos += n
+        return torch.cat(ix, dim=0)
+
+    def __getitem__(self, item):
+        x, y = self.dataset[item]
+        ix = self.get_perm_ix(x[self.event_time_name])
+        new_x = {k: v[ix] for k, v in x.items()}
+        return new_x, y
+
+
 class LastKTrxDataset(Dataset):
     def __init__(self, dataset: Dataset, share):
         self.core_dataset = dataset
