@@ -1,10 +1,14 @@
 import logging
 import os
 import pickle
+from itertools import islice
+
 import numpy as np
 import torch
 
+from dltranz.cpc import CPC_Ecoder
 from dltranz.data_load import read_data_gen
+from dltranz.seq_encoder import LastStepEncoder
 from dltranz.util import init_logger, get_conf
 from metric_learning import prepare_embeddings
 from dltranz.metric_learn.inference_tools import load_model, score_part_of_data
@@ -29,6 +33,8 @@ def fill_target(seq):
 
 def read_dataset(path, conf):
     data = read_data_gen(path)
+    if 'max_rows' in conf['dataset']:
+        data = islice(data, conf['dataset.max_rows'])
     data = fill_target(data)
     data = prepare_embeddings(data, conf, is_train=False)
     data = list(data)
@@ -46,6 +52,12 @@ def main(args=None):
         model = model_f(conf['params'])
         model_d = load_model(conf)
         model.load_state_dict(model_d)
+
+        if isinstance(model, CPC_Ecoder):
+            trx_e, rnn_e = model.trx_encoder, model.seq_encoder
+            l = LastStepEncoder()
+            model = torch.nn.Sequential(trx_e, rnn_e, l)
+
     elif ext == '.p':
         model = load_model(conf)
     else:

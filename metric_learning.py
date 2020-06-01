@@ -1,5 +1,4 @@
 import logging
-import pickle
 import os
 import random
 from itertools import islice
@@ -14,12 +13,10 @@ from dltranz.metric_learn.dataset import SplittingDataset, split_strategy
 from dltranz.metric_learn.dataset import TargetEnumeratorDataset, collate_splitted_rows
 from dltranz.metric_learn.losses import get_loss
 from dltranz.metric_learn.metric import BatchRecallTop
-from dltranz.metric_learn.ml_models import rnn_model, ml_model_by_type
+from dltranz.metric_learn.ml_models import ml_model_by_type
 from dltranz.metric_learn.sampling_strategies import get_sampling_strategy
-from dltranz.train import get_optimizer, get_lr_scheduler, fit_model
+from dltranz.train import get_optimizer, get_lr_scheduler, fit_model, CheckpointHandler
 from dltranz.util import init_logger, get_conf
-from ignite.engine import Events
-from ignite.handlers import ModelCheckpoint
 
 logger = logging.getLogger(__name__)
 
@@ -117,15 +114,6 @@ def create_data_loaders(conf):
     )
 
     return train_loader, valid_loader
-
-
-class CheckpointHandler:
-    def __init__(self, model, **model_checkpoint_params):
-        self.handler = ModelCheckpoint(**model_checkpoint_params)
-        self.model = model
-
-    def __call__(self, train_engine, valid_engine, optimizer):
-        train_engine.add_event_handler(Events.EPOCH_COMPLETED, self.handler, {'model': self.model})
 
 
 def run_experiment(model, conf):

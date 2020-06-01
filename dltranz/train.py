@@ -4,6 +4,7 @@ import warnings
 import torch
 from ignite.contrib.handlers import ProgressBar, LRScheduler, create_lr_scheduler_with_warmup
 from ignite.contrib.handlers.param_scheduler import ParamScheduler
+from ignite.handlers import ModelCheckpoint
 from ignite.metrics import RunningAverage
 import numpy as np
 import pandas as pd
@@ -304,3 +305,12 @@ def predict_proba_path(model, path_wc, create_loader, files_per_batch=100):
         scores.append(pred)
 
     return pd.concat(scores)
+
+
+class CheckpointHandler:
+    def __init__(self, model, **model_checkpoint_params):
+        self.handler = ModelCheckpoint(**model_checkpoint_params)
+        self.model = model
+
+    def __call__(self, train_engine, valid_engine, optimizer):
+        train_engine.add_event_handler(Events.EPOCH_COMPLETED, self.handler, {'model': self.model})
