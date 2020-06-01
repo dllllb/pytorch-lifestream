@@ -28,20 +28,20 @@
         "min_seq_len_e": 500,
         "max_seq_len_s": 1000,
         "max_seq_len_e": 1000,
-        "crop_proba_init": 1.0,
+        "crop_proba_init": 0.5,
         "crop_proba_gamma": 1.0,
-        "total_n_epoch": 10
+        "total_n_epoch": 15
       },
       "batch_size": 64,
       "num_workers": 16,
       "loss": "NLLLoss",
       "lr": 0.001,
       "weight_decay": 0.0,
-      "n_epoch": 10
+      "n_epoch": 15
     },
     "lr_scheduler": {
-      "step_size": 20,
-      "step_gamma": 0.4
+      "step_size": 10,
+      "step_gamma": 0.1
     },
     "valid": {
       "max_seq_len": 5000,
@@ -51,7 +51,7 @@
     "norm_scores": false,
     "score_metric": "accuracy",
 
-    "pretrained_model_path": "models/mles_model_ft.p",
+    "pretrained_model_path": "models/mles_model.p",
     "use_batch_norm": true
   },
 

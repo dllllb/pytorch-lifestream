@@ -4,14 +4,12 @@
       "name": "default"
     },
     "device": "cuda",
-    "model_type": "rnn",
     "rnn": {
       "type": "gru",
-      "hidden_size": 256,
+      "hidden_size": 128,
       "bidir": false,
       "trainable_starter": "static"
     },
-    "use_normalization_layer" : true,
     "trx_encoder": {
       "norm_embeddings": false,
       "embeddings_noise": 0.003,
@@ -26,55 +24,42 @@
       "numeric_values": {
       }
     },
+    "cpc": {
+      "n_forward_steps": 6,
+      "n_negatives": 40
+    },
     "lr_scheduler": {
-      "step_size": 30,
-      "step_gamma": 0.9025
+      "step_size": 5,
+      "step_gamma": 0.5
     },
     "train": {
       "num_workers": 16,
       "batch_size": 64,
-      "split_strategy": {
-        "split_strategy": "SampleSlices",
-        "split_count": 5,
-        "cnt_min": 25,
-        "cnt_max": 150
-      },
-      "sampling_strategy": "HardNegativePair",
       "trx_dropout": 0.01,
       "max_seq_len": 5000,
-      "neg_count": 5,
-      "loss": "ContrastiveLoss",
-      "margin": 0.5,
       "lr": 0.002,
       "weight_decay": 0.0,
-      "n_epoch": 100
+      "n_epoch": 15
     },
     "norm_scores": false,
     "valid": {
-      "batch_size": 1024,
+      "batch_size": 64,
       "num_workers": 16,
-      "split_strategy": {
-        "split_strategy": "SampleSlices",
-        "split_count": 5,
-        "cnt_min": 25,
-        "cnt_max": 100
-      },
       "max_seq_len": 5000
     }
   },
 
   "stats": {
-    "path": "runs/bowl_ml_result.json"
+    "path": "runs/bowl2019_cpc_result.json"
   },
 
   "save_model": true,
   "model_path": {
-    "model": "models/mles_model_ft.p",
-    "only_encoder": false
+    "model": "models/cpc_model_ft.p"
   },
 
   "output": {
-    "path": "data/mles_embeddings",
+    "path": "data/cpc_embeddings",
     "format": "pickle",
     "columns": ["game_session"]
   }

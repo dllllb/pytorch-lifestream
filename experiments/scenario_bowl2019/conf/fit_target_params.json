@@ -40,7 +40,7 @@
         "min_seq_len_e": 500,
         "max_seq_len_s": 1000,
         "max_seq_len_e": 1000,
-        "crop_proba_init": 1.0,
+        "crop_proba_init": 0.5,
         "crop_proba_gamma": 1.0,
         "total_n_epoch": 35
       },
