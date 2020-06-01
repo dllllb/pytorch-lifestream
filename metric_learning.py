@@ -2,6 +2,7 @@ import logging
 import pickle
 import os
 import random
+from itertools import islice
 
 import numpy as np
 import torch
@@ -31,7 +32,8 @@ if __name__ == '__main__':
     torch.cuda.manual_seed_all(42)
 
 
-def prepare_embeddings(seq, conf):
+# TODO: use `is_train=False` when inference and validation
+def prepare_embeddings(seq, conf, is_train=True):
     min_seq_len = conf['dataset'].get('min_seq_len', 1)
     embeddings = list(conf['params.trx_encoder.embeddings'].keys())
 
@@ -39,7 +41,7 @@ def prepare_embeddings(seq, conf):
 
     for rec in seq:
         seq_len = len(rec['event_time'])
-        if seq_len < min_seq_len:
+        if is_train and seq_len < min_seq_len:
             continue
 
         if 'feature_arrays' in rec:
@@ -57,13 +59,17 @@ def prepare_embeddings(seq, conf):
         for e_name, e_params in conf['params.trx_encoder.embeddings'].items():
             feature_arrays[e_name] = feature_arrays[e_name].clip(0, e_params['in'] - 1)
 
+        feature_arrays['event_time'] = rec['event_time']
+
         rec['feature_arrays'] = feature_arrays
         yield rec
 
 
 def create_data_loaders(conf):
     data = read_data_gen(conf['dataset.train_path'])
-    data = prepare_embeddings(data, conf)
+    if 'max_rows' in conf['dataset']:
+        data = islice(data, conf['dataset.max_rows'])
+    data = prepare_embeddings(data, conf, is_train=True)
     data = sorted(data, key=lambda x: x.get('client_id', x.get('customer_id')))
     random.Random(conf['dataset.client_list_shuffle_seed']).shuffle(data)
     data = list(data)

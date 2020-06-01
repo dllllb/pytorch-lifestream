@@ -26,6 +26,7 @@ def prepare_common_parser(parser, data_path, output_file):
     parser.add_argument('--model_seed', type=int, default=42)
     parser.add_argument('--add_baselines', action='store_true')
     parser.add_argument('--add_emb_baselines', action='store_true')
+    parser.add_argument('--baseline_name')
     parser.add_argument('--models', nargs='+', default=['linear', 'lgb', 'xgb'])
     parser.add_argument('--embedding_file_names', nargs='*', default=[])
     parser.add_argument('--score_file_names', nargs='*', default=[])

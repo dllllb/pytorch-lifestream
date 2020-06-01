@@ -27,9 +27,11 @@ def parse_args(args=None):
     parser.add_argument('--print_dataset_info', action='store_true')
     parser.add_argument('--col_client_id', type=str)
     parser.add_argument('--cols_event_time', nargs='+')
+
+    parser.add_argument('--dict', nargs='*', default=[])
     parser.add_argument('--cols_category', nargs='*', default=[])
     parser.add_argument('--cols_log_norm', nargs='*', default=[])
-    parser.add_argument('--col_target', required=False, type=str)
+    parser.add_argument('--col_target', nargs='*', default=[])
     parser.add_argument('--test_size', type=float, default=0.1)
     parser.add_argument('--salt', type=int, default=42)
     parser.add_argument('--max_trx_count', type=int, default=5000)
@@ -110,6 +112,7 @@ def encode_col(df, col_name, df_encoder):
 
 
 def log_transform(df, col_name):
+    df = df.withColumn(col_name, F.coalesce(F.col(col_name), F.lit(0)))
     df = df.withColumn(col_name, F.signum(F.col(col_name)) * F.log(F.abs(F.col(col_name)) + F.lit(1)))
     return df
 
@@ -121,6 +124,12 @@ def _td_default(df, cols_event_time):
 def _td_float(df, col_event_time):
     df = df.withColumn('event_time', F.col(col_event_time).astype('float'))
     logger.info('To-float time transformation')
+    return df
+
+
+def _td_datetime(df, col_event_time):
+    df = df.withColumn('event_time', F.unix_timestamp(F.col(col_event_time)) / F.lit(24 * 60 * 60))
+    logger.info('Datetime-to-unix-timestamp time transformation')
     return df
 
 
@@ -173,6 +182,22 @@ def collect_lists(df, col_id):
     return df
 
 
+def join_dict(df, data_path, df_dict_name, col_id):
+    spark = SparkSession.builder.getOrCreate()
+
+    path = os.path.join(data_path, df_dict_name)
+    df_dict = spark.read.csv(path, header=True)
+    df = df.join(df_dict, on=col_id, how='left')
+
+    col_counter = 0
+    for col in df_dict.columns:
+        if col == col_id:
+            continue
+        col_counter += 1
+    logger.info(f'Join with "{path}" done. New {col_counter} columns joined')
+    return df
+
+
 def trx_to_features(df_data, print_dataset_info,
                     col_client_id, cols_event_time, cols_category, cols_log_norm, max_trx_count):
     if print_dataset_info:
@@ -183,6 +208,8 @@ def trx_to_features(df_data, print_dataset_info,
     if cols_event_time[0][0] == '#':
         if cols_event_time[0] == '#float':
             df_data = _td_float(df_data, cols_event_time[1])
+        elif cols_event_time[0] == '#datetime':
+            df_data = _td_datetime(df_data, cols_event_time[1])
         elif cols_event_time[0] == '#gender':
             df_data = _td_gender(df_data, cols_event_time[1])
         else:
@@ -225,10 +252,14 @@ def trx_to_features(df_data, print_dataset_info,
 
 def update_with_target(features, data_path, target_files, col_client_id, col_target):
     df_target = load_source_data(data_path, target_files)
-    df_target = df_target.select(
-        F.col(col_client_id).cast('int').alias(col_client_id),
-        F.col(col_target).cast('int').alias('target'),
-    )
+    col_list = [F.col(col_client_id).alias(col_client_id)]
+    if type(col_target) is list:
+        for col in col_target:
+            col_list.append(F.col(col).alias(f'target_{col}'))
+    else:
+        col_list.append(F.col(col_target).cast('int').alias('target'))
+
+    df_target = df_target.select(*col_list)
     df_target = df_target.repartition(1)
 
     features = features.join(df_target, on=col_client_id, how='left')
@@ -242,7 +273,7 @@ def split_dataset(all_data, test_size, data_path, target_files, col_client_id, s
     spark = SparkSession.builder.getOrCreate()
 
     df_target = load_source_data(data_path, target_files)
-    df_target = df_target.withColumn(col_client_id, F.col(col_client_id).cast('int'))
+    df_target = df_target.withColumn(col_client_id, F.col(col_client_id))
     s_clients = set(cl[0] for cl in df_target.select(col_client_id).distinct().collect())
 
     # shuffle client list
@@ -298,7 +329,15 @@ if __name__ == '__main__':
         data_path=config.data_path,
         trx_files=config.trx_files,
     )
-    source_data = source_data.withColumn(config.col_client_id, F.col(config.col_client_id).cast('int'))
+    # source_data = source_data.withColumn(config.col_client_id, F.col(config.col_client_id).cast('int'))
+
+    if len(config.dict) > 0:
+        if len(config.dict) % 2 != 0:
+            raise AttributeError('--dict should be in format (file_name col_id)*')
+        for i in range(len(config.dict) // 2):
+            # description
+            spark.sparkContext.setLocalProperty('callSite.short', f'join with {i}th dict')
+            source_data = join_dict(source_data, config.data_path, config.dict[2 * i], config.dict[2 * i + 1])
 
     # description
     spark.sparkContext.setLocalProperty('callSite.short', 'trx_to_features')
@@ -312,7 +351,12 @@ if __name__ == '__main__':
         max_trx_count=config.max_trx_count,
     )
 
-    if len(config.target_files) > 0 and config.col_target is not None:
+    if len(config.target_files) > 0 and len(config.col_target) > 0:
+        if len(config.col_target) == 1:
+            col_target = config.col_target[0]
+        else:
+            col_target = config.col_target
+
         # description
         spark.sparkContext.setLocalProperty('callSite.short', 'update_with_target')
         client_features = update_with_target(
@@ -320,7 +364,7 @@ if __name__ == '__main__':
             data_path=config.data_path,
             target_files=config.target_files,
             col_client_id=config.col_client_id,
-            col_target=config.col_target,
+            col_target=col_target,
         )
 
     if config.test_size > 0:

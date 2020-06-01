@@ -30,7 +30,7 @@ def fill_target(seq):
 def read_dataset(path, conf):
     data = read_data_gen(path)
     data = fill_target(data)
-    data = prepare_embeddings(data, conf)
+    data = prepare_embeddings(data, conf, is_train=False)
     data = list(data)
 
     logger.info(f'loaded {len(data)} records')

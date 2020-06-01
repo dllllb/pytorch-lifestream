@@ -1,0 +1,96 @@
+{
+  "params": {
+    "experiment": {
+      "name": "default"
+    },
+    "device": "cuda",
+    "model_type": "transf",
+    "cpc": {
+      "embedding_size": 16,
+      "k_pos_samples": 4,
+      "m_neg_samples": 300
+    },
+    "transf": {
+      "train_starter": true,
+      "shared_layers": false,
+      "input_size": 16,
+      "n_heads": 4,
+      "dim_hidden": 64,
+      "dropout": 0.01,
+      "n_layers": 4,
+      "use_positional_encoding": false,
+      "max_seq_len": 800,
+      "use_after_mask": false,
+      "use_src_key_padding_mask": false
+    },
+    "trx_encoder": {
+      "norm_embeddings": false,
+      "embeddings_noise": 0.003,
+      "embeddings": {
+        "level_3": {"in": 200, "out": 4},
+        "level_4": {"in": 800, "out": 4},
+        "segment_id": {"in": 120, "out": 4}
+      },
+      "numeric_values": {
+        "netto": "identity",
+        "product_quantity":  "identity",
+        "regular_points_received": "identity",
+      },
+      "_positions": {
+        "event_time": {"out_size":  16}
+      }
+    },
+    "use_normalization_layer": false,
+    "lr_scheduler": {
+      "step_size": 10,
+      "step_gamma": 0.9025
+    },
+    "train": {
+      "num_workers": 8,
+      "batch_size": 128,
+      "split_strategy": {
+        "split_strategy": "SampleSlices",
+        "split_count": 4,
+        "cnt_min": 30,
+        "cnt_max": 180,
+        "is_sorted": true
+      },
+      "sampling_strategy": "AllPositivePair",
+      "trx_dropout": 0.01,
+      "max_seq_len": 800,
+      "loss": "CPCLoss",
+      "lr": 0.002,
+      "weight_decay": 0.0,
+      "n_epoch": 10
+    },
+    "norm_scores": false,
+    "valid": {
+      "batch_size": 256,
+      "num_workers": 16,
+      "split_strategy": {
+        "split_strategy": "SampleSlices",
+        "split_count": 5,
+        "cnt_min": 30,
+        "cnt_max": 180
+      },
+      "max_seq_len": 800
+    }
+  },
+
+  "save_model": true,
+  "model_path": {
+    "model": "models/cpc_v2_model.p",
+    "only_encoder": false
+  },
+
+  "output": {
+    "path": "data/cpc_v2_embeddings",
+    "format": "pickle",
+    "columns": ["client_id"]
+  },
+
+  "stats": {
+    "path": "runs/cpc_v2_result.json"
+  }
+
+}
