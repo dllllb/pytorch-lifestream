@@ -4,7 +4,7 @@
   "params": {
     "device": "cuda",
 
-    "model_type": "transf",
+    "model_type": "rnn",
     "ensemble_size": 1,
     "trx_encoder": {
       "norm_embeddings": false,
@@ -33,23 +33,29 @@
       "use_after_mask": false,
       "use_src_key_padding_mask": false
     },
+    "rnn": {
+      "type": "gru",
+      "hidden_size": 400,
+      "bidir": false,
+      "trainable_starter": "static"
+    },
     "train": {
+      "same_time_shuffle": false,
+      "all_time_shuffle": true,
+      "frooze_trx_encoder": false,
+      "frooze_seq_encoder": false,
       "trx_dropout": 0.01,
       "max_seq_len": 800,
-      "batch_size": 32,
+      "batch_size": 64,
       "num_workers": 16,
       "loss": "NLLLoss",
-      "lr": 0.0015,
-      "optimiser_params": {
-        "0.": {"lr": 0.0001},
-        "1.": {"lr": 0.0001}
-      },
+      "lr": 0.001,
       "weight_decay": 0.0,
-      "n_epoch": 4
+      "n_epoch": 10
     },
     "lr_scheduler": {
-      "step_size": 1,
-      "step_gamma": 0.60
+      "step_size": 4,
+      "step_gamma": 0.1
     },
     "valid": {
       "max_seq_len": 800,
@@ -59,7 +65,7 @@
     "norm_scores": false,
     "score_metric": "accuracy",
 
-    "pretrained_model_path": "models/mles_model.p",
+    "pretrained_model_path": "models/mles_model_ft.p",
     "use_batch_norm": true
   },
 

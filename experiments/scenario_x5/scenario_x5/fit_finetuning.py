@@ -18,9 +18,17 @@ def load_model(conf):
     pretrained_model_path = conf['pretrained_model_path']
 
     pre_model = torch.load(pretrained_model_path)
+
     trx_encoder = pre_model[0]
     rnn_encoder = pre_model[1]
     step_select_encoder = pre_model[2]
+
+    if conf['train'].get('frooze_trx_encoder', False):
+        for p in trx_encoder.parameters():
+            p.requires_grad = False
+    if conf['train'].get('frooze_seq_encoder', False):
+        for p in rnn_encoder.parameters():
+            p.requires_grad = False
 
     model_type = conf['model_type']
     if model_type == 'rnn':
@@ -42,11 +50,12 @@ def load_model(conf):
 
     layers.extend([
         torch.nn.Linear(input_size, head_output_size),
-        torch.nn.Sigmoid(),
+        torch.nn.LogSoftmax(dim=1),
         Squeeze(),
     ])
 
     model = torch.nn.Sequential(*layers)
+
     return model
 
 
