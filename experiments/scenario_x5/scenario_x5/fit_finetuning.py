@@ -6,27 +6,25 @@ from sklearn.model_selection import StratifiedKFold
 
 from dltranz.experiment import update_model_stats
 from dltranz.metric_learn.inference_tools import infer_part_of_data, save_scores
-from dltranz.seq_encoder import Squeeze, LastStepEncoder
-from dltranz.trx_encoder import TrxEncoder
+from dltranz.metric_learn.ml_models import load_encoder_for_inference
+from dltranz.seq_encoder import Squeeze
 from dltranz.util import init_logger, get_conf
 from scenario_x5.fit_target import create_ds, run_experiment, read_consumer_data
 
 logger = logging.getLogger(__name__)
 
 
-def load_model(conf):
-    pretrained_model_path = conf['pretrained_model_path']
-
-    pre_model = torch.load(pretrained_model_path)
+def load_model(params):
+    pre_model = load_encoder_for_inference(params)
     trx_encoder = pre_model[0]
     rnn_encoder = pre_model[1]
     step_select_encoder = pre_model[2]
 
-    model_type = conf['model_type']
-    if model_type == 'rnn':
-        input_size = conf['rnn.hidden_size']
+    model_type = params['model_type']
+    if model_type in ('rnn', 'cpc_model'):
+        input_size = params['rnn.hidden_size']
     elif model_type == 'transf':
-        input_size = conf['transf.input_size']
+        input_size = params['transf.input_size']
     else:
         raise NotImplementedError(f'NotImplementedError for model_type="{model_type}"')
 
@@ -37,13 +35,12 @@ def load_model(conf):
         rnn_encoder,
         step_select_encoder,
     ]
-    if conf['use_batch_norm']:
+    if params['use_batch_norm']:
         layers.append(torch.nn.BatchNorm1d(input_size))
 
     layers.extend([
         torch.nn.Linear(input_size, head_output_size),
-        torch.nn.Sigmoid(),
-        Squeeze(),
+        torch.nn.LogSoftmax(dim=1),
     ])
 
     model = torch.nn.Sequential(*layers)

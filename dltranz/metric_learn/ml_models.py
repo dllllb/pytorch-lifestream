@@ -150,3 +150,25 @@ class ModelEmbeddingEnsemble(nn.Module):
         else:
             out = torch.cat([m(x) for i, m in enumerate(self.models)], dim=-1)
         return out
+
+
+def load_encoder_for_inference(conf):
+    ext = os.path.splitext(conf['model_path.model'])[1]
+    if ext == '.pth':
+        params = conf.get('params', conf)
+        model_type = params['model_type']
+        model_f = ml_model_by_type(model_type)
+        model = model_f(params)
+        model_d = torch.load(conf['model_path.model'])
+        model.load_state_dict(model_d)
+
+        if isinstance(model, CPC_Ecoder):
+            trx_e, rnn_e = model.trx_encoder, model.seq_encoder
+            l = LastStepEncoder()
+            model = torch.nn.Sequential(trx_e, rnn_e, l)
+
+    elif ext == '.p':
+        model = torch.load(conf['model_path.model'])
+    else:
+        raise NotImplementedError(f'Unknown model file extension: "{ext}"')
+    return model

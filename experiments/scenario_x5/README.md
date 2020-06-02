@@ -49,7 +49,7 @@ python ../../ml_inference.py    params.device="$SC_DEVICE" --conf conf/dataset.h
 python -m scenario_x5 compare_approaches --n_workers 3 \
     --baseline_name "agg_feat_embed.pickle" \
     --embedding_file_names "mles_embeddings.pickle" "cpc_embeddings.pickle" "cpc_v2_embeddings.pickle" \
-    --score_file_names "target_scores" "mles_finetuning_scores" "cpc_finetuning_scores"
+    --score_file_names "target_scores_rnn" "mles_finetuning_scores" "cpc_finetuning_scores"
 
 
 # check the results

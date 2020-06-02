@@ -4,7 +4,7 @@
   "params": {
     "device": "cuda",
 
-    "model_type": "rnn",
+    "model_type": "cpc_model",
     "ensemble_size": 1,
     "trx_encoder": {
       "norm_embeddings": false,
@@ -21,22 +21,30 @@
       }
     },
     "rnn": {
-      "hidden_size": 64
+      "type": "gru",
+      "hidden_size": 128,
+      "bidir": false,
+      "trainable_starter": "static"
+    },
+    "cpc": {
+      "n_forward_steps": 6
     },
     "train": {
       "random_neg": false,
-      "trx_dropout": 0.01,
+      "trx_dropout": 0.03,
+      "same_time_shuffle": false,
+      "all_time_shuffle": true,
       "max_seq_len": 800,
       "batch_size": 32,
       "num_workers": 16,
       "loss": "NLLLoss",
-      "lr": 0.0015,
+      "lr": 0.004,
       "optimiser_params": {
-        "0.": {"lr": 0.0001},
-        "1.": {"lr": 0.0001}
+        "0.": {"lr": 0.00004},
+        "1.": {"lr": 0.00004}
       },
       "weight_decay": 0.0,
-      "n_epoch": 4
+      "n_epoch": 8
     },
     "lr_scheduler": {
       "step_size": 1,
@@ -50,7 +58,7 @@
     "norm_scores": false,
     "score_metric": "accuracy",
 
-    "pretrained_model_path": "models/cpc_model.p",
+    "model_path": {"model": "models/cpc_checkpoints/cpc_model_20.pth"},
     "use_batch_norm": false
   },
 
@@ -58,11 +66,11 @@
 
   "output": {
     "valid": {
-      "path": "data/cpc_finetuning_scores/valid",
+      "path": "data/cpc_finetuning_scores_20/valid",
       "format": "pickle"
     },
     "test": {
-      "path": "data/cpc_finetuning_scores/test",
+      "path": "data/cpc_finetuning_scores_20/test",
       "format": "pickle"
     },
     "columns": ["client_id"]

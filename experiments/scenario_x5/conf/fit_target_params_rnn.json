@@ -45,7 +45,7 @@
       "loss": "NLLLoss",
       "lr": 0.002,
       "weight_decay": 0.0,
-      "n_epoch": 7,
+      "n_epoch": 7
     },
     "lr_scheduler": {
       "step_size": 3,

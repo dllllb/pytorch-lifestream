@@ -1,18 +1,14 @@
 import logging
-import os
-import pickle
 from itertools import islice
 
 import numpy as np
 import torch
 
-from dltranz.cpc import CPC_Ecoder
 from dltranz.data_load import read_data_gen
-from dltranz.seq_encoder import LastStepEncoder
 from dltranz.util import init_logger, get_conf
 from metric_learning import prepare_embeddings
-from dltranz.metric_learn.inference_tools import load_model, score_part_of_data
-from dltranz.metric_learn.ml_models import ml_model_by_type
+from dltranz.metric_learn.inference_tools import score_part_of_data
+from dltranz.metric_learn.ml_models import load_encoder_for_inference
 
 logger = logging.getLogger(__name__)
 
@@ -45,24 +41,7 @@ def read_dataset(path, conf):
 
 def main(args=None):
     conf = get_conf(args)
-
-    ext = os.path.splitext(conf['model_path.model'])[1]
-    if ext == '.pth':
-        model_f = ml_model_by_type(conf['params.model_type'])
-        model = model_f(conf['params'])
-        model_d = load_model(conf)
-        model.load_state_dict(model_d)
-
-        if isinstance(model, CPC_Ecoder):
-            trx_e, rnn_e = model.trx_encoder, model.seq_encoder
-            l = LastStepEncoder()
-            model = torch.nn.Sequential(trx_e, rnn_e, l)
-
-    elif ext == '.p':
-        model = load_model(conf)
-    else:
-        raise NotImplementedError(f'Unknown model file extension: "{ext}"')
-
+    model = load_encoder_for_inference(conf)
     columns = conf['output.columns']
 
     train_data = read_dataset(conf['dataset.train_path'], conf)
