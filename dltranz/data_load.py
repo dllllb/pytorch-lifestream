@@ -310,7 +310,7 @@ class TrxDataset(Dataset):
 
     def __getitem__(self, idx):
         x = self.data[idx]['feature_arrays']
-        y = self.data[idx]['target']
+        y = self.data[idx].get('target', None)
 
         return x, self.y_dtype(y)
 

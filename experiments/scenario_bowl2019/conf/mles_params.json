@@ -1,0 +1,94 @@
+{
+  "params": {
+    "experiment": {
+      "name": "default"
+    },
+    "device": "cuda",
+    "model_type": "rnn",
+    "rnn": {
+      "type": "gru",
+      "hidden_size": 64,
+      "bidir": false,
+      "trainable_starter": "static"
+    },
+    "transf": {
+      "train_starter": false,
+      "shared_layers": false,
+      "input_size": 64,
+      "n_heads": 4,
+      "dim_hidden": 64,
+      "dropout": 0.1,
+      "n_layers": 4,
+      "use_positional_encoding": false,
+      "max_seq_len": 1000,
+      "use_after_mask": false,
+      "use_src_key_padding_mask": false
+    },
+    "use_normalization_layer" : true,
+    "trx_encoder": {
+      "norm_embeddings": false,
+      "embeddings_noise": 0.003,
+      "embeddings": {
+        "event_id": {"in": 500, "out": 16},
+        "event_code": {"in": 50, "out": 8},
+        "event_type": {"in": 6, "out": 8},
+        "title": {"in": 50, "out": 8},
+        "world": {"in": 6, "out": 8},
+        "correct": {"in": 4, "out": 2}
+      },
+      "numeric_values": {
+      }
+    },
+    "lr_scheduler": {
+      "step_size": 30,
+      "step_gamma": 0.8
+    },
+    "train": {
+      "num_workers": 16,
+      "batch_size": 256,
+      "split_strategy": {
+        "split_strategy": "SampleSlices",
+        "split_count": 5,
+        "cnt_min": 300,
+        "cnt_max": 1500
+      },
+      "sampling_strategy": "HardNegativePair",
+      "trx_dropout": 0.01,
+      "max_seq_len": 5000,
+      "neg_count": 5,
+      "loss": "ContrastiveLoss",
+      "margin": 0.5,
+      "lr": 0.002,
+      "weight_decay": 0.0,
+      "n_epoch": 100
+    },
+    "norm_scores": false,
+    "valid": {
+      "batch_size": 256,
+      "num_workers": 16,
+      "split_strategy": {
+        "split_strategy": "SampleSlices",
+        "split_count": 5,
+        "cnt_min": 300,
+        "cnt_max": 1500
+      },
+      "max_seq_len": 5000
+    }
+  },
+
+  "stats": {
+    "path": "runs/bowl_ml_result.json"
+  },
+
+  "save_model": true,
+  "model_path": {
+    "model": "models/mles_model.p",
+    "only_encoder": false
+  },
+
+  "output": {
+    "path": "data/mles_embeddings",
+    "format": "pickle",
+    "columns": ["game_session"]
+  }
+}

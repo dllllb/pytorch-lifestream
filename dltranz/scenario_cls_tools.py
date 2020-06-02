@@ -9,7 +9,7 @@ import lightgbm as lgb
 import pandas as pd
 import scipy.stats
 import xgboost as xgb
-from sklearn.linear_model import LogisticRegression
+from sklearn.linear_model import LogisticRegression, LinearRegression
 from sklearn.model_selection import StratifiedKFold
 
 import dltranz.fastai.fastai_tools as fai
@@ -109,11 +109,20 @@ def train_and_score(kw_params: KWParamsTrainAndScore):
         X_test = pd.concat([df.fillna(fn) / n for df, fn, n in zip(test_features, df_fn, df_norm)], axis=1)
 
         if kw_params.model_type == 'linear':
-            model = LogisticRegression(**kw_params.model_params)
+            if kw_params.model_params.get('objective') == 'regression':
+                model = LinearRegression(**{k:v for k,v in kw_params.model_params.items() if k != 'objective'})
+            else:
+                model = LogisticRegression(**{k:v for k,v in kw_params.model_params.items() if k != 'objective'})
         elif kw_params.model_type == 'xgb':
-            model = xgb.XGBClassifier(**kw_params.model_params)
+            if kw_params.model_params.get('objective', 'classification').startswith('reg'):
+                model = xgb.XGBRegressor(**kw_params.model_params)
+            else:
+                model = xgb.XGBClassifier(**kw_params.model_params)
         elif kw_params.model_type == 'lgb':
-            model = lgb.LGBMClassifier(**kw_params.model_params)
+            if kw_params.model_params.get('objective') == 'regression':
+                model = lgb.LGBMRegressor(**kw_params.model_params)
+            else:
+                model = lgb.LGBMClassifier(**kw_params.model_params)
         elif kw_params.model_type in ('neural_automl', 'fastai'):
             pass
         else:

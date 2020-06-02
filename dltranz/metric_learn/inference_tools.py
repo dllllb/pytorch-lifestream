@@ -37,14 +37,14 @@ class ModelEnsemble(torch.nn.Module):
 def load_model(conf):
     if 'model' in conf['model_path']:
         path = conf['model_path.model']
-        model = torch.load(path)
+        model = torch.load(path, map_location=torch.device("cpu"))
         logger.info(f'Model loaded from "{path}"')
         return model
     elif 'models' in conf['model_path']:
         raise NotImplementedError()
 
         path = conf['model_path.models']
-        models = [torch.load(p) for p in path]
+        models = [torch.load(p, map_location=torch.device("cpu")) for p in path]
         logger.info(f'Models loaded from "{path}"')
         return ModelEnsemble(models)
 

@@ -78,6 +78,15 @@ class BCELoss(nn.Module):
         return self.loss(pred.float(), true.float())
 
 
+class MSELoss(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.loss = nn.MSELoss()
+
+    def forward(self, pred, true):
+        return self.loss(pred.float(), true.float())
+
+
 class PseudoLabeledLoss(nn.Module):
     def __init__(self, loss, pl_threshold=0.5, unlabeled_weight=1.):
         super().__init__()
@@ -126,7 +135,7 @@ def get_loss(params):
     elif loss_type == 'mae':
         loss = nn.L1Loss()
     elif loss_type == 'mse':
-        loss = nn.MSELoss()
+        loss = MSELoss()
     elif loss_type == 'pseudo_labeled':
         loss = PseudoLabeledLoss(
             loss=get_loss(params['labeled']),
@@ -140,3 +149,4 @@ def get_loss(params):
         loss = AllStateLoss(loss)
 
     return loss
+

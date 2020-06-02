@@ -7,13 +7,14 @@ from time import strftime
 import torch
 from ignite.contrib.metrics import ROC_AUC
 from ignite.metrics import Accuracy, Metric
-from sklearn.metrics import roc_auc_score
+from sklearn.metrics import roc_auc_score, cohen_kappa_score
 
 from dltranz.ensemble import ModelEnsemble
 from dltranz.data_load import create_train_loader, create_validation_loader, ZeroDownSampler, \
     LastKTrxDataset
 from dltranz.loss import get_loss
 from dltranz.train import get_optimizer, get_lr_scheduler, fit_model, score_model, TensorboardHandler
+from dltranz.util import eval_kappa_regression
 
 
 logger = logging.getLogger(__name__)
@@ -42,7 +43,9 @@ def get_epoch_score_metric(metric_name):
         'auroc': ROC_AUC,
         'accuracy': Accuracy,
         'auroc_labeled': ROC_AUC_labeled,
-        'accuracy_labeled' : Accuracy_labeled
+        'accuracy_labeled': Accuracy_labeled,
+        'kappa': Kappa,
+        'kappa_labeled': Kappa_labeled
     }.get(metric_name)
     if m is not None:
         return m
@@ -211,3 +214,13 @@ class Accuracy_labeled(CustomMetric):
 class ROC_AUC_labeled(CustomMetric):
     def __init__(self):
         super().__init__(func = lambda x,y: roc_auc_score(y.cpu().numpy(), x['labeled'].cpu().numpy()))
+
+
+class Kappa(CustomMetric):
+    def __init__(self):
+        super().__init__(func = lambda x,y: eval_kappa_regression(y.cpu().numpy(), x.cpu().numpy()))
+
+
+class Kappa_labeled(CustomMetric):
+    def __init__(self):
+        super().__init__(func = lambda x,y: eval_kappa_regression(y.cpu().numpy(), x['labeled'].cpu().numpy()))

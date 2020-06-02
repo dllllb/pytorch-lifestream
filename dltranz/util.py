@@ -8,6 +8,9 @@ import sys
 from glob import glob
 
 import pandas as pd
+import numpy as np
+
+from sklearn.metrics import cohen_kappa_score
 
 logger = logging.getLogger(__name__)
 
@@ -222,3 +225,29 @@ def plot_arrays(a, b, title=None):
 
     if title:
         plt.title(title)
+
+
+def eval_kappa_regression(y_true, y_pred):
+    dist = {3: 0.5, 0: 0.239, 2: 0.125, 1: 0.136} # ground shares
+    
+    acum = 0
+    bound = {}
+    for i in range(3):
+        acum += dist[i]
+        bound[i] = np.percentile(y_pred, acum * 100)
+
+    y_pred = np.where(
+        y_pred<=bound[0],
+        0,
+        np.where(
+            y_pred<=bound[1],
+            1,
+            np.where(
+                y_pred<=bound[2],
+                2,
+                3
+            )
+        )
+    ).reshape(y_true.shape)
+
+    return cohen_kappa_score(y_true, y_pred, weights='quadratic')
