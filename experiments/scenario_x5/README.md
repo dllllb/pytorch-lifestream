@@ -22,7 +22,7 @@ python ../../ml_inference.py    params.device="$SC_DEVICE" --conf conf/dataset.h
 
 
 # Train a supervised model and save scores to the file
-python -m scenario_x5 fit_target params.device="$SC_DEVICE" --conf conf/dataset.hocon conf/fit_target_params.json
+python -m scenario_x5 fit_target params.device="$SC_DEVICE" --conf conf/dataset.hocon conf/fit_target_params_rnn.json
 
 
 # Train the MeLES encoder and take embedidngs; inference

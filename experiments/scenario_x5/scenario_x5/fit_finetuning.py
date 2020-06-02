@@ -30,7 +30,7 @@ def load_model(conf):
     else:
         raise NotImplementedError(f'NotImplementedError for model_type="{model_type}"')
 
-    head_output_size = 1
+    head_output_size = 4
 
     layers = [
         trx_encoder,

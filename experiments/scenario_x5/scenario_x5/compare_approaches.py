@@ -3,9 +3,10 @@ import os
 from functools import partial, reduce
 from operator import iadd
 
+import numpy as np
 import pandas as pd
 from glob import glob
-from sklearn.metrics import roc_auc_score, make_scorer
+from sklearn.metrics import roc_auc_score, make_scorer, accuracy_score
 
 import dltranz.scenario_cls_tools as sct
 from scenario_x5.const import (
@@ -28,6 +29,13 @@ def filter_target(df, col_target_name):
 
     if col_target_name == 'gender':
         return df[lambda x: x[col_target_name].isin(mapping.keys())]
+    elif col_target_name == 'age':
+        df['age'] = np.where(
+            (df['age'] < 10) | (df['age'] > 90), -1, np.where(
+                df['age'] < 35, 0, np.where(
+                    df['age'] < 45, 1, np.where(
+                        df['age'] < 60, 2, 3))))
+        return df[df['age'].ge(0)]
     else:
         raise AttributeError(f'Unknown col_target_name: {col_target_name}')
 
@@ -40,14 +48,16 @@ def get_scores(args):
     result = []
     valid_scores, test_scores = load_scores(conf, **params)
     for fold_n, (valid_fold, test_fold) in enumerate(zip(valid_scores, test_scores)):
+        valid_fold['pred'] = np.argmax(valid_fold.values, 1)
+        test_fold['pred'] = np.argmax(test_fold.values, 1)
         valid_fold = valid_fold.merge(df_target, on=COL_ID, how='left')
         test_fold = test_fold.merge(test_target, on=COL_ID, how='left')
 
         result.append({
             'name': name,
             'fold_n': fold_n,
-            'oof_rocauc_score': roc_auc_score(valid_fold[COL_TARGET], valid_fold.iloc[:, 0]),
-            'test_rocauc_score': roc_auc_score(test_fold[COL_TARGET], test_fold.iloc[:, 0])
+            'oof_accuracy': (valid_fold['pred'] == valid_fold[COL_TARGET]).mean(),
+            'test_accuracy': (test_fold['pred'] == test_fold[COL_TARGET]).mean(),
         })
 
     return result
@@ -103,7 +113,8 @@ def main(conf):
 
         model_types = {
             'xgb': dict(
-                n_jobs=4,
+                objective='multi:softprob',
+                num_class=4,
                 seed=conf['model_seed'],
                 n_estimators=300,
             ),
@@ -111,8 +122,9 @@ def main(conf):
             'lgb': dict(
                 n_estimators=500,
                 boosting_type='gbdt',
-                objective='binary',
-                metric='auc',
+                objective='multiclass',
+                num_class=4,
+                metric='multi_error',
                 subsample=0.5,
                 subsample_freq=1,
                 learning_rate=0.02,
@@ -121,8 +133,9 @@ def main(conf):
                 lambda_l1=1,
                 lambda_l2=1,
                 min_data_in_leaf=50,
+                num_leaves=50,
                 random_state=conf['model_seed'],
-                n_jobs=8,
+                n_jobs=6,
             ),
         }
 
@@ -133,8 +146,8 @@ def main(conf):
             load_features_f=partial(load_features, conf=conf, **params),
             model_type=model_type,
             model_params=model_params,
-            scorer_name='rocauc_score',
-            scorer=make_scorer(roc_auc_score, needs_proba=True),
+            scorer_name='accuracy',
+            scorer=make_scorer(accuracy_score),
             col_target=COL_TARGET,
             df_train=train_target,
             df_valid=valid_target,
@@ -148,17 +161,17 @@ def main(conf):
         for i, r in enumerate(pool.imap_unordered(sct.train_and_score, args_list)):
             results.append(r)
             logger.info(f'Done {i + 1:4d} from {len(args_list)}')
-        df_results = pd.DataFrame(results).set_index('name')[['oof_rocauc_score', 'test_rocauc_score']]
+        df_results = pd.DataFrame(results).set_index('name')[['oof_accuracy', 'test_accuracy']]
 
     if len(approaches_to_score) > 0:
         # score already trained models on valid and test sets
         args_list = [(name, conf, params, df_target, test_target) for name, params in approaches_to_score.items()]
         results = reduce(iadd, pool.map(get_scores, args_list))
-        df_scores = pd.DataFrame(results).set_index('name')[['oof_rocauc_score', 'test_rocauc_score']]
+        df_scores = pd.DataFrame(results).set_index('name')[['oof_accuracy', 'test_accuracy']]
 
     # combine results
     df_results = pd.concat([df for df in [df_results, df_scores] if df is not None])
-    df_results = sct.group_stat_results(df_results, 'name', ['oof_rocauc_score', 'test_rocauc_score'])
+    df_results = sct.group_stat_results(df_results, 'name', ['oof_accuracy', 'test_accuracy'])
 
     with pd.option_context(
             'display.float_format', '{:.4f}'.format,

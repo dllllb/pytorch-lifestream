@@ -1,5 +1,5 @@
 {
-  "col_target_name": "target_gender",
+  "col_target_name": "target_age",
 
   "params": {
     "device": "cuda",
@@ -41,7 +41,7 @@
       "max_seq_len": 800,
       "batch_size": 32,
       "num_workers": 16,
-      "loss": "bce",
+      "loss": "NLLLoss",
       "lr": 0.0015,
       "optimiser_params": {
         "0.": {"lr": 0.0001},
@@ -60,7 +60,7 @@
       "num_workers": 8
     },
     "norm_scores": false,
-    "score_metric": "auroc",
+    "score_metric": "accuracy",
 
     "pretrained_model_path": "models/mles_model.p",
     "use_batch_norm": true
