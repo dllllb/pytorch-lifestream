@@ -123,7 +123,6 @@ def main(conf):
                 objective='multiclass',
                 num_class=4,
                 metric='multi_error',
-                learning_rate=0.02,
                 subsample=0.5,
                 subsample_freq=1,
                 learning_rate=0.02,
