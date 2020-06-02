@@ -14,9 +14,10 @@
         "segment_id": {"in": 120, "out": 16}
       },
       "numeric_values": {
+        "trn_sum_from_iss": "identity",
         "netto": "identity",
-        "purchase_sum": "identity",
-        "trn_sum_from_iss": "identity"
+        "product_quantity":  "identity",
+        "regular_points_received": "identity"
       },
       "positions": {
         "event_time": {"out_size":  16}
