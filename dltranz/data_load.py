@@ -219,6 +219,35 @@ class AllTimeShuffleDataset(Dataset):
         return new_x, y
 
 
+class AllTimeShuffleMLDataset(Dataset):
+    """Shuffle all transactions in event sequence
+    """
+    def __init__(self, dataset, event_time_name='event_time'):
+        self.core_dataset = dataset
+        self.event_time_name = event_time_name
+
+    def __len__(self):
+        return len(self.core_dataset)
+
+    @staticmethod
+    def get_perm_ix(event_time):
+        n = len(event_time)
+        return torch.randperm(n)
+
+    def __getitem__(self, idx):
+        item = self.core_dataset[idx]
+        if type(item) is list:
+            return [self._one_item(t) for t in item]
+        else:
+            return self._one_item(item)
+
+    def _one_item(self, item):
+        x, y = item
+        ix = self.get_perm_ix(x[self.event_time_name])
+        new_x = {k: v[ix] for k, v in x.items()}
+        return new_x, y
+
+
 class SameTimeShuffleDataset(Dataset):
     """Split sequences on intervals with equal event times. Shuffle events in each split independently
     """
