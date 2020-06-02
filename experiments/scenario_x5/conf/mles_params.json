@@ -4,24 +4,26 @@
       "name": "default"
     },
     "device": "cuda",
-    "model_type": "transf",
+    "model_type": "rnn",
     "trx_encoder": {
       "norm_embeddings": false,
       "embeddings_noise": 0.003,
       "embeddings": {
-        "level_4": {"in": 800, "out": 4},
-        "segment_id": {"in": 150, "out": 4},
-        "is_own_trademark": {"in": 3, "out": 2},
-        "is_alcohol": {"in": 3, "out": 2}
+        "level_3": {"in": 200, "out": 16},
+        "level_4": {"in": 800, "out": 16},
+        "segment_id": {"in": 120, "out": 16}
       },
       "numeric_values": {
+        "trn_sum_from_iss": "identity",
         "netto": "identity",
-        "purchase_sum": "identity",
-        "trn_sum_from_iss": "identity"
-      },
-      "positions": {
-        "event_time": {"out_size":  16}
+        "regular_points_received": "identity"
       }
+    },
+    "rnn": {
+      "type": "gru",
+      "hidden_size": 400,
+      "bidir": false,
+      "trainable_starter": "static"
     },
     "transf": {
       "train_starter": true,
@@ -38,12 +40,12 @@
     },
     "use_normalization_layer": true,
     "lr_scheduler": {
-      "step_size": 10,
+      "step_size": 5,
       "step_gamma": 0.9025
     },
     "train": {
       "num_workers": 8,
-      "batch_size": 128,
+      "batch_size": 256,
       "split_strategy": {
         "split_strategy": "SampleSlices",
         "split_count": 5,
@@ -58,7 +60,8 @@
       "margin": 0.5,
       "lr": 0.002,
       "weight_decay": 0.0,
-      "n_epoch": 10,
+      "all_time_shuffle": false,
+      "n_epoch": 50,
       "_checkpoints": {
         "save_interval": 15,
         "n_saved": 1000,

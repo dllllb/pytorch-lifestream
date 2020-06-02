@@ -7,7 +7,7 @@ import numpy as np
 import torch
 from torch.utils.data import DataLoader
 
-from dltranz.data_load import ConvertingTrxDataset, DropoutTrxDataset, read_data_gen
+from dltranz.data_load import ConvertingTrxDataset, DropoutTrxDataset, read_data_gen, AllTimeShuffleMLDataset
 from dltranz.experiment import update_model_stats
 from dltranz.metric_learn.dataset import SplittingDataset, split_strategy
 from dltranz.metric_learn.dataset import TargetEnumeratorDataset, collate_splitted_rows
@@ -89,6 +89,11 @@ def create_data_loaders(conf):
     train_dataset = ConvertingTrxDataset(train_dataset)
     train_dataset = DropoutTrxDataset(train_dataset, trx_dropout=conf['params.train.trx_dropout'],
                                       seq_len=conf['params.train.max_seq_len'])
+
+    if conf['params.train'].get('all_time_shuffle',False):
+        train_dataset = AllTimeShuffleMLDataset(train_dataset)
+        logger.info('AllTimeShuffle used')
+
     train_loader = DataLoader(
         dataset=train_dataset,
         shuffle=True,

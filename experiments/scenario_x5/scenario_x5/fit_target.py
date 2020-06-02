@@ -33,14 +33,14 @@ def prepare_target_gender(data):
 
 def prepare_target_age(data):
     for rec in data:
-        age = rec['target_age']
+        age = int(rec['target_age'])
         if age < 10 or age > 90:
             rec['target'] = None
         elif age < 35:
             rec['target'] = 0
         elif age < 45:
             rec['target'] = 1
-        elif age < 45:
+        elif age < 60:
             rec['target'] = 2
         else:
             rec['target'] = 3
