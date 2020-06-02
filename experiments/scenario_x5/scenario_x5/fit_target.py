@@ -40,7 +40,7 @@ def prepare_target_age(data):
             rec['target'] = 0
         elif age < 45:
             rec['target'] = 1
-        elif age < 45:
+        elif age < 60:
             rec['target'] = 2
         else:
             rec['target'] = 3
