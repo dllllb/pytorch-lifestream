@@ -15,7 +15,6 @@
       "numeric_values": {
         "trn_sum_from_iss": "identity",
         "netto": "identity",
-        "product_quantity":  "identity",
         "regular_points_received": "identity"
       },
       "was_logified": true,

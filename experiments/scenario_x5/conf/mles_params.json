@@ -16,11 +16,7 @@
       "numeric_values": {
         "trn_sum_from_iss": "identity",
         "netto": "identity",
-        "product_quantity":  "identity",
         "regular_points_received": "identity"
-      },
-      "positions": {
-        "event_time": {"out_size":  16}
       }
     },
     "rnn": {
