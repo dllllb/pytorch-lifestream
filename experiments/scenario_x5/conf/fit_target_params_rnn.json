@@ -37,6 +37,10 @@
     "train": {
       "random_neg": false,
       "trx_dropout": 0.03,
+      "ClippingDataset": {
+        "min_len": 50,
+        "max_len": 150
+      },
       "same_time_shuffle": false,
       "all_time_shuffle": true,
       "max_seq_len": 800,
