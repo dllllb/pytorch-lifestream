@@ -12,7 +12,7 @@ from torch.utils.data.dataloader import DataLoader
 from torch.utils.data.dataset import Dataset
 
 from dltranz.data_load import TrxDataset, ConvertingTrxDataset, DropoutTrxDataset, padded_collate, \
-    create_validation_loader, read_data_gen, SameTimeShuffleDataset, AllTimeShuffleDataset
+    create_validation_loader, read_data_gen, SameTimeShuffleDataset, AllTimeShuffleDataset, DropDayDataset
 from dltranz.loss import get_loss
 from dltranz.models import model_by_type
 from dltranz.train import get_optimizer, get_lr_scheduler, fit_model
@@ -120,6 +120,9 @@ def run_experiment(train_ds, valid_ds, params, model_f):
     model = model_f(params)
 
     train_ds = DropoutTrxDataset(train_ds, params['train.trx_dropout'], params['train.max_seq_len'])
+    if 'DropDayDataset' in params['train']:
+        train_ds = DropDayDataset(train_ds)
+        logger.info('DropDayDataset used')
     if 'ClippingDataset' in params['train']:
         train_ds = ClippingDataset(train_ds, **params['train.ClippingDataset'])
         logger.info('ClippingDataset used')

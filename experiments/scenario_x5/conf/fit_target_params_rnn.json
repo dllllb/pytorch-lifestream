@@ -37,6 +37,7 @@
     "train": {
       "random_neg": false,
       "trx_dropout": 0.03,
+      "DropDayDataset": {},
       "ClippingDataset": {
         "min_len": 50,
         "max_len": 150
