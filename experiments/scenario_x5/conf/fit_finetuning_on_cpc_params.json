@@ -59,18 +59,18 @@
     "score_metric": "accuracy",
 
     "model_path": {"model": "models/cpc_checkpoints/cpc_model_20.pth"},
-    "use_batch_norm": false
+    "use_batch_norm": true
   },
 
   "save_model": false,
 
   "output": {
     "valid": {
-      "path": "data/cpc_finetuning_scores_20/valid",
+      "path": "data/cpc_finetuning_scores/valid",
       "format": "pickle"
     },
     "test": {
-      "path": "data/cpc_finetuning_scores_20/test",
+      "path": "data/cpc_finetuning_scores/test",
       "format": "pickle"
     },
     "columns": ["client_id"]
