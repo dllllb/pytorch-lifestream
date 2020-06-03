@@ -10,9 +10,9 @@
       "norm_embeddings": false,
       "embeddings_noise": 0.003,
       "embeddings": {
-        "level_3": {"in": 200, "out": 4},
-        "level_4": {"in": 800, "out": 4},
-        "segment_id": {"in": 120, "out": 4}
+        "level_3": {"in": 200, "out": 16},
+        "level_4": {"in": 800, "out": 16},
+        "segment_id": {"in": 120, "out": 16}
       },
       "numeric_values": {
         "trn_sum_from_iss": "identity",
@@ -22,7 +22,7 @@
     },
     "rnn": {
       "type": "gru",
-      "hidden_size": 64,
+      "hidden_size": 96,
       "bidir": false,
       "trainable_starter": "static"
     },
@@ -47,13 +47,13 @@
       "batch_size": 32,
       "num_workers": 16,
       "loss": "NLLLoss",
-      "lr": 0.002,
+      "lr": 0.004,
       "weight_decay": 0.0,
-      "n_epoch": 7
+      "n_epoch": 10
     },
     "lr_scheduler": {
-      "step_size": 3,
-      "step_gamma": 0.5
+      "step_size": 1,
+      "step_gamma": 0.85
     },
     "valid": {
       "max_seq_len": 800,
