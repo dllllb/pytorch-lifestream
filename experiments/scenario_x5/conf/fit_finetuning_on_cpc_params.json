@@ -10,14 +10,14 @@
       "norm_embeddings": false,
       "embeddings_noise": 0.003,
       "embeddings": {
-        "level_3": {"in": 200, "out": 16},
-        "level_4": {"in": 800, "out": 16},
-        "segment_id": {"in": 120, "out": 16}
+        "level_3": {"in": 200, "out": 32},
+        "level_4": {"in": 800, "out": 32},
+        "segment_id": {"in": 120, "out": 32}
       },
       "numeric_values": {
         "trn_sum_from_iss": "identity",
         "netto": "identity",
-        "regular_points_received": "identity",
+        "regular_points_received": "identity"
       }
     },
     "rnn": {
@@ -38,10 +38,10 @@
       "batch_size": 32,
       "num_workers": 16,
       "loss": "NLLLoss",
-      "lr": 0.004,
+      "lr": 0.001,
       "optimiser_params": {
-        "0.": {"lr": 0.00004},
-        "1.": {"lr": 0.00004}
+        "0.": {"lr": 0.00001},
+        "1.": {"lr": 0.00001}
       },
       "weight_decay": 0.0,
       "n_epoch": 8
@@ -58,7 +58,7 @@
     "norm_scores": false,
     "score_metric": "accuracy",
 
-    "model_path": {"model": "models/cpc_checkpoints/cpc_model_20.pth"},
+    "model_path": {"model": "models/cpc_checkpoints/cpc_model_28.pth"},
     "use_batch_norm": true
   },
 
