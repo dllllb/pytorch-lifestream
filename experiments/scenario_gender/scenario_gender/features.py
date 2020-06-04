@@ -61,7 +61,8 @@ def _tr_type_stat(conf):
 
 
 def _metric_learning_embeddings(conf, file_name):
-    df = pd.read_pickle(os.path.join(conf['data_path'], file_name)).set_index(COL_ID)
+    df = pd.read_pickle(os.path.join(conf['data_path'], file_name))
+    df = df.assign(**{COL_ID: lambda x: x[COL_ID].astype(int)}).set_index(COL_ID)
     return df
 
 
@@ -94,9 +95,11 @@ def load_features(
 
 def load_scores(conf, target_scores_name):
     valid_files = glob(os.path.join(conf['data_path'], target_scores_name, 'valid', '*'))
-    valid_scores = [pd.read_pickle(f).set_index(COL_ID) for f in valid_files]
+    valid_scores = [pd.read_pickle(f).assign(**{COL_ID: lambda x: x[COL_ID].astype(int)}).set_index(COL_ID)
+                    for f in valid_files]
 
     test_files = glob(os.path.join(conf['data_path'], target_scores_name, 'test', '*'))
-    test_scores = [pd.read_pickle(f).set_index(COL_ID) for f in test_files]
+    test_scores = [pd.read_pickle(f).assign(**{COL_ID: lambda x: x[COL_ID].astype(int)}).set_index(COL_ID)
+                   for f in test_files]
 
     return valid_scores, test_scores
