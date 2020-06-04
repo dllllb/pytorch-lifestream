@@ -1,0 +1,6 @@
+
+of_accuracy                                                         test_accuracy                                                        
+                                             mean t_int_l t_int_h    std                           values          mean t_int_l t_int_h    std                           values
+name                                                                                                                                                                           
+lgb_embeds: emb__SampleRandom.pickle       0.5260  0.5245  0.5275 0.0011  [0.525 0.525 0.526 0.527 0.528]        0.5267  0.5257  0.5277 0.0007  [0.526 0.526 0.527 0.527 0.528]
+lgb_embeds: emb__SplitRandom.pickle        0.5253  0.5236  0.5270 0.0012  [0.524 0.525 0.525 0.526 0.527]        0.5260  0.5253  0.5267 0.0005  [0.526 0.526 0.526 0.526 0.527]
