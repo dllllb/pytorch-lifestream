@@ -182,7 +182,7 @@ def group_stat_results(df, group_col_name, col_agg_metric=None, col_list_metrics
         n = len(x)
         s = x.std(ddof=1)
 
-        return scipy.stats.t.interval(p, n - 1, loc=x.mean(), scale=(s + eps) / ((n - 1) ** 0.5))
+        return scipy.stats.t.interval(p, n - 1, loc=x.mean(), scale=(s + eps) / (n ** 0.5))
 
     def t_int_l(x, p=0.95):
         return t_interval(x, p)[0]
