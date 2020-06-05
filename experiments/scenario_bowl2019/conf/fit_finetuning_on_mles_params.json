@@ -37,10 +37,10 @@
       "loss": "NLLLoss",
       "lr": 0.001,
       "weight_decay": 0.0,
-      "n_epoch": 15
+      "n_epoch": 10
     },
     "lr_scheduler": {
-      "step_size": 10,
+      "step_size": 4,
       "step_gamma": 0.1
     },
     "valid": {
