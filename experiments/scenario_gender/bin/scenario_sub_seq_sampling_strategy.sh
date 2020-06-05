@@ -8,7 +8,7 @@ python ../../metric_learning.py \
 python ../../ml_inference.py \
     model_path.model="models/gender_mlm__$SC_SUFFIX.p" \
     output.path="data/emb__$SC_SUFFIX" \
-    --conf conf/dataset.hocon conf/gender_ml_params_inference.json
+    --conf conf/dataset.hocon conf/mles_params.json
 
 
 export SC_SUFFIX="SplitRandom"
@@ -21,7 +21,7 @@ python ../../metric_learning.py \
 python ../../ml_inference.py \
     model_path.model="models/gender_mlm__$SC_SUFFIX.p" \
     output.path="data/emb__$SC_SUFFIX" \
-    --conf conf/dataset.hocon conf/gender_ml_params_inference.json
+    --conf conf/dataset.hocon conf/mles_params.json
 
 
 # Compare
