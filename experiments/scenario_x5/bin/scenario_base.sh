@@ -15,6 +15,6 @@ python ../../ml_inference.py \
     --conf "conf/dataset.hocon" "conf/mles_params.json"
 
 # Compare
-python -m scenario_age_pred compare_approaches --output_file "results/scenario_base.csv" \
+python -m scenario_x5 compare_approaches --output_file "results/scenario_base.csv" \
     --n_workers 1 --models lgb --embedding_file_names \
     "emb__base.pickle"
