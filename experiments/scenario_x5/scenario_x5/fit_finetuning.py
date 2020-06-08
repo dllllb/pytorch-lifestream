@@ -42,7 +42,7 @@ def load_model(conf):
 
     layers.extend([
         torch.nn.Linear(input_size, head_output_size),
-        torch.nn.LogSoftmax(dim=1)
+        torch.nn.LogSoftmax(dim=1),
     ])
 
     model = torch.nn.Sequential(*layers)
