@@ -28,6 +28,9 @@ python -m scenario_x5 fit_target params.device="$SC_DEVICE" --conf conf/dataset.
 # Train the MeLES encoder and take embedidngs; inference
 python ../../metric_learning.py params.device="$SC_DEVICE" --conf conf/dataset.hocon conf/mles_params.json
 python ../../ml_inference.py    params.device="$SC_DEVICE" --conf conf/dataset.hocon conf/mles_params.json 
+# Train a special MeLES model for fine-tuning 
+# it is quite smaller, than one which is used for embeddings extraction, due to insufficiency labeled data to fine-tune a big model. 
+python ../../metric_learning.py params.device="$SC_DEVICE" --conf conf/dataset.hocon conf/mles_params_for_finetuning.json
 # Fine tune the MeLES model in supervised mode and save scores to the file
 python -m scenario_x5 fit_finetuning params.device="$SC_DEVICE" --conf conf/dataset.hocon conf/fit_finetuning_on_mles_params.json
 

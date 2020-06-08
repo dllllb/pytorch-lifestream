@@ -44,6 +44,7 @@ def load_model(params):
     ])
 
     model = torch.nn.Sequential(*layers)
+
     return model
 
 

@@ -21,7 +21,7 @@
     },
     "rnn": {
       "type": "gru",
-      "hidden_size": 800,
+      "hidden_size": 400,
       "bidir": false,
       "trainable_starter": "static"
     },
@@ -40,7 +40,7 @@
     },
     "use_normalization_layer": true,
     "lr_scheduler": {
-      "step_size": 3,
+      "step_size": 1,
       "step_gamma": 0.9025
     },
     "train": {
@@ -61,9 +61,9 @@
       "lr": 0.002,
       "weight_decay": 0.0,
       "all_time_shuffle": true,
-      "n_epoch": 30,
-      "checkpoints": {
-        "save_interval": 5,
+      "n_epoch": 10,
+      "_checkpoints": {
+        "save_interval": 15,
         "n_saved": 1000,
         "dirname": "models/mles_checkpoints/",
         "filename_prefix": "mles",
@@ -86,7 +86,7 @@
 
   "save_model": true,
   "model_path": {
-    "model": "models/mles_model.p",
+    "model": "models/mles_model_ft.p",
     "only_encoder": true
   },
 
