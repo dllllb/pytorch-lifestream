@@ -88,12 +88,12 @@ def main(conf):
         approaches_to_train.update({
             'baseline': {'metric_learning_embedding_name': conf['baseline_name']},
         })
-        approaches_to_train.update({
-            f"embeds: {file_name} and baseline": {
-                'metric_learning_embedding_name': [file_name, conf['baseline_name']]
-            }
-            for file_name in embedding_file_names
-        })
+        # approaches_to_train.update({
+        #     f"embeds: {file_name} and baseline": {
+        #         'metric_learning_embedding_name': [file_name, conf['baseline_name']]
+        #     }
+        #     for file_name in embedding_file_names
+        # })
 
     approaches_to_score = {
         f"scores: {file_name}": {'target_scores_name': file_name}
@@ -120,14 +120,14 @@ def main(conf):
             ),
             'linear': dict(),
             'lgb': dict(
-                n_estimators=500,
+                n_estimators=1000,
                 boosting_type='gbdt',
                 objective='multiclass',
                 num_class=4,
                 metric='multi_error',
                 subsample=0.5,
                 subsample_freq=1,
-                learning_rate=0.02,
+                learning_rate=0.05,
                 feature_fraction=0.75,
                 max_depth=6,
                 lambda_l1=1,

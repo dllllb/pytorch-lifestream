@@ -277,6 +277,30 @@ class SameTimeShuffleDataset(Dataset):
         return new_x, y
 
 
+class DropDayDataset(Dataset):
+    """Split sequences on intervals with equal event times. Shuffle events in each split independently
+    """
+    def __init__(self, dataset, event_time_name='event_time'):
+        self.dataset = dataset
+        self.event_time_name = event_time_name
+
+    def __len__(self):
+        return len(self.dataset)
+
+    @staticmethod
+    def get_perm_ix(event_time):
+        days = torch.unique(event_time, sorted=True)
+        ix = np.random.choice(len(days), 1)[0]
+        mask = event_time != days[ix]
+        return mask
+
+    def __getitem__(self, item):
+        x, y = self.dataset[item]
+        mask = self.get_perm_ix(x[self.event_time_name])
+        new_x = {k: v[mask] for k, v in x.items()}
+        return new_x, y
+
+
 class LastKTrxDataset(Dataset):
     def __init__(self, dataset: Dataset, share):
         self.core_dataset = dataset

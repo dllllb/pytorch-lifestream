@@ -1,14 +1,14 @@
 import logging
-import os
-import pickle
+from itertools import islice
+
 import numpy as np
 import torch
 
 from dltranz.data_load import read_data_gen
 from dltranz.util import init_logger, get_conf
 from metric_learning import prepare_embeddings
-from dltranz.metric_learn.inference_tools import load_model, score_part_of_data
-from dltranz.metric_learn.ml_models import ml_model_by_type
+from dltranz.metric_learn.inference_tools import score_part_of_data
+from dltranz.metric_learn.ml_models import load_encoder_for_inference
 
 logger = logging.getLogger(__name__)
 
@@ -29,6 +29,8 @@ def fill_target(seq):
 
 def read_dataset(path, conf):
     data = read_data_gen(path)
+    if 'max_rows' in conf['dataset']:
+        data = islice(data, conf['dataset.max_rows'])
     data = fill_target(data)
     data = prepare_embeddings(data, conf, is_train=False)
     data = list(data)
@@ -39,18 +41,7 @@ def read_dataset(path, conf):
 
 def main(args=None):
     conf = get_conf(args)
-
-    ext = os.path.splitext(conf['model_path.model'])[1]
-    if ext == '.pth':
-        model_f = ml_model_by_type(conf['params.model_type'])
-        model = model_f(conf['params'])
-        model_d = load_model(conf)
-        model.load_state_dict(model_d)
-    elif ext == '.p':
-        model = load_model(conf)
-    else:
-        raise NotImplementedError(f'Unknown model file extension: "{ext}"')
-
+    model = load_encoder_for_inference(conf)
     columns = conf['output.columns']
 
     train_data = read_dataset(conf['dataset.train_path'], conf)

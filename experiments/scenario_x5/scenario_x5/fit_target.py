@@ -1,14 +1,18 @@
 import datetime
 import logging
+import math
+import random
 import sys
+from copy import deepcopy
 from itertools import islice
 
 import numpy as np
 from sklearn.model_selection import StratifiedKFold
 from torch.utils.data.dataloader import DataLoader
+from torch.utils.data.dataset import Dataset
 
 from dltranz.data_load import TrxDataset, ConvertingTrxDataset, DropoutTrxDataset, padded_collate, \
-    create_validation_loader, read_data_gen, SameTimeShuffleDataset, AllTimeShuffleDataset
+    create_validation_loader, read_data_gen, SameTimeShuffleDataset, AllTimeShuffleDataset, DropDayDataset
 from dltranz.loss import get_loss
 from dltranz.models import model_by_type
 from dltranz.train import get_optimizer, get_lr_scheduler, fit_model
@@ -81,10 +85,47 @@ def create_ds(train_data, valid_data, conf):
     return train_ds, valid_ds
 
 
+class ClippingDataset(Dataset):
+    def __init__(self, delegate, min_len=250, max_len=350, rate_for_min=0.9):
+        super().__init__()
+
+        self.delegate = delegate
+        self.min_len = min_len
+        self.max_len = max_len
+        self.rate_for_min = rate_for_min
+
+    def __len__(self):
+        return len(self.delegate)
+
+    def __getitem__(self, item):
+        x, y = self.delegate[item]
+
+        seq_len = len(x['event_time'])
+        if seq_len <= 5:
+            return x, y
+
+        new_len = random.randint(self.min_len, self.max_len)
+        if new_len > seq_len * self.rate_for_min:
+            new_len = math.ceil(seq_len * self.rate_for_min)
+
+        avail_pos = seq_len - new_len
+        pos = random.randint(0, avail_pos)
+
+        x = deepcopy(x)
+        x = {k: v[pos:pos+new_len] for k, v in x.items()}
+        return x, y
+
+
 def run_experiment(train_ds, valid_ds, params, model_f):
     model = model_f(params)
 
     train_ds = DropoutTrxDataset(train_ds, params['train.trx_dropout'], params['train.max_seq_len'])
+    if 'DropDayDataset' in params['train']:
+        train_ds = DropDayDataset(train_ds)
+        logger.info('DropDayDataset used')
+    if 'ClippingDataset' in params['train']:
+        train_ds = ClippingDataset(train_ds, **params['train.ClippingDataset'])
+        logger.info('ClippingDataset used')
     if params['train.same_time_shuffle']:
         train_ds = SameTimeShuffleDataset(train_ds)
         logger.info('SameTimeShuffle used')

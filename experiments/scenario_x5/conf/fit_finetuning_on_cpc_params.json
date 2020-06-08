@@ -4,39 +4,47 @@
   "params": {
     "device": "cuda",
 
-    "model_type": "rnn",
+    "model_type": "cpc_model",
     "ensemble_size": 1,
     "trx_encoder": {
       "norm_embeddings": false,
       "embeddings_noise": 0.003,
       "embeddings": {
-        "level_3": {"in": 200, "out": 4},
-        "level_4": {"in": 800, "out": 4},
-        "segment_id": {"in": 120, "out": 4}
+        "level_3": {"in": 200, "out": 32},
+        "level_4": {"in": 800, "out": 32},
+        "segment_id": {"in": 120, "out": 32}
       },
       "numeric_values": {
         "trn_sum_from_iss": "identity",
         "netto": "identity",
-        "regular_points_received": "identity",
+        "regular_points_received": "identity"
       }
     },
     "rnn": {
-      "hidden_size": 64
+      "type": "gru",
+      "hidden_size": 128,
+      "bidir": false,
+      "trainable_starter": "static"
+    },
+    "cpc": {
+      "n_forward_steps": 6
     },
     "train": {
       "random_neg": false,
-      "trx_dropout": 0.01,
+      "trx_dropout": 0.03,
+      "same_time_shuffle": false,
+      "all_time_shuffle": true,
       "max_seq_len": 800,
       "batch_size": 32,
       "num_workers": 16,
       "loss": "NLLLoss",
-      "lr": 0.0015,
+      "lr": 0.001,
       "optimiser_params": {
-        "0.": {"lr": 0.0001},
-        "1.": {"lr": 0.0001}
+        "0.": {"lr": 0.00001},
+        "1.": {"lr": 0.00001}
       },
       "weight_decay": 0.0,
-      "n_epoch": 4
+      "n_epoch": 8
     },
     "lr_scheduler": {
       "step_size": 1,
@@ -50,8 +58,8 @@
     "norm_scores": false,
     "score_metric": "accuracy",
 
-    "pretrained_model_path": "models/cpc_model.p",
-    "use_batch_norm": false
+    "model_path": {"model": "models/cpc_checkpoints/cpc_model_28.pth"},
+    "use_batch_norm": true
   },
 
   "save_model": false,

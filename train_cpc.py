@@ -6,12 +6,14 @@ from itertools import islice
 import numpy as np
 import torch
 
+from dltranz.metric_learn.ml_models import ml_model_by_type
 from dltranz.seq_encoder import RnnEncoder, LastStepEncoder
 from dltranz.trx_encoder import TrxEncoder
 from dltranz.metric_learn.dataset import create_train_data_loader, create_valid_data_loader
 from dltranz.cpc import CPC_Ecoder, run_experiment
 from dltranz.util import init_logger, get_conf
-from dltranz.data_load import TrxDataset, ConvertingTrxDataset, read_data_gen
+from dltranz.data_load import TrxDataset, ConvertingTrxDataset, read_data_gen, SameTimeShuffleDataset, \
+    AllTimeShuffleDataset
 from metric_learning import prepare_embeddings
 
 logger = logging.getLogger(__name__)
@@ -49,17 +51,21 @@ def main(args=None):
     valid_data = [rec for i, rec in enumerate(data) if i in valid_ix]
 
     train_ds, valid_ds = create_ds(train_data, valid_data, conf)
+    if conf['params.train.same_time_shuffle']:
+        train_ds = SameTimeShuffleDataset(train_ds)
+        logger.info('SameTimeShuffle used')
+    if conf['params.train.all_time_shuffle']:
+        train_ds = AllTimeShuffleDataset(train_ds)
+        logger.info('AllTimeShuffle used')
 
     logger.info(f'Train data len: {len(train_data)}, Valid data len: {len(valid_data)}')
 
-    trx_e = TrxEncoder(conf['params.trx_encoder'])
-    trx_e_out_size = TrxEncoder.output_size(conf['params.trx_encoder'])
-    rnn_e = RnnEncoder(trx_e_out_size, conf['params.rnn'])
-    cpc_e = CPC_Ecoder(trx_e, rnn_e, trx_e_out_size, conf['params.cpc'])
+    cpc_e = ml_model_by_type(conf['params.model_type'])(conf['params'])
 
     run_experiment(train_ds, valid_ds, cpc_e, conf)
 
     if conf.get('save_model', False):
+        trx_e, rnn_e = cpc_e.trx_encoder, cpc_e.seq_encoder
         l = LastStepEncoder()
         enc_agr_model = torch.nn.Sequential(trx_e, rnn_e, l)
 

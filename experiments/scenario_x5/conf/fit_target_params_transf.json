@@ -44,6 +44,8 @@
     "train": {
       "random_neg": false,
       "trx_dropout": 0.01,
+      "same_time_shuffle": false,
+      "all_time_shuffle": true,
       "max_seq_len": 800,
       "batch_size": 32,
       "num_workers": 16,

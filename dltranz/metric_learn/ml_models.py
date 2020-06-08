@@ -8,6 +8,7 @@ import torch.nn as nn
 from torch.autograd import Function
 
 from dltranz.agg_feature_model import AggFeatureModel
+from dltranz.cpc import CPC_Ecoder
 from dltranz.transf_seq_encoder import TransformerSeqEncoder
 
 script_dir = os.path.dirname(os.path.realpath(__file__))
@@ -103,14 +104,22 @@ def agg_feature_model(params):
     return m
 
 
+def cpc_model(params):
+    trx_e = TrxEncoder(params['trx_encoder'])
+    trx_e_out_size = TrxEncoder.output_size(params['trx_encoder'])
+    rnn_e = RnnEncoder(trx_e_out_size, params['rnn'])
+    cpc_e = CPC_Ecoder(trx_e, rnn_e, trx_e_out_size, params['cpc'])
+    return cpc_e
+
+
 def ml_model_by_type(model_type):
     model = {
         'rnn': rnn_model,
         'transf': transformer_model,
         'agg_features': agg_feature_model,
+        'cpc_model': cpc_model,
     }[model_type]
     return model
-
 
 
 class MeLESModel(torch.nn.Module):
@@ -141,3 +150,25 @@ class ModelEmbeddingEnsemble(nn.Module):
         else:
             out = torch.cat([m(x) for i, m in enumerate(self.models)], dim=-1)
         return out
+
+
+def load_encoder_for_inference(conf):
+    ext = os.path.splitext(conf['model_path.model'])[1]
+    if ext == '.pth':
+        params = conf.get('params', conf)
+        model_type = params['model_type']
+        model_f = ml_model_by_type(model_type)
+        model = model_f(params)
+        model_d = torch.load(conf['model_path.model'])
+        model.load_state_dict(model_d)
+
+        if isinstance(model, CPC_Ecoder):
+            trx_e, rnn_e = model.trx_encoder, model.seq_encoder
+            l = LastStepEncoder()
+            model = torch.nn.Sequential(trx_e, rnn_e, l)
+
+    elif ext == '.p':
+        model = torch.load(conf['model_path.model'])
+    else:
+        raise NotImplementedError(f'Unknown model file extension: "{ext}"')
+    return model

@@ -4,9 +4,11 @@
       "name": "default"
     },
     "device": "cuda",
+    "model_type": "cpc_model",
+    "use_normalization_layer": false,
     "rnn": {
       "type": "gru",
-      "hidden_size": 64,
+      "hidden_size": 128,
       "bidir": false,
       "trainable_starter": "static"
     },
@@ -14,9 +16,9 @@
       "norm_embeddings": false,
       "embeddings_noise": 0.003,
       "embeddings": {
-        "level_3": {"in": 200, "out": 4},
-        "level_4": {"in": 800, "out": 4},
-        "segment_id": {"in": 120, "out": 4}
+        "level_3": {"in": 200, "out": 32},
+        "level_4": {"in": 800, "out": 32},
+        "segment_id": {"in": 120, "out": 32}
       },
       "numeric_values": {
         "trn_sum_from_iss": "identity",
@@ -29,17 +31,26 @@
       "n_negatives": 40
     },
     "lr_scheduler": {
-      "step_size": 5,
-      "step_gamma": 0.5
+      "step_size": 3,
+      "step_gamma": 0.7
     },
     "train": {
       "num_workers": 8,
-      "batch_size": 64,
+      "batch_size": 32,
       "trx_dropout": 0.01,
+      "same_time_shuffle": false,
+      "all_time_shuffle": true,
       "max_seq_len": 800,
       "lr": 0.001,
       "weight_decay": 0.0,
-      "n_epoch": 10
+      "n_epoch": 28,
+      "checkpoints": {
+        "save_interval": 4,
+        "n_saved": 1000,
+        "dirname": "models/cpc_checkpoints/",
+        "filename_prefix": "cpc",
+        "create_dir": true
+      }
     },
     "norm_scores": false,
     "valid": {

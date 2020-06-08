@@ -10,7 +10,7 @@ from torch.nn import functional as F
 from dltranz.trx_encoder import PaddedBatch
 from dltranz.experiment import update_model_stats, CustomMetric
 from dltranz.metric_learn.metric import BatchRecallTop
-from dltranz.train import get_optimizer, get_lr_scheduler, fit_model
+from dltranz.train import get_optimizer, get_lr_scheduler, fit_model, CheckpointHandler
 from dltranz.data_load import create_train_loader, create_validation_loader
 from dltranz.seq_encoder import LastStepEncoder
 
@@ -129,6 +129,14 @@ def run_experiment(train_ds, valid_ds, model, conf):
     train_loader = create_train_loader(train_ds, params['train'])
     valid_loader = create_validation_loader(valid_ds, params['valid'])
 
+    train_handlers = []
+    if 'checkpoints' in conf['params.train']:
+        checkpoint = CheckpointHandler(
+            model=model,
+            **conf['params.train.checkpoints']
+        )
+        train_handlers.append(checkpoint)
+
     metric_values = fit_model(
         model,
         train_loader,
@@ -138,7 +146,7 @@ def run_experiment(train_ds, valid_ds, model, conf):
         scheduler,
         params,
         valid_metric,
-        train_handlers=[])
+        train_handlers=train_handlers)
 
     exec_sec = time.time() - start
 
