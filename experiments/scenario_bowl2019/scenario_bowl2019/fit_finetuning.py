@@ -25,8 +25,12 @@ def load_model(conf):
     rnn_encoder = pre_model[1]
     step_select_encoder = pre_model[2]
 
-    for p in trx_encoder.parameters():
-        p.requires_grad = False	
+    if conf['train'].get('frooze_trx_encoder', False):
+        for p in trx_encoder.parameters():
+            p.requires_grad = False
+    if conf['train'].get('frooze_seq_encoder', False):
+        for p in rnn_encoder.parameters():
+            p.requires_grad = False
 
     model_type = conf['model_type']
     if model_type == 'rnn':

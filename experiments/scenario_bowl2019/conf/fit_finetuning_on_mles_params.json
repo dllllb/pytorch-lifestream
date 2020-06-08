@@ -23,6 +23,8 @@
       "random_neg": false,
       "trx_dropout": 0.005,
       "max_seq_len": 5000,
+      "frooze_trx_encoder": false,
+      "frooze_seq_encoder": false,
       "SubsamplingDataset": {
         "min_seq_len_s": 500,
         "min_seq_len_e": 500,
@@ -51,7 +53,7 @@
     "norm_scores": false,
     "score_metric": "accuracy",
 
-    "pretrained_model_path": "models/mles_model.p",
+    "pretrained_model_path": "models/mles_model_ft.p",
     "use_batch_norm": true
   },
 
