@@ -38,8 +38,7 @@ do
             mles_finetuning_scores_$SC_AMOUNT \
             cpc_finetuning_scores_$SC_AMOUNT \
         --labeled_amount $SC_AMOUNT \
-        --output_file results/semi_scenario_age_pred_$SC_AMOUNT.csv \
-        --embedding_file_names "mles_embeddings.pickle" "cpc_embeddings.pickle"
+        --output_file results/semi_scenario_age_pred_$SC_AMOUNT.csv
 done
 
 

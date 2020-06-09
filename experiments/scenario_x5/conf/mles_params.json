@@ -62,7 +62,7 @@
       "weight_decay": 0.0,
       "all_time_shuffle": true,
       "n_epoch": 30,
-      "checkpoints": {
+      "_checkpoints": {
         "save_interval": 5,
         "n_saved": 1000,
         "dirname": "models/mles_checkpoints/",
