@@ -1,10 +1,7 @@
-export SC_EPOCH_N=1
-
 # BinomialDevianceLoss (positive stronger)
 export SC_SUFFIX="loss_binomialdeviance"
 python ../../metric_learning.py \
     params.device="$SC_DEVICE" \
-    params.train.n_epoch=$SC_EPOCH_N \
     params.train.loss="BinomialDevianceLoss" \
     params.train.C=1.0 \
     params.train.alpha=1.0 \
@@ -22,7 +19,6 @@ python ../../ml_inference.py \
 export SC_SUFFIX="loss_triplet"
 python ../../metric_learning.py \
     params.device="$SC_DEVICE" \
-    params.train.n_epoch=$SC_EPOCH_N \
     params.train.loss="TripletLoss" \
     params.train.margin=0.6 \
     params.train.sampling_strategy="HardTriplets" \
@@ -39,9 +35,8 @@ python ../../ml_inference.py \
 export SC_SUFFIX="loss_histogramloss"
 python ../../metric_learning.py \
     params.device="$SC_DEVICE" \
-    params.train.n_epoch=$SC_EPOCH_N \
     params.train.loss="HistogramLoss" \
-    params.train.num_steps=25 \
+    params.train.num_steps=51 \
     model_path.model="models/mles__$SC_SUFFIX.p" \
     --conf "conf/dataset.hocon" "conf/mles_params.json"
 python ../../ml_inference.py \
@@ -54,7 +49,6 @@ python ../../ml_inference.py \
 export SC_SUFFIX="loss_margin"
 python ../../metric_learning.py \
     params.device="$SC_DEVICE" \
-    params.train.n_epoch=$SC_EPOCH_N \
     params.train.loss="MarginLoss" \
     params.train.margin=0.2 \
     params.train.beta=0.4 \
@@ -68,8 +62,8 @@ python ../../ml_inference.py \
 
 # Compare
 python -m scenario_x5 compare_approaches --output_file "results/scenario_x5__loss.csv" \
-    --n_workers 3 --models lgb --embedding_file_names \
-    "emb__base.pickle"                    \
+    --n_workers 2 --models lgb --embedding_file_names \
+    "mles_embeddings.pickle"                    \
     "emb__loss_binomialdeviance.pickle"   \
     "emb__loss_triplet.pickle"            \
     "emb__loss_histogramloss.pickle"      \
