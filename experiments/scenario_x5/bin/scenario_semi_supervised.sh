@@ -7,7 +7,7 @@ python ../../metric_learning.py params.device="$SC_DEVICE" \
 python ../../train_cpc.py    params.device="$SC_DEVICE" \
   --conf conf/dataset.hocon conf/cpc_params.json
 
-for SC_AMOUNT in 400000 200000 100000 50000 25000 12000 6000 3000 1000
+for SC_AMOUNT in 290000 200000 100000 50000 25000 12000 6000 3000 1000
 do
 	python -m scenario_x5 fit_target \
         params.device="$SC_DEVICE" \
@@ -38,7 +38,7 @@ do
             mles_finetuning_scores_$SC_AMOUNT \
             cpc_finetuning_scores_$SC_AMOUNT \
         --labeled_amount $SC_AMOUNT \
-        --output_file results/semi_scenario_age_pred_$SC_AMOUNT.csv
+        --output_file results/semi_scenario_x5_$SC_AMOUNT.csv
 done
 
 
