@@ -45,13 +45,12 @@ python ../../ml_inference.py \
     output.path="data/emb__$SC_SUFFIX" \
     --conf conf/dataset.hocon conf/mles_params.json
 
-# MarginLoss (negative stronger)
-export SC_SUFFIX="loss_margin"
+# ContrastiveLoss (negative stronger)
+export SC_SUFFIX="loss_contrastive"
 python ../../metric_learning.py \
     params.device="$SC_DEVICE" \
-    params.train.loss="MarginLoss" \
-    params.train.margin=0.3 \
-    params.train.beta=0.6 \
+    params.train.loss="ContrastiveLoss" \
+    params.train.margin=0.5 \
     model_path.model="models/gender_mlm__$SC_SUFFIX.p" \
     --conf conf/dataset.hocon conf/mles_params.json
 python ../../ml_inference.py \
@@ -68,6 +67,6 @@ python -m scenario_gender compare_approaches --output_file "results/scenario_gen
     "emb__loss_binomialdeviance.pickle"   \
     "emb__loss_triplet.pickle"            \
     "emb__loss_histogramloss.pickle"      \
-    "emb__loss_margin.pickle"
+    "emb__loss_contrastive.pickle"
 
 
