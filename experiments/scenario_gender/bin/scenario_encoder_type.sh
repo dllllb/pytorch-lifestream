@@ -1,5 +1,5 @@
 # LSTM encoder
-export SC_SUFFIX="encoder_lstm_short"
+export SC_SUFFIX="encoder_lstm"
 python ../../metric_learning.py \
     params.device="$SC_DEVICE" \
     params.rnn.type="lstm" \
@@ -9,117 +9,24 @@ python ../../ml_inference.py \
     params.device="$SC_DEVICE" \
     model_path.model="models/gender_mlm__$SC_SUFFIX.p" \
     output.path="data/emb__$SC_SUFFIX" \
-    --conf conf/dataset.hocon conf/gender_ml_params_inference.json
-
-
-export SC_SUFFIX="encoder_lstm_long"
-python ../../metric_learning.py \
-    params.device="$SC_DEVICE" \
-    params.rnn.type="lstm" \
-    params.train.split_strategy.cnt_min=100 \
-    params.train.split_strategy.cnt_max=300 \
-    model_path.model="models/gender_mlm__$SC_SUFFIX.p" \
     --conf conf/dataset.hocon conf/mles_params.json
-python ../../ml_inference.py \
-    params.device="$SC_DEVICE" \
-    model_path.model="models/gender_mlm__$SC_SUFFIX.p" \
-    output.path="data/emb__$SC_SUFFIX" \
-    --conf conf/dataset.hocon conf/gender_ml_params_inference.json
-
-
 #
-# GRU encoder
-export SC_SUFFIX="encoder_gru_short"
-python ../../metric_learning.py \
-    params.device="$SC_DEVICE" \
-    params.rnn.type="gru" \
-    model_path.model="models/gender_mlm__$SC_SUFFIX.p" \
-    --conf conf/dataset.hocon conf/mles_params.json
-python ../../ml_inference.py \
-    params.device="$SC_DEVICE" \
-    model_path.model="models/gender_mlm__$SC_SUFFIX.p" \
-    output.path="data/emb__$SC_SUFFIX" \
-    --conf conf/dataset.hocon conf/gender_ml_params_inference.json
-
-export SC_SUFFIX="encoder_gru_long"
-python ../../metric_learning.py \
-    params.device="$SC_DEVICE" \
-    params.rnn.type="gru" \
-    params.train.split_strategy.cnt_min=100 \
-    params.train.split_strategy.cnt_max=300 \
-    model_path.model="models/gender_mlm__$SC_SUFFIX.p" \
-    --conf conf/dataset.hocon conf/mles_params.json
-python ../../ml_inference.py \
-    params.device="$SC_DEVICE" \
-    model_path.model="models/gender_mlm__$SC_SUFFIX.p" \
-    output.path="data/emb__$SC_SUFFIX" \
-    --conf conf/dataset.hocon conf/gender_ml_params_inference.json
-#
-#
-# Transformer encoder
-export SC_SUFFIX="encoder_transf_bs128_8head_128hs_6layers"
+export SC_SUFFIX="encoder_transf"
 python ../../metric_learning.py \
     params.device="$SC_DEVICE" \
     params.model_type="transf" \
     params.train.batch_size=128 \
-    params.transf.n_heads=8 \
-    params.transf.input_size=128 \
-    params.transf.dim_hidden=128 \
-    params.transf.n_layers=6 \
-    model_path.model="models/gender_mlm__$SC_SUFFIX.p" \
-    --conf conf/dataset.hocon conf/mles_params.json
-python ../../ml_inference.py \
-    params.device="$SC_DEVICE" \
-    model_path.model="models/gender_mlm__$SC_SUFFIX.p" \
-    params.valid.batch_size=64 \
-    output.path="data/emb__$SC_SUFFIX" \
-    --conf conf/dataset.hocon conf/gender_ml_params_inference.json
-
-export SC_SUFFIX="encoder_transf_bs128_4head_128hs_6layers"
-python ../../metric_learning.py \
-    params.device="$SC_DEVICE" \
-    params.model_type="transf" \
-    params.train.batch_size=128 \
-    params.transf.n_heads=4 \
-    params.transf.input_size=128 \
-    params.transf.dim_hidden=128 \
-    params.transf.n_layers=6 \
-    model_path.model="models/gender_mlm__$SC_SUFFIX.p" \
-    --conf conf/dataset.hocon conf/mles_params.json
-python ../../ml_inference.py \
-    params.device="$SC_DEVICE" \
-    model_path.model="models/gender_mlm__$SC_SUFFIX.p" \
-    params.valid.batch_size=64 \
-    output.path="data/emb__$SC_SUFFIX" \
-    --conf conf/dataset.hocon conf/gender_ml_params_inference.json
-
-export SC_SUFFIX="encoder_transf_bs128_8head_128hs_4layers"
-python ../../metric_learning.py \
-    params.device="$SC_DEVICE" \
-    params.model_type="transf" \
-    params.train.batch_size=128 \
-    params.transf.n_heads=8 \
-    params.transf.input_size=128 \
-    params.transf.dim_hidden=128 \
-    params.transf.n_layers=4 \
-    model_path.model="models/gender_mlm__$SC_SUFFIX.p" \
-    --conf conf/dataset.hocon conf/mles_params.json
-python ../../ml_inference.py \
-    params.device="$SC_DEVICE" \
-    model_path.model="models/gender_mlm__$SC_SUFFIX.p" \
-    params.valid.batch_size=64 \
-    output.path="data/emb__$SC_SUFFIX" \
-    --conf conf/dataset.hocon conf/gender_ml_params_inference.json
-
-export SC_SUFFIX="encoder_transf_bs128_8head_096hs_6layers"
-python ../../metric_learning.py \
-    params.device="$SC_DEVICE" \
-    params.model_type="transf" \
-    params.train.batch_size=128 \
+    params.transf.train_starter=true \
+    params.transf.dropout=0.1 \
+    params.transf.max_seq_len=800 \
     params.transf.n_heads=8 \
     params.transf.input_size=96 \
     params.transf.dim_hidden=96 \
     params.transf.n_layers=6 \
+    params.transf.shared_layers=false \
+    params.transf.use_after_mask=false \
+    params.transf.use_positional_encoding=false \
+    params.transf.use_src_key_padding_mask=false \
     model_path.model="models/gender_mlm__$SC_SUFFIX.p" \
     --conf conf/dataset.hocon conf/mles_params.json
 python ../../ml_inference.py \
@@ -127,92 +34,11 @@ python ../../ml_inference.py \
     model_path.model="models/gender_mlm__$SC_SUFFIX.p" \
     params.valid.batch_size=64 \
     output.path="data/emb__$SC_SUFFIX" \
-    --conf conf/dataset.hocon conf/gender_ml_params_inference.json
-
-export SC_SUFFIX="encoder_transf_bs128_8head_064hs_6layers"
-python ../../metric_learning.py \
-    params.device="$SC_DEVICE" \
-    params.model_type="transf" \
-    params.train.batch_size=128 \
-    params.transf.n_heads=8 \
-    params.transf.input_size=64 \
-    params.transf.dim_hidden=64 \
-    params.transf.n_layers=6 \
-    model_path.model="models/gender_mlm__$SC_SUFFIX.p" \
     --conf conf/dataset.hocon conf/mles_params.json
-python ../../ml_inference.py \
-    params.device="$SC_DEVICE" \
-    model_path.model="models/gender_mlm__$SC_SUFFIX.p" \
-    params.valid.batch_size=64 \
-    output.path="data/emb__$SC_SUFFIX" \
-    --conf conf/dataset.hocon conf/gender_ml_params_inference.json
-
-export SC_SUFFIX="encoder_transf_bs064_8head_192hs_6layers"
-python ../../metric_learning.py \
-    params.device="$SC_DEVICE" \
-    params.model_type="transf" \
-    params.train.batch_size=64 \
-    params.transf.n_heads=8 \
-    params.transf.input_size=192 \
-    params.transf.dim_hidden=192 \
-    params.transf.n_layers=6 \
-    model_path.model="models/gender_mlm__$SC_SUFFIX.p" \
-    --conf conf/dataset.hocon conf/mles_params.json
-python ../../ml_inference.py \
-    params.device="$SC_DEVICE" \
-    model_path.model="models/gender_mlm__$SC_SUFFIX.p" \
-    params.valid.batch_size=64 \
-    output.path="data/emb__$SC_SUFFIX" \
-    --conf conf/dataset.hocon conf/gender_ml_params_inference.json
-
-export SC_SUFFIX="encoder_transf_bs064_8head_128hs_6layers"
-python ../../metric_learning.py \
-    params.device="$SC_DEVICE" \
-    params.model_type="transf" \
-    params.train.batch_size=64 \
-    params.transf.n_heads=8 \
-    params.transf.input_size=128 \
-    params.transf.dim_hidden=128 \
-    params.transf.n_layers=6 \
-    model_path.model="models/gender_mlm__$SC_SUFFIX.p" \
-    --conf conf/dataset.hocon conf/mles_params.json
-python ../../ml_inference.py \
-    params.device="$SC_DEVICE" \
-    model_path.model="models/gender_mlm__$SC_SUFFIX.p" \
-    params.valid.batch_size=64 \
-    output.path="data/emb__$SC_SUFFIX" \
-    --conf conf/dataset.hocon conf/gender_ml_params_inference.json
-
-export SC_SUFFIX="encoder_transf_bs128_4head_128hs_4layers"
-python ../../metric_learning.py \
-    params.device="$SC_DEVICE" \
-    params.model_type="transf" \
-    params.train.batch_size=128 \
-    params.transf.n_heads=4 \
-    params.transf.input_size=128 \
-    params.transf.dim_hidden=128 \
-    params.transf.n_layers=4 \
-    model_path.model="models/gender_mlm__$SC_SUFFIX.p" \
-    --conf conf/dataset.hocon conf/mles_params.json
-python ../../ml_inference.py \
-    params.device="$SC_DEVICE" \
-    model_path.model="models/gender_mlm__$SC_SUFFIX.p" \
-    params.valid.batch_size=64 \
-    output.path="data/emb__$SC_SUFFIX" \
-    --conf conf/dataset.hocon conf/gender_ml_params_inference.json
 
 # Compare
 python -m scenario_gender compare_approaches --output_file "results/scenario_gender__encoder_types.csv" \
-    --embedding_file_names \
-    "emb__encoder_lstm_short.pickle"                         \
-    "emb__encoder_lstm_long.pickle"                          \
-    "emb__encoder_gru_short.pickle"                          \
-    "emb__encoder_gru_long.pickle"                           \
-    "emb__encoder_transf_bs128_8head_128hs_6layers.pickle"   \
-    "emb__encoder_transf_bs128_4head_128hs_6layers.pickle"   \
-    "emb__encoder_transf_bs128_8head_128hs_4layers.pickle"   \
-    "emb__encoder_transf_bs128_8head_096hs_6layers.pickle"   \
-    "emb__encoder_transf_bs128_8head_064hs_6layers.pickle"   \
-    "emb__encoder_transf_bs064_8head_192hs_6layers.pickle"   \
-    "emb__encoder_transf_bs064_8head_128hs_6layers.pickle"   \
-    "emb__encoder_transf_bs128_4head_128hs_4layers.pickle"
+    --n_workers 2 --models lgb --embedding_file_names \
+    "mles_embeddings.pickle"              \
+    "emb__encoder_lstm.pickle"            \
+    "emb__encoder_transf.pickle"
