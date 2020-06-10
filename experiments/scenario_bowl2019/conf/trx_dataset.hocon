@@ -1,6 +1,6 @@
 {
   dataset: {
-    train_path: "data/train_trx.p"
+    train_path: "data/train.p"
     valid_size: 0.05
     client_list_shuffle_seed: 42
     preprocessing: {

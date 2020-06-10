@@ -93,4 +93,4 @@ split_dataset          : Test size: 361 clients
 save_features          : Saved to: "/mnt/data/ovsov/repo/experiments/scenario_bowl2019/data/train_trx.p"
 save_features          : Saved to: "/mnt/data/ovsov/repo/experiments/scenario_bowl2019/data/train.p"
 save_features          : Saved to: "/mnt/data/ovsov/repo/experiments/scenario_bowl2019/data/test.p"
-<module>               : Data collected in 236 sec (0:03:56.945174)
+<module>               : Data collected in 222 sec (0:03:42.093412)

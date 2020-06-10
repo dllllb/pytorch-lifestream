@@ -4,12 +4,14 @@
       "name": "default"
     },
     "device": "cuda",
+    "model_type": "cpc_model",
     "rnn": {
       "type": "gru",
       "hidden_size": 128,
       "bidir": false,
       "trainable_starter": "static"
     },
+    "use_normalization_layer": false,
     "trx_encoder": {
       "norm_embeddings": false,
       "embeddings_noise": 0.003,
