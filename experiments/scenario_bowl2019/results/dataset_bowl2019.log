@@ -1,5 +1,5 @@
-load_source_data       : Loaded 11341042 rows from "/mnt/data/ovsov/dltranz/experiments/scenario_bowl2019/data/train.csv"
-load_source_data       : Loaded 1156414 rows from "/mnt/data/ovsov/dltranz/experiments/scenario_bowl2019/data/test.csv"
+load_source_data       : Loaded 11341042 rows from "/mnt/data/ovsov/repo/experiments/scenario_bowl2019/data/train.csv"
+load_source_data       : Loaded 1156414 rows from "/mnt/data/ovsov/repo/experiments/scenario_bowl2019/data/test.csv"
 load_source_data       : Loaded 12497456 rows in total
 trx_to_features        : Found 18000 unique clients
 _td_datetime_string    : To-float time transformation
@@ -87,10 +87,10 @@ trx_count
 trx_to_features        : Feature collection in progress ...
 trx_to_features        : Feature names: ['event_id', 'game_session', 'event_code', 'game_time', 'title', 'event_type', 'world', 'correct']
 trx_to_features        : Prepared features for 18000 clients
-<module>               : Encoding col dict saved to: "/mnt/data/ovsov/dltranz/experiments/scenario_bowl2019/data/encoding.p"
+<module>               : Encoding col dict saved to: "/mnt/data/ovsov/repo/experiments/scenario_bowl2019/data/encoding.p"
 split_dataset          : Train size: 17639 clients
 split_dataset          : Test size: 361 clients
-save_features          : Saved to: "/mnt/data/ovsov/dltranz/experiments/scenario_bowl2019/data/train_trx.p"
-save_features          : Saved to: "/mnt/data/ovsov/dltranz/experiments/scenario_bowl2019/data/train.p"
-save_features          : Saved to: "/mnt/data/ovsov/dltranz/experiments/scenario_bowl2019/data/test.p"
-<module>               : Data collected in 1027 sec (0:17:07.182893)
+save_features          : Saved to: "/mnt/data/ovsov/repo/experiments/scenario_bowl2019/data/train_trx.p"
+save_features          : Saved to: "/mnt/data/ovsov/repo/experiments/scenario_bowl2019/data/train.p"
+save_features          : Saved to: "/mnt/data/ovsov/repo/experiments/scenario_bowl2019/data/test.p"
+<module>               : Data collected in 222 sec (0:03:42.093412)

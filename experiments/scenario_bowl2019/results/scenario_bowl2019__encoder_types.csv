@@ -1,8 +1,8 @@
                                                                 oof_accuracy                                                         test_accuracy                                                        
                                                                         mean t_int_l t_int_h    std                           values          mean t_int_l t_int_h    std                           values
 name                                                                                                                                                                                                      
-lgb_embeds: emb__encoder_gru_long.pickle                              0.6215  0.6175  0.6254 0.0028  [0.617 0.621 0.622 0.623 0.625]        0.6041  0.5994  0.6088 0.0034  [0.598 0.604 0.605 0.606 0.607]
-lgb_embeds: emb__encoder_gru_short.pickle                             0.6189  0.6109  0.6269 0.0058  [0.611 0.615 0.621 0.621 0.626]        0.6038  0.5979  0.6097 0.0043  [0.598 0.602 0.603 0.606 0.610]
-lgb_embeds: emb__encoder_lstm_long.pickle                             0.6215  0.6139  0.6290 0.0055  [0.614 0.620 0.621 0.623 0.629]        0.5960  0.5879  0.6041 0.0058  [0.590 0.591 0.596 0.600 0.603]
-lgb_embeds: emb__encoder_lstm_short.pickle                            0.6208  0.6180  0.6236 0.0020  [0.619 0.619 0.621 0.623 0.623]        0.6038  0.5997  0.6079 0.0030  [0.600 0.602 0.603 0.606 0.607]
-lgb_embeds: emb__encoder_transf_bs064_4head_64hs_4layers.pickle       0.5540  0.5502  0.5577 0.0027  [0.550 0.552 0.555 0.556 0.556]        0.5395  0.5354  0.5437 0.0030  [0.535 0.538 0.540 0.542 0.542]
+lgb_embeds: emb__encoder_gru.pickle                                   0.6233  0.6192  0.6275 0.0033  [0.619 0.622 0.624 0.626 0.626]        0.6114  0.6098  0.6130 0.0013  [0.610 0.610 0.612 0.612 0.613]
+lgb_embeds: emb__encoder_lstm.pickle                                  0.6185  0.6127  0.6243 0.0047  [0.612 0.617 0.619 0.621 0.624]        0.6014  0.5973  0.6056 0.0033  [0.598 0.600 0.601 0.602 0.607]
+lgb_embeds: emb__encoder_transf_bs064_4head_64hs_4layers.pickle       0.5595  0.5497  0.5693 0.0079  [0.549 0.554 0.563 0.563 0.569]        0.5408  0.5341  0.5475 0.0054  [0.531 0.541 0.543 0.544 0.545]
+lgb_embeds: emb__encoder_transf_bs064_4head_64hs_8layers.pickle       0.5505  0.5459  0.5551 0.0037  [0.545 0.549 0.552 0.553 0.553]        0.5423  0.5404  0.5442 0.0015  [0.541 0.541 0.542 0.543 0.545]
+lgb_embeds: emb__encoder_transf_bs064_8head_64hs_4layers.pickle          nan     nan     nan    nan            [nan nan nan nan nan]           nan     nan     nan    nan            [nan nan nan nan nan]

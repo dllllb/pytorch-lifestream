@@ -67,7 +67,7 @@ def create_data_loaders(conf):
     if 'max_rows' in conf['dataset']:
         data = islice(data, conf['dataset.max_rows'])
     data = prepare_embeddings(data, conf, is_train=True)
-    data = sorted(data, key=lambda x: x.get('client_id', x.get('customer_id')))
+    data = sorted(data, key=lambda x: x.get('client_id', x.get('customer_id', x.get('installation_id'))))
     random.Random(conf['dataset.client_list_shuffle_seed']).shuffle(data)
     data = list(data)
     if 'client_list_keep_count' in conf['dataset']:

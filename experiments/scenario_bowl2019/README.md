@@ -61,3 +61,16 @@ cat results/semi_scenario_bowl2019_*.csv
 
 ```
 
+### Test model configurations
+
+```sh
+cd experiments/scenario_bowl2019
+export SC_DEVICE="cuda"
+
+# run all scenarios or select one
+./bin/scenario*.sh
+
+# check the results
+cat results/scenario_bowl2019_*.csv
+```
+

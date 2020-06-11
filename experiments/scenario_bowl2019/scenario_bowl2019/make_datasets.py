@@ -97,7 +97,8 @@ def trx_to_features(df_data, config, mapping_dict=None):
         return df
 
     def _td_datetime_string(df, col_event_time):
-        df['event_time'] = pd.to_datetime(df[col_event_time])
+        df['event_time'] = pd.to_datetime(df[col_event_time]).dt.tz_localize(None)
+        df['event_time'] = (df['event_time'] - np.datetime64('1970-01-01')) / np.timedelta64(1,'D')
         logger.info('To-float time transformation')
         return df
 
@@ -194,7 +195,8 @@ def update_with_target_bowl(source_data, features, data_path, target_files, col_
     data = source_data.merge(df_target[['game_session','accuracy_group']], how = 'right')
     data = data[(data.event_type == 'Assessment') & (data.event_code == 2000)] \
         [[col_client_id, 'game_session', 'timestamp', 'accuracy_group']]
-    data['timestamp'] = pd.to_datetime(data['timestamp'])
+    data['timestamp'] = pd.to_datetime(data['timestamp']).dt.tz_localize(None)
+    data['timestamp'] = (data['timestamp'] - np.datetime64('1970-01-01')) / np.timedelta64(1,'D')
 
     client_features = {x[col_client_id]:x for x in features}
     dataset = []
