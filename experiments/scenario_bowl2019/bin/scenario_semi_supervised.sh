@@ -1,5 +1,5 @@
 
-for SC_AMOUNT in 496 992 1985 3971 7943
+for SC_AMOUNT in 496 994 1986 3971 7943
 do
 	python -m scenario_bowl2019 fit_target \
         params.device="$SC_DEVICE" \
@@ -11,6 +11,11 @@ do
     python -m scenario_bowl2019 fit_finetuning \
         params.device="$SC_DEVICE" \
         params.labeled_amount=$SC_AMOUNT \
+        params.train.frooze_trx_encoder=true \
+        params.train.n_epoch=15 \
+        params.train.lr_scheduler.step_gamma=0.5 \
+        params.train.lr_scheduler.step_size=5 \
+        params.train.lr=0.01 \
         output.test.path="data/mles_finetuning_scores_$SC_AMOUNT"/test \
         output.valid.path="data/mles_finetuning_scores_$SC_AMOUNT"/valid \
         --conf "conf/dataset.hocon" conf/fit_finetuning_on_mles_params.json
@@ -18,6 +23,10 @@ do
     python -m scenario_bowl2019 fit_finetuning \
         params.device="$SC_DEVICE" \
         params.labeled_amount=$SC_AMOUNT \
+        params.train.n_epoch=15 \
+        params.train.lr_scheduler.step_gamma=0.1 \
+        params.train.lr_scheduler.step_size=10 \
+        params.train.lr=0.001 \
         output.test.path="data/cpc_finetuning_scores_$SC_AMOUNT"/test \
         output.valid.path="data/cpc_finetuning_scores_$SC_AMOUNT"/valid \
         --conf "conf/dataset.hocon" conf/fit_finetuning_on_cpc_params.json
