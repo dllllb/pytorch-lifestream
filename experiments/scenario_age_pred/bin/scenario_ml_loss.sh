@@ -5,7 +5,7 @@ python ../../metric_learning.py \
     params.train.loss="BinomialDevianceLoss" \
     params.train.C=1.0 \
     params.train.alpha=1.0 \
-    params.train.beta=0.4 \
+    params.train.beta=0.5 \
     model_path.model="models/age_pred_mlm__$SC_SUFFIX.p" \
     --conf "conf/dataset.hocon" "conf/mles_params.json"
 python ../../ml_inference.py \
