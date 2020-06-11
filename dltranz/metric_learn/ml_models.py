@@ -85,6 +85,8 @@ def transformer_model(params):
     l = FirstStepEncoder()
     layers = [p, e, l]
 
+    encoder = torch.nn.Sequential(*layers)
+    layers = [encoder]
     if params['use_normalization_layer']:
         layers.append(L2Normalization())
     m = torch.nn.Sequential(*layers)

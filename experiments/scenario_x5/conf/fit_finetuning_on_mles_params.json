@@ -17,7 +17,7 @@
       "numeric_values": {
         "trn_sum_from_iss": "identity",
         "netto": "identity",
-        "regular_points_received": "identity",
+        "regular_points_received": "identity"
       }
     },
     "transf": {
@@ -65,7 +65,7 @@
     "norm_scores": false,
     "score_metric": "accuracy",
 
-    "pretrained_model_path": "models/mles_model_ft.p",
+    "model_path": {"model": "models/mles_model_ft.p"},
     "use_batch_norm": true
   },
 
