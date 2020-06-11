@@ -3,11 +3,12 @@
 # it is quite smaller, than one which is used in supervised setup, due to insufficiency labeled data to train a big model. 
 python ../../metric_learning.py params.device="$SC_DEVICE" \
     --conf conf/dataset.hocon conf/mles_params_for_finetuning.json
+
 # Train the Contrastive Predictive Coding (CPC) model
 python ../../train_cpc.py    params.device="$SC_DEVICE" \
   --conf conf/dataset.hocon conf/cpc_params.json
 
-for SC_AMOUNT in 290000 200000 100000 50000 25000 12000 6000 3000 1000
+for SC_AMOUNT in 290000 200000 100000 50000 25000 12000 6000 3000 1000 500
 do
 	python -m scenario_x5 fit_target \
         params.device="$SC_DEVICE" \
