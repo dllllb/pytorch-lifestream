@@ -1,5 +1,5 @@
 
-for SC_AMOUNT in 496 994 1986 3971 7943
+for SC_AMOUNT in 496 994 1986 3971 7943 15887
 do
 	python -m scenario_bowl2019 fit_target \
         params.device="$SC_DEVICE" \
