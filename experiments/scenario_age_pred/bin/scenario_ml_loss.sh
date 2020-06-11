@@ -19,7 +19,7 @@ export SC_SUFFIX="loss_triplet"
 python ../../metric_learning.py \
     params.device="$SC_DEVICE" \
     params.train.loss="TripletLoss" \
-    params.train.margin=0.6 \
+    params.train.margin=0.3 \
     params.train.sampling_strategy="HardTriplets" \
     params.train.neg_count=5 \
     model_path.model="models/age_pred_mlm__$SC_SUFFIX.p" \
