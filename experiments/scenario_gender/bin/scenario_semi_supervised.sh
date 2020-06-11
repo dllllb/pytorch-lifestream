@@ -1,4 +1,4 @@
-for SC_AMOUNT in 378 756 1512 3024
+for SC_AMOUNT in 378 756 1512 3024 6048
 do
 	python -m scenario_gender fit_target \
         params.device="$SC_DEVICE" \

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-python ../scenario_bowl2019/make_datasets.py \
+python scenario_bowl2019/make_datasets.py \
     --data_path data/ \
     --trx_files train.csv test.csv \
     --col_client_id "installation_id" \

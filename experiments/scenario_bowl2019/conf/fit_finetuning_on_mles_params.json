@@ -17,12 +17,14 @@
       }
     },
     "rnn": {
-      "hidden_size": 64
+      "hidden_size": 100
     },
     "train": {
       "random_neg": false,
       "trx_dropout": 0.005,
       "max_seq_len": 5000,
+      "frooze_trx_encoder": false,
+      "frooze_seq_encoder": false,
       "SubsamplingDataset": {
         "min_seq_len_s": 500,
         "min_seq_len_e": 500,

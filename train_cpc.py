@@ -40,7 +40,7 @@ def main(args=None):
         data = islice(data, conf['dataset.max_rows'])
     data = target_rm(data)
     data = prepare_embeddings(data, conf, is_train=True)
-    data = sorted(data, key=lambda x: x.get('client_id', x.get('customer_id')))
+    data = sorted(data, key=lambda x: x.get('client_id', x.get('customer_id', x.get('installation_id'))))
     random.Random(conf['dataset.client_list_shuffle_seed']).shuffle(data)
     data = list(data)
 
@@ -51,10 +51,10 @@ def main(args=None):
     valid_data = [rec for i, rec in enumerate(data) if i in valid_ix]
 
     train_ds, valid_ds = create_ds(train_data, valid_data, conf)
-    if conf['params.train.same_time_shuffle']:
+    if conf['params.train'].get('same_time_shuffle', False):
         train_ds = SameTimeShuffleDataset(train_ds)
         logger.info('SameTimeShuffle used')
-    if conf['params.train.all_time_shuffle']:
+    if conf['params.train'].get('all_time_shuffle', False):
         train_ds = AllTimeShuffleDataset(train_ds)
         logger.info('AllTimeShuffle used')
 

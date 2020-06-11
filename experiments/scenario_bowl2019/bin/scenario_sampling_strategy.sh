@@ -5,7 +5,7 @@ python ../../metric_learning.py \
     params.train.sampling_strategy="HardNegativePair" \
     params.train.neg_count=5 \
     model_path.model="models/bowl2019_mlm__$SC_SUFFIX.p" \
-    --conf "conf/dataset.hocon" "conf/mles_params.json"
+    --conf "conf/trx_dataset.hocon" "conf/mles_params.json"
 python ../../ml_inference.py \
     params.device="$SC_DEVICE" \
     model_path.model="models/bowl2019_mlm__$SC_SUFFIX.p" \
@@ -18,7 +18,7 @@ python ../../metric_learning.py \
     params.train.sampling_strategy="HardNegativePair" \
     params.train.neg_count=9 \
     model_path.model="models/bowl2019_mlm__$SC_SUFFIX.p" \
-    --conf "conf/dataset.hocon" "conf/mles_params.json"
+    --conf "conf/trx_dataset.hocon" "conf/mles_params.json"
 python ../../ml_inference.py \
     params.device="$SC_DEVICE" \
     model_path.model="models/bowl2019_mlm__$SC_SUFFIX.p" \
@@ -31,7 +31,7 @@ python ../../metric_learning.py \
     params.train.sampling_strategy="HardNegativePair" \
     params.train.neg_count=2 \
     model_path.model="models/bowl2019_mlm__$SC_SUFFIX.p" \
-    --conf "conf/dataset.hocon" "conf/mles_params.json"
+    --conf "conf/trx_dataset.hocon" "conf/mles_params.json"
 python ../../ml_inference.py \
     params.device="$SC_DEVICE" \
     model_path.model="models/bowl2019_mlm__$SC_SUFFIX.p" \
@@ -45,7 +45,7 @@ python ../../metric_learning.py \
     params.device="$SC_DEVICE" \
     params.train.sampling_strategy="AllPositivePair" \
     model_path.model="models/bowl2019_mlm__$SC_SUFFIX.p" \
-    --conf "conf/dataset.hocon" "conf/mles_params.json"
+    --conf "conf/trx_dataset.hocon" "conf/mles_params.json"
 python ../../ml_inference.py \
     params.device="$SC_DEVICE" \
     model_path.model="models/bowl2019_mlm__$SC_SUFFIX.p" \
@@ -60,7 +60,7 @@ python ../../metric_learning.py \
     params.train.sampling_strategy="DistanceWeightedPair" \
     params.train.n_samples_from_class=5 \
     model_path.model="models/bowl2019_mlm__$SC_SUFFIX.p" \
-    --conf "conf/dataset.hocon" "conf/mles_params.json"
+    --conf "conf/trx_dataset.hocon" "conf/mles_params.json"
 python ../../ml_inference.py \
     params.device="$SC_DEVICE" \
     model_path.model="models/bowl2019_mlm__$SC_SUFFIX.p" \
