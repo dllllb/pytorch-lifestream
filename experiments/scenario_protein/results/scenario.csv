@@ -1,0 +1,4 @@
+             oof_top_5pp_precision                                                         test_top_5pp_precision                                                        
+                              mean t_int_l t_int_h    std                           values                   mean t_int_l t_int_h    std                           values
+name                                                                                                                                                                     
+lgb_baseline                0.5778  0.5749  0.5807 0.0023  [0.575 0.577 0.577 0.580 0.581]                 0.5828  0.5819  0.5837 0.0007  [0.582 0.582 0.583 0.583 0.584]
