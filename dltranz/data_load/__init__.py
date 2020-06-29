@@ -12,6 +12,7 @@ import torch
 from torch.utils.data import WeightedRandomSampler, Sampler, Dataset
 from torch.utils.data.dataloader import DataLoader
 
+from dltranz.data_load.lazy_dataset import LazyDataset
 from dltranz.seq_encoder import PaddedBatch
 
 
@@ -173,11 +174,7 @@ class DropoutTrxDataset(Dataset):
         self.core_dataset = dataset
         self.trx_dropout = trx_dropout
         self.max_seq_len = seq_len
-        if hasattr(dataset, '__iter__'):
-            delattr(DropoutTrxDataset, '__len__')
-            delattr(DropoutTrxDataset, '__getitem__')
-        else:
-            delattr(DropoutTrxDataset, '__iter__')
+        self.style = dataset.style
 
     def __len__(self):
         return len(self.core_dataset)
@@ -338,16 +335,14 @@ class LastKTrxDataset(Dataset):
 
 
 class TrxDataset(Dataset):
-    def __init__(self, data, y_dtype=np.float32):
+    def __init__(self, data, y_dtype=np.float32, style='map'):
         self.data = data
         self.y_dtype = y_dtype
-        if type(data) is list:
-            delattr(TrxDataset, '__iter__')
-        elif isinstance(data, torch.utils.data.IterableDataset):
-            delattr(TrxDataset, '__len__')
-            delattr(TrxDataset, '__getitem__')
+
+        if isinstance(data, torch.utils.data.IterableDataset):
+            self.style = 'iterable'
         else:
-            raise AttributeError(f'Unsupported dataset type: {type(data)}')
+            self.style = style
 
     def __len__(self):
         return len(self.data)
@@ -366,13 +361,12 @@ class TrxDataset(Dataset):
 
 
 class ConvertingTrxDataset(Dataset):
-    def __init__(self, delegate):
+    def __init__(self, delegate, style='map'):
         self.delegate = delegate
-        if hasattr(delegate, '__iter__'):
-            delattr(ConvertingTrxDataset, '__len__')
-            delattr(ConvertingTrxDataset, '__getitem__')
+        if hasattr(delegate, 'style'):
+            self.style = delegate.style
         else:
-            delattr(ConvertingTrxDataset, '__iter__')
+            self.style = style
 
     def __len__(self):
         return len(self.delegate)
@@ -537,7 +531,7 @@ class IterableDatasetWrapper(torch.utils.data.IterableDataset):
 def create_validation_loader_common(dataset, params):
     dataset = DropoutTrxDataset(dataset, 0, params['max_seq_len'])
 
-    if hasattr(dataset, '__iter__'):
+    if dataset.style == 'iterable':
         dataset = IterableDatasetWrapper(dataset)
         logger.info('IterableDatasetWrapper used')
     else:
