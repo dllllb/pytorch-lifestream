@@ -21,11 +21,17 @@ export SC_DEVICE="cuda"
 python ../../metric_learning.py params.device="$SC_DEVICE" --conf conf/dataset.hocon conf/agg_features_params.json
 python ../../ml_inference.py    params.device="$SC_DEVICE" --conf conf/dataset.hocon conf/agg_features_params.json
 
+# Train the MeLES encoder and take embedidngs; inference
+python ../../metric_learning.py params.device="$SC_DEVICE" --conf conf/dataset.hocon conf/mles_params.json
+python ../../ml_inference.py    params.device="$SC_DEVICE" --conf conf/dataset.hocon conf/mles_params.json
+
+
 # Run estimation for different approaches
 # Check some options with `--help` argument
 python -m scenario_protein compare_approaches --n_workers 1 \
     --models lgb \
-    --baseline_name "agg_feat_embed.pickle" 
+    --baseline_name "agg_feat_embed.pickle" \
+    --embedding_file_names "mles_embedding.pickle"
 
 # check the results
 cat results/scenario.csv

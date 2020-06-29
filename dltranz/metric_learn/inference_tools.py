@@ -101,6 +101,55 @@ def infer_part_of_data(part_num, part_data, columns, model, conf, lock_obj=None)
     logger.info(f'df_scores examples: {df_scores.shape}:')
     return df_scores
 
+
+def infer_iterable(part_num, iterable_dataset, columns, model, conf, lock_obj=None):
+    """
+    The list of difference with `dltranz.metric_learn.inference_tools.infer_part_of_data`:
+    1. Iterable dataset can'not provide the same item order.
+        So you can'not get the same row order during two passes over the data
+        (fist - embedding calculation, second - labels collecting, see `columns`)
+        This why we put `id` field to `y` and get synchronised `true, outputs` from `score_model`,
+        where `true` is target column and `outputs` is embeddings.
+        This way requires only one pass over the dataset, and this way is faster than `infer_part_of_data`.
+        But you are limited in `columns` feature: only scalar int ids are supported.
+    2. Minor differences because of iterable_dataset has no len.
+    """
+    if part_num is not None:
+        logger.warning(f'`part_name` aren\'t supported')
+
+    if lock_obj:
+        lock_obj.acquire()
+
+    logger.info(f'Start to score data (iterable)')
+
+    if conf['dataset.preprocessing.add_seq_len'] and 'seq_len' not in columns:
+        columns.append('seq_len')  # change list object
+
+    valid_ds = ConvertingTrxDataset(TrxDataset(iterable_dataset))
+    valid_loader = create_validation_loader(valid_ds, conf['params.valid'])
+
+    ids, pred = score_model(model, valid_loader, conf['params'])
+
+    if conf['params.device'] != 'cpu':
+        torch.cuda.empty_cache()
+        logger.info('torch.cuda.empty_cache()')
+    if lock_obj:
+        lock_obj.release()
+
+    if len(pred.shape) == 1:
+        pred = pred.reshape(-1, 1)
+    df_scores_cols = [f'v{i:003d}' for i in range(pred.shape[1])]
+    col_id = conf['dataset.col_id']
+
+    df_scores = pd.concat([
+        pd.DataFrame({col_id: ids}),
+        pd.DataFrame(pred, columns=df_scores_cols),
+        ], axis=1)
+
+    logger.info(f'df_scores examples: {df_scores.shape}:')
+    return df_scores
+
+
 def save_scores(df_scores, part_num, output_conf):
     # output
     output_name = output_conf['path']
@@ -125,7 +174,10 @@ def save_scores(df_scores, part_num, output_conf):
 
 
 def score_part_of_data(part_num, part_data, columns, model, conf, lock_obj=None):
-    df_scores = infer_part_of_data(part_num, part_data, columns, model, conf, lock_obj=lock_obj)
+    if type(part_data) is list:
+        df_scores = infer_part_of_data(part_num, part_data, columns, model, conf, lock_obj=lock_obj)
+    else:
+        df_scores = infer_iterable(part_num, part_data, columns, model, conf, lock_obj=lock_obj)
 
     save_scores(df_scores, part_num, conf['output'])
 
