@@ -141,3 +141,18 @@ python -m scenario_age_pred compare_approaches --n_workers 5 \
     --embedding_file_names "agg_feat_embed.pickle"
 
 ```
+
+# Complex Learning
+
+```sh
+cd experiments/scenario_age_pred
+export SC_DEVICE="cuda"
+
+# Train complex model and get an embeddings
+python ../../complex_learning.py    params.device="$SC_DEVICE" --conf conf/dataset.hocon conf/complex_learning_params.json
+python ../../ml_inference.py    params.device="$SC_DEVICE" --conf conf/dataset.hocon conf/complex_learning_params.json
+
+python -m scenario_age_pred compare_approaches --n_workers 5 \
+    --embedding_file_names "complex_embeddings.pickle"
+
+```

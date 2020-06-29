@@ -1,4 +1,4 @@
-kaggle==1.5.6
+
 lightgbm>=2.3.1
 matplotlib>=3.1.1
 numpy>=1.16.4

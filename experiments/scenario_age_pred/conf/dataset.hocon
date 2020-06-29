@@ -1,7 +1,7 @@
 {
   dataset: {
-    train_path: "data/train_trx.parquet"
-    test_path: "data/test_trx.parquet"
+    train_path: "data/train_trx.p"
+    test_path: "data/test_trx.p"
     valid_size: 0.05
     client_list_shuffle_seed: 42
 
