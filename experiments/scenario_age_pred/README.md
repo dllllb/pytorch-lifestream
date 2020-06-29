@@ -153,6 +153,7 @@ python ../../complex_learning.py    params.device="$SC_DEVICE" --conf conf/datas
 python ../../ml_inference.py    params.device="$SC_DEVICE" --conf conf/dataset.hocon conf/complex_learning_params.json
 
 python -m scenario_age_pred compare_approaches --n_workers 5 \
+    --output_file "results/scenario_age_pred__complex_learning.csv" \
     --embedding_file_names "complex_embeddings.pickle"
 
 ```
