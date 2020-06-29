@@ -13,7 +13,7 @@ from dltranz.experiment import update_model_stats
 from dltranz.metric_learn.dataset import SeveralSplittingsDataset, split_strategy
 from dltranz.metric_learn.dataset import ComplexTargetDataset, collate_splitted_rows
 from dltranz.metric_learn.losses import get_loss, ComplexLoss
-from dltranz.metric_learn.metric import metric_Recall_top_K, BatchRecallTop
+from dltranz.metric_learn.metric import metric_Recall_top_K
 from dltranz.metric_learn.ml_models import ml_model_by_type, ComplexModel
 from dltranz.metric_learn.sampling_strategies import get_sampling_strategy
 from dltranz.train import get_optimizer, get_lr_scheduler, fit_model, CheckpointHandler
@@ -51,12 +51,11 @@ def create_data_loaders(conf):
     logger.info(f'Train data len: {len(train_data)}, Valid data len: {len(valid_data)}')
 
     split_strategies = [
-        split_strategy.create(**split_strategy_params) \
-            for split_strategy_params in conf['params.train.split_strategies']
+        split_strategy.create(**split_strategy_params) for split_strategy_params in
+        conf['params.train.split_strategies']
     ]
     split_counts = [
-        split_strategy_params['split_count'] \
-            for split_strategy_params in conf['params.train.split_strategies']
+        split_strategy_params['split_count'] for split_strategy_params in conf['params.train.split_strategies']
     ]
     train_dataset = SeveralSplittingsDataset(
         train_data,
@@ -69,7 +68,7 @@ def create_data_loaders(conf):
     train_dataset = DropoutTrxDataset(train_dataset, trx_dropout=conf['params.train.trx_dropout'],
                                       seq_len=conf['params.train.max_seq_len'])
 
-    if conf['params.train'].get('all_time_shuffle',False):
+    if conf['params.train'].get('all_time_shuffle', False):
         train_dataset = AllTimeShuffleMLDataset(train_dataset)
         logger.info('AllTimeShuffle used')
 
@@ -82,12 +81,11 @@ def create_data_loaders(conf):
     )
 
     split_strategies = [
-        split_strategy.create(**split_strategy_params) \
-            for split_strategy_params in conf['params.valid.split_strategies']
+        split_strategy.create(**split_strategy_params) for split_strategy_params in
+        conf['params.valid.split_strategies']
     ]
     split_counts = [
-        split_strategy_params['split_count'] \
-            for split_strategy_params in conf['params.valid.split_strategies']
+        split_strategy_params['split_count'] for split_strategy_params in conf['params.valid.split_strategies']
     ]
     valid_dataset = SeveralSplittingsDataset(
         valid_data,
@@ -124,13 +122,12 @@ def run_experiment(model, conf):
     loss = ComplexLoss(ml_loss, aug_loss, params['train'].get('ml_loss_weight', 1.0))
 
     split_counts = [
-        split_strategy_params['split_count'] \
-            for split_strategy_params in conf['params.valid.split_strategies']
+        split_strategy_params['split_count'] for split_strategy_params in conf['params.valid.split_strategies']
     ]
     valid_metric = {
-        'Accuracy' : CustomMetric(func = lambda x,y: (torch.argmax(x[0],1) == y[:, 0]).float().mean()),
-        'BatchRecallTop' : CustomMetric(func = lambda x,y: 
-            metric_Recall_top_K(x[1], y[:, 1], sum(split_counts) - 1, 'cosine'))
+        'Accuracy': CustomMetric(func=lambda x, y: (torch.argmax(x[0], 1) == y[:, 0]).float().mean()),
+        'BatchRecallTop': CustomMetric(func=lambda x, y:
+        metric_Recall_top_K(x[1], y[:, 1], sum(split_counts) - 1, 'cosine'))
     }
     optimizer = get_optimizer(model, params)
     scheduler = get_lr_scheduler(optimizer, params)

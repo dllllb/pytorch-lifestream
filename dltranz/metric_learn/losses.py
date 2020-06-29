@@ -122,7 +122,7 @@ class HistogramLoss(torch.nn.Module):
             # indsa corresponds to the first condition of the second equation of the paper
             s_repeat_[indsa] = (s_repeat_ - self.t + self.step)[indsa] / self.step
             # indsb corresponds to the second condition of the second equation of the paper
-            s_repeat_[indsb] =  (-s_repeat_ + self.t + self.step)[indsb] / self.step
+            s_repeat_[indsb] = (-s_repeat_ + self.t + self.step)[indsb] / self.step
 
             return s_repeat_.sum(1) / size
         
@@ -133,7 +133,7 @@ class HistogramLoss(torch.nn.Module):
         
         assert ((dists > 1 + self.eps).sum().item() + (dists < -1 - self.eps).sum().item()) == 0, 'L2 normalization should be used'
         s_inds = torch.triu(torch.ones(classes_eq.size()), 1).bool()
-        s_inds= s_inds.to(self.device)
+        s_inds = s_inds.to(self.device)
         pos_inds = classes_eq[s_inds].repeat(self.tsize, 1)
         neg_inds = ~classes_eq[s_inds].repeat(self.tsize, 1)
         pos_size = classes_eq[s_inds].sum().item()
@@ -169,7 +169,7 @@ class MarginLoss(torch.nn.Module):
 
     """
 
-    def __init__(self, pair_selector, margin=1, beta = 1.2):
+    def __init__(self, pair_selector, margin=1, beta=1.2):
         super(MarginLoss, self).__init__()
         self.margin = margin
         self.beta = beta
@@ -199,8 +199,8 @@ class ComplexLoss(torch.nn.Module):
 
     def forward(self, model_ouputs, target):
         aug_output, ml_output = model_ouputs
-        aug_target = target[:,0]
-        ml_target = target[:,1]
+        aug_target = target[:, 0]
+        ml_target = target[:, 1]
         aug = self.aug_loss(aug_output, aug_target) * (1 - self.ml_loss_weight)
         ml = self.ml_loss(ml_output, ml_target) * self.ml_loss_weight
         return aug + ml
@@ -210,45 +210,45 @@ def get_loss(params, sampling_strategy, kw_params=None):
     
     if params['train.loss'] == 'ContrastiveLoss':
         kwargs = {
-            'margin' : params.get('train.margin', None),
-            'pair_selector' : sampling_strategy
+            'margin': params.get('train.margin', None),
+            'pair_selector': sampling_strategy
         }
-        kwargs = {k:v for k,v in kwargs.items() if v is not None}
+        kwargs = {k: v for k, v in kwargs.items() if v is not None}
         loss_fn = ContrastiveLoss(**kwargs)
             
     elif params['train.loss'] == 'BinomialDevianceLoss':
         kwargs = {
-            'C' : params.get('train.C', None),
-            'alpha' : params.get('train.alpha', None),
-            'beta' : params.get('train.beta', None),
-            'pair_selector' : sampling_strategy
+            'C': params.get('train.C', None),
+            'alpha': params.get('train.alpha', None),
+            'beta': params.get('train.beta', None),
+            'pair_selector': sampling_strategy
         }
-        kwargs = {k:v for k,v in kwargs.items() if v is not None}
+        kwargs = {k: v for k, v in kwargs.items() if v is not None}
         loss_fn = BinomialDevianceLoss(**kwargs)       
             
     elif params['train.loss'] == 'TripletLoss':
         kwargs = {
-            'margin' : params.get('train.margin', None),
-            'triplet_selector' : sampling_strategy
+            'margin': params.get('train.margin', None),
+            'triplet_selector': sampling_strategy
         }
-        kwargs = {k:v for k,v in kwargs.items() if v is not None}
+        kwargs = {k: v for k, v in kwargs.items() if v is not None}
         loss_fn = TripletLoss(**kwargs)
     
     elif params['train.loss'] == 'HistogramLoss':
         kwargs = {
-            'num_steps' : params.get('train.num_steps', None),
+            'num_steps': params.get('train.num_steps', None),
             'device': torch.device(params['device']),
         }
-        kwargs = {k:v for k,v in kwargs.items() if v is not None}
+        kwargs = {k: v for k, v in kwargs.items() if v is not None}
         loss_fn = HistogramLoss(**kwargs)
         
     elif params['train.loss'] == 'MarginLoss':
         kwargs = {
-            'margin' : params.get('train.margin', None),
-            'beta' : params.get('train.beta', None),
-            'pair_selector' : sampling_strategy
+            'margin': params.get('train.margin', None),
+            'beta': params.get('train.beta', None),
+            'pair_selector': sampling_strategy
         }
-        kwargs = {k:v for k,v in kwargs.items() if v is not None}
+        kwargs = {k: v for k, v in kwargs.items() if v is not None}
         loss_fn = MarginLoss(**kwargs)
     elif params['train.loss'] == 'CPCLoss':
         kwargs = {
