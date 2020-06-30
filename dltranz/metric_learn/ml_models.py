@@ -51,6 +51,16 @@ class BinarizationLayer(nn.Module):
         return binary(self.linear(x))
 
 
+def projection_head(input_size, output_size):
+    layers = [
+        torch.nn.Linear(input_size, input_size),
+        torch.nn.ReLU(),
+        torch.nn.Linear(input_size, output_size),
+    ]
+    m = torch.nn.Sequential(*layers)
+    return m
+
+
 def rnn_model(params):
     encoder_layers = [
         TrxEncoder(params['trx_encoder']),
@@ -61,11 +71,7 @@ def rnn_model(params):
     layers = [torch.nn.Sequential(*encoder_layers)]
     if 'projection_head' in params:
         logger.info('projection_head included')
-        layers.extend([
-            torch.nn.Linear(params['rnn.hidden_size'], params['rnn.hidden_size']),
-            torch.nn.ReLU(),
-            torch.nn.Linear(params['rnn.hidden_size'], params['projection_head.output_size']),
-        ])
+        layers.extend(projection_head(params['rnn.hidden_size'], params['projection_head.output_size']))
     if params['use_normalization_layer']:
         layers.append(L2Normalization())
         logger.info('L2Normalization included')
@@ -152,6 +158,23 @@ class ModelEmbeddingEnsemble(nn.Module):
         else:
             out = torch.cat([m(x) for i, m in enumerate(self.models)], dim=-1)
         return out
+
+
+class ComplexModel(torch.nn.Module):
+    def __init__(self, ml_model, params):
+        super().__init__()
+        self.ml_model = ml_model
+        self.projection_ml_head = projection_head(params['rnn.hidden_size'], params['ml_projection_head.output_size'])
+        self.projection_aug_head = torch.nn.Sequential(
+            projection_head(params['rnn.hidden_size'], params['aug_projection_head.output_size']),
+            torch.nn.LogSoftmax(dim=1)
+        )
+
+    def forward(self, x):
+        encoder_output = self.ml_model(x)
+        ml_head_output = self.projection_ml_head(encoder_output)
+        aug_head_output = self.projection_aug_head(encoder_output)
+        return aug_head_output, ml_head_output
 
 
 def load_encoder_for_inference(conf):

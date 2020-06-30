@@ -74,3 +74,18 @@ export SC_DEVICE="cuda"
 cat results/scenario_bowl2019_*.csv
 ```
 
+# Complex Learning
+
+```sh
+cd experiments/scenario_bowl2019
+export SC_DEVICE="cuda"
+
+# Train complex model and get an embeddings
+python ../../complex_learning.py    params.device="$SC_DEVICE" --conf conf/trx_dataset.hocon conf/complex_learning_params.json
+python ../../ml_inference.py    params.device="$SC_DEVICE" --conf conf/dataset.hocon conf/complex_learning_params.json
+
+python -m scenario_bowl2019 compare_approaches --n_workers 5 \
+    --output_file "results/scenario_bowl2019__complex_learning.csv" \
+    --embedding_file_names "complex_embeddings.pickle"
+
+```

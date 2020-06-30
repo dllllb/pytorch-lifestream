@@ -19,11 +19,12 @@ class NoSplit(AbsSplit):
 
 
 class SampleSlices(AbsSplit):
-    def __init__(self, split_count, cnt_min, cnt_max, is_sorted=False):
+    def __init__(self, split_count, cnt_min, cnt_max, is_sorted=False, reverse=False):
         self.split_count = split_count
         self.cnt_min = cnt_min
         self.cnt_max = cnt_max
         self.is_sorted = is_sorted
+        self.reverse = reverse
 
     def split(self, dates):
         date_len = dates.shape[0]
@@ -33,10 +34,16 @@ class SampleSlices(AbsSplit):
         available_start_pos = date_len - lengths
         start_pos = (np.random.rand(self.split_count) * available_start_pos).astype(int)
         if not self.is_sorted:
-            return [date_range[s:s + l] for s, l in zip(start_pos, lengths)]
+            output = [date_range[s:s + l] for s, l in zip(start_pos, lengths)]
+            if self.reverse:
+                output = [x[::-1] for x in output]
+            return output
 
         ix_sort = np.argsort(start_pos)
-        return [date_range[s:s + l] for s, l in zip(start_pos[ix_sort], lengths[ix_sort])]
+        output = [date_range[s:s + l] for s, l in zip(start_pos[ix_sort], lengths[ix_sort])]
+        if self.reverse:
+            output = [x[::-1] for x in output]
+        return output
 
 
 class SampleRandom(AbsSplit):
@@ -68,7 +75,7 @@ class SplitRandom(AbsSplit):
         date_range = np.arange(date_len)
 
         split_indexes = np.random.randint(0, self.split_count, date_len)
-        return [date_range[split_indexes==i] for i in range(self.split_count)]
+        return [date_range[split_indexes == i] for i in range(self.split_count)]
 
 
 class SplitByWeeks(AbsSplit):
@@ -92,15 +99,15 @@ class SplitByWeeks(AbsSplit):
             n_weeks_unique = n_weeks
             n_weeks_nunique = len(n_weeks_unique)
 
-        # devide n_weeks_unique for split_count parts
+        # divide n_weeks_unique for split_count parts
         split_indexes = np.random.randint(0, self.split_count, n_weeks_nunique)
         week_range = np.arange(n_weeks_nunique)
-        n_weeks_idxes = [week_range[split_indexes==i] for i in range(self.split_count)]
+        n_weeks_idxes = [week_range[split_indexes == i] for i in range(self.split_count)]
 
         # select indexes correspond to each part of weeks
         # x_ij == 1 <=>  j-th elenemt of sequence correspond to n_weeks_unique[i]
-        x = n_weeks.reshape(1,-1).repeat(n_weeks_nunique, axis = 0) == n_weeks_unique.reshape(-1,1).repeat(seq_len, axis = 1)
-        n_byweeks_idxes = [x[one_week_idxes].sum(axis = 0).nonzero()[0] for one_week_idxes in n_weeks_idxes]
+        x = n_weeks.reshape(1, -1).repeat(n_weeks_nunique, axis = 0) == n_weeks_unique.reshape(-1,1).repeat(seq_len, axis=1)
+        n_byweeks_idxes = [x[one_week_idxes].sum(axis=0).nonzero()[0] for one_week_idxes in n_weeks_idxes]
 
         return n_byweeks_idxes
 

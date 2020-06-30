@@ -9,10 +9,11 @@ from torch.utils.data import DataLoader
 
 from dltranz.data_load import padded_collate, ConvertingTrxDataset, DropoutTrxDataset
 from dltranz.metric_learn.dataset.infinite_dataset import InfiniteDataset
-from dltranz.metric_learn.dataset.splitting_dataset import SplittingDataset
+from dltranz.metric_learn.dataset.splitting_dataset import SplittingDataset, SeveralSplittingsDataset
 from dltranz.metric_learn.dataset import split_strategy
 from dltranz.metric_learn.dataset.infinite_loader import InfiniteBatchSampler
 from dltranz.metric_learn.dataset.target_enumerator_dataset import TargetEnumeratorDataset
+from dltranz.metric_learn.dataset.complex_target_dataset import ComplexTargetDataset
 from dltranz.metric_learn.dataset.preload_dataset import PreloadDataset, PreloadDataLoader
 
 
