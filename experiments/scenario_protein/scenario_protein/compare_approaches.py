@@ -52,8 +52,8 @@ def get_scores(args):
         result.append({
             'name': name,
             'fold_n': fold_n,
-            'oof_rocauc_score': roc_auc_score(valid_fold[COL_TARGET], valid_fold.iloc[:, 0]),
-            'test_rocauc_score': roc_auc_score(test_fold[COL_TARGET], test_fold.iloc[:, 0])
+            'oof_top_5pp_precision': top_k_precision(valid_fold[COL_TARGET], valid_fold.iloc[:, 0], 0.05),
+            'test_top_5pp_precision': top_k_precision(test_fold[COL_TARGET], test_fold.iloc[:, 0], 0.05)
         })
 
     return result
@@ -161,7 +161,7 @@ def main(conf):
         # score already trained models on valid and test sets
         args_list = [(name, conf, params, df_target, test_target) for name, params in approaches_to_score.items()]
         results = reduce(iadd, pool.map(get_scores, args_list))
-        df_scores = pd.DataFrame(results).set_index('name')[['oof_top_5pp_precision', 'testtop_5pp_precision']]
+        df_scores = pd.DataFrame(results).set_index('name')[['oof_top_5pp_precision', 'test_top_5pp_precision']]
 
     # combine results
     df_results = pd.concat([df for df in [df_results, df_scores] if df is not None])

@@ -156,7 +156,7 @@ class ModelEmbeddingEnsemble(nn.Module):
 
 def load_encoder_for_inference(conf):
     ext = os.path.splitext(conf['model_path.model'])[1]
-    if ext == '.pth':
+    if ext in ('.pth', '.pt'):
         params = conf.get('params', conf)
         model_type = params['model_type']
         model_f = ml_model_by_type(model_type)

@@ -14,7 +14,7 @@ if __name__ == '__main__':
     torch.manual_seed(42)
     torch.cuda.manual_seed_all(42)
 
-from scenario_protein import compare_approaches  # , fit_target, fit_finetuning  # , pseudo_labeling
+from scenario_protein import compare_approaches, fit_target  # , fit_finetuning  # , pseudo_labeling
 
 logger = logging.getLogger(__name__)
 
@@ -25,7 +25,7 @@ def parse_args(args=None):
 
     for module in [
         compare_approaches,
-        # fit_target,
+        fit_target,
         # fit_finetuning,
         # pseudo_labeling,
         ]:
