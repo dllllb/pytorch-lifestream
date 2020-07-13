@@ -124,8 +124,9 @@ def get_lr_scheduler(optimizer, params):
     elif params['lr_scheduler'].get('ReduceLROnPlateau', False):
         mode = params['lr_scheduler'].get('mode', 'max')
         factor = params['lr_scheduler'].get('factor', 0.1)
-        patience = params['lr_scheduler']['patience']
-        threshold = params['lr_scheduler'].get('threshold', 0.0001)
+        patience = params['lr_scheduler'].get('patience', 10)
+        threshold = params['lr_scheduler'].get('threshold', 0.001)
+        min_lr = params['lr_scheduler'].get('min_lr', 1e-6)
 
         scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
             optimizer,
@@ -134,6 +135,7 @@ def get_lr_scheduler(optimizer, params):
             patience=patience,
             threshold=threshold,
             threshold_mode='rel',
+            min_lr=min_lr,
             verbose=True
         )
         logger.info('ReduceLROnPlateau lr_scheduler used')
