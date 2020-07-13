@@ -41,7 +41,7 @@ class TopKPrecision(CustomMetric):
         super().__init__(func=lambda x, y: top_k_precision(y.cpu().numpy(), x.cpu().numpy(), k))
 
 
-def read_consumer_data(path, conf):
+def read_consumer_data(path, conf, is_train):
     logger.info(f'Data loading...')
 
     data = read_data_gen(path)
@@ -53,7 +53,7 @@ def read_consumer_data(path, conf):
     data = prepare_target(data)
 
     data = (rec for rec in data if rec['target'] is not None and not np.isnan(rec['target']))
-    data = prepare_embeddings(data, conf)
+    data = prepare_embeddings(data, conf, is_train=is_train)
     data = list(data)
 
     logger.info(f'Loaded data with target: {len(data)}')
@@ -157,8 +157,8 @@ def main(_):
     conf = get_conf(sys.argv[2:])
 
     model_f = model_by_type(conf['params.model_type'])
-    train_data = read_consumer_data(conf['dataset.train_path'], conf)
-    test_data = read_consumer_data(conf['dataset.test_path'], conf)
+    train_data = read_consumer_data(conf['dataset.train_path'], conf, is_train=True)
+    test_data = read_consumer_data(conf['dataset.test_path'], conf, is_train=False)
 
     # train
     results = []

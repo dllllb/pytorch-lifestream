@@ -79,7 +79,9 @@ def create_data_loaders(conf):
 
     valid_ix = np.arange(len(data))
     valid_ix = np.random.choice(valid_ix, size=int(len(data) * conf['dataset.valid_size']), replace=False)
+    valid_ix = set(valid_ix.tolist())
 
+    logger.info(f'Loaded {len(data)} rows. Split in progress...')
     train_data = [rec for i, rec in enumerate(data) if i not in valid_ix]
     valid_data = [rec for i, rec in enumerate(data) if i in valid_ix]
 

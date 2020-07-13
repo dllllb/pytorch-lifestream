@@ -42,7 +42,7 @@
       "beta": 0.4,
       "lr": 0.0005,
       "weight_decay": 0.0,
-      "n_epoch": 15,
+      "n_epoch": 3,
       "checkpoints": {
         "save_interval": 1,
         "n_saved": 1000,
