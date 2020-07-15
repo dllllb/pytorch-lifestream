@@ -3,11 +3,11 @@ export SC_SUFFIX="reduce_on_plateau"
 python ../../metric_learning.py \
     params.device="$SC_DEVICE" \
     params.lr_scheduler.ReduceLROnPlateau=true \
-    model_path.model="models/age_pred_mlm__$SC_SUFFIX.p" \
-    --conf "conf/dataset.hocon" "conf/mles_params.json"
+    model_path.model="models/bowl2019_mlm__$SC_SUFFIX.p" \
+    --conf "conf/trx_dataset.hocon" "conf/mles_params.json"
 python ../../ml_inference.py \
     params.device="$SC_DEVICE" \
-    model_path.model="models/age_pred_mlm__$SC_SUFFIX.p" \
+    model_path.model="models/bowl2019_mlm__$SC_SUFFIX.p" \
     output.path="data/emb__$SC_SUFFIX" \
     --conf "conf/dataset.hocon" "conf/mles_params.json"
 
@@ -18,11 +18,11 @@ python ../../metric_learning.py \
     params.lr_scheduler.ReduceLROnPlateau=true \
     params.lr_scheduler.threshold=0.0001 \
     params.train.n_epoch=200 \
-    model_path.model="models/age_pred_mlm__$SC_SUFFIX.p" \
-    --conf "conf/dataset.hocon" "conf/mles_params.json"
+    model_path.model="models/bowl2019_mlm__$SC_SUFFIX.p" \
+    --conf "conf/trx_dataset.hocon" "conf/mles_params.json"
 python ../../ml_inference.py \
     params.device="$SC_DEVICE" \
-    model_path.model="models/age_pred_mlm__$SC_SUFFIX.p" \
+    model_path.model="models/bowl2019_mlm__$SC_SUFFIX.p" \
     output.path="data/emb__$SC_SUFFIX" \
     --conf "conf/dataset.hocon" "conf/mles_params.json"
 
@@ -31,17 +31,17 @@ export SC_SUFFIX="cosine_annealing"
 python ../../metric_learning.py \
     params.device="$SC_DEVICE" \
     params.lr_scheduler.CosineAnnealing=true \
-    model_path.model="models/age_pred_mlm__$SC_SUFFIX.p" \
-    --conf "conf/dataset.hocon" "conf/mles_params.json"
+    model_path.model="models/bowl2019_mlm__$SC_SUFFIX.p" \
+    --conf "conf/trx_dataset.hocon" "conf/mles_params.json"
 python ../../ml_inference.py \
     params.device="$SC_DEVICE" \
-    model_path.model="models/age_pred_mlm__$SC_SUFFIX.p" \
+    model_path.model="models/bowl2019_mlm__$SC_SUFFIX.p" \
     output.path="data/emb__$SC_SUFFIX" \
     --conf "conf/dataset.hocon" "conf/mles_params.json"
 
 # Compare
-python -m scenario_age_pred compare_approaches --output_file "results/scenario_lr_schedule.csv" \
-    --n_workers 5 --models lgb --embedding_file_names \
+python -m scenario_bowl2019 compare_approaches --output_file "results/scenario_lr_schedule.csv" \
+    --n_workers 4 --models lgb --embedding_file_names \
     "mles_embeddings.pickle"        \
     "emb__reduce_on_plateau.pickle" \
     "emb__reduce_on_plateau_x2epochs.pickle" \

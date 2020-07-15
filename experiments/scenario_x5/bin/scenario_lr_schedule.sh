@@ -43,7 +43,7 @@ python ../../ml_inference.py \
 
 # Compare
 python -m scenario_x5 compare_approaches --output_file "results/scenario_lr_schedule.csv" \
-    --n_workers 4 --models lgb --embedding_file_names \
+    --n_workers 2 --models lgb --embedding_file_names \
     "mles_embeddings.pickle"        \
     "emb__reduce_on_plateau.pickle" \
     "emb__reduce_on_plateau_x2epochs.pickle" \

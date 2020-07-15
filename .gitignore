@@ -10,3 +10,4 @@ deb.env
 experiments/*/runs
 experiments/*/models
 *.egg-info
+.DS_Store
