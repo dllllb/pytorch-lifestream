@@ -105,3 +105,59 @@ python ../../ml_inference.py params.device="$SC_DEVICE" --conf conf/dataset.hoco
 python -m scenario_protein fit_finetuning params.device="$SC_DEVICE" --conf conf/dataset.hocon conf/fit_finetuning_on_cpc_params.json
 
 ```
+
+# Fit target crop
+```
+python -m scenario_protein fit_target \
+    params.device="$SC_DEVICE" \
+    params.labeled_amount=10000 params.train.n_epoch=20 \
+    params.train.clip_seq.min_len=250 params.train.clip_seq.max_len=600 \
+    output.valid.path="data/target_scores_crop1_10K/valid" \
+    output.test.path="data/target_scores_crop1_10K/test" \
+    --conf conf/dataset.hocon conf/fit_target_params.json
+python -m scenario_protein fit_target \
+    params.device="$SC_DEVICE" \
+    params.labeled_amount=10000 params.train.n_epoch=20 \
+    params.train.clip_seq.min_len=400 params.train.clip_seq.max_len=600 \
+    output.valid.path="data/target_scores_crop2_10K/valid" \
+    output.test.path="data/target_scores_crop2_10K/test" \
+    --conf conf/dataset.hocon conf/fit_target_params.json
+python -m scenario_protein compare_approaches --n_workers 1 \
+    --score_file_names "target_scores_crop1_10K" "target_scores_crop2_10K"
+
+python -m scenario_protein fit_target \
+    params.device="$SC_DEVICE" \
+    params.labeled_amount=20000 params.train.n_epoch=20 \
+    params.train.clip_seq.min_len=250 params.train.clip_seq.max_len=600 \
+    output.valid.path="data/target_scores_crop1_20K/valid" \
+    output.test.path="data/target_scores_crop1_20K/test" \
+    --conf conf/dataset.hocon conf/fit_target_params.json
+python -m scenario_protein fit_target \
+    params.device="$SC_DEVICE" \
+    params.labeled_amount=20000 params.train.n_epoch=20 \
+    params.train.clip_seq.min_len=400 params.train.clip_seq.max_len=600 \
+    output.valid.path="data/target_scores_crop2_20K/valid" \
+    output.test.path="data/target_scores_crop2_20K/test" \
+    --conf conf/dataset.hocon conf/fit_target_params.json
+python -m scenario_protein compare_approaches --n_workers 1 \
+    --score_file_names "target_scores_crop1_20K" "target_scores_crop2_20K"
+
+
+python -m scenario_protein fit_target \
+    params.device="$SC_DEVICE" \
+    params.labeled_amount=100000 params.train.n_epoch=20 \
+    params.train.clip_seq.min_len= params.train.clip_seq.max_len= \
+    output.valid.path="data/target_scores_crop_100K/valid" \
+    output.test.path="data/target_scores_crop_100K/test" \
+    --conf conf/dataset.hocon conf/fit_target_params.json
+
+
+python -m scenario_protein fit_target \
+    params.device="$SC_DEVICE" \
+    params.train.n_epoch=25 \
+    params.train.clip_seq.min_len= params.train.clip_seq.max_len= \
+    output.valid.path="data/target_crop_scores/valid" \
+    output.test.path="data/target_crop_scores/test" \
+    --conf conf/dataset.hocon conf/fit_target_params.json
+
+```
