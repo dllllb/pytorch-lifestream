@@ -95,3 +95,13 @@ python -m scenario_protein compare_approaches --n_workers 1 \
 # check the results
 cat results/scenario.csv
 ```
+
+# CPC
+```
+# Train the Contrastive Predictive Coding (CPC) model; inference
+python ../../train_cpc.py    params.device="$SC_DEVICE" --conf conf/dataset.hocon conf/cpc_params.json
+python ../../ml_inference.py params.device="$SC_DEVICE" --conf conf/dataset.hocon conf/cpc_params.json
+# Fine tune the CPC model in supervised mode and save scores to the file
+python -m scenario_protein fit_finetuning params.device="$SC_DEVICE" --conf conf/dataset.hocon conf/fit_finetuning_on_cpc_params.json
+
+```

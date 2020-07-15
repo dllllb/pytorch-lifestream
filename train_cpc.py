@@ -6,6 +6,7 @@ from itertools import islice
 import numpy as np
 import torch
 
+from tqdm.auto import tqdm
 from dltranz.metric_learn.ml_models import ml_model_by_type
 from dltranz.seq_encoder import RnnEncoder, LastStepEncoder
 from dltranz.trx_encoder import TrxEncoder
@@ -36,6 +37,7 @@ def main(args=None):
     conf = get_conf(args)
 
     data = read_data_gen(conf['dataset.train_path'])
+    data = tqdm(data)
     if 'max_rows' in conf['dataset']:
         data = islice(data, conf['dataset.max_rows'])
     data = target_rm(data)
@@ -48,6 +50,7 @@ def main(args=None):
 
     valid_ix = np.arange(len(data))
     valid_ix = np.random.choice(valid_ix, size=int(len(data) * conf['dataset.valid_size']), replace=False)
+    valid_ix = set(valid_ix.tolist())
 
     train_data = [rec for i, rec in enumerate(data) if i not in valid_ix]
     valid_data = [rec for i, rec in enumerate(data) if i in valid_ix]
