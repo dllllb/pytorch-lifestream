@@ -69,11 +69,19 @@ def get_optimizer(model, params):
 
 
 class SchedulerWrapper:
-    def __init__(self, optimizer):
-        self.optimizer = optimizer
+    def __init__(self, scheduler):
+        self.scheduler = scheduler
 
     def __call__(self, *args, **kwargs):
-        self.optimizer.step()
+        self.scheduler.step()
+
+
+class ReduceLROnPlateauWrapper:
+    def __init__(self, scheduler):
+        self.scheduler = scheduler
+
+    def __call__(self, metric_value, *args, **kwargs):
+        self.scheduler.step(metric_value)
 
 
 class MultiGammaScheduler(torch.optim.lr_scheduler.MultiStepLR):
@@ -105,18 +113,47 @@ def get_lr_scheduler(optimizer, params):
                                          last_epoch=scheduler_params['last_epoch'])
 
             logger.info('MultiGammaScheduler used')
+
+    elif params['lr_scheduler'].get('CosineAnnealing', False):
+        T_max = params['train']['n_epoch']
+        eta_min = params['lr_scheduler'].get('eta_min', 0)
+        scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=T_max, eta_min=eta_min)
+        logger.info('CosineAnnealingLR lr_scheduler used')
+        wrapper = SchedulerWrapper
+
+    elif params['lr_scheduler'].get('ReduceLROnPlateau', False):
+        mode = params['lr_scheduler'].get('mode', 'max')
+        factor = params['lr_scheduler'].get('factor', 0.1)
+        patience = params['lr_scheduler'].get('patience', 10)
+        threshold = params['lr_scheduler'].get('threshold', 0.001)
+        min_lr = params['lr_scheduler'].get('min_lr', 1e-6)
+
+        scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
+            optimizer,
+            mode=mode,
+            factor=factor,
+            patience=patience,
+            threshold=threshold,
+            threshold_mode='rel',
+            min_lr=min_lr,
+            verbose=True
+        )
+        logger.info('ReduceLROnPlateau lr_scheduler used')
+        wrapper = ReduceLROnPlateauWrapper
+
     else:
         lr_step_size = params['lr_scheduler']['step_size']
         lr_step_gamma = params['lr_scheduler']['step_gamma']
         scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=lr_step_size, gamma=lr_step_gamma)
         logger.info('StepLR lr_scheduler used')
+        wrapper = SchedulerWrapper
 
+    # TODO: ReduceLROnPlateau + warmup
     if 'warmup' in params['lr_scheduler']:
         wrapper = LRScheduler
         # optimiser param groups are not supported with LRScheduler
-    else:
-        wrapper = SchedulerWrapper
         # create_lr_scheduler_with_warmup don't works with SchedulerWrapper
+
     scheduler = wrapper(scheduler)
 
     if 'warmup' in params['lr_scheduler']:
@@ -159,7 +196,6 @@ class MlflowHandler:
             log_handler=ignite.contrib.handlers.mlflow_logger.OptimizerParamsHandler(optimizer),
             event_name=Events.ITERATION_STARTED
         )
-
 
 
 class TensorboardHandler:
@@ -215,8 +251,6 @@ def fit_model(model, train_loader, valid_loader, loss, optimizer, scheduler, par
 
     trainer.add_event_handler(Events.EPOCH_STARTED, PrepareEpoch(train_loader))
 
-    trainer.add_event_handler(Events.EPOCH_COMPLETED, scheduler)
-
     @trainer.on(Events.EPOCH_COMPLETED)
     def log_training_results(engine):
         validation_evaluator.run(valid_loader)
@@ -226,6 +260,16 @@ def fit_model(model, train_loader, valid_loader, loss, optimizer, scheduler, par
             msgs.append(f'{metric}: {metrics[metric]:.3f}')
         pbar.log_message(
             f'Epoch: {engine.state.epoch},  {", ".join(msgs)}')
+
+    @validation_evaluator.on(Events.COMPLETED)
+    def reduce_step(engine):
+        # will be executed every time when validation_evaluator finish run
+        # engine is validation_evaluator
+        if isinstance(scheduler, ReduceLROnPlateauWrapper):
+            metric_value = next(iter(engine.state.metrics.values()))
+            scheduler(metric_value)
+        else:
+            scheduler()
 
     for handler in train_handlers:
         handler(trainer, validation_evaluator, optimizer)

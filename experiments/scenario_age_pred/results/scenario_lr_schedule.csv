@@ -1,0 +1,6 @@
+                                          oof_accuracy                                                         test_accuracy                                                        
+                                                  mean t_int_l t_int_h    std                           values          mean t_int_l t_int_h    std                           values
+name                                                                                                                                                                                
+lgb_embeds: emb__cosine_annealing.pickle        0.6392  0.6330  0.6454 0.0050  [0.631 0.638 0.641 0.642 0.644]        0.6375  0.6335  0.6415 0.0032  [0.634 0.635 0.638 0.639 0.642]
+lgb_embeds: emb__reduce_on_plateau.pickle       0.6338  0.6269  0.6407 0.0056  [0.628 0.628 0.635 0.638 0.640]        0.6367  0.6342  0.6392 0.0020  [0.635 0.635 0.637 0.637 0.640]
+lgb_embeds: mles_embeddings.pickle              0.6340  0.6286  0.6394 0.0043  [0.629 0.632 0.632 0.639 0.639]        0.6269  0.6239  0.6300 0.0025  [0.623 0.627 0.628 0.628 0.629]

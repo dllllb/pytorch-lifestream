@@ -20,7 +20,7 @@ def embeds_quantiles(input_array: np.array, q_count: int = 0, bins: np.array = N
     -------
     input_array (np.array): Input array.
     q_count (int): Amount of quantiles. Used only if input parameter `bins` is None.
-    quantiles (np.array):
+    bins (np.array):
         If None, then calculate bins as quantiles of input array,
         otherwise only apply bins to input_array. Default: None
     num_workers (int): Amount of workers in Pool in case num_workers>1, without multiprocessing otherwise. Default: 0
@@ -44,6 +44,7 @@ def embeds_quantiles(input_array: np.array, q_count: int = 0, bins: np.array = N
     else:
         assert input_array.shape[1] == bins.shape[1]
         return_bins = False
+        q_count = bins.shape[0]
 
     if num_workers > 1:
         with Pool(num_workers) as p:
