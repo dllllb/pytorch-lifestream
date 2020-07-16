@@ -164,8 +164,11 @@ def add_ticks(seq, conf, mode):
     if freq == 'w':
         weekdays = ((all_dates.astype('datetime64[D]').astype(np.int16) + 3) % 7 + 1)
         all_dates = all_dates[weekdays == 1]
+    elif freq == 'm':
+        monthdays = (all_dates.astype('datetime64[D]') - all_dates.astype('datetime64[M]') + 1).astype('int')
+        all_dates = all_dates[monthdays == 15]
     else:
-        raise AttributeError(f'Only "w" - week, freq supported. Found "{freq}"')
+        raise AttributeError(f'Only "w" - week and "m" - month, freq supported. Found "{freq}"')
 
     all_zeros = np.zeros(len(all_dates), dtype=np.int16)
 
