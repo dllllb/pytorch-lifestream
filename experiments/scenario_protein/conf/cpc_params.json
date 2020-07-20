@@ -37,7 +37,7 @@
       "max_seq_len": 800,
       "lr": 0.001,
       "weight_decay": 0.0,
-      "n_epoch": 20,
+      "n_epoch": 4,
       "checkpoints": {
         "save_interval": 1,
         "n_saved": 1000,

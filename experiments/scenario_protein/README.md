@@ -99,7 +99,7 @@ cat results/scenario.csv
 # CPC
 ```
 # Train the Contrastive Predictive Coding (CPC) model; inference
-python ../../train_cpc.py    params.device="$SC_DEVICE" --conf conf/dataset.hocon conf/cpc_params.json
+python ../../train_cpc.py    dataset.max_rows=200000 params.device="$SC_DEVICE" --conf conf/dataset.hocon conf/cpc_params.json
 python ../../ml_inference.py params.device="$SC_DEVICE" --conf conf/dataset.hocon conf/cpc_params.json
 # Fine tune the CPC model in supervised mode and save scores to the file
 python -m scenario_protein fit_finetuning params.device="$SC_DEVICE" --conf conf/dataset.hocon conf/fit_finetuning_on_cpc_params.json
@@ -146,18 +146,39 @@ python -m scenario_protein compare_approaches --n_workers 1 \
 python -m scenario_protein fit_target \
     params.device="$SC_DEVICE" \
     params.labeled_amount=100000 params.train.n_epoch=20 \
-    params.train.clip_seq.min_len= params.train.clip_seq.max_len= \
-    output.valid.path="data/target_scores_crop_100K/valid" \
-    output.test.path="data/target_scores_crop_100K/test" \
+    params.train.num_workers=8 \
+    params.train.clip_seq.min_len=250 params.train.clip_seq.max_len=600 \
+    output.valid.path="data/target_scores_crop1_100K/valid" \
+    output.test.path="data/target_scores_crop1_100K/test" \
     --conf conf/dataset.hocon conf/fit_target_params.json
+python -m scenario_protein fit_target \
+    params.device="$SC_DEVICE" \
+    params.labeled_amount=100000 params.train.n_epoch=20 \
+    params.train.num_workers=8 \
+    params.train.clip_seq.min_len=400 params.train.clip_seq.max_len=600 \
+    output.valid.path="data/target_scores_crop2_100K/valid" \
+    output.test.path="data/target_scores_crop2_100K/test" \
+    --conf conf/dataset.hocon conf/fit_target_params.json
+python -m scenario_protein compare_approaches --n_workers 1 \
+    --score_file_names "target_scores_crop1_100K" "target_scores_crop2_100K"
 
 
 python -m scenario_protein fit_target \
     params.device="$SC_DEVICE" \
     params.train.n_epoch=25 \
-    params.train.clip_seq.min_len= params.train.clip_seq.max_len= \
-    output.valid.path="data/target_crop_scores/valid" \
-    output.test.path="data/target_crop_scores/test" \
+    params.train.clip_seq.min_len=250 params.train.clip_seq.max_len=600 \
+    params.train.lr=0.001 \
+    output.valid.path="data/target_crop1_scores/valid" \
+    output.test.path="data/target_crop1_scores/test" \
     --conf conf/dataset.hocon conf/fit_target_params.json
+python -m scenario_protein fit_target \
+    params.device="$SC_DEVICE" \
+    params.train.n_epoch=25 \
+    params.train.clip_seq.min_len=400 params.train.clip_seq.max_len=600 \
+    output.valid.path="data/target_crop2_scores/valid" \
+    output.test.path="data/target_crop2_scores/test" \
+    --conf conf/dataset.hocon conf/fit_target_params.json
+python -m scenario_protein compare_approaches --n_workers 2 \
+    --score_file_names "target_crop1_scores" "target_crop2_scores"
 
 ```
