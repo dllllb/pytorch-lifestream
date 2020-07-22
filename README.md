@@ -9,7 +9,8 @@ bash Miniconda*.sh
 exit
 
 # install pytorch
-conda install pytorch -c pytorch
+# instead of 10.1 use a current version of cuda, see nvidia-smi
+conda install pytorch cudatoolkit=10.1 -c pytorch
 # check CUDA version
 python -c 'import torch; print(torch.version.cuda)'
 # chech torch GPU
