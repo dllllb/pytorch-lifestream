@@ -42,10 +42,11 @@ def get_scores(args):
 def main(conf):
     logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)-7s %(funcName)-20s   : %(message)s')
 
+    embedding_file_names = sct.expand_path(conf['data_path'], conf['embedding_file_names'])
     approaches_to_train = {
         **{
             f"embeds: {file_name}": {'metric_learning_embedding_name': file_name}
-            for file_name in conf['embedding_file_names']
+            for file_name in embedding_file_names
         },
     }
     if conf['add_baselines']:
@@ -59,7 +60,7 @@ def main(conf):
                 'metric_learning_embedding_name': file_name,
                 'use_client_agg': True, 'use_mcc_code_stat': True, 'use_tr_type_stat': True,
             }
-            for file_name in conf['embedding_file_names']
+            for file_name in embedding_file_names
         })
 
     approaches_to_score = {

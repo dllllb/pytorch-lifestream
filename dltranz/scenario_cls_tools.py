@@ -2,6 +2,7 @@ import logging
 import os
 from collections import namedtuple
 from functools import reduce
+from glob import glob
 from multiprocessing.pool import Pool
 from operator import iadd
 
@@ -225,3 +226,14 @@ class WPool:
             return self.pool.imap_unordered(func, iterable)
         else:
             return reduce(iadd, map(func, iterable))
+
+
+def expand_path(data_path, wc_paths):
+    data_path = os.path.join(data_path, '')  # ensure `/` at the end
+
+    embedding_file_names = []
+    for path in wc_paths:
+        for n_path in glob(data_path + path):
+            embedding_file_names.append(n_path[len(data_path):])
+    logger.info(f'Found {len(embedding_file_names)} embedding files: [{embedding_file_names}]')
+    return embedding_file_names
