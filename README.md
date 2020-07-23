@@ -18,10 +18,10 @@ python -c 'import torch; print(torch.version.cuda)'
 python -c 'import torch; print(torch.rand(2,3).cuda())'
 
 # clone repo
-git clone git@bitbucket.org:dllllb/dltranz.git
+git clone 
 
 # install dependencies
-cd dltranz
+conda install -c conda-forge pyspark 
 pip install -r requirements.txt
 
 ```
