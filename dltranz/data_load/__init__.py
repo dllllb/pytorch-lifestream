@@ -1,3 +1,4 @@
+import logging
 import os
 import pickle
 import random
@@ -11,7 +12,11 @@ import torch
 from torch.utils.data import WeightedRandomSampler, Sampler, Dataset
 from torch.utils.data.dataloader import DataLoader
 
+from dltranz.data_load.lazy_dataset import LazyDataset
 from dltranz.seq_encoder import PaddedBatch
+
+
+logger = logging.getLogger(__name__)
 
 
 def default_preprocess(data, conf, drop_unknown=True):
@@ -169,9 +174,14 @@ class DropoutTrxDataset(Dataset):
         self.core_dataset = dataset
         self.trx_dropout = trx_dropout
         self.max_seq_len = seq_len
+        self.style = dataset.style
 
     def __len__(self):
         return len(self.core_dataset)
+
+    def __iter__(self):
+        for rec in iter(self.core_dataset):
+            yield self._one_item(rec)
 
     def __getitem__(self, idx):
         item = self.core_dataset[idx]
@@ -325,12 +335,23 @@ class LastKTrxDataset(Dataset):
 
 
 class TrxDataset(Dataset):
-    def __init__(self, data, y_dtype=np.float32):
+    def __init__(self, data, y_dtype=np.float32, style='map'):
         self.data = data
         self.y_dtype = y_dtype
 
+        if isinstance(data, torch.utils.data.IterableDataset):
+            self.style = 'iterable'
+        else:
+            self.style = style
+
     def __len__(self):
         return len(self.data)
+
+    def __iter__(self):
+        for rec in iter(self.data):
+            x = rec['feature_arrays']
+            y = rec.get('target', None)
+            yield x, self.y_dtype(y)
 
     def __getitem__(self, idx):
         x = self.data[idx]['feature_arrays']
@@ -340,11 +361,19 @@ class TrxDataset(Dataset):
 
 
 class ConvertingTrxDataset(Dataset):
-    def __init__(self, delegate):
+    def __init__(self, delegate, style='map'):
         self.delegate = delegate
+        if hasattr(delegate, 'style'):
+            self.style = delegate.style
+        else:
+            self.style = style
 
     def __len__(self):
         return len(self.delegate)
+
+    def __iter__(self):
+        for rec in iter(self.delegate):
+            yield self._one_item(rec)
 
     def __getitem__(self, idx):
         item = self.delegate[idx]
@@ -456,7 +485,11 @@ def create_train_loader(dataset, params, sampler=None):
 
 
 def create_validation_loader(dataset, params):
-    if isinstance(list(next(iter(dataset))[0].values())[0], dict):
+    ipoteka_style_dataset = False
+    # Fetch takes time in case of iterable dataset
+    # TODO: choose dataset style from config
+    # ipoteka_style_dataset = isinstance(list(next(iter(dataset))[0].values())[0], dict)
+    if ipoteka_style_dataset:
         return create_validation_loader_ipoteka(dataset, params)
     else:
         return create_validation_loader_common(dataset, params)
@@ -476,8 +509,34 @@ def create_train_loader_common(dataset, params, sampler=None):
     return valid_loader
 
 
+class MapStyleDatasetWrapper(torch.utils.data.Dataset):
+    def __init__(self, data):
+        self.data = data
+
+    def __len__(self):
+        return len(self.data)
+
+    def __getitem__(self, item):
+        return self.data[item]
+
+
+class IterableDatasetWrapper(torch.utils.data.IterableDataset):
+    def __init__(self, data):
+        self.data = data
+
+    def __iter__(self):
+        return iter(self.data)
+
+
 def create_validation_loader_common(dataset, params):
     dataset = DropoutTrxDataset(dataset, 0, params['max_seq_len'])
+
+    if dataset.style == 'iterable':
+        dataset = IterableDatasetWrapper(dataset)
+        logger.info('IterableDatasetWrapper used')
+    else:
+        dataset = MapStyleDatasetWrapper(dataset)
+        logger.info('MapStyleDatasetWrapper used')
 
     valid_loader = DataLoader(
         dataset,

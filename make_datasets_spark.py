@@ -32,7 +32,7 @@ def parse_args(args=None):
     parser.add_argument('--cols_category', nargs='*', default=[])
     parser.add_argument('--cols_log_norm', nargs='*', default=[])
     parser.add_argument('--col_target', nargs='*', default=[])
-    parser.add_argument('--test_size', type=float, default=0.1)
+    parser.add_argument('--test_size', default='0.1')
     parser.add_argument('--salt', type=int, default=42)
     parser.add_argument('--max_trx_count', type=int, default=5000)
 
@@ -46,13 +46,23 @@ def parse_args(args=None):
     return args
 
 
-def load_source_data(data_path, trx_files):
+def spark_read_file(path):
     spark = SparkSession.builder.getOrCreate()
 
+    ext = os.path.splitext(path)[1]
+    if ext == '.csv':
+        return spark.read.csv(path, header=True)
+    elif ext == '.parquet':
+        return spark.read.parquet(path)
+    else:
+        raise AttributeError(f'Unknown extension "{ext}" for "{path}"')
+
+
+def load_source_data(data_path, trx_files):
     data = None
     for file in trx_files:
         file_path = os.path.join(data_path, file)
-        df = spark.read.csv(file_path, header=True)
+        df = spark_read_file(file_path)
         data = df if data is None else data.union(df)
         logger.info(f'Loaded {df.count()} rows from "{file_path}"')
 
@@ -183,10 +193,8 @@ def collect_lists(df, col_id):
 
 
 def join_dict(df, data_path, df_dict_name, col_id):
-    spark = SparkSession.builder.getOrCreate()
-
     path = os.path.join(data_path, df_dict_name)
-    df_dict = spark.read.csv(path, header=True)
+    df_dict = spark_read_file(path)
     df = df.join(df_dict, on=col_id, how='left')
 
     col_counter = 0
@@ -306,6 +314,23 @@ def split_dataset(all_data, test_size, data_path, target_files, col_client_id, s
     return train, test
 
 
+def split_dataset_predefined(
+            all_data,
+            data_path,
+            col_client_id,
+            test_ids_path,
+        ):
+    df_test = load_source_data(data_path, [test_ids_path])
+    df_test = df_test.withColumn('_is_test', F.lit(1))
+
+    all_data = all_data.join(df_test, on=col_client_id, how='left')
+    all_data = all_data.withColumn('_is_test', F.coalesce(F.col('_is_test'), F.lit(0)))
+
+    train = all_data.filter("_is_test = 0")
+    test = all_data.filter("_is_test = 1")
+    return train, test
+
+
 def save_features(df_data, save_path):
     df_data.write.parquet(save_path, mode='overwrite')
     logger.info(f'Saved to: "{save_path}"')
@@ -367,17 +392,26 @@ if __name__ == '__main__':
             col_target=col_target,
         )
 
-    if config.test_size > 0:
+    train, test, save_test_id = None, None, False
+    if config.test_size == 'predefined':
+        train, test = split_dataset_predefined(
+            all_data=client_features,
+            data_path=config.data_path,
+            col_client_id=config.col_client_id,
+            test_ids_path=config.output_test_ids_path,
+        )
+    elif float(config.test_size) > 0:
         # description
         spark.sparkContext.setLocalProperty('callSite.short', 'split_dataset')
         train, test = split_dataset(
             all_data=client_features,
-            test_size=config.test_size,
+            test_size=float(config.test_size),
             data_path=config.data_path,
             target_files=config.target_files,
             col_client_id=config.col_client_id,
             salt=config.salt,
         )
+        save_test_id = True
     else:
         train = client_features
 
@@ -388,11 +422,13 @@ if __name__ == '__main__':
         save_path=config.output_train_path,
     )
 
-    if config.test_size > 0:
+    if test is not None:
         save_features(
             df_data=test,
             save_path=config.output_test_path,
         )
+
+    if save_test_id:
         test_ids = test.select(config.col_client_id).toPandas()
         test_ids.to_csv(config.output_test_ids_path, index=False)
 

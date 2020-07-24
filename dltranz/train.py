@@ -353,8 +353,19 @@ def predict_proba_path(model, path_wc, create_loader, files_per_batch=100):
 
 class CheckpointHandler:
     def __init__(self, model, **model_checkpoint_params):
+        self.ignite_version = ignite.__version__
+
+        self.save_interval = model_checkpoint_params.get('save_interval', 1)
+        if self.ignite_version >= '0.3.0':
+            del model_checkpoint_params['save_interval']
+            model_checkpoint_params['global_step_transform'] = lambda engine, event_name: engine.state.epoch
         self.handler = ModelCheckpoint(**model_checkpoint_params)
         self.model = model
 
     def __call__(self, train_engine, valid_engine, optimizer):
-        train_engine.add_event_handler(Events.EPOCH_COMPLETED, self.handler, {'model': self.model})
+        if self.ignite_version >= '0.3.0':
+            train_engine.add_event_handler(Events.EPOCH_COMPLETED(every=self.save_interval),
+                                           self.handler, {'model': self.model})
+        else:
+            train_engine.add_event_handler(Events.EPOCH_COMPLETED,
+                                           self.handler, {'model': self.model})
