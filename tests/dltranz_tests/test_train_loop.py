@@ -5,7 +5,7 @@ from sklearn.metrics import roc_auc_score
 from dltranz.data_load import create_validation_loader, TrxDataset
 from dltranz.experiment import run_experiment
 from dltranz.models import rnn_model
-from tests.dltranz_tests.test_trx_encoder import gen_trx_data
+from .test_data_load import gen_trx_data
 from dltranz.train import score_model
 
 
