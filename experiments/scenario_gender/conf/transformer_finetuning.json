@@ -59,5 +59,11 @@
       "format": "pickle"
     },
     "columns": ["customer_id"]
+  },
+
+  "stats": {
+    "model_name": "nn",
+    "feature_name": "transf_finetuning",
+    "path": "results/transf_finetuning_results.json"
   }
 }

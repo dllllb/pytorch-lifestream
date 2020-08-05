@@ -11,6 +11,7 @@ import pandas as pd
 import scipy.stats
 import xgboost as xgb
 from sklearn.linear_model import LogisticRegression, LinearRegression
+from sklearn.metrics import roc_auc_score, accuracy_score
 from sklearn.model_selection import StratifiedKFold
 
 import dltranz.fastai.fastai_tools as fai
@@ -153,6 +154,112 @@ def train_and_score(kw_params: KWParamsTrainAndScore):
                                                y_valid.values.astype('long'),
                                                kw_params.model_params)'''
             score_test = -1
+
+        logger.info(
+            ' '.join([
+                f'[{log_process_id}]',
+                f'Finished with {kw_params.scorer_name}',
+                f'valid={score_valid:.4f},',
+                f'test={score_test:.4f}'
+            ]))
+    except Exception as ex:
+        logging.exception(f'[{log_process_id}]: exception\n{ex}', exc_info=True)
+        score_valid = None
+        score_test = None
+
+    res = {
+        'name': '_'.join([kw_params.model_type, kw_params.name]),
+        'fold_n': kw_params.fold_n,
+        f'oof_{kw_params.scorer_name}': score_valid,
+        f'test_{kw_params.scorer_name}': score_test,
+    }
+    return res
+
+
+def train_and_score_mean_by_key(kw_params: KWParamsTrainAndScore):
+    """
+    The differences with `dltranz.scenario_cls_tools.train_and_score`:
+    - Duplicated keys allowed in test_df and valid_df index
+    - Probabilities from `model.predict` aggregates by `df.index` key with `mean` aggfunc
+    - Aggregation is slightly different for roc_auc and accuracy metrics.
+        This why you should choose metric and aggregation func manually
+
+    :param kw_params:
+    :return:
+    """
+    log_process_id = f'{kw_params.name:20}:{kw_params.model_type:6}:{kw_params.fold_n:2}'
+
+    try:
+        logger.info(f'[{log_process_id}] Started')
+
+        features = kw_params.load_features_f()[0]
+
+        train_ds = pd.merge(features, kw_params.df_train[[kw_params.col_target]], left_index=True, right_index=True)
+        valid_ds = pd.merge(features, kw_params.df_valid[[kw_params.col_target]], left_index=True, right_index=True)
+        test_ds = pd.merge(features, kw_params.df_test[[kw_params.col_target]], left_index=True, right_index=True)
+
+        y_train = train_ds[kw_params.col_target]
+        y_valid = valid_ds[kw_params.col_target]
+        y_test = test_ds[kw_params.col_target]
+
+        X_train = train_ds.drop(columns=kw_params.col_target)
+        X_valid = valid_ds.drop(columns=kw_params.col_target)
+        X_test = test_ds.drop(columns=kw_params.col_target)
+
+        df_fn = X_train.quantile(0.5)
+        df_norm = X_train.max() - X_train.min() + 1e-5
+
+        X_train = X_train.fillna(df_fn) / df_norm
+        X_valid = X_valid.fillna(df_fn) / df_norm
+        X_test = X_test.fillna(df_fn) / df_norm
+
+        if kw_params.model_type == 'linear':
+            if kw_params.model_params.get('objective') == 'regression':
+                model = LinearRegression(**{k:v for k,v in kw_params.model_params.items() if k != 'objective'})
+            else:
+                model = LogisticRegression(**{k:v for k,v in kw_params.model_params.items() if k != 'objective'})
+        elif kw_params.model_type == 'xgb':
+            if kw_params.model_params.get('objective', 'classification').startswith('reg'):
+                model = xgb.XGBRegressor(**kw_params.model_params)
+            else:
+                model = xgb.XGBClassifier(**kw_params.model_params)
+        elif kw_params.model_type == 'lgb':
+            if kw_params.model_params.get('objective') == 'regression':
+                model = lgb.LGBMRegressor(**kw_params.model_params)
+            else:
+                model = lgb.LGBMClassifier(**kw_params.model_params)
+        elif kw_params.model_type in ('neural_automl', 'fastai'):
+            pass
+        else:
+            raise NotImplementedError(f'Unknown model type {kw_params.model_type}')
+
+        if kw_params.model_type in ['linear', 'xgb', 'lgb']:
+            model.fit(X_train, y_train)
+
+            def _score_roc_auc(model, df, y):
+                df = df.copy()
+                df['predict'] = model.predict_proba(df)[:, 1]
+                df['y'] = y
+                df = df.groupby(level=0).mean()
+                return roc_auc_score(df['y'], df['predict'])
+
+            def _score_accuracy(model, df, y):
+                df = df.copy()
+                predicts = pd.DataFrame(model.predict_proba(df), index=df.index)
+                predicts = predicts.groupby(level=0).mean()
+
+                df['y'] = y
+                df = df.groupby(level=0).mean()
+                return accuracy_score(df['y'], predicts.reindex(index=df.index).idxmax(axis=1))
+
+            # TODO: Choose score function here manually
+            score_valid = _score_accuracy(model, X_valid, y_valid)
+            score_test = _score_accuracy(model, X_test, y_test)
+        elif kw_params.model_type == 'neural_automl':
+            raise NotImplementedError()
+
+        elif kw_params.model_type == 'fastai':
+            raise NotImplementedError()
 
         logger.info(
             ' '.join([

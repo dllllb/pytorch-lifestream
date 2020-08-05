@@ -4,6 +4,7 @@
       "name": "default"
     },
     "device": "cuda",
+    "model_type": "cpc_model",
     "rnn": {
       "type": "gru",
       "hidden_size": 256,
