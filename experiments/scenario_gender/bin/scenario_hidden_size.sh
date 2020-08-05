@@ -11,7 +11,7 @@ python ../../ml_inference.py \
     params.valid.batch_size=128 \
     model_path.model="models/gender_mlm__$SC_SUFFIX.p" \
     output.path="data/emb__$SC_SUFFIX" \
-    --conf conf/dataset.hocon conf/gender_ml_params_inference.json
+    --conf conf/dataset.hocon conf/mles_params.json
 
 export SC_SUFFIX="hidden_size_bs_0128_hs_2048"
 python ../../metric_learning.py \
@@ -25,7 +25,7 @@ python ../../ml_inference.py \
     params.valid.batch_size=128 \
     model_path.model="models/gender_mlm__$SC_SUFFIX.p" \
     output.path="data/emb__$SC_SUFFIX" \
-    --conf conf/dataset.hocon conf/gender_ml_params_inference.json
+    --conf conf/dataset.hocon conf/mles_params.json
 
 export SC_SUFFIX="hidden_size_bs_0128_hs_1024"
 python ../../metric_learning.py \
@@ -38,7 +38,7 @@ python ../../ml_inference.py \
     params.device="$SC_DEVICE" \
     model_path.model="models/gender_mlm__$SC_SUFFIX.p" \
     output.path="data/emb__$SC_SUFFIX" \
-    --conf conf/dataset.hocon conf/gender_ml_params_inference.json
+    --conf conf/dataset.hocon conf/mles_params.json
 
 export SC_SUFFIX="hidden_size_bs_0128_hs_0512"
 python ../../metric_learning.py \
@@ -51,7 +51,7 @@ python ../../ml_inference.py \
     params.device="$SC_DEVICE" \
     model_path.model="models/gender_mlm__$SC_SUFFIX.p" \
     output.path="data/emb__$SC_SUFFIX" \
-    --conf conf/dataset.hocon conf/gender_ml_params_inference.json
+    --conf conf/dataset.hocon conf/mles_params.json
 
 export SC_SUFFIX="hidden_size_bs_0128_hs_0256"
 python ../../metric_learning.py \
@@ -64,7 +64,7 @@ python ../../ml_inference.py \
     params.device="$SC_DEVICE" \
     model_path.model="models/gender_mlm__$SC_SUFFIX.p" \
     output.path="data/emb__$SC_SUFFIX" \
-    --conf conf/dataset.hocon conf/gender_ml_params_inference.json
+    --conf conf/dataset.hocon conf/mles_params.json
 
 export SC_SUFFIX="hidden_size_bs_0128_hs_0128"
 python ../../metric_learning.py \
@@ -77,7 +77,7 @@ python ../../ml_inference.py \
     params.device="$SC_DEVICE" \
     model_path.model="models/gender_mlm__$SC_SUFFIX.p" \
     output.path="data/emb__$SC_SUFFIX" \
-    --conf conf/dataset.hocon conf/gender_ml_params_inference.json
+    --conf conf/dataset.hocon conf/mles_params.json
 
 export SC_SUFFIX="hidden_size_bs_0128_hs_0064"
 python ../../metric_learning.py \
@@ -90,7 +90,7 @@ python ../../ml_inference.py \
     params.device="$SC_DEVICE" \
     model_path.model="models/gender_mlm__$SC_SUFFIX.p" \
     output.path="data/emb__$SC_SUFFIX" \
-    --conf conf/dataset.hocon conf/gender_ml_params_inference.json
+    --conf conf/dataset.hocon conf/mles_params.json
 
 export SC_SUFFIX="hidden_size_bs_0128_hs_0032"
 python ../../metric_learning.py \
@@ -103,7 +103,7 @@ python ../../ml_inference.py \
     params.device="$SC_DEVICE" \
     model_path.model="models/gender_mlm__$SC_SUFFIX.p" \
     output.path="data/emb__$SC_SUFFIX" \
-    --conf conf/dataset.hocon conf/gender_ml_params_inference.json
+    --conf conf/dataset.hocon conf/mles_params.json
 
 
 # Compare
