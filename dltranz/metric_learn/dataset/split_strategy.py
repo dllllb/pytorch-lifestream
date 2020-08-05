@@ -112,6 +112,66 @@ class SplitByWeeks(AbsSplit):
         return n_byweeks_idxes
 
 
+class SampleSlicesMLES(AbsSplit):
+    def __init__(self, split_count, cnt_min, cnt_max, short_seq_crop_rate=1.0, is_sorted=False):
+        self.split_count = split_count
+        self.cnt_min = cnt_min
+        self.cnt_max = cnt_max
+        self.short_seq_crop_rate = short_seq_crop_rate
+        self.is_sorted = is_sorted
+
+    def split(self, dates):
+        date_len = dates.shape[0]
+        date_range = np.arange(date_len)
+
+        if date_len <= self.cnt_min and self.short_seq_crop_rate >= 1.0:
+            return [date_range for _ in range(self.split_count)]
+
+        if int(date_len * self.short_seq_crop_rate) <= self.cnt_min and self.short_seq_crop_rate < 1.0:
+            cnt_min = int(date_len * self.short_seq_crop_rate)
+        else:
+            cnt_min = self.cnt_min
+
+        cnt_max = self.cnt_max if date_len > self.cnt_max else date_len
+
+        lengths = np.random.randint(cnt_min, cnt_max, self.split_count)
+        available_start_pos = (date_len - lengths).clip(0, None)
+        start_pos = (np.random.rand(self.split_count) * (available_start_pos + 1 - 1e-9)).astype(int)
+        if not self.is_sorted:
+            return [date_range[s:s + l] for s, l in zip(start_pos, lengths)]
+
+        ix_sort = np.argsort(start_pos)
+        return [date_range[s:s + l] for s, l in zip(start_pos[ix_sort], lengths[ix_sort])]
+
+
+class SampleUniform(AbsSplit):
+    """
+    Sub samples with equal length = `seq_len`
+    Start pos has fixed uniform distribution from sequence start to end with equal step
+    |---------------------|       main sequence
+    |------|              |        sub seq 1
+    |    |------|         |        sub seq 2
+    |         |------|    |        sub seq 3
+    |              |------|        sub seq 4
+
+    There is no random factor in this splitter, so sub sequences are the same every time
+    Can be used during inference as test time augmentation
+    """
+    def __init__(self, split_count, seq_len, **_):
+        self.split_count = split_count
+        self.seq_len = seq_len
+
+    def split(self, dates):
+        date_len = dates.shape[0]
+        date_range = np.arange(date_len)
+
+        if date_len <= self.seq_len + self.split_count:
+            return [date_range for _ in range(self.split_count)]
+
+        start_pos = np.linspace(0, date_len - self.seq_len, self.split_count).round().astype(int)
+        return [date_range[s:s + self.seq_len] for s in start_pos]
+
+
 def create(split_strategy, **params):
     cls = globals().get(split_strategy, None)
     if cls is None:
