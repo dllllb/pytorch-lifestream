@@ -31,10 +31,10 @@
       "num_workers": 16,
       "batch_size": 64,
       "split_strategy": {
-        "split_strategy": "SampleSlices",
+        "split_strategy": "SampleSlicesMLES",
         "split_count": 5,
         "cnt_min": 25,
-        "cnt_max": 150
+        "cnt_max": 200
       },
       "sampling_strategy": "HardNegativePair",
       "trx_dropout": 0.01,
