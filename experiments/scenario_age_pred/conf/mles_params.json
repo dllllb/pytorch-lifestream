@@ -42,9 +42,9 @@
       "neg_count": 5,
       "loss": "ContrastiveLoss",
       "margin": 0.5,
-      "lr": 0.002,
+      "lr": 0.001,
       "weight_decay": 0.0,
-      "n_epoch": 100,
+      "n_epoch": 150,
       "_checkpoints": {
         "save_interval": 10,
         "n_saved": 1000,
