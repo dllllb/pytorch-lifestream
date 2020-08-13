@@ -18,34 +18,6 @@ class NoSplit(AbsSplit):
         return [date_range]
 
 
-class SampleSlices(AbsSplit):
-    def __init__(self, split_count, cnt_min, cnt_max, is_sorted=False, reverse=False):
-        self.split_count = split_count
-        self.cnt_min = cnt_min
-        self.cnt_max = cnt_max
-        self.is_sorted = is_sorted
-        self.reverse = reverse
-
-    def split(self, dates):
-        date_len = dates.shape[0]
-        date_range = np.arange(date_len)
-
-        lengths = np.random.randint(self.cnt_min, self.cnt_max, self.split_count)
-        available_start_pos = date_len - lengths
-        start_pos = (np.random.rand(self.split_count) * available_start_pos).astype(int)
-        if not self.is_sorted:
-            output = [date_range[s:s + l] for s, l in zip(start_pos, lengths)]
-            if self.reverse:
-                output = [x[::-1] for x in output]
-            return output
-
-        ix_sort = np.argsort(start_pos)
-        output = [date_range[s:s + l] for s, l in zip(start_pos[ix_sort], lengths[ix_sort])]
-        if self.reverse:
-            output = [x[::-1] for x in output]
-        return output
-
-
 class SampleRandom(AbsSplit):
     def __init__(self, split_count, cnt_min, cnt_max):
         self.split_count = split_count
@@ -112,7 +84,7 @@ class SplitByWeeks(AbsSplit):
         return n_byweeks_idxes
 
 
-class SampleSlicesMLES(AbsSplit):
+class SampleSlices(AbsSplit):
     def __init__(self, split_count, cnt_min, cnt_max, short_seq_crop_rate=1.0, is_sorted=False):
         self.split_count = split_count
         self.cnt_min = cnt_min

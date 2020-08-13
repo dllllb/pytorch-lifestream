@@ -151,7 +151,8 @@ def main(_):
     init_logger('metric_learning')
 
     conf = get_conf(sys.argv[2:])
-    min_seq_len = conf['dataset'].get('min_seq_len', 1)
+    # min_seq_len = conf['dataset'].get('min_seq_len', 1)
+    min_seq_len = 1
 
     model_f = model_by_type(conf['params.model_type'])
     train_data = read_consumer_data(conf['dataset.train_path'], conf)

@@ -19,7 +19,7 @@ done
 
 # Compare
 python -m scenario_gender compare_approaches --output_file "results/scenario_gender__projection_head.csv" \
-    --embedding_file_names \
+    --models lgb --embedding_file_names \
     "emb__projection_head_rnn0128_prh256.pickle" \
     "emb__projection_head_rnn0256_prh256.pickle" \
     "emb__projection_head_rnn0512_prh256.pickle" \

@@ -7,7 +7,7 @@ cd experiments/scenario_gender
 bin/get-data.sh
 
 # convert datasets from transaction list to features for metric learning
-bin/make-datasets.sh
+bin/make-datasets-spark.sh
 ```
 
 # Main scenario, best params
@@ -15,6 +15,12 @@ bin/make-datasets.sh
 ```sh
 cd experiments/scenario_gender
 export SC_DEVICE="cuda"
+
+
+# Prepare agg feature encoder and take embedidngs; inference
+python ../../metric_learning.py params.device="$SC_DEVICE" --conf conf/dataset.hocon conf/agg_features_params.json
+python ../../ml_inference.py    params.device="$SC_DEVICE" --conf conf/dataset.hocon conf/agg_features_params.json
+
 
 # Train a supervised model and save scores to the file
 python -m scenario_gender fit_target params.device="$SC_DEVICE" --conf conf/dataset.hocon conf/fit_target_params.json
@@ -34,17 +40,13 @@ python ../../ml_inference.py params.device="$SC_DEVICE" --conf conf/dataset.hoco
 python -m scenario_gender fit_finetuning params.device="$SC_DEVICE" --conf conf/dataset.hocon conf/fit_finetuning_on_cpc_params.json
 
 
-# Train the Contrastive Predictive Coding (CPC v2) model; inference 
-python ../../cpc_v2_learning.py params.device="$SC_DEVICE" --conf conf/dataset.hocon conf/cpc_v2_params.json
-python ../../ml_inference.py    params.device="$SC_DEVICE" --conf conf/dataset.hocon conf/cpc_v2_params.json
-
-
 # Run estimation for different approaches
 # Check some options with `--help` argument
-python -m scenario_gender compare_approaches --n_workers 1 \
-    --add_baselines --add_emb_baselines \
-    --embedding_file_names "mles_embeddings.pickle" "cpc_embeddings.pickle" "cpc_v2_embeddings.pickle" \
-    --score_file_names "target_scores" "mles_finetuning_scores" 'cpc_finetuning_scores'
+python -m scenario_gender compare_approaches --n_workers 1 --models lgb \
+    --output_file results/scenario_gender.csv \
+    --baseline_name "agg_feat_embed.pickle" \
+    --embedding_file_names "mles_embeddings.pickle" "cpc_embeddings.pickle" \
+    --score_file_names "target_scores" "mles_finetuning_scores" "cpc_finetuning_scores"
 
 
 # check the results
@@ -114,18 +116,17 @@ python -m scenario_gender compare_approaches --n_workers 3 \
 
 ```
 
-# New baseline via AggFeatureModel
-
+### CPC v2
 ```sh
-cd experiments/scenario_gender
+cd experiments/gender
 export SC_DEVICE="cuda"
 
-# Prepare agg feature encoder and take embedidngs; inference
-python ../../metric_learning.py params.device="$SC_DEVICE" --conf conf/dataset.hocon conf/agg_features_params.json
-python ../../ml_inference.py    params.device="$SC_DEVICE" --conf conf/dataset.hocon conf/agg_features_params.json
+# Train the Contrastive Predictive Coding (CPC v2) model; inference 
+python ../../cpc_v2_learning.py params.device="$SC_DEVICE" --conf conf/dataset.hocon conf/cpc_v2_params.json
+python ../../ml_inference.py    params.device="$SC_DEVICE" --conf conf/dataset.hocon conf/cpc_v2_params.json
 
-python -m scenario_gender compare_approaches --n_workers 4 \
+# Check some options with `--help` argument
+python -m scenario_gender compare_approaches --n_workers 3 \
     --add_baselines --add_emb_baselines \
-    --embedding_file_names "agg_feat_embed.pickle"
-
+    --embedding_file_names "cpc_v2_embeddings.pickle"
 ```
