@@ -108,7 +108,7 @@ python ../../ml_inference.py \
 
 # Compare
 python -m scenario_gender compare_approaches --output_file "results/scenario_gender__hidden_size.csv" \
-    --embedding_file_names \
+    --models lgb --embedding_file_names \
     "emb__hidden_size_bs_0128_hs_3072.pickle" \
     "emb__hidden_size_bs_0128_hs_2048.pickle" \
     "emb__hidden_size_bs_0128_hs_1024.pickle" \

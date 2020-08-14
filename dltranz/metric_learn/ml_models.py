@@ -184,7 +184,7 @@ def load_encoder_for_inference(conf):
         model_type = params['model_type']
         model_f = ml_model_by_type(model_type)
         model = model_f(params)
-        model_d = torch.load(conf['model_path.model'])
+        model_d = torch.load(conf['model_path.model'], map_location=torch.device("cpu"))
         model.load_state_dict(model_d)
 
         if isinstance(model, CPC_Ecoder):
@@ -193,7 +193,7 @@ def load_encoder_for_inference(conf):
             model = torch.nn.Sequential(trx_e, rnn_e, l)
 
     elif ext == '.p':
-        model = torch.load(conf['model_path.model'])
+        model = torch.load(conf['model_path.model'], map_location=torch.device("cpu"))
     else:
         raise NotImplementedError(f'Unknown model file extension: "{ext}"')
     return model
