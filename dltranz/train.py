@@ -24,15 +24,13 @@ logger = logging.getLogger(__name__)
 def batch_to_device(batch, device, non_blocking):
     x, y = batch
     if not isinstance(x, dict):
-        new_x = {k: v.to(device=device, non_blocking=non_blocking) if isinstance(v, torch.Tensor) else v for k, v in x.payload.items()}
+        new_x = x.to(device=device, non_blocking=non_blocking)
         new_y = y.to(device=device, non_blocking=non_blocking)
-        return PaddedBatch(new_x, x.seq_lens), new_y
+        return new_x, new_y
     else:
         batches = {}
         for key, sx in x.items():
-            new_x = {k: v.to(device=device, non_blocking=non_blocking) if isinstance(v, torch.Tensor) else v for k, v in
-                     sx.payload.items()}
-            batches[key] = PaddedBatch(new_x, sx.seq_lens)
+            batches[key] = x.to(device=device, non_blocking=non_blocking)
         new_y = y.to(device=device, non_blocking=non_blocking)
         return batches, new_y
 
