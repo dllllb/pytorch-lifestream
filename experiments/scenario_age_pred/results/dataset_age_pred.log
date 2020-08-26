@@ -1,71 +1,564 @@
-load_source_data       : Loaded 26450577 rows from "/mnt/data/ovsov/repo/dltranz/data/age-pred/transactions_train.csv"
-load_source_data       : Loaded 17667328 rows from "/mnt/data/ovsov/repo/dltranz/data/age-pred/transactions_test.csv"
-load_source_data       : Loaded 44117905 rows in total
-trx_to_features        : Found 50000 unique clients
-_td_float              : To-float time transformation
-trx_to_features        : Encoder stat for "trans_date":
-codes | trx_count
-                cnt  % of total
-trans_date                     
-[1, 80)     5951516    0.134900
-[80, 160)   5604756    0.127040
-[160, 240)  5417575    0.122798
-[240, 319)  5062781    0.114756
-[319, 399)  4848380    0.109896
-[399, 479)  4628310    0.104908
-[479, 558)  4327300    0.098085
-[558, 638)  4121286    0.093415
-[638, 718)  3679116    0.083393
-[718, 731)   476885    0.010809
-trx_to_features        : Encoder stat for "small_group":
-codes | trx_count
-                  cnt  % of total
-small_group                      
-[1, 9)       32108067    0.727779
-[9, 17)       5509832    0.124889
-[17, 26)      1886282    0.042755
-[26, 34)      1262772    0.028623
-[34, 43)      1093213    0.024779
-[43, 51)       689710    0.015633
-[51, 60)       558961    0.012670
-[60, 68)       296880    0.006729
-[68, 77)       251340    0.005697
-[77, 205)      460848    0.010446
-trx_to_features        : Encoder stat for "amount_rur":
-codes | trx_count
-                 cnt    % of total
-amount_rur                        
-[0.0, 0.1)   2334726  5.292015e-02
-[0.1, 0.2)  15353608  3.480131e-01
-[0.2, 0.3)  18118056  4.106735e-01
-[0.3, 0.4)   6900956  1.564208e-01
-[0.4, 0.5)   1201589  2.723586e-02
-[0.5, 0.6)    183599  4.161553e-03
-[0.6, 0.7)     23142  5.245489e-04
-[0.7, 0.8)      2034  4.610373e-05
-[0.8, 0.9)       185  4.193309e-06
-[0.9, 1.0)         9  2.039988e-07
-trx_to_features        : Trx count per clients:
-len(trx_list) | client_count
-               cnt  % of total
-trx_count                     
-[700, 749)    8419     0.16838
-[749, 798)    7659     0.15318
-[798, 847)    6782     0.13564
-[847, 896)    5996     0.11992
-[896, 945)    5283     0.10566
-[945, 994)    4595     0.09190
-[994, 1043)   4093     0.08186
-[1043, 1092)  3546     0.07092
-[1092, 1142)  3094     0.06188
-[1142, 1151)   533     0.01066
-trx_to_features        : Feature collection in progress ...
-trx_to_features        : Feature names: ['trans_date', 'small_group', 'amount_rur']
-trx_to_features        : Prepared features for 50000 clients
-update_with_target     : Target loaded for 30000 clients
-update_with_target     : Target updated for 50000 clients
-split_dataset          : Train size: 47000 clients
-split_dataset          : Test size: 3000 clients
-save_features          : Saved to: "/mnt/data/ovsov/repo/dltranz/data/age-pred/train_trx.p"
-save_features          : Saved to: "/mnt/data/ovsov/repo/dltranz/data/age-pred/test_trx.p"
-<module>               : Data collected in 194 sec (0:03:14.827643)
+start                  : An error occurred while trying to connect to the Java server (127.0.0.1:45145)
+Traceback (most recent call last):
+  File "/mnt/data/ikruzhilov/miniconda3/envs/embenv/lib/python3.8/site-packages/pyspark/python/lib/py4j-0.10.9-src.zip/py4j/java_gateway.py", line 977, in _get_connection
+    connection = self.deque.pop()
+IndexError: pop from an empty deque
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/mnt/data/ikruzhilov/miniconda3/envs/embenv/lib/python3.8/site-packages/pyspark/python/lib/py4j-0.10.9-src.zip/py4j/java_gateway.py", line 1115, in start
+    self.socket.connect((self.address, self.port))
+ConnectionRefusedError: [Errno 111] Connection refused
+start                  : An error occurred while trying to connect to the Java server (127.0.0.1:45145)
+Traceback (most recent call last):
+  File "/mnt/data/ikruzhilov/miniconda3/envs/embenv/lib/python3.8/site-packages/pyspark/python/lib/py4j-0.10.9-src.zip/py4j/java_gateway.py", line 977, in _get_connection
+    connection = self.deque.pop()
+IndexError: pop from an empty deque
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/mnt/data/ikruzhilov/miniconda3/envs/embenv/lib/python3.8/site-packages/pyspark/python/lib/py4j-0.10.9-src.zip/py4j/java_gateway.py", line 1115, in start
+    self.socket.connect((self.address, self.port))
+ConnectionRefusedError: [Errno 111] Connection refused
+start                  : An error occurred while trying to connect to the Java server (127.0.0.1:45145)
+Traceback (most recent call last):
+  File "/mnt/data/ikruzhilov/miniconda3/envs/embenv/lib/python3.8/site-packages/pyspark/python/lib/py4j-0.10.9-src.zip/py4j/java_gateway.py", line 977, in _get_connection
+    connection = self.deque.pop()
+IndexError: pop from an empty deque
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/mnt/data/ikruzhilov/miniconda3/envs/embenv/lib/python3.8/site-packages/pyspark/python/lib/py4j-0.10.9-src.zip/py4j/java_gateway.py", line 1115, in start
+    self.socket.connect((self.address, self.port))
+ConnectionRefusedError: [Errno 111] Connection refused
+start                  : An error occurred while trying to connect to the Java server (127.0.0.1:45145)
+Traceback (most recent call last):
+  File "/mnt/data/ikruzhilov/miniconda3/envs/embenv/lib/python3.8/site-packages/pyspark/python/lib/py4j-0.10.9-src.zip/py4j/java_gateway.py", line 977, in _get_connection
+    connection = self.deque.pop()
+IndexError: pop from an empty deque
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/mnt/data/ikruzhilov/miniconda3/envs/embenv/lib/python3.8/site-packages/pyspark/python/lib/py4j-0.10.9-src.zip/py4j/java_gateway.py", line 1115, in start
+    self.socket.connect((self.address, self.port))
+ConnectionRefusedError: [Errno 111] Connection refused
+start                  : An error occurred while trying to connect to the Java server (127.0.0.1:45145)
+Traceback (most recent call last):
+  File "/mnt/data/ikruzhilov/miniconda3/envs/embenv/lib/python3.8/site-packages/pyspark/python/lib/py4j-0.10.9-src.zip/py4j/java_gateway.py", line 977, in _get_connection
+    connection = self.deque.pop()
+IndexError: pop from an empty deque
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/mnt/data/ikruzhilov/miniconda3/envs/embenv/lib/python3.8/site-packages/pyspark/python/lib/py4j-0.10.9-src.zip/py4j/java_gateway.py", line 1115, in start
+    self.socket.connect((self.address, self.port))
+ConnectionRefusedError: [Errno 111] Connection refused
+start                  : An error occurred while trying to connect to the Java server (127.0.0.1:45145)
+Traceback (most recent call last):
+  File "/mnt/data/ikruzhilov/miniconda3/envs/embenv/lib/python3.8/site-packages/pyspark/python/lib/py4j-0.10.9-src.zip/py4j/java_gateway.py", line 977, in _get_connection
+    connection = self.deque.pop()
+IndexError: pop from an empty deque
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/mnt/data/ikruzhilov/miniconda3/envs/embenv/lib/python3.8/site-packages/pyspark/python/lib/py4j-0.10.9-src.zip/py4j/java_gateway.py", line 1115, in start
+    self.socket.connect((self.address, self.port))
+ConnectionRefusedError: [Errno 111] Connection refused
+start                  : An error occurred while trying to connect to the Java server (127.0.0.1:45145)
+Traceback (most recent call last):
+  File "/mnt/data/ikruzhilov/miniconda3/envs/embenv/lib/python3.8/site-packages/pyspark/python/lib/py4j-0.10.9-src.zip/py4j/java_gateway.py", line 977, in _get_connection
+    connection = self.deque.pop()
+IndexError: pop from an empty deque
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/mnt/data/ikruzhilov/miniconda3/envs/embenv/lib/python3.8/site-packages/pyspark/python/lib/py4j-0.10.9-src.zip/py4j/java_gateway.py", line 1115, in start
+    self.socket.connect((self.address, self.port))
+ConnectionRefusedError: [Errno 111] Connection refused
+start                  : An error occurred while trying to connect to the Java server (127.0.0.1:45145)
+Traceback (most recent call last):
+  File "/mnt/data/ikruzhilov/miniconda3/envs/embenv/lib/python3.8/site-packages/pyspark/python/lib/py4j-0.10.9-src.zip/py4j/java_gateway.py", line 977, in _get_connection
+    connection = self.deque.pop()
+IndexError: pop from an empty deque
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/mnt/data/ikruzhilov/miniconda3/envs/embenv/lib/python3.8/site-packages/pyspark/python/lib/py4j-0.10.9-src.zip/py4j/java_gateway.py", line 1115, in start
+    self.socket.connect((self.address, self.port))
+ConnectionRefusedError: [Errno 111] Connection refused
+start                  : An error occurred while trying to connect to the Java server (127.0.0.1:45145)
+Traceback (most recent call last):
+  File "/mnt/data/ikruzhilov/miniconda3/envs/embenv/lib/python3.8/site-packages/pyspark/python/lib/py4j-0.10.9-src.zip/py4j/java_gateway.py", line 977, in _get_connection
+    connection = self.deque.pop()
+IndexError: pop from an empty deque
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/mnt/data/ikruzhilov/miniconda3/envs/embenv/lib/python3.8/site-packages/pyspark/python/lib/py4j-0.10.9-src.zip/py4j/java_gateway.py", line 1115, in start
+    self.socket.connect((self.address, self.port))
+ConnectionRefusedError: [Errno 111] Connection refused
+start                  : An error occurred while trying to connect to the Java server (127.0.0.1:45145)
+Traceback (most recent call last):
+  File "/mnt/data/ikruzhilov/miniconda3/envs/embenv/lib/python3.8/site-packages/pyspark/python/lib/py4j-0.10.9-src.zip/py4j/java_gateway.py", line 977, in _get_connection
+    connection = self.deque.pop()
+IndexError: pop from an empty deque
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/mnt/data/ikruzhilov/miniconda3/envs/embenv/lib/python3.8/site-packages/pyspark/python/lib/py4j-0.10.9-src.zip/py4j/java_gateway.py", line 1115, in start
+    self.socket.connect((self.address, self.port))
+ConnectionRefusedError: [Errno 111] Connection refused
+start                  : An error occurred while trying to connect to the Java server (127.0.0.1:45145)
+Traceback (most recent call last):
+  File "/mnt/data/ikruzhilov/miniconda3/envs/embenv/lib/python3.8/site-packages/pyspark/python/lib/py4j-0.10.9-src.zip/py4j/java_gateway.py", line 977, in _get_connection
+    connection = self.deque.pop()
+IndexError: pop from an empty deque
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/mnt/data/ikruzhilov/miniconda3/envs/embenv/lib/python3.8/site-packages/pyspark/python/lib/py4j-0.10.9-src.zip/py4j/java_gateway.py", line 1115, in start
+    self.socket.connect((self.address, self.port))
+ConnectionRefusedError: [Errno 111] Connection refused
+start                  : An error occurred while trying to connect to the Java server (127.0.0.1:45145)
+Traceback (most recent call last):
+  File "/mnt/data/ikruzhilov/miniconda3/envs/embenv/lib/python3.8/site-packages/pyspark/python/lib/py4j-0.10.9-src.zip/py4j/java_gateway.py", line 977, in _get_connection
+    connection = self.deque.pop()
+IndexError: pop from an empty deque
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/mnt/data/ikruzhilov/miniconda3/envs/embenv/lib/python3.8/site-packages/pyspark/python/lib/py4j-0.10.9-src.zip/py4j/java_gateway.py", line 1115, in start
+    self.socket.connect((self.address, self.port))
+ConnectionRefusedError: [Errno 111] Connection refused
+start                  : An error occurred while trying to connect to the Java server (127.0.0.1:45145)
+Traceback (most recent call last):
+  File "/mnt/data/ikruzhilov/miniconda3/envs/embenv/lib/python3.8/site-packages/pyspark/python/lib/py4j-0.10.9-src.zip/py4j/java_gateway.py", line 977, in _get_connection
+    connection = self.deque.pop()
+IndexError: pop from an empty deque
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/mnt/data/ikruzhilov/miniconda3/envs/embenv/lib/python3.8/site-packages/pyspark/python/lib/py4j-0.10.9-src.zip/py4j/java_gateway.py", line 1115, in start
+    self.socket.connect((self.address, self.port))
+ConnectionRefusedError: [Errno 111] Connection refused
+start                  : An error occurred while trying to connect to the Java server (127.0.0.1:45145)
+Traceback (most recent call last):
+  File "/mnt/data/ikruzhilov/miniconda3/envs/embenv/lib/python3.8/site-packages/pyspark/python/lib/py4j-0.10.9-src.zip/py4j/java_gateway.py", line 977, in _get_connection
+    connection = self.deque.pop()
+IndexError: pop from an empty deque
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/mnt/data/ikruzhilov/miniconda3/envs/embenv/lib/python3.8/site-packages/pyspark/python/lib/py4j-0.10.9-src.zip/py4j/java_gateway.py", line 1115, in start
+    self.socket.connect((self.address, self.port))
+ConnectionRefusedError: [Errno 111] Connection refused
+start                  : An error occurred while trying to connect to the Java server (127.0.0.1:45145)
+Traceback (most recent call last):
+  File "/mnt/data/ikruzhilov/miniconda3/envs/embenv/lib/python3.8/site-packages/pyspark/python/lib/py4j-0.10.9-src.zip/py4j/java_gateway.py", line 977, in _get_connection
+    connection = self.deque.pop()
+IndexError: pop from an empty deque
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/mnt/data/ikruzhilov/miniconda3/envs/embenv/lib/python3.8/site-packages/pyspark/python/lib/py4j-0.10.9-src.zip/py4j/java_gateway.py", line 1115, in start
+    self.socket.connect((self.address, self.port))
+ConnectionRefusedError: [Errno 111] Connection refused
+start                  : An error occurred while trying to connect to the Java server (127.0.0.1:45145)
+Traceback (most recent call last):
+  File "/mnt/data/ikruzhilov/miniconda3/envs/embenv/lib/python3.8/site-packages/pyspark/python/lib/py4j-0.10.9-src.zip/py4j/java_gateway.py", line 977, in _get_connection
+    connection = self.deque.pop()
+IndexError: pop from an empty deque
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/mnt/data/ikruzhilov/miniconda3/envs/embenv/lib/python3.8/site-packages/pyspark/python/lib/py4j-0.10.9-src.zip/py4j/java_gateway.py", line 1115, in start
+    self.socket.connect((self.address, self.port))
+ConnectionRefusedError: [Errno 111] Connection refused
+start                  : An error occurred while trying to connect to the Java server (127.0.0.1:45145)
+Traceback (most recent call last):
+  File "/mnt/data/ikruzhilov/miniconda3/envs/embenv/lib/python3.8/site-packages/pyspark/python/lib/py4j-0.10.9-src.zip/py4j/java_gateway.py", line 977, in _get_connection
+    connection = self.deque.pop()
+IndexError: pop from an empty deque
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/mnt/data/ikruzhilov/miniconda3/envs/embenv/lib/python3.8/site-packages/pyspark/python/lib/py4j-0.10.9-src.zip/py4j/java_gateway.py", line 1115, in start
+    self.socket.connect((self.address, self.port))
+ConnectionRefusedError: [Errno 111] Connection refused
+start                  : An error occurred while trying to connect to the Java server (127.0.0.1:45145)
+Traceback (most recent call last):
+  File "/mnt/data/ikruzhilov/miniconda3/envs/embenv/lib/python3.8/site-packages/pyspark/python/lib/py4j-0.10.9-src.zip/py4j/java_gateway.py", line 977, in _get_connection
+    connection = self.deque.pop()
+IndexError: pop from an empty deque
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/mnt/data/ikruzhilov/miniconda3/envs/embenv/lib/python3.8/site-packages/pyspark/python/lib/py4j-0.10.9-src.zip/py4j/java_gateway.py", line 1115, in start
+    self.socket.connect((self.address, self.port))
+ConnectionRefusedError: [Errno 111] Connection refused
+start                  : An error occurred while trying to connect to the Java server (127.0.0.1:45145)
+Traceback (most recent call last):
+  File "/mnt/data/ikruzhilov/miniconda3/envs/embenv/lib/python3.8/site-packages/pyspark/python/lib/py4j-0.10.9-src.zip/py4j/java_gateway.py", line 977, in _get_connection
+    connection = self.deque.pop()
+IndexError: pop from an empty deque
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/mnt/data/ikruzhilov/miniconda3/envs/embenv/lib/python3.8/site-packages/pyspark/python/lib/py4j-0.10.9-src.zip/py4j/java_gateway.py", line 1115, in start
+    self.socket.connect((self.address, self.port))
+ConnectionRefusedError: [Errno 111] Connection refused
+start                  : An error occurred while trying to connect to the Java server (127.0.0.1:45145)
+Traceback (most recent call last):
+  File "/mnt/data/ikruzhilov/miniconda3/envs/embenv/lib/python3.8/site-packages/pyspark/python/lib/py4j-0.10.9-src.zip/py4j/java_gateway.py", line 977, in _get_connection
+    connection = self.deque.pop()
+IndexError: pop from an empty deque
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/mnt/data/ikruzhilov/miniconda3/envs/embenv/lib/python3.8/site-packages/pyspark/python/lib/py4j-0.10.9-src.zip/py4j/java_gateway.py", line 1115, in start
+    self.socket.connect((self.address, self.port))
+ConnectionRefusedError: [Errno 111] Connection refused
+start                  : An error occurred while trying to connect to the Java server (127.0.0.1:45145)
+Traceback (most recent call last):
+  File "/mnt/data/ikruzhilov/miniconda3/envs/embenv/lib/python3.8/site-packages/pyspark/python/lib/py4j-0.10.9-src.zip/py4j/java_gateway.py", line 977, in _get_connection
+    connection = self.deque.pop()
+IndexError: pop from an empty deque
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/mnt/data/ikruzhilov/miniconda3/envs/embenv/lib/python3.8/site-packages/pyspark/python/lib/py4j-0.10.9-src.zip/py4j/java_gateway.py", line 1115, in start
+    self.socket.connect((self.address, self.port))
+ConnectionRefusedError: [Errno 111] Connection refused
+start                  : An error occurred while trying to connect to the Java server (127.0.0.1:45145)
+Traceback (most recent call last):
+  File "/mnt/data/ikruzhilov/miniconda3/envs/embenv/lib/python3.8/site-packages/pyspark/python/lib/py4j-0.10.9-src.zip/py4j/java_gateway.py", line 977, in _get_connection
+    connection = self.deque.pop()
+IndexError: pop from an empty deque
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/mnt/data/ikruzhilov/miniconda3/envs/embenv/lib/python3.8/site-packages/pyspark/python/lib/py4j-0.10.9-src.zip/py4j/java_gateway.py", line 1115, in start
+    self.socket.connect((self.address, self.port))
+ConnectionRefusedError: [Errno 111] Connection refused
+start                  : An error occurred while trying to connect to the Java server (127.0.0.1:45145)
+Traceback (most recent call last):
+  File "/mnt/data/ikruzhilov/miniconda3/envs/embenv/lib/python3.8/site-packages/pyspark/python/lib/py4j-0.10.9-src.zip/py4j/java_gateway.py", line 977, in _get_connection
+    connection = self.deque.pop()
+IndexError: pop from an empty deque
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/mnt/data/ikruzhilov/miniconda3/envs/embenv/lib/python3.8/site-packages/pyspark/python/lib/py4j-0.10.9-src.zip/py4j/java_gateway.py", line 1115, in start
+    self.socket.connect((self.address, self.port))
+ConnectionRefusedError: [Errno 111] Connection refused
+start                  : An error occurred while trying to connect to the Java server (127.0.0.1:45145)
+Traceback (most recent call last):
+  File "/mnt/data/ikruzhilov/miniconda3/envs/embenv/lib/python3.8/site-packages/pyspark/python/lib/py4j-0.10.9-src.zip/py4j/java_gateway.py", line 977, in _get_connection
+    connection = self.deque.pop()
+IndexError: pop from an empty deque
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/mnt/data/ikruzhilov/miniconda3/envs/embenv/lib/python3.8/site-packages/pyspark/python/lib/py4j-0.10.9-src.zip/py4j/java_gateway.py", line 1115, in start
+    self.socket.connect((self.address, self.port))
+ConnectionRefusedError: [Errno 111] Connection refused
+start                  : An error occurred while trying to connect to the Java server (127.0.0.1:45145)
+Traceback (most recent call last):
+  File "/mnt/data/ikruzhilov/miniconda3/envs/embenv/lib/python3.8/site-packages/pyspark/python/lib/py4j-0.10.9-src.zip/py4j/java_gateway.py", line 977, in _get_connection
+    connection = self.deque.pop()
+IndexError: pop from an empty deque
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/mnt/data/ikruzhilov/miniconda3/envs/embenv/lib/python3.8/site-packages/pyspark/python/lib/py4j-0.10.9-src.zip/py4j/java_gateway.py", line 1115, in start
+    self.socket.connect((self.address, self.port))
+ConnectionRefusedError: [Errno 111] Connection refused
+start                  : An error occurred while trying to connect to the Java server (127.0.0.1:45145)
+Traceback (most recent call last):
+  File "/mnt/data/ikruzhilov/miniconda3/envs/embenv/lib/python3.8/site-packages/pyspark/python/lib/py4j-0.10.9-src.zip/py4j/java_gateway.py", line 977, in _get_connection
+    connection = self.deque.pop()
+IndexError: pop from an empty deque
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/mnt/data/ikruzhilov/miniconda3/envs/embenv/lib/python3.8/site-packages/pyspark/python/lib/py4j-0.10.9-src.zip/py4j/java_gateway.py", line 1115, in start
+    self.socket.connect((self.address, self.port))
+ConnectionRefusedError: [Errno 111] Connection refused
+start                  : An error occurred while trying to connect to the Java server (127.0.0.1:45145)
+Traceback (most recent call last):
+  File "/mnt/data/ikruzhilov/miniconda3/envs/embenv/lib/python3.8/site-packages/pyspark/python/lib/py4j-0.10.9-src.zip/py4j/java_gateway.py", line 977, in _get_connection
+    connection = self.deque.pop()
+IndexError: pop from an empty deque
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/mnt/data/ikruzhilov/miniconda3/envs/embenv/lib/python3.8/site-packages/pyspark/python/lib/py4j-0.10.9-src.zip/py4j/java_gateway.py", line 1115, in start
+    self.socket.connect((self.address, self.port))
+ConnectionRefusedError: [Errno 111] Connection refused
+start                  : An error occurred while trying to connect to the Java server (127.0.0.1:45145)
+Traceback (most recent call last):
+  File "/mnt/data/ikruzhilov/miniconda3/envs/embenv/lib/python3.8/site-packages/pyspark/python/lib/py4j-0.10.9-src.zip/py4j/java_gateway.py", line 977, in _get_connection
+    connection = self.deque.pop()
+IndexError: pop from an empty deque
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/mnt/data/ikruzhilov/miniconda3/envs/embenv/lib/python3.8/site-packages/pyspark/python/lib/py4j-0.10.9-src.zip/py4j/java_gateway.py", line 1115, in start
+    self.socket.connect((self.address, self.port))
+ConnectionRefusedError: [Errno 111] Connection refused
+start                  : An error occurred while trying to connect to the Java server (127.0.0.1:45145)
+Traceback (most recent call last):
+  File "/mnt/data/ikruzhilov/miniconda3/envs/embenv/lib/python3.8/site-packages/pyspark/python/lib/py4j-0.10.9-src.zip/py4j/java_gateway.py", line 977, in _get_connection
+    connection = self.deque.pop()
+IndexError: pop from an empty deque
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/mnt/data/ikruzhilov/miniconda3/envs/embenv/lib/python3.8/site-packages/pyspark/python/lib/py4j-0.10.9-src.zip/py4j/java_gateway.py", line 1115, in start
+    self.socket.connect((self.address, self.port))
+ConnectionRefusedError: [Errno 111] Connection refused
+start                  : An error occurred while trying to connect to the Java server (127.0.0.1:45145)
+Traceback (most recent call last):
+  File "/mnt/data/ikruzhilov/miniconda3/envs/embenv/lib/python3.8/site-packages/pyspark/python/lib/py4j-0.10.9-src.zip/py4j/java_gateway.py", line 977, in _get_connection
+    connection = self.deque.pop()
+IndexError: pop from an empty deque
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/mnt/data/ikruzhilov/miniconda3/envs/embenv/lib/python3.8/site-packages/pyspark/python/lib/py4j-0.10.9-src.zip/py4j/java_gateway.py", line 1115, in start
+    self.socket.connect((self.address, self.port))
+ConnectionRefusedError: [Errno 111] Connection refused
+start                  : An error occurred while trying to connect to the Java server (127.0.0.1:45145)
+Traceback (most recent call last):
+  File "/mnt/data/ikruzhilov/miniconda3/envs/embenv/lib/python3.8/site-packages/pyspark/python/lib/py4j-0.10.9-src.zip/py4j/java_gateway.py", line 977, in _get_connection
+    connection = self.deque.pop()
+IndexError: pop from an empty deque
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/mnt/data/ikruzhilov/miniconda3/envs/embenv/lib/python3.8/site-packages/pyspark/python/lib/py4j-0.10.9-src.zip/py4j/java_gateway.py", line 1115, in start
+    self.socket.connect((self.address, self.port))
+ConnectionRefusedError: [Errno 111] Connection refused
+start                  : An error occurred while trying to connect to the Java server (127.0.0.1:45145)
+Traceback (most recent call last):
+  File "/mnt/data/ikruzhilov/miniconda3/envs/embenv/lib/python3.8/site-packages/pyspark/python/lib/py4j-0.10.9-src.zip/py4j/java_gateway.py", line 977, in _get_connection
+    connection = self.deque.pop()
+IndexError: pop from an empty deque
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/mnt/data/ikruzhilov/miniconda3/envs/embenv/lib/python3.8/site-packages/pyspark/python/lib/py4j-0.10.9-src.zip/py4j/java_gateway.py", line 1115, in start
+    self.socket.connect((self.address, self.port))
+ConnectionRefusedError: [Errno 111] Connection refused
+start                  : An error occurred while trying to connect to the Java server (127.0.0.1:45145)
+Traceback (most recent call last):
+  File "/mnt/data/ikruzhilov/miniconda3/envs/embenv/lib/python3.8/site-packages/pyspark/python/lib/py4j-0.10.9-src.zip/py4j/java_gateway.py", line 977, in _get_connection
+    connection = self.deque.pop()
+IndexError: pop from an empty deque
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/mnt/data/ikruzhilov/miniconda3/envs/embenv/lib/python3.8/site-packages/pyspark/python/lib/py4j-0.10.9-src.zip/py4j/java_gateway.py", line 1115, in start
+    self.socket.connect((self.address, self.port))
+ConnectionRefusedError: [Errno 111] Connection refused
+start                  : An error occurred while trying to connect to the Java server (127.0.0.1:45145)
+Traceback (most recent call last):
+  File "/mnt/data/ikruzhilov/miniconda3/envs/embenv/lib/python3.8/site-packages/pyspark/python/lib/py4j-0.10.9-src.zip/py4j/java_gateway.py", line 977, in _get_connection
+    connection = self.deque.pop()
+IndexError: pop from an empty deque
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/mnt/data/ikruzhilov/miniconda3/envs/embenv/lib/python3.8/site-packages/pyspark/python/lib/py4j-0.10.9-src.zip/py4j/java_gateway.py", line 1115, in start
+    self.socket.connect((self.address, self.port))
+ConnectionRefusedError: [Errno 111] Connection refused
+start                  : An error occurred while trying to connect to the Java server (127.0.0.1:45145)
+Traceback (most recent call last):
+  File "/mnt/data/ikruzhilov/miniconda3/envs/embenv/lib/python3.8/site-packages/pyspark/python/lib/py4j-0.10.9-src.zip/py4j/java_gateway.py", line 977, in _get_connection
+    connection = self.deque.pop()
+IndexError: pop from an empty deque
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/mnt/data/ikruzhilov/miniconda3/envs/embenv/lib/python3.8/site-packages/pyspark/python/lib/py4j-0.10.9-src.zip/py4j/java_gateway.py", line 1115, in start
+    self.socket.connect((self.address, self.port))
+ConnectionRefusedError: [Errno 111] Connection refused
+start                  : An error occurred while trying to connect to the Java server (127.0.0.1:45145)
+Traceback (most recent call last):
+  File "/mnt/data/ikruzhilov/miniconda3/envs/embenv/lib/python3.8/site-packages/pyspark/python/lib/py4j-0.10.9-src.zip/py4j/java_gateway.py", line 977, in _get_connection
+    connection = self.deque.pop()
+IndexError: pop from an empty deque
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/mnt/data/ikruzhilov/miniconda3/envs/embenv/lib/python3.8/site-packages/pyspark/python/lib/py4j-0.10.9-src.zip/py4j/java_gateway.py", line 1115, in start
+    self.socket.connect((self.address, self.port))
+ConnectionRefusedError: [Errno 111] Connection refused
+start                  : An error occurred while trying to connect to the Java server (127.0.0.1:45145)
+Traceback (most recent call last):
+  File "/mnt/data/ikruzhilov/miniconda3/envs/embenv/lib/python3.8/site-packages/pyspark/python/lib/py4j-0.10.9-src.zip/py4j/java_gateway.py", line 977, in _get_connection
+    connection = self.deque.pop()
+IndexError: pop from an empty deque
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/mnt/data/ikruzhilov/miniconda3/envs/embenv/lib/python3.8/site-packages/pyspark/python/lib/py4j-0.10.9-src.zip/py4j/java_gateway.py", line 1115, in start
+    self.socket.connect((self.address, self.port))
+ConnectionRefusedError: [Errno 111] Connection refused
+start                  : An error occurred while trying to connect to the Java server (127.0.0.1:45145)
+Traceback (most recent call last):
+  File "/mnt/data/ikruzhilov/miniconda3/envs/embenv/lib/python3.8/site-packages/pyspark/python/lib/py4j-0.10.9-src.zip/py4j/java_gateway.py", line 977, in _get_connection
+    connection = self.deque.pop()
+IndexError: pop from an empty deque
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/mnt/data/ikruzhilov/miniconda3/envs/embenv/lib/python3.8/site-packages/pyspark/python/lib/py4j-0.10.9-src.zip/py4j/java_gateway.py", line 1115, in start
+    self.socket.connect((self.address, self.port))
+ConnectionRefusedError: [Errno 111] Connection refused
+start                  : An error occurred while trying to connect to the Java server (127.0.0.1:45145)
+Traceback (most recent call last):
+  File "/mnt/data/ikruzhilov/miniconda3/envs/embenv/lib/python3.8/site-packages/pyspark/python/lib/py4j-0.10.9-src.zip/py4j/java_gateway.py", line 977, in _get_connection
+    connection = self.deque.pop()
+IndexError: pop from an empty deque
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/mnt/data/ikruzhilov/miniconda3/envs/embenv/lib/python3.8/site-packages/pyspark/python/lib/py4j-0.10.9-src.zip/py4j/java_gateway.py", line 1115, in start
+    self.socket.connect((self.address, self.port))
+ConnectionRefusedError: [Errno 111] Connection refused
+start                  : An error occurred while trying to connect to the Java server (127.0.0.1:45145)
+Traceback (most recent call last):
+  File "/mnt/data/ikruzhilov/miniconda3/envs/embenv/lib/python3.8/site-packages/pyspark/python/lib/py4j-0.10.9-src.zip/py4j/java_gateway.py", line 977, in _get_connection
+    connection = self.deque.pop()
+IndexError: pop from an empty deque
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/mnt/data/ikruzhilov/miniconda3/envs/embenv/lib/python3.8/site-packages/pyspark/python/lib/py4j-0.10.9-src.zip/py4j/java_gateway.py", line 1115, in start
+    self.socket.connect((self.address, self.port))
+ConnectionRefusedError: [Errno 111] Connection refused
+start                  : An error occurred while trying to connect to the Java server (127.0.0.1:45145)
+Traceback (most recent call last):
+  File "/mnt/data/ikruzhilov/miniconda3/envs/embenv/lib/python3.8/site-packages/pyspark/python/lib/py4j-0.10.9-src.zip/py4j/java_gateway.py", line 977, in _get_connection
+    connection = self.deque.pop()
+IndexError: pop from an empty deque
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/mnt/data/ikruzhilov/miniconda3/envs/embenv/lib/python3.8/site-packages/pyspark/python/lib/py4j-0.10.9-src.zip/py4j/java_gateway.py", line 1115, in start
+    self.socket.connect((self.address, self.port))
+ConnectionRefusedError: [Errno 111] Connection refused
+start                  : An error occurred while trying to connect to the Java server (127.0.0.1:45145)
+Traceback (most recent call last):
+  File "/mnt/data/ikruzhilov/miniconda3/envs/embenv/lib/python3.8/site-packages/pyspark/python/lib/py4j-0.10.9-src.zip/py4j/java_gateway.py", line 977, in _get_connection
+    connection = self.deque.pop()
+IndexError: pop from an empty deque
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/mnt/data/ikruzhilov/miniconda3/envs/embenv/lib/python3.8/site-packages/pyspark/python/lib/py4j-0.10.9-src.zip/py4j/java_gateway.py", line 1115, in start
+    self.socket.connect((self.address, self.port))
+ConnectionRefusedError: [Errno 111] Connection refused
+start                  : An error occurred while trying to connect to the Java server (127.0.0.1:45145)
+Traceback (most recent call last):
+  File "/mnt/data/ikruzhilov/miniconda3/envs/embenv/lib/python3.8/site-packages/pyspark/python/lib/py4j-0.10.9-src.zip/py4j/java_gateway.py", line 977, in _get_connection
+    connection = self.deque.pop()
+IndexError: pop from an empty deque
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/mnt/data/ikruzhilov/miniconda3/envs/embenv/lib/python3.8/site-packages/pyspark/python/lib/py4j-0.10.9-src.zip/py4j/java_gateway.py", line 1115, in start
+    self.socket.connect((self.address, self.port))
+ConnectionRefusedError: [Errno 111] Connection refused
+start                  : An error occurred while trying to connect to the Java server (127.0.0.1:45145)
+Traceback (most recent call last):
+  File "/mnt/data/ikruzhilov/miniconda3/envs/embenv/lib/python3.8/site-packages/pyspark/python/lib/py4j-0.10.9-src.zip/py4j/java_gateway.py", line 977, in _get_connection
+    connection = self.deque.pop()
+IndexError: pop from an empty deque
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/mnt/data/ikruzhilov/miniconda3/envs/embenv/lib/python3.8/site-packages/pyspark/python/lib/py4j-0.10.9-src.zip/py4j/java_gateway.py", line 1115, in start
+    self.socket.connect((self.address, self.port))
+ConnectionRefusedError: [Errno 111] Connection refused
+start                  : An error occurred while trying to connect to the Java server (127.0.0.1:45145)
+Traceback (most recent call last):
+  File "/mnt/data/ikruzhilov/miniconda3/envs/embenv/lib/python3.8/site-packages/pyspark/python/lib/py4j-0.10.9-src.zip/py4j/java_gateway.py", line 977, in _get_connection
+    connection = self.deque.pop()
+IndexError: pop from an empty deque
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/mnt/data/ikruzhilov/miniconda3/envs/embenv/lib/python3.8/site-packages/pyspark/python/lib/py4j-0.10.9-src.zip/py4j/java_gateway.py", line 1115, in start
+    self.socket.connect((self.address, self.port))
+ConnectionRefusedError: [Errno 111] Connection refused
+start                  : An error occurred while trying to connect to the Java server (127.0.0.1:45145)
+Traceback (most recent call last):
+  File "/mnt/data/ikruzhilov/miniconda3/envs/embenv/lib/python3.8/site-packages/pyspark/python/lib/py4j-0.10.9-src.zip/py4j/java_gateway.py", line 977, in _get_connection
+    connection = self.deque.pop()
+IndexError: pop from an empty deque
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/mnt/data/ikruzhilov/miniconda3/envs/embenv/lib/python3.8/site-packages/pyspark/python/lib/py4j-0.10.9-src.zip/py4j/java_gateway.py", line 1115, in start
+    self.socket.connect((self.address, self.port))
+ConnectionRefusedError: [Errno 111] Connection refused
+start                  : An error occurred while trying to connect to the Java server (127.0.0.1:45145)
+Traceback (most recent call last):
+  File "/mnt/data/ikruzhilov/miniconda3/envs/embenv/lib/python3.8/site-packages/pyspark/python/lib/py4j-0.10.9-src.zip/py4j/java_gateway.py", line 977, in _get_connection
+    connection = self.deque.pop()
+IndexError: pop from an empty deque
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/mnt/data/ikruzhilov/miniconda3/envs/embenv/lib/python3.8/site-packages/pyspark/python/lib/py4j-0.10.9-src.zip/py4j/java_gateway.py", line 1115, in start
+    self.socket.connect((self.address, self.port))
+ConnectionRefusedError: [Errno 111] Connection refused

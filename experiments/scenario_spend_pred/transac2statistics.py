@@ -59,26 +59,22 @@ for id in client_ids:
     #print(transactions_grouped)
     total_number_transactions = transactions_grouped.iloc[:,0].sum()
     normalized_counts = transactions_grouped.iloc[:,0]/total_number_transactions
-    print(normalized_counts.sum())
     mean_rur = transactions_grouped.iloc[:,1]/transactions_grouped.iloc[:,0]
     mean_norm_counts = pd.DataFrame(index=valid_transaction_indexes ,columns = ['norm_counts', 'mean_rur'])
     mean_norm_counts = mean_norm_counts.fillna(0)
     mean_norm_counts['mean_rur'].iloc[inverted_indexes[normalized_counts.index]] = mean_rur
     mean_norm_counts['norm_counts'].iloc[inverted_indexes[normalized_counts.index]] = normalized_counts
-    #print(mean_norm_counts)
     last_row = mean_norm_counts.iloc[0,:]
     last_row.iloc[0] = 1 - mean_norm_counts['norm_counts'].sum()
-    #wrong!!! Check it!!!
-    last_row.iloc[1] = mean_rur.iloc[-1] #Wrong!!! Sum all non-valid transactions!!!
+    last_row.iloc[1] = mean_rur.sum() - mean_norm_counts['mean_rur'].sum()
     last_row.rename('666')
-    print(last_row)
     mean_norm_counts = mean_norm_counts.append(last_row, ignore_index=True)
+    positive_rur = mean_norm_counts['mean_rur']>0
+    mean_norm_counts['mean_rur'][positive_rur] = np.log(mean_norm_counts['mean_rur'][positive_rur])
     #print('valid transactions:', mean_norm_counts)
     #print('nonvalid transactions:')
     #print(not_valid_transactions)
     np_row = np.hstack([np.array([id, total_number_transactions]), mean_norm_counts['norm_counts'].to_numpy(), mean_norm_counts['mean_rur'].to_numpy()] )
-    print(np_row.shape)
-    print(np_row[2:54].sum())
 
     ids_ground_truth[i,:] = np_row
     #print(np_row)

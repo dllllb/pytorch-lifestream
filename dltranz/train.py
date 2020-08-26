@@ -8,6 +8,7 @@ from ignite.handlers import ModelCheckpoint
 from ignite.metrics import RunningAverage
 import numpy as np
 import pandas as pd
+from math import sqrt
 
 warnings.filterwarnings('ignore', module='tensorboard.compat.tensorflow_stub.dtypes')
 from torch.utils.tensorboard import SummaryWriter
@@ -23,6 +24,10 @@ logger = logging.getLogger(__name__)
 
 def batch_to_device(batch, device, non_blocking):
     x, y = batch
+    y = y.type(torch.FloatTensor)
+    #print('shape',y.shape)
+    #print('y',torch.sum(y[:,1:], axis=1) )
+    #quit()
     if not isinstance(x, dict):
         new_x = {k: v.to(device=device, non_blocking=non_blocking) if isinstance(v, torch.Tensor) else v for k, v in x.payload.items()}
         new_y = y.to(device=device, non_blocking=non_blocking)
@@ -216,8 +221,113 @@ class PrepareEpoch:
         if hasattr(self.train_loader, 'prepare_epoch'):
             self.train_loader.prepare_epoch()
 
+#custom class
+from ignite.metrics.metric import sync_all_reduce, reinit__is_reduced
+class SpendPredictMetric(ignite.metrics.Metric):
+
+    def __init__(self, ignored_class=None, output_transform=lambda x: x):
+        self._relative_error = None
+        super(SpendPredictMetric, self).__init__(output_transform=output_transform)
+
+    @reinit__is_reduced
+    def reset(self):
+        self._relative_error = []
+        super(SpendPredictMetric, self).reset()
+
+    @reinit__is_reduced
+    def update(self, output):
+        y_pred, y = output
+        delta = torch.abs(y_pred[:,0] - y[:,0])
+        rel_delta = 100*delta / torch.max(y[:,0], torch.exp(y[:,0]-y[:,0]) )
+        self._relative_error += [torch.mean(rel_delta).item()]
+        
+    @sync_all_reduce("_relative_error")
+    def compute(self):
+        if self._relative_error == 0:
+           raise NotComputableError('CustomAccuracy must have at least one example before it can be computed.')
+        return sum(self._relative_error)/len(self._relative_error)
+
+#custom class
+from ignite.metrics.metric import sync_all_reduce, reinit__is_reduced
+class PercentPredictMetric(ignite.metrics.Metric):
+
+    def __init__(self, ignored_class=None, output_transform=lambda x: x):
+        self._relative_error = None
+        self.softmax = torch.nn.Softmax(dim=1)
+        super(PercentPredictMetric, self).__init__(output_transform=output_transform)
+
+    @reinit__is_reduced
+    def reset(self):
+        self._relative_error = []
+        super(PercentPredictMetric, self).reset()
+
+    @reinit__is_reduced
+    def update(self, output):
+        y_pred, y = output
+        soft_pred = self.softmax(y_pred[:,1:53])
+        #print('---------------------')
+        #print(y)
+        #print(soft_pred)
+        delta = torch.norm(soft_pred - y[:,1:53], dim=1)
+        #print(delta)
+        #print(delta.shape)
+        #print(soft_pred.shape)
+        rel_delta = 100*torch.mean(delta)/sqrt(2) 
+        self._relative_error += [rel_delta.item()]
+        
+    @sync_all_reduce("_relative_error")
+    def compute(self):
+        if self._relative_error == 0:
+           raise NotComputableError('CustomAccuracy must have at least one example before it can be computed.')
+        return sum(self._relative_error)/len(self._relative_error)
+
+#custom class
+from ignite.metrics.metric import sync_all_reduce, reinit__is_reduced
+class MeanSumPredictMetric(ignite.metrics.Metric):
+
+    def __init__(self, ignored_class=None, output_transform=lambda x: x):
+        self._relative_error = None
+        self.apriori_mean_list = [104.50246442561681, 24.13884404918004, 23.987986130468652, 25.99619133450599, 31.85280996717411, 48.45940328726219, 55.47242164432059, 30.274800540801422, 78.54245364057059, 33.584090641015216, 188.10486081552096, 36.28945151578021, 81.29908838191119, 13.36464317351852, 84.84840735088136, 151.9366333535613, 74.19875206712715, 33.440992543674014, 264.2680258351682, 37.409850273598, 202.8606972950071, 191.2214637202601, 40.240267318700866, 88.53218639904627, 126.69188207321002, 98.40358576861554, 133.64843240208026, 195.70574982471038, 190.9354436258683, 229.74390047798462, 167.13503214421857, 263.6275381853625, 61.9833114297043, 829.9443242145692, 70.43075570091183, 26.589740581794942, 120.50270399815835, 158.77900298555343, 42.00745367058008, 87.87754873721126, 88.79054102150519, 19.639214062447582, 517.5821513304905, 146.5522789130751, 149.49401859950868, 113.19210670119924, 61.46378188880782, 31.345534958521874, 78.6743993311771, 323.44568014813973, 346.0130976935031, 42.04684542519712]
+        self.apriori_mean_list = np.array(self.apriori_mean_list)
+        self.softmax = torch.nn.Softmax(dim=1)
+        super(MeanSumPredictMetric, self).__init__(output_transform=output_transform)
+
+    @reinit__is_reduced
+    def reset(self):
+        self._relative_error = []
+        super(MeanSumPredictMetric, self).reset()
+
+    @reinit__is_reduced
+    def update(self, output):
+        y_pred, y = output
+        soft_pred = self.softmax(y_pred[:,1:53])
+        #print('-----------------------')
+        #print(soft_pred)
+        rss = (torch.exp(y_pred[:,53:]) - torch.exp(y[:,53:]) )**2
+        rss = soft_pred*rss # torch.max(y[:,53:], torch.exp(y[:,53:]-y[:,53:]) )i
+        rss = rss.sum(axis=1)
+        mean_apriori = np.tile(self.apriori_mean_list,(y_pred.shape[0],1))
+        mean_apriori = torch.FloatTensor(mean_apriori)
+        if y_pred.is_cuda:
+            mean_apriori = mean_apriori.to(y_pred.get_device())
+        tss = (torch.exp(y_pred[:,53:]) - mean_apriori)**2
+        tss = soft_pred*tss
+        tss = tss.sum(axis=1)
+        #print(tss)
+        #print(rss)
+        r2 = 1 - rss/tss
+        #print(r2)
+        #quit()
+        self._relative_error += [torch.mean(r2).item()]
+        
+    @sync_all_reduce("_relative_error")
+    def compute(self):
+        if self._relative_error == 0:
+           raise NotComputableError('CustomAccuracy must have at least one example before it can be computed.')
+        return sum(self._relative_error)/len(self._relative_error)
 
 def fit_model(model, train_loader, valid_loader, loss, optimizer, scheduler, params, valid_metrics, train_handlers):
+        #quit()
     device = torch.device(params.get('device', 'cpu'))
     model.to(device)
 
@@ -240,7 +350,8 @@ def fit_model(model, train_loader, valid_loader, loss, optimizer, scheduler, par
         model=model,
         device=device,
         prepare_batch=batch_to_device,
-        metrics=valid_metrics
+        #metrics=valid_metrics 
+        metrics={'total_number':SpendPredictMetric(), 'type_transac':PercentPredictMetric(), 'mean_rur':MeanSumPredictMetric()}
     )
 
     pbar = ProgressBar(persist=True, bar_format="")
@@ -249,14 +360,23 @@ def fit_model(model, train_loader, valid_loader, loss, optimizer, scheduler, par
     # valid_metric_name = valid_metric.__class__.__name__
     # valid_metric.attach(validation_evaluator, valid_metric_name)
 
-    trainer.add_event_handler(Events.EPOCH_STARTED, PrepareEpoch(train_loader))
+    trainer.add_event_handler(Events.ITERATION_COMPLETED, PrepareEpoch(train_loader))
+
+    # @trainer.on(Events.GET_BATCH_COMPLETED)
+    #def log_training_first_iterations(trainer):
+    #    print(trainer.state.batch)
+    #    x,y = batch_to_device(trainer.state.batch, device, True)
+    #    y_output = model(x)
+    #    print(y_output)
+    #    print("------------------------------")
+    #    quit()
 
     @trainer.on(Events.EPOCH_COMPLETED)
     def log_training_results(engine):
         validation_evaluator.run(valid_loader)
         metrics = validation_evaluator.state.metrics
         msgs = []
-        for metric in valid_metrics:
+        for metric in ['total_number', 'type_transac', 'mean_rur']: #valid_metrics:
             msgs.append(f'{metric}: {metrics[metric]:.3f}')
         pbar.log_message(
             f'Epoch: {engine.state.epoch},  {", ".join(msgs)}')

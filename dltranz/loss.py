@@ -54,6 +54,31 @@ class MultiLoss(nn.Module):
 
         return loss
 
+class KruzhLoss(nn.Module):
+    def __init__(self, type_weight=20, mean_rur_weight=1):
+        super().__init__()
+        self.lossl1 = nn.L1Loss()
+        self.lossl2 = nn.MSELoss()
+        self.bce_with_logits = nn.BCEWithLogitsLoss()
+        self.type_weight = type_weight
+        self.mean_rur_weight = mean_rur_weight
+
+    def forward(self, pred, true):
+        #print(pred.shape)
+        #print(torch.isnan(true).any() )
+        #print(torch.isnan(pred).any() )
+        loss_trans_number = self.lossl1(pred[:,0], true[:,0])
+        loss_transaction_types = self.bce_with_logits(pred[:,1:53], true[:,1:53])
+        soft_pred = torch.nn.Softmax(dim=1)(pred[:,1:53])
+        loss_mean_rur = self.lossl1(true[:,1:53]*torch.exp(pred[:,53:]), true[:,1:53]*torch.exp(true[:,53:]))
+        loss_mean_rur1 = 0.5*self.lossl1(soft_pred*torch.exp(pred[:,53:]), soft_pred*torch.exp(true[:,53:]))
+        print(loss_transaction_types.cpu().item(), loss_mean_rur.cpu().item(), loss_mean_rur1.cpu().item() )
+        #print((true[:,1:53]*pred[:,53:]).mean(dim=0) )
+        loss =  self.type_weight*loss_transaction_types + \
+                self.mean_rur_weight*(loss_mean_rur1+loss_mean_rur1)
+        #loss = loss_mean_rur
+        return loss
+
 
 class AllStateLoss(nn.Module):
     def __init__(self, point_loss):
@@ -136,6 +161,8 @@ def get_loss(params):
         loss = nn.L1Loss()
     elif loss_type == 'mse':
         loss = MSELoss()
+    elif loss_type == 'kruzh':
+        loss = KruzhLoss()
     elif loss_type == 'pseudo_labeled':
         loss = PseudoLabeledLoss(
             loss=get_loss(params['labeled']),
