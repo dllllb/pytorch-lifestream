@@ -75,12 +75,31 @@ class RnnEncoder(nn.Module):
             self.starter_h = nn.Parameter(torch.randn(num_dir, 1, self.hidden_size))
 
     def forward(self, x: PaddedBatch, h_0: torch.Tensor = None):
+        """
+
+        :param x:
+        :param h_0: None or [1, B, H] float tensor
+                    0.0 values in all components of hidden state of specific client means no-previous state and
+                    use starter for this client
+                    h_0 = None means no-previous state for all clients in batch
+        :return:
+        """
         shape = x.payload.size()
         assert shape[1] > 0, "Batch can'not have 0 transactions"
 
         # prepare initial state
-        if h_0 is None and self.trainable_starter == 'static':
-            h_0 = self.starter_h.expand(-1, len(x.seq_lens), -1).contiguous()
+        if self.trainable_starter == 'static':
+            starter_h = self.starter_h.expand(-1, shape[0], -1).contiguous()
+            if h_0 is None:
+                h_0 = starter_h
+            elif h_0 is not None and not self.training:
+                h_0 = torch.where(
+                    (h_0.squeeze(0).abs().sum(dim=1) == 0.0).unsqueeze(0).unsqueeze(2).expand(*starter_h.size()),
+                    starter_h,
+                    h_0,
+                )
+            else:
+                raise NotImplementedError('Unsupported mode: cannot mix fixed X and learning Starter')
 
         # pass-through rnn
         if self.rnn_type == 'lstm':
