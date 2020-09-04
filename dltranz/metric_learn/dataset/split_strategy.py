@@ -79,7 +79,7 @@ class SplitByWeeks(AbsSplit):
         # select indexes correspond to each part of weeks
         # x_ij == 1 <=>  j-th elenemt of sequence correspond to n_weeks_unique[i]
         x = n_weeks.reshape(1, -1).repeat(n_weeks_nunique, axis = 0) == n_weeks_unique.reshape(-1,1).repeat(seq_len, axis=1)
-        n_byweeks_idxes = [x[one_week_idxes].sum(axis=0).nonzero()[0] for one_week_idxes in n_weeks_idxes]
+        n_byweeks_idxes = [x[one_week_idxes].sum(axis=0).nonzero(as_tuple=False)[0] for one_week_idxes in n_weeks_idxes]
 
         return n_byweeks_idxes
 
