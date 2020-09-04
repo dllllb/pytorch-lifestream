@@ -5,7 +5,6 @@
     },
     "device": "cuda",
     "model_type": "agg_features",
-    "use_normalization_layer" : true,
     "trx_encoder": {
       "embeddings": {
         "small_group": {"in": 250}
@@ -14,8 +13,9 @@
         "amount_rur": "identity"
       },
       "was_logified": true,
-      "log_scale_factor": 14
+      "log_scale_factor": 1
     },
+    "use_normalization_layer": true,
     "lr_scheduler": {
       "step_size": 30,
       "step_gamma": 0.9025
@@ -53,10 +53,6 @@
     }
   },
 
-  "stats": {
-    "path": "runs/agg_features_result.json"
-  },
-
   "save_model": true,
   "model_path": {
     "model": "models/agg_features_model.p",
@@ -67,5 +63,10 @@
     "path": "data/agg_feat_embed",
     "format": "pickle",
     "columns": ["client_id"]
+  },
+
+  "stats": {
+    "path": "runs/agg_features_result.json"
   }
+
 }

@@ -51,7 +51,8 @@ do
             pseudo_labeling_$SC_AMOUNT \
         --labeled_amount $SC_AMOUNT \
         --output_file results/semi_scenario_age_pred_$SC_AMOUNT.csv \
-        --embedding_file_names "embeddings.pickle" "embeddings_cpc.pickle"
+        --baseline_name "agg_feat_embed.pickle" \
+        --embedding_file_names "mles_embeddings.pickle" "cpc_embeddings.pickle"
 done
 
 

@@ -16,7 +16,7 @@ export SC_SUFFIX="encoder_transf"
 python ../../metric_learning.py \
     params.device="$SC_DEVICE" \
     params.model_type="transf" \
-    params.train.batch_size=256 \
+    params.train.batch_size=128 \
     params.transf.train_starter=true \
     params.transf.dropout=0.1 \
     params.transf.max_seq_len=800 \

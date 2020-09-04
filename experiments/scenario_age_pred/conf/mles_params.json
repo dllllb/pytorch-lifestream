@@ -31,7 +31,7 @@
       "num_workers": 16,
       "batch_size": 64,
       "split_strategy": {
-        "split_strategy": "SampleSlicesMLES",
+        "split_strategy": "SampleSlices",
         "split_count": 5,
         "cnt_min": 25,
         "cnt_max": 200
@@ -67,10 +67,6 @@
     }
   },
 
-  "stats": {
-    "path": "runs/age_pred_ml_result.json"
-  },
-
   "save_model": true,
   "model_path": {
     "model": "models/mles_model.p",
@@ -81,5 +77,10 @@
     "path": "data/mles_embeddings",
     "format": "pickle",
     "columns": ["client_id"]
+  },
+
+  "stats": {
+    "path": "runs/mles_result.json"
   }
+
 }

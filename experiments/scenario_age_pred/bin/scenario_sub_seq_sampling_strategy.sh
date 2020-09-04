@@ -29,8 +29,7 @@ python ../../ml_inference.py \
 
 # Compare
 python -m scenario_age_pred compare_approaches --output_file "results/scenario_age_pred__subseq_smpl_strategy.csv" \
-    --embedding_file_names \
+    --models "lgb" --embedding_file_names \
+    "mles_embeddings.pickle"        \
     "emb__SplitRandom.pickle" \
     "emb__SampleRandom.pickle"
-
-

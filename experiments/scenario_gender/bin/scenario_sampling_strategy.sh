@@ -4,12 +4,12 @@ python ../../metric_learning.py \
     params.device="$SC_DEVICE" \
     params.train.sampling_strategy="AllPositivePair" \
     model_path.model="models/gender_mlm__$SC_SUFFIX.p" \
-    --conf conf/dataset.hocon conf/mles_params.json
+    --conf "conf/dataset.hocon" "conf/mles_params.json"
 python ../../ml_inference.py \
     params.device="$SC_DEVICE" \
     model_path.model="models/gender_mlm__$SC_SUFFIX.p" \
     output.path="data/emb__$SC_SUFFIX" \
-    --conf conf/dataset.hocon conf/mles_params.json
+    --conf "conf/dataset.hocon" "conf/mles_params.json"
 
 
 # DistanceWeightedPair
@@ -19,12 +19,12 @@ python ../../metric_learning.py \
     params.train.sampling_strategy="DistanceWeightedPair" \
     params.train.n_samples_from_class=5 \
     model_path.model="models/gender_mlm__$SC_SUFFIX.p" \
-    --conf conf/dataset.hocon conf/mles_params.json
+    --conf "conf/dataset.hocon" "conf/mles_params.json"
 python ../../ml_inference.py \
     params.device="$SC_DEVICE" \
     model_path.model="models/gender_mlm__$SC_SUFFIX.p" \
     output.path="data/emb__$SC_SUFFIX" \
-    --conf conf/dataset.hocon conf/mles_params.json
+    --conf "conf/dataset.hocon" "conf/mles_params.json"
 
 
 # Compare

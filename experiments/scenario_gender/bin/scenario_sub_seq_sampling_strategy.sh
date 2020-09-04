@@ -4,11 +4,11 @@ python ../../metric_learning.py \
     params.train.split_strategy.split_strategy=$SC_STRATEGY \
     params.valid.split_strategy.split_strategy=$SC_STRATEGY \
     model_path.model="models/gender_mlm__$SC_SUFFIX.p" \
-    --conf conf/dataset.hocon conf/mles_params.json
+    --conf "conf/dataset.hocon" "conf/mles_params.json"
 python ../../ml_inference.py \
     model_path.model="models/gender_mlm__$SC_SUFFIX.p" \
     output.path="data/emb__$SC_SUFFIX" \
-    --conf conf/dataset.hocon conf/mles_params.json
+    --conf "conf/dataset.hocon" "conf/mles_params.json"
 
 
 export SC_SUFFIX="SplitRandom"
@@ -17,11 +17,11 @@ python ../../metric_learning.py \
     params.train.split_strategy.split_strategy=$SC_STRATEGY \
     params.valid.split_strategy.split_strategy=$SC_STRATEGY \
     model_path.model="models/gender_mlm__$SC_SUFFIX.p" \
-    --conf conf/dataset.hocon conf/mles_params.json
+    --conf "conf/dataset.hocon" "conf/mles_params.json"
 python ../../ml_inference.py \
     model_path.model="models/gender_mlm__$SC_SUFFIX.p" \
     output.path="data/emb__$SC_SUFFIX" \
-    --conf conf/dataset.hocon conf/mles_params.json
+    --conf "conf/dataset.hocon" "conf/mles_params.json"
 
 
 # Compare
