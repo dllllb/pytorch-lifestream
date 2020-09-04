@@ -28,8 +28,8 @@ python ../../ml_inference.py \
 
 # Compare
 python -m scenario_bowl2019 compare_approaches --output_file "results/scenario_bowl2019__subseq_smpl_strategy.csv" \
-    --embedding_file_names \
+    --models 'lgb' --embedding_file_names \
+    "mles_embeddings.pickle"              \
     "emb__SampleRandom.pickle" \
     "emb__SampleRandom_short.pickle"
-
 
