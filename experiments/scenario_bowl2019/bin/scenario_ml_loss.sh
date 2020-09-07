@@ -136,7 +136,7 @@ python ../../ml_inference.py \
 
 # Compare
 python -m scenario_bowl2019 compare_approaches --output_file "results/scenario_bowl2019__loss.csv" \
-    --models 'lgb' -embedding_file_names \
+    --models 'lgb' --embedding_file_names \
     "mles_embeddings.pickle"              \
     "emb__loss_contrastive_margin_0.5.pickle"                      \
     "emb__loss_contrastive_margin_1.0.pickle"                      \
