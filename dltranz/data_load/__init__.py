@@ -394,6 +394,27 @@ class ConvertingTrxDataset(Dataset):
         return a
 
 
+class ProcessDataset(Dataset):
+    def __init__(self, delegate, process_fun):
+        self.delegate = delegate
+        self.process_fun = process_fun
+
+    def __len__(self):
+        return len(self.delegate)
+
+    def __getitem__(self, idx):
+        item = self.delegate[idx]
+        if type(item) is list:
+            return [self._one_item(t) for t in item]
+        else:
+            return self._one_item(item)
+
+    def _one_item(self, item):
+        x, y = item
+        x = self.process_fun(x)
+        return x, y
+
+
 def pad_sequence(sequence, alignment, max_len=None, pad_value=0.0):
     def get_pad(x, max_len):
         if alignment == 'left':
