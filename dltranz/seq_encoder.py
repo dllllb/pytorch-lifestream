@@ -266,3 +266,15 @@ def scoring_head(input_size, params):
         layers.append(Squeeze())
 
     return nn.Sequential(*layers)
+
+
+class DropoutEncoder(nn.Module):
+    def __init__(self, p):
+        super(DropoutEncoder, self).__init__()
+        self.p = p
+
+    def forward(self, x):
+        if self.training:
+            mask = torch.FloatTensor(x.shape[1]).uniform_(0, 1) <= self.p
+            x = x.masked_fill(mask.to(x.device), 0)
+        return x
