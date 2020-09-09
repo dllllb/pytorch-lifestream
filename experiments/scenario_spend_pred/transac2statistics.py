@@ -4,11 +4,11 @@ import numpy as np
 import warnings
 warnings.filterwarnings("ignore")
 
-file_path = "/mnt/data/ikruzhilov/agedata/transactions_test.csv"
+file_path = "/home/ikruzhilov/pytorch-lifestream/experiments/scenario_spend_pred/data/transactions_train.csv"
 data = pd.read_csv(file_path)
 #print('example of input data:', data.head(20))
 #pd.set_option('display.max_rows', None)
-small_groups = data.small_group.value_counts()[data.small_group.value_counts()>30000]
+small_groups = data.small_group.value_counts()[data.small_group.value_counts()>45000]
 #list of frequent type of transactions
 valid_transaction_indexes = small_groups.index
 inverted_indexes = np.zeros(shape=[valid_transaction_indexes.max()+1])
@@ -77,7 +77,7 @@ for id in client_ids:
     np_row = np.hstack([np.array([id, total_number_transactions]), mean_norm_counts['norm_counts'].to_numpy(), mean_norm_counts['mean_rur'].to_numpy()] )
 
     ids_ground_truth[i,:] = np_row
-    #print(np_row)
+    #print(np_row.shape)
     i = i + 1
     #if i >1:
     #    break
