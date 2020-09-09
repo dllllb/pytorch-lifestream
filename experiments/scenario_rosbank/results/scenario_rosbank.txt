@@ -1,0 +1,109 @@
+------------------------------------------------------------------------------------------------------------------------
+Vector testing report
+Params:
+    conf: "conf/embeddings_validation.hocon"
+
+Collected 15 files with 0 errors
+
+------------------------------------------------------------------------------------------------------------------------
+Metric: "auroc"
+                        scores_valid                                                                                                                  scores_test                                                                                                                 
+                                mean  t_pm t_int_l t_int_h   std                           values t_f_stat t_f_alpha t_t_stat t_t_alpha    t_A t_A_pp        mean  t_pm t_int_l t_int_h   std                           values t_f_stat t_f_alpha t_t_stat t_t_alpha    t_A t_A_pp
+model_name feature_name                                                                                                                                                                                                                                                           
+lgbm       baseline            0.806 0.013   0.793   0.818 0.010  [0.818 0.795 0.813 0.807 0.796]    1.000     0.500    0.000     0.500 -0.012 -1.496       0.825 0.005   0.820   0.831 0.004  [0.820 0.830 0.825 0.822 0.830]    1.000     0.500    0.000     0.500 -0.005 -0.619
+linear     baseline            0.769 0.011   0.757   0.780 0.009  [0.758 0.771 0.783 0.769 0.764]    1.236     0.579   -5.974     0.000 -0.048 -5.994       0.795 0.006   0.788   0.801 0.005  [0.790 0.792 0.800 0.790 0.800]    0.736     0.387  -10.358     0.000 -0.036 -4.417
+xgb        baseline            0.781 0.011   0.770   0.792 0.009  [0.786 0.769 0.792 0.776 0.782]    1.344     0.609   -4.043     0.002 -0.036 -4.434       0.798 0.014   0.784   0.811 0.011  [0.787 0.809 0.809 0.797 0.786]    0.154     0.049   -5.213     0.000 -0.038 -4.563
+
+------------------------------------------------------------------------------------------------------------------------
+Metric: "accuracy"
+                        scores_valid                                                                                                                  scores_test                                                                                                                 
+                                mean  t_pm t_int_l t_int_h   std                           values t_f_stat t_f_alpha t_t_stat t_t_alpha    t_A t_A_pp        mean  t_pm t_int_l t_int_h   std                           values t_f_stat t_f_alpha t_t_stat t_t_alpha    t_A t_A_pp
+model_name feature_name                                                                                                                                                                                                                                                           
+lgbm       baseline            0.730 0.018   0.712   0.749 0.015  [0.747 0.710 0.740 0.733 0.722]    1.000     0.500    0.000     0.500 -0.017 -2.345       0.750 0.006   0.744   0.756 0.005  [0.746 0.758 0.748 0.748 0.752]    1.000     0.500    0.000     0.500 -0.006 -0.748
+linear     baseline            0.709 0.015   0.695   0.724 0.012  [0.692 0.718 0.722 0.711 0.703]    1.490     0.646   -2.507     0.018 -0.037 -5.034       0.734 0.005   0.729   0.738 0.004  [0.732 0.728 0.734 0.736 0.738]    1.541     0.657   -6.126     0.000 -0.022 -2.918
+xgb        baseline            0.716 0.016   0.700   0.732 0.013  [0.736 0.699 0.717 0.718 0.711]    1.207     0.570   -1.640     0.070 -0.031 -4.219       0.722 0.027   0.695   0.748 0.022  [0.694 0.744 0.736 0.704 0.730]    0.049     0.006   -2.922     0.010 -0.047 -6.280
+
+------------------------------------------------------------------------------------------------------------------------
+Metric: "cnt_features"
+                        scores_valid scores_test
+                                mean        mean
+model_name feature_name                         
+lgbm       baseline              362         362
+linear     baseline              362         362
+xgb        baseline              362         362
+
+------------------------------------------------------------------------------------------------------------------------
+Metric: "cnt_samples"
+                        scores_valid scores_test
+                                mean        mean
+model_name feature_name                         
+lgbm       baseline              900         500
+linear     baseline              900         500
+xgb        baseline              900         500
+
+------------------------------------------------------------------------------------------------------------------------
+Metric: "feature_load_time"
+                        process_info                                                
+                                mean t_pm t_int_l t_int_h std                 values
+model_name feature_name                                                             
+lgbm       baseline                0    0       0       0 0.0  [0.0 0.0 0.0 0.0 0.0]
+linear     baseline                0    0       0       0 0.0  [0.0 0.0 0.0 0.0 0.0]
+xgb        baseline                0    0       0       0 0.0  [0.0 0.0 0.0 0.0 0.0]
+
+------------------------------------------------------------------------------------------------------------------------
+Metric: "train_fit_transform_time"
+                        process_info                                                
+                                mean t_pm t_int_l t_int_h std                 values
+model_name feature_name                                                             
+lgbm       baseline                0    0       0       0 0.0  [0.0 0.0 0.0 0.0 0.0]
+linear     baseline                0    0       0       0 0.0  [0.0 0.0 0.0 0.0 0.0]
+xgb        baseline                0    0       0       0 0.0  [0.0 0.0 0.0 0.0 0.0]
+
+------------------------------------------------------------------------------------------------------------------------
+Metric: "feature_transform_time"
+                        scores_valid                                                 scores_test                                                
+                                mean t_pm t_int_l t_int_h std                 values        mean t_pm t_int_l t_int_h std                 values
+model_name feature_name                                                                                                                         
+lgbm       baseline                0    0       0       0 0.0  [0.0 0.0 0.0 0.0 0.0]           0    0       0       0 0.0  [0.0 0.0 0.0 0.0 0.0]
+linear     baseline                0    0       0       0 0.0  [0.0 0.0 0.0 0.0 0.0]           0    0       0       0 0.0  [0.0 0.0 0.0 0.0 0.0]
+xgb        baseline                0    0       0       0 0.0  [0.0 0.0 0.0 0.0 0.0]           0    0       0       0 0.0  [0.0 0.0 0.0 0.0 0.0]
+
+------------------------------------------------------------------------------------------------------------------------
+Metric: "train_time"
+                        process_info                                                
+                                mean t_pm t_int_l t_int_h std                 values
+model_name feature_name                                                             
+lgbm       baseline                2    0     2.0       2 0.0  [2.0 2.0 2.0 2.0 2.0]
+linear     baseline                0    0    -0.0       0 0.0  [0.0 0.0 0.0 0.0 0.0]
+xgb        baseline                4    0     4.0       4 0.0  [4.0 4.0 4.0 4.0 4.0]
+
+------------------------------------------------------------------------------------------------------------------------
+Metric: "auroc_score_time"
+                        scores_valid                                                 scores_test                                                
+                                mean t_pm t_int_l t_int_h std                 values        mean t_pm t_int_l t_int_h std                 values
+model_name feature_name                                                                                                                         
+lgbm       baseline                0    0       0       0 0.0  [0.0 0.0 0.0 0.0 0.0]           0    0       0       0 0.0  [0.0 0.0 0.0 0.0 0.0]
+linear     baseline                0    0       0       0 0.0  [0.0 0.0 0.0 0.0 0.0]           0    0       0       0 0.0  [0.0 0.0 0.0 0.0 0.0]
+xgb        baseline                0    0       0       0 0.0  [0.0 0.0 0.0 0.0 0.0]           0    0       0       0 0.0  [0.0 0.0 0.0 0.0 0.0]
+
+------------------------------------------------------------------------------------------------------------------------
+Metric: "accuracy_score_time"
+                        scores_valid                                                 scores_test                                                
+                                mean t_pm t_int_l t_int_h std                 values        mean t_pm t_int_l t_int_h std                 values
+model_name feature_name                                                                                                                         
+lgbm       baseline                0    0       0       0 0.0  [0.0 0.0 0.0 0.0 0.0]           0    0       0       0 0.0  [0.0 0.0 0.0 0.0 0.0]
+linear     baseline                0    0       0       0 0.0  [0.0 0.0 0.0 0.0 0.0]           0    0       0       0 0.0  [0.0 0.0 0.0 0.0 0.0]
+xgb        baseline                0    0       0       0 0.0  [0.0 0.0 0.0 0.0 0.0]           0    0       0       0 0.0  [0.0 0.0 0.0 0.0 0.0]
+
+------------------------------------------------------------------------------------------------------------------------
+Metric: "feature_fit_info"
+                        process_info
+                               first
+model_name feature_name             
+lgbm       baseline              nan
+linear     baseline              nan
+xgb        baseline              nan
+
+------------------------------------------------------------------------------------------------------------------------
+End of report.     Current time: 2020-09-09 16:26:14
+------------------------------------------------------------------------------------------------------------------------
