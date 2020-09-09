@@ -74,5 +74,11 @@
       "format": "pickle"
     },
     "columns": ["client_id"]
+  },
+
+  "stats": {
+    "model_name": "nn",
+    "feature_name": "target_scores",
+    "path": "results/fit_target_results.json"
   }
 }

@@ -42,7 +42,7 @@ python -m scenario_gender fit_finetuning params.device="$SC_DEVICE" --conf conf/
 
 # Run estimation for different approaches
 # Check some options with `--help` argument
-python -m scenario_gender compare_approaches --n_workers 1 --models lgb \
+python -m scenario_gender compare_approaches --n_workers 5 --models lgb \
     --output_file results/scenario_gender.csv \
     --baseline_name "agg_feat_embed.pickle" \
     --embedding_file_names "mles_embeddings.pickle" "cpc_embeddings.pickle" \

@@ -119,7 +119,8 @@ def read_pyarrow_file(path, use_threads=True):
             col_arrays = [rb.column(i) for i, _ in enumerate(col_indexes)]
             col_arrays = [a.to_numpy(zero_copy_only=False) for a in col_arrays]
             for row in zip(*col_arrays):
-                rec = {n: a for n, a in zip(col_indexes, row)}
+                # np.array(a) makes `a` writable for future usage
+                rec = {n: np.array(a) if isinstance(a, np.ndarray) else a for n, a in zip(col_indexes, row)}
                 yield rec
 
     return get_records()

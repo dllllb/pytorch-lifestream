@@ -57,7 +57,7 @@
 
   "save_model": true,
   "model_path": {
-    "model": "models/agg_feature_model.p",
+    "model": "models/agg_features_model.p",
     "only_encoder": true
   },
 
@@ -68,7 +68,7 @@
   },
 
   "stats": {
-    "path": "runs/agg_feature_result.json"
+    "path": "runs/agg_features_result.json"
   }
 
 }
