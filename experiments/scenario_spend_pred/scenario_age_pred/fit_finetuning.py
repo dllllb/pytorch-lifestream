@@ -39,13 +39,42 @@ def load_model(conf):
         rnn_encoder,
         step_select_encoder,
     ]
+
+    if conf.get('freeze_layers', False):
+        for i,_ in enumerate(layers):
+            for p in layers[i].parameters():
+                p.requires_grad = False
+
     if conf['use_batch_norm']:
         layers.append(torch.nn.BatchNorm1d(input_size))
 
-    layers.extend([
-        torch.nn.Linear(input_size, head_output_size)
-        #torch.nn.LogSoftmax(dim=1),
-    ])
+    big_extension = [torch.nn.Linear(input_size, int(1.5*input_size)),
+            torch.nn.ReLU(),
+            torch.nn.BatchNorm1d(int(1.5*input_size)),
+            torch.nn.Linear(int(1.5*input_size), 2*input_size),
+            torch.nn.ReLU(),
+            torch.nn.BatchNorm1d(2*input_size),
+            torch.nn.Linear(2*input_size, 2*input_size),
+            torch.nn.ReLU(),
+            torch.nn.BatchNorm1d(2*input_size),
+            torch.nn.Linear(2*input_size, input_size),
+            torch.nn.ReLU(),
+            torch.nn.BatchNorm1d(input_size),
+            torch.nn.Linear(input_size, 2*head_output_size),
+            torch.nn.ReLU(),
+            torch.nn.BatchNorm1d(2*head_output_size),
+            torch.nn.Linear(2*head_output_size, head_output_size)
+            ]
+
+    if conf.get('big_extension', False):
+        layers.extend(big_extension)
+    else:
+        layers.extend([torch.nn.Linear(input_size, head_output_size) ])
+
+    #for i,_ in enumerate(layers):
+    #    for p in layers[i].parameters():
+    #        print(p.requires_grad)
+    #quit()
 
     model = torch.nn.Sequential(*layers)
     return model
@@ -66,8 +95,6 @@ def main(_):
     train_data = read_consumer_data(conf['dataset.train_path'], conf)
     test_data = read_consumer_data(conf['dataset.test_path'], conf)
     
-    #print(train_data)
-
     # train
     results = []
 
@@ -75,7 +102,6 @@ def main(_):
     nrows = conf['params'].get('labeled_amount',-1) # semi-supervised setup. default = supervised
 
     target_values = [rec['target'] for rec in train_data]
-    #print(target_values)
     for i, (i_train, i_valid) in enumerate(skf.split(train_data, np.zeros(shape=(len(train_data),1)) )):#target_values)):
         logger.info(f'Train fold: {i}')
         i_train_data = [rec for i, rec in enumerate(train_data) if i in i_train]

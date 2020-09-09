@@ -7,7 +7,7 @@
     "model_type": "rnn",
     "rnn": {
       "type": "gru",
-      "hidden_size": 160,
+      "hidden_size": 210,
       "bidir": false,
       "trainable_starter": "static"
     },
@@ -40,7 +40,7 @@
     },
     "train": {
       "num_workers": 16,
-      "batch_size": 512,
+      "batch_size": 128,
       "split_strategy": {
         "split_strategy": "SampleSlices",
         "split_count": 5,
@@ -55,7 +55,7 @@
       "margin": 0.5,
       "lr": 0.002,
       "weight_decay": 0.0,
-      "n_epoch": 50
+      "n_epoch": 5
     },
     "norm_scores": false,
     "valid": {

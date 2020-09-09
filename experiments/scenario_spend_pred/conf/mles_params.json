@@ -29,7 +29,7 @@
     },
     "train": {
       "num_workers": 16,
-      "batch_size": 64,
+      "batch_size": 512,
       "split_strategy": {
         "split_strategy": "SampleSlices",
         "split_count": 5,
