@@ -13,6 +13,7 @@ import pandas as pd
 warnings.filterwarnings('ignore', module='tensorboard.compat.tensorflow_stub.dtypes')
 from torch.utils.tensorboard import SummaryWriter
 from dltranz.seq_encoder import PaddedBatch
+from dltranz.swa import SWA
 
 from ignite.engine import Engine, Events, create_supervised_trainer, create_supervised_evaluator
 import ignite
@@ -65,6 +66,10 @@ def get_optimizer(model, params):
             )]}
         parameters.append(default_options)
     optimizer = torch.optim.Adam(parameters, lr=params['train.lr'], weight_decay=params['train.weight_decay'])
+
+    if params.get('train.swa', None):
+        optimizer = SWA(optimizer)
+
     return optimizer
 
 
@@ -284,6 +289,13 @@ def fit_model(model, train_loader, valid_loader, loss, optimizer, scheduler, par
                 best_metric_value = metric_value
                 best_parameters = deepcopy(model.state_dict())
 
+    # Stochastic Weight Averaging
+    if params.get('train.swa', False):
+        @trainer.on(Events.EPOCH_COMPLETED)
+        def update_swa(engine):
+            if engine.state.epoch >= params['train.swa'].get('swa_start'):
+                optimizer.update_swa()
+
     for handler in train_handlers:
         handler(trainer, validation_evaluator, optimizer)
 
@@ -291,6 +303,10 @@ def fit_model(model, train_loader, valid_loader, loss, optimizer, scheduler, par
 
     if params.get('train.use_best_epoch', False):
         model.load_state_dict(best_parameters)
+
+    elif params.get('train.swa', None):
+        optimizer.swap_swa_sgd()
+        optimizer.bn_update(train_loader, model, device, prepare_batch=batch_to_device)
 
     return validation_evaluator.state.metrics
 

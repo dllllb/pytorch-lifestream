@@ -19,6 +19,9 @@ class PaddedBatch:
     def seq_lens(self):
         return self._length
 
+    def __len__(self):
+        return len(self._length)
+
 
 class NoisyEmbedding(nn.Embedding):
     """

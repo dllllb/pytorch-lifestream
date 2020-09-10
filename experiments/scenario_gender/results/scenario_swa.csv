@@ -1,0 +1,5 @@
+                                   oof_rocauc_score                                                         test_rocauc_score                                                        
+                                               mean t_int_l t_int_h    std                           values              mean t_int_l t_int_h    std                           values
+name                                                                                                                                                                                 
+lgb_embeds: emb_swa.pickle                   0.8727  0.8548  0.8906 0.0144  [0.855 0.864 0.871 0.884 0.890]            0.8834  0.8788  0.8881 0.0038  [0.880 0.881 0.881 0.886 0.889]
+lgb_embeds: mles_embeddings.pickle           0.8720  0.8541  0.8900 0.0145  [0.852 0.866 0.870 0.886 0.886]            0.8800  0.8761  0.8839 0.0031  [0.877 0.878 0.879 0.880 0.885]
