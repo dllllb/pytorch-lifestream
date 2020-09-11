@@ -12,7 +12,7 @@ from torch.utils.data import Dataset
 from torch.utils.data.dataloader import DataLoader
 
 from dltranz.data_load import TrxDataset, ConvertingTrxDataset, DropoutTrxDataset, padded_collate, \
-    create_validation_loader, read_data_gen
+    create_validation_loader, read_data_gen, SameTimeShuffleDataset, AllTimeShuffleDataset
 from dltranz.loss import get_loss
 from dltranz.models import model_by_type
 from dltranz.train import get_optimizer, get_lr_scheduler, fit_model
@@ -160,9 +160,16 @@ def main(_):
 
         # inference
         columns = conf['output.columns']
+
+        train_scores = infer_part_of_data(i, i_train_data, columns, model, conf)
+        save_scores(train_scores, i, conf['output.valid'])
+        result['scores_train'] = score_data(conf, i_train_data, train_scores)
+
         train_scores = infer_part_of_data(i, i_valid_data, columns, model, conf)
         save_scores(train_scores, i, conf['output.valid'])
         result['scores_valid'] = score_data(conf, i_valid_data, train_scores)
+
+        print(f"Fold {i:2d}: cores train: {result['scores_train']['auroc']:.3f}, valid: {result['scores_valid']['auroc']:.3f}")
 
         test_scores = infer_part_of_data(i, test_data, columns, model, conf)
         save_scores(test_scores, i, conf['output.test'])

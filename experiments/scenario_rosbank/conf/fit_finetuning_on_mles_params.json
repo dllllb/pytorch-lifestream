@@ -5,8 +5,6 @@
     "model_type": "rnn",
     "ensemble_size": 1,
     "trx_encoder": {
-      "norm_embeddings": true,
-      "embeddings_noise": 0.003,
       "embeddings": {
         "mcc": {"in": 100, "out": 16},
         "channel_type": {"in": 4, "out": 2},
@@ -18,17 +16,7 @@
       }
     },
     "rnn": {
-      "hidden_size": 48,
-      "type": "gru",
-      "bidir": false,
-      "trainable_starter": "static"
-    },
-    "head": {
-      "pred_all_states": false,
-      "pred_all_states_mean": false,
-      "explicit_lengths": false,
-      "norm_input": false,
-      "use_batch_norm": true
+      "hidden_size": 512
     },
     "train": {
       "random_neg": false,
@@ -41,13 +29,17 @@
       "batch_size": 32,
       "num_workers": 16,
       "loss": "bce",
-      "lr": 0.004,
+      "lr": 0.0015,
+      "optimiser_params": {
+        "0.": {"lr": 0.0001},
+        "1.": {"lr": 0.0001}
+      },
       "weight_decay": 0.0,
-      "n_epoch": 10
+      "n_epoch": 8
     },
     "lr_scheduler": {
       "step_size": 1,
-      "step_gamma": 0.90
+      "step_gamma": 0.40
     },
     "valid": {
       "max_seq_len": 1200,
@@ -55,18 +47,21 @@
       "num_workers": 8
     },
     "norm_scores": false,
-    "score_metric": "auroc"
+    "score_metric": "auroc",
+
+    "pretrained_model_path": "models/mles_model.p",
+    "use_batch_norm": true
   },
 
   "save_model": false,
 
   "output": {
     "valid": {
-      "path": "data/target_scores/valid",
+      "path": "data/mles_finetuning_scores/valid",
       "format": "pickle"
     },
     "test": {
-      "path": "data/target_scores/test",
+      "path": "data/mles_finetuning_scores/test",
       "format": "pickle"
     },
     "columns": ["cl_id"]
@@ -74,7 +69,7 @@
 
   "stats": {
     "model_name": "nn",
-    "feature_name": "target_scores",
-    "path": "results/fit_target_results.json"
+    "feature_name": "mles_finetuning",
+    "path": "results/mles_finetuning_results.json"
   }
 }

@@ -95,9 +95,16 @@ def main(_):
 
         # inference
         columns = conf['output.columns']
+
+        train_scores = infer_part_of_data(i, i_train_data, columns, model, conf)
+        save_scores(train_scores, i, conf['output.valid'])
+        result['scores_train'] = score_data(conf, i_train_data, train_scores)
+
         train_scores = infer_part_of_data(i, i_valid_data, columns, model, conf)
         save_scores(train_scores, i, conf['output.valid'])
         result['scores_valid'] = score_data(conf, i_valid_data, train_scores)
+
+        print(f"Fold {i:2d}: cores train: {result['scores_train']['auroc']:.3f}, valid: {result['scores_valid']['auroc']:.3f}")
 
         test_scores = infer_part_of_data(i, test_data, columns, model, conf)
         save_scores(test_scores, i, conf['output.test'])
