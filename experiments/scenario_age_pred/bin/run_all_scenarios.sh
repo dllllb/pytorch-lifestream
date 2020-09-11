@@ -63,4 +63,4 @@ sh bin/scenario_semi_supervised.sh
 echo ""
 echo "==== Other scenarios"
 
-sh bin/scenario_projection_head.sh
+# sh bin/scenario_projection_head.sh

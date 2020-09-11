@@ -9,6 +9,7 @@ python ../../metric_learning.py \
     model_path.model="models/x5_mlm__$SC_SUFFIX.p" \
     --conf "conf/dataset.hocon" "conf/mles_params.json"
 python ../../ml_inference.py \
+    params.device="$SC_DEVICE" \
     model_path.model="models/x5_mlm__$SC_SUFFIX.p" \
     output.path="data/emb__$SC_SUFFIX" \
     --conf "conf/dataset.hocon" "conf/mles_params.json"
@@ -25,6 +26,7 @@ python ../../metric_learning.py \
     model_path.model="models/x5_mlm__$SC_SUFFIX.p" \
     --conf "conf/dataset.hocon" "conf/mles_params.json"
 python ../../ml_inference.py \
+    params.device="$SC_DEVICE" \
     model_path.model="models/x5_mlm__$SC_SUFFIX.p" \
     output.path="data/emb__$SC_SUFFIX" \
     --conf "conf/dataset.hocon" "conf/mles_params.json"
