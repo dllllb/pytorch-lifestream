@@ -1,0 +1,120 @@
+------------------------------------------------------------------------------------------------------------------------
+Vector testing report
+Params:
+    conf: "conf/embeddings_validation_1599834559.hocon"
+
+Collected 16 files with 0 errors
+
+------------------------------------------------------------------------------------------------------------------------
+Metric: "auroc"
+                                    scores_valid                                                                                                                  scores_test                                                                                                                 
+                                            mean  t_pm t_int_l t_int_h   std                           values t_f_stat t_f_alpha t_t_stat t_t_alpha    t_A t_A_pp        mean  t_pm t_int_l t_int_h   std                           values t_f_stat t_f_alpha t_t_stat t_t_alpha    t_A t_A_pp
+model_name feature_name                                                                                                                                                                                                                                                                       
+lgbm       emb_mles__encoder_lstm          0.819 0.018   0.801   0.837 0.014  [0.831 0.795 0.829 0.822 0.819]    0.466     0.239    1.425     0.904 -0.003 -0.416       0.835 0.006   0.829   0.840 0.005  [0.839 0.838 0.834 0.835 0.827]    2.378     0.789    1.648     0.931 -0.001 -0.097
+           emb_mles__encoder_transf        0.779 0.016   0.764   0.795 0.013  [0.778 0.772 0.801 0.773 0.772]    0.599     0.316   -4.050     0.002 -0.042 -5.209       0.792 0.003   0.789   0.795 0.002  [0.795 0.790 0.791 0.791 0.795]    8.497     0.969  -10.654     0.000 -0.042 -5.096
+           mles_embeddings                 0.808 0.012   0.796   0.820 0.010  [0.816 0.794 0.818 0.807 0.805]    1.000     0.500    0.000     0.500 -0.011 -1.419       0.828 0.009   0.819   0.837 0.007  [0.825 0.837 0.835 0.822 0.822]    1.000     0.500    0.000     0.500 -0.008 -1.013
+nn         target_scores                   0.799 0.017   0.781   0.816 0.014  [0.806 0.798 0.788 0.784 0.818]    0.483     0.249   -1.218     0.129 -0.024 -2.909       0.804 0.014   0.790   0.818 0.011  [0.805 0.788 0.809 0.817 0.800]    0.414     0.207   -4.164     0.002 -0.036 -4.289
+
+------------------------------------------------------------------------------------------------------------------------
+Metric: "accuracy"
+                                    scores_valid                                                                                                                  scores_test                                                                                                                 
+                                            mean  t_pm t_int_l t_int_h   std                           values t_f_stat t_f_alpha t_t_stat t_t_alpha    t_A t_A_pp        mean  t_pm t_int_l t_int_h   std                           values t_f_stat t_f_alpha t_t_stat t_t_alpha    t_A t_A_pp
+model_name feature_name                                                                                                                                                                                                                                                                       
+lgbm       emb_mles__encoder_lstm          0.736 0.018   0.718   0.754 0.015  [0.748 0.713 0.746 0.744 0.730]    0.048     0.006   -0.632     0.272 -0.017 -2.247       0.764 0.013   0.751   0.777 0.010  [0.772 0.752 0.772 0.770 0.754]    0.757     0.397    0.802     0.777 -0.006 -0.834
+           emb_mles__encoder_transf        0.710 0.006   0.704   0.716 0.005  [0.708 0.710 0.718 0.709 0.706]    0.474     0.244  -12.062     0.000 -0.035 -4.746       0.724 0.008   0.716   0.733 0.007  [0.722 0.732 0.722 0.716 0.730]    1.804     0.709   -7.104     0.000 -0.044 -5.784
+           mles_embeddings                 0.740 0.004   0.736   0.744 0.003  [0.743 0.736 0.742 0.742 0.739]    1.000     0.500    0.000     0.500 -0.004 -0.508       0.759 0.011   0.748   0.770 0.009  [0.752 0.754 0.774 0.760 0.756]    1.000     0.500    0.000     0.500 -0.010 -1.361
+nn         target_scores                     nan   nan     nan     nan   nan            [nan nan nan nan nan]      nan       nan      nan       nan    nan    nan         nan   nan     nan     nan   nan            [nan nan nan nan nan]      nan       nan      nan       nan    nan    nan
+
+------------------------------------------------------------------------------------------------------------------------
+Metric: "cnt_features"
+                                    scores_valid scores_test
+                                            mean        mean
+model_name feature_name                                     
+lgbm       emb_mles__encoder_lstm            512         512
+           emb_mles__encoder_transf           96          96
+           mles_embeddings                   512         512
+nn         target_scores                      48          48
+
+------------------------------------------------------------------------------------------------------------------------
+Metric: "cnt_samples"
+                                    scores_valid scores_test
+                                            mean        mean
+model_name feature_name                                     
+lgbm       emb_mles__encoder_lstm            900         500
+           emb_mles__encoder_transf          900         500
+           mles_embeddings                   900         500
+nn         target_scores                     900         500
+
+------------------------------------------------------------------------------------------------------------------------
+Metric: "feature_load_time"
+                                    process_info                                                
+                                            mean t_pm t_int_l t_int_h std                 values
+model_name feature_name                                                                         
+lgbm       emb_mles__encoder_lstm            0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]
+           emb_mles__encoder_transf          0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]
+           mles_embeddings                   0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]
+nn         target_scores                     nan  nan     nan     nan nan  [nan nan nan nan nan]
+
+------------------------------------------------------------------------------------------------------------------------
+Metric: "train_fit_transform_time"
+                                    process_info                                                
+                                            mean t_pm t_int_l t_int_h std                 values
+model_name feature_name                                                                         
+lgbm       emb_mles__encoder_lstm            0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]
+           emb_mles__encoder_transf          0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]
+           mles_embeddings                   0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]
+nn         target_scores                     nan  nan     nan     nan nan  [nan nan nan nan nan]
+
+------------------------------------------------------------------------------------------------------------------------
+Metric: "feature_transform_time"
+                                    scores_valid                                                 scores_test                                                
+                                            mean t_pm t_int_l t_int_h std                 values        mean t_pm t_int_l t_int_h std                 values
+model_name feature_name                                                                                                                                     
+lgbm       emb_mles__encoder_lstm            0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]         0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]
+           emb_mles__encoder_transf          0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]         0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]
+           mles_embeddings                   0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]         0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]
+nn         target_scores                     nan  nan     nan     nan nan  [nan nan nan nan nan]         nan  nan     nan     nan nan  [nan nan nan nan nan]
+
+------------------------------------------------------------------------------------------------------------------------
+Metric: "train_time"
+                                    process_info                                                
+                                            mean t_pm t_int_l t_int_h std                 values
+model_name feature_name                                                                         
+lgbm       emb_mles__encoder_lstm            2.0  0.0     2.0     2.0 0.0  [2.0 2.0 2.0 2.0 2.0]
+           emb_mles__encoder_transf          0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]
+           mles_embeddings                   3.0  2.8     0.2     5.8 2.2  [7.0 2.0 2.0 2.0 2.0]
+nn         target_scores                     nan  nan     nan     nan nan  [nan nan nan nan nan]
+
+------------------------------------------------------------------------------------------------------------------------
+Metric: "auroc_score_time"
+                                    scores_valid                                                 scores_test                                                
+                                            mean t_pm t_int_l t_int_h std                 values        mean t_pm t_int_l t_int_h std                 values
+model_name feature_name                                                                                                                                     
+lgbm       emb_mles__encoder_lstm            0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]         0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]
+           emb_mles__encoder_transf          0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]         0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]
+           mles_embeddings                   0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]         0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]
+nn         target_scores                     nan  nan     nan     nan nan  [nan nan nan nan nan]         nan  nan     nan     nan nan  [nan nan nan nan nan]
+
+------------------------------------------------------------------------------------------------------------------------
+Metric: "accuracy_score_time"
+                                    scores_valid                                                 scores_test                                                
+                                            mean t_pm t_int_l t_int_h std                 values        mean t_pm t_int_l t_int_h std                 values
+model_name feature_name                                                                                                                                     
+lgbm       emb_mles__encoder_lstm            0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]         0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]
+           emb_mles__encoder_transf          0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]         0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]
+           mles_embeddings                   0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]         0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]
+nn         target_scores                     nan  nan     nan     nan nan  [nan nan nan nan nan]         nan  nan     nan     nan nan  [nan nan nan nan nan]
+
+------------------------------------------------------------------------------------------------------------------------
+Metric: "feature_fit_info"
+                                    process_info
+                                           first
+model_name feature_name                         
+lgbm       emb_mles__encoder_lstm            nan
+           emb_mles__encoder_transf          nan
+           mles_embeddings                   nan
+nn         target_scores                     nan
+
+------------------------------------------------------------------------------------------------------------------------
+End of report.     Current time: 2020-09-11 14:29:34
+------------------------------------------------------------------------------------------------------------------------

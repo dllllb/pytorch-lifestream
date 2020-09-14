@@ -4,19 +4,25 @@
       "name": "default"
     },
     "device": "cuda",
-    "model_type": "agg_features",
+    "model_type": "rnn",
+    "rnn": {
+      "type": "gru",
+      "hidden_size": 512,
+      "bidir": false,
+      "trainable_starter": "static"
+    },
     "trx_encoder": {
+      "norm_embeddings": false,
+      "embeddings_noise": 0.003,
       "embeddings": {
-        "mcc": {"in": 100},
-        "channel_type": {"in": 4},
-        "currency": {"in": 4},
-        "trx_category": {"in": 10}
+        "mcc": {"in": 100, "out": 16},
+        "channel_type": {"in": 4, "out": 2},
+        "currency": {"in": 4, "out": 2},
+        "trx_category": {"in": 10, "out": 2}
       },
       "numeric_values": {
         "amount": "identity"
-      },
-      "was_logified": true,
-      "log_scale_factor": 1
+      }
     },
     "use_normalization_layer": true,
     "lr_scheduler": {
@@ -30,22 +36,28 @@
         "split_strategy": "SampleSlices",
         "split_count": 5,
         "cnt_min": 15,
-        "cnt_max": 75
+        "cnt_max": 150
       },
       "sampling_strategy": "HardNegativePair",
       "trx_dropout": 0.01,
       "max_seq_len": 1200,
       "neg_count": 5,
-      "loss": "MarginLoss",
-      "margin": 0.2,
-      "beta": 0.4,
-      "lr": 0.002,
+      "loss": "ContrastiveLoss",
+      "margin": 0.5,
+      "lr": 0.004,
       "weight_decay": 0.0,
-      "n_epoch": 10
+      "n_epoch": 150,
+      "_checkpoints": {
+        "save_interval": 10,
+        "n_saved": 1000,
+        "dirname": "models/mles_checkpoints/",
+        "filename_prefix": "mles",
+        "create_dir": true
+      }
     },
     "norm_scores": false,
     "valid": {
-      "batch_size": 1024,
+      "batch_size": 256,
       "num_workers": 16,
       "split_strategy": {
         "split_strategy": "SampleSlices",
@@ -59,18 +71,18 @@
 
   "save_model": true,
   "model_path": {
-    "model": "models/agg_features_model.p",
-    "only_encoder": true
+    "model": "models/mles_model.p",
+    "only_encoder": false
   },
 
   "output": {
-    "path": "data/agg_feat_embed",
+    "path": "data/mles_embeddings",
     "format": "pickle",
     "columns": ["cl_id"]
   },
 
   "stats": {
-    "path": "runs/agg_features_result.json"
+    "path": "runs/mles_result.json"
   }
 
 }

@@ -3,107 +3,118 @@ Vector testing report
 Params:
     conf: "conf/embeddings_validation.hocon"
 
-Collected 15 files with 0 errors
+Collected 12 files with 0 errors
 
 ------------------------------------------------------------------------------------------------------------------------
 Metric: "auroc"
-                        scores_valid                                                                                                                  scores_test                                                                                                                 
-                                mean  t_pm t_int_l t_int_h   std                           values t_f_stat t_f_alpha t_t_stat t_t_alpha    t_A t_A_pp        mean  t_pm t_int_l t_int_h   std                           values t_f_stat t_f_alpha t_t_stat t_t_alpha    t_A t_A_pp
-model_name feature_name                                                                                                                                                                                                                                                           
-lgbm       baseline            0.806 0.013   0.793   0.818 0.010  [0.818 0.795 0.813 0.807 0.796]    1.000     0.500    0.000     0.500 -0.012 -1.496       0.825 0.005   0.820   0.831 0.004  [0.820 0.830 0.825 0.822 0.830]    1.000     0.500    0.000     0.500 -0.005 -0.619
-linear     baseline            0.769 0.011   0.757   0.780 0.009  [0.758 0.771 0.783 0.769 0.764]    1.236     0.579   -5.974     0.000 -0.048 -5.994       0.795 0.006   0.788   0.801 0.005  [0.790 0.792 0.800 0.790 0.800]    0.736     0.387  -10.358     0.000 -0.036 -4.417
-xgb        baseline            0.781 0.011   0.770   0.792 0.009  [0.786 0.769 0.792 0.776 0.782]    1.344     0.609   -4.043     0.002 -0.036 -4.434       0.798 0.014   0.784   0.811 0.011  [0.787 0.809 0.809 0.797 0.786]    0.154     0.049   -5.213     0.000 -0.038 -4.563
+                           scores_valid                                                                                                                  scores_test                                                                                                                 
+                                   mean  t_pm t_int_l t_int_h   std                           values t_f_stat t_f_alpha t_t_stat t_t_alpha    t_A t_A_pp        mean  t_pm t_int_l t_int_h   std                           values t_f_stat t_f_alpha t_t_stat t_t_alpha    t_A t_A_pp
+model_name feature_name                                                                                                                                                                                                                                                              
+lgbm       baseline               0.806 0.013   0.793   0.818 0.010  [0.818 0.795 0.813 0.807 0.796]    1.000     0.500    0.000     0.500 -0.012 -1.496       0.825 0.005   0.820   0.831 0.004  [0.820 0.830 0.825 0.822 0.830]    1.000     0.500    0.000     0.500 -0.005 -0.619
+           mles_embeddings        0.808 0.012   0.796   0.820 0.010  [0.816 0.794 0.818 0.807 0.805]    1.105     0.537    0.362     0.637 -0.009 -1.175       0.828 0.009   0.819   0.837 0.007  [0.825 0.837 0.835 0.822 0.822]    0.371     0.180    0.752     0.763 -0.004 -0.501
+nn         mles_finetuning        0.812 0.010   0.802   0.822 0.008  [0.817 0.815 0.800 0.810 0.821]    1.615     0.673    1.151     0.859 -0.004 -0.513       0.812 0.008   0.804   0.821 0.007  [0.818 0.810 0.810 0.820 0.803]    0.410     0.205   -3.640     0.003 -0.020 -2.401
+           target_scores          0.798 0.014   0.784   0.812 0.011  [0.801 0.805 0.784 0.788 0.810]    0.825     0.428   -1.192     0.134 -0.021 -2.582       0.800 0.005   0.795   0.805 0.004  [0.802 0.798 0.795 0.805 0.801]    1.232     0.578   -9.698     0.000 -0.030 -3.663
 
 ------------------------------------------------------------------------------------------------------------------------
 Metric: "accuracy"
-                        scores_valid                                                                                                                  scores_test                                                                                                                 
-                                mean  t_pm t_int_l t_int_h   std                           values t_f_stat t_f_alpha t_t_stat t_t_alpha    t_A t_A_pp        mean  t_pm t_int_l t_int_h   std                           values t_f_stat t_f_alpha t_t_stat t_t_alpha    t_A t_A_pp
-model_name feature_name                                                                                                                                                                                                                                                           
-lgbm       baseline            0.730 0.018   0.712   0.749 0.015  [0.747 0.710 0.740 0.733 0.722]    1.000     0.500    0.000     0.500 -0.017 -2.345       0.750 0.006   0.744   0.756 0.005  [0.746 0.758 0.748 0.748 0.752]    1.000     0.500    0.000     0.500 -0.006 -0.748
-linear     baseline            0.709 0.015   0.695   0.724 0.012  [0.692 0.718 0.722 0.711 0.703]    1.490     0.646   -2.507     0.018 -0.037 -5.034       0.734 0.005   0.729   0.738 0.004  [0.732 0.728 0.734 0.736 0.738]    1.541     0.657   -6.126     0.000 -0.022 -2.918
-xgb        baseline            0.716 0.016   0.700   0.732 0.013  [0.736 0.699 0.717 0.718 0.711]    1.207     0.570   -1.640     0.070 -0.031 -4.219       0.722 0.027   0.695   0.748 0.022  [0.694 0.744 0.736 0.704 0.730]    0.049     0.006   -2.922     0.010 -0.047 -6.280
+                           scores_valid                                                                                                                  scores_test                                                                                                                 
+                                   mean  t_pm t_int_l t_int_h   std                           values t_f_stat t_f_alpha t_t_stat t_t_alpha    t_A t_A_pp        mean  t_pm t_int_l t_int_h   std                           values t_f_stat t_f_alpha t_t_stat t_t_alpha    t_A t_A_pp
+model_name feature_name                                                                                                                                                                                                                                                              
+lgbm       baseline               0.730 0.018   0.712   0.749 0.015  [0.747 0.710 0.740 0.733 0.722]    1.000     0.500    0.000     0.500 -0.017 -2.345       0.750 0.006   0.744   0.756 0.005  [0.746 0.758 0.748 0.748 0.752]    1.000     0.500    0.000     0.500 -0.006 -0.748
+           mles_embeddings        0.740 0.004   0.736   0.744 0.003  [0.743 0.736 0.742 0.742 0.739]   20.699     0.994    1.500     0.914 -0.002 -0.329       0.759 0.011   0.748   0.770 0.009  [0.752 0.754 0.774 0.760 0.756]    0.295     0.132    1.968     0.958  0.000  0.064
+nn         mles_finetuning          nan   nan     nan     nan   nan            [nan nan nan nan nan]      nan       nan      nan       nan    nan    nan         nan   nan     nan     nan   nan            [nan nan nan nan nan]      nan       nan      nan       nan    nan    nan
+           target_scores            nan   nan     nan     nan   nan            [nan nan nan nan nan]      nan       nan      nan       nan    nan    nan         nan   nan     nan     nan   nan            [nan nan nan nan nan]      nan       nan      nan       nan    nan    nan
 
 ------------------------------------------------------------------------------------------------------------------------
 Metric: "cnt_features"
-                        scores_valid scores_test
-                                mean        mean
-model_name feature_name                         
-lgbm       baseline              362         362
-linear     baseline              362         362
-xgb        baseline              362         362
+                           scores_valid scores_test
+                                   mean        mean
+model_name feature_name                            
+lgbm       baseline                 362         362
+           mles_embeddings          512         512
+nn         mles_finetuning          512         512
+           target_scores             48          48
 
 ------------------------------------------------------------------------------------------------------------------------
 Metric: "cnt_samples"
-                        scores_valid scores_test
-                                mean        mean
-model_name feature_name                         
-lgbm       baseline              900         500
-linear     baseline              900         500
-xgb        baseline              900         500
+                           scores_valid scores_test
+                                   mean        mean
+model_name feature_name                            
+lgbm       baseline                 900         500
+           mles_embeddings          900         500
+nn         mles_finetuning          900         500
+           target_scores            900         500
 
 ------------------------------------------------------------------------------------------------------------------------
 Metric: "feature_load_time"
-                        process_info                                                
-                                mean t_pm t_int_l t_int_h std                 values
-model_name feature_name                                                             
-lgbm       baseline                0    0       0       0 0.0  [0.0 0.0 0.0 0.0 0.0]
-linear     baseline                0    0       0       0 0.0  [0.0 0.0 0.0 0.0 0.0]
-xgb        baseline                0    0       0       0 0.0  [0.0 0.0 0.0 0.0 0.0]
+                           process_info                                                
+                                   mean t_pm t_int_l t_int_h std                 values
+model_name feature_name                                                                
+lgbm       baseline                 0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]
+           mles_embeddings          0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]
+nn         mles_finetuning          nan  nan     nan     nan nan  [nan nan nan nan nan]
+           target_scores            nan  nan     nan     nan nan  [nan nan nan nan nan]
 
 ------------------------------------------------------------------------------------------------------------------------
 Metric: "train_fit_transform_time"
-                        process_info                                                
-                                mean t_pm t_int_l t_int_h std                 values
-model_name feature_name                                                             
-lgbm       baseline                0    0       0       0 0.0  [0.0 0.0 0.0 0.0 0.0]
-linear     baseline                0    0       0       0 0.0  [0.0 0.0 0.0 0.0 0.0]
-xgb        baseline                0    0       0       0 0.0  [0.0 0.0 0.0 0.0 0.0]
+                           process_info                                                
+                                   mean t_pm t_int_l t_int_h std                 values
+model_name feature_name                                                                
+lgbm       baseline                 0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]
+           mles_embeddings          0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]
+nn         mles_finetuning          nan  nan     nan     nan nan  [nan nan nan nan nan]
+           target_scores            nan  nan     nan     nan nan  [nan nan nan nan nan]
 
 ------------------------------------------------------------------------------------------------------------------------
 Metric: "feature_transform_time"
-                        scores_valid                                                 scores_test                                                
-                                mean t_pm t_int_l t_int_h std                 values        mean t_pm t_int_l t_int_h std                 values
-model_name feature_name                                                                                                                         
-lgbm       baseline                0    0       0       0 0.0  [0.0 0.0 0.0 0.0 0.0]           0    0       0       0 0.0  [0.0 0.0 0.0 0.0 0.0]
-linear     baseline                0    0       0       0 0.0  [0.0 0.0 0.0 0.0 0.0]           0    0       0       0 0.0  [0.0 0.0 0.0 0.0 0.0]
-xgb        baseline                0    0       0       0 0.0  [0.0 0.0 0.0 0.0 0.0]           0    0       0       0 0.0  [0.0 0.0 0.0 0.0 0.0]
+                           scores_valid                                                 scores_test                                                
+                                   mean t_pm t_int_l t_int_h std                 values        mean t_pm t_int_l t_int_h std                 values
+model_name feature_name                                                                                                                            
+lgbm       baseline                 0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]         0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]
+           mles_embeddings          0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]         0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]
+nn         mles_finetuning          nan  nan     nan     nan nan  [nan nan nan nan nan]         nan  nan     nan     nan nan  [nan nan nan nan nan]
+           target_scores            nan  nan     nan     nan nan  [nan nan nan nan nan]         nan  nan     nan     nan nan  [nan nan nan nan nan]
 
 ------------------------------------------------------------------------------------------------------------------------
 Metric: "train_time"
-                        process_info                                                
-                                mean t_pm t_int_l t_int_h std                 values
-model_name feature_name                                                             
-lgbm       baseline                2    0     2.0       2 0.0  [2.0 2.0 2.0 2.0 2.0]
-linear     baseline                0    0    -0.0       0 0.0  [0.0 0.0 0.0 0.0 0.0]
-xgb        baseline                4    0     4.0       4 0.0  [4.0 4.0 4.0 4.0 4.0]
+                           process_info                                                
+                                   mean t_pm t_int_l t_int_h std                 values
+model_name feature_name                                                                
+lgbm       baseline                 2.0  0.0     2.0     2.0 0.0  [2.0 2.0 2.0 2.0 2.0]
+           mles_embeddings          3.0  2.8     0.2     5.8 2.2  [7.0 2.0 2.0 2.0 2.0]
+nn         mles_finetuning          nan  nan     nan     nan nan  [nan nan nan nan nan]
+           target_scores            nan  nan     nan     nan nan  [nan nan nan nan nan]
 
 ------------------------------------------------------------------------------------------------------------------------
 Metric: "auroc_score_time"
-                        scores_valid                                                 scores_test                                                
-                                mean t_pm t_int_l t_int_h std                 values        mean t_pm t_int_l t_int_h std                 values
-model_name feature_name                                                                                                                         
-lgbm       baseline                0    0       0       0 0.0  [0.0 0.0 0.0 0.0 0.0]           0    0       0       0 0.0  [0.0 0.0 0.0 0.0 0.0]
-linear     baseline                0    0       0       0 0.0  [0.0 0.0 0.0 0.0 0.0]           0    0       0       0 0.0  [0.0 0.0 0.0 0.0 0.0]
-xgb        baseline                0    0       0       0 0.0  [0.0 0.0 0.0 0.0 0.0]           0    0       0       0 0.0  [0.0 0.0 0.0 0.0 0.0]
+                           scores_valid                                                 scores_test                                                
+                                   mean t_pm t_int_l t_int_h std                 values        mean t_pm t_int_l t_int_h std                 values
+model_name feature_name                                                                                                                            
+lgbm       baseline                 0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]         0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]
+           mles_embeddings          0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]         0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]
+nn         mles_finetuning          nan  nan     nan     nan nan  [nan nan nan nan nan]         nan  nan     nan     nan nan  [nan nan nan nan nan]
+           target_scores            nan  nan     nan     nan nan  [nan nan nan nan nan]         nan  nan     nan     nan nan  [nan nan nan nan nan]
 
 ------------------------------------------------------------------------------------------------------------------------
 Metric: "accuracy_score_time"
-                        scores_valid                                                 scores_test                                                
-                                mean t_pm t_int_l t_int_h std                 values        mean t_pm t_int_l t_int_h std                 values
-model_name feature_name                                                                                                                         
-lgbm       baseline                0    0       0       0 0.0  [0.0 0.0 0.0 0.0 0.0]           0    0       0       0 0.0  [0.0 0.0 0.0 0.0 0.0]
-linear     baseline                0    0       0       0 0.0  [0.0 0.0 0.0 0.0 0.0]           0    0       0       0 0.0  [0.0 0.0 0.0 0.0 0.0]
-xgb        baseline                0    0       0       0 0.0  [0.0 0.0 0.0 0.0 0.0]           0    0       0       0 0.0  [0.0 0.0 0.0 0.0 0.0]
+                           scores_valid                                                 scores_test                                                
+                                   mean t_pm t_int_l t_int_h std                 values        mean t_pm t_int_l t_int_h std                 values
+model_name feature_name                                                                                                                            
+lgbm       baseline                 0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]         0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]
+           mles_embeddings          0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]         0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]
+nn         mles_finetuning          nan  nan     nan     nan nan  [nan nan nan nan nan]         nan  nan     nan     nan nan  [nan nan nan nan nan]
+           target_scores            nan  nan     nan     nan nan  [nan nan nan nan nan]         nan  nan     nan     nan nan  [nan nan nan nan nan]
 
 ------------------------------------------------------------------------------------------------------------------------
 Metric: "feature_fit_info"
-                        process_info
-                               first
-model_name feature_name             
-lgbm       baseline              nan
-linear     baseline              nan
-xgb        baseline              nan
+                           process_info
+                                  first
+model_name feature_name                
+lgbm       baseline                 nan
+           mles_embeddings          nan
+nn         mles_finetuning          nan
+           target_scores            nan
 
 ------------------------------------------------------------------------------------------------------------------------
-End of report.     Current time: 2020-09-09 16:26:14
+End of report.     Current time: 2020-09-11 16:07:47
 ------------------------------------------------------------------------------------------------------------------------

@@ -3,7 +3,7 @@
 export PYTHONPATH="../../"
 spark-submit \
     --master local[16] \
-    --name "Gender Make Dataset" \
+    --name "Rosbank Make Dataset" \
     --driver-memory 200G \
     --conf spark.sql.shuffle.partitions=60 \
     --conf spark.sql.parquet.compression.codec="snappy" \

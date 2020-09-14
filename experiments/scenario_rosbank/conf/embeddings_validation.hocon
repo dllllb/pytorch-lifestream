@@ -40,18 +40,20 @@
             target_options: {}
         }
         mles_embeddings: {
-            enabled: false
+            enabled: true
             read_params: {file_name: ../data/mles_embeddings.pickle}
             target_options: {}
         }
     }
 
     external_scores: {
+        0: "../results/fit_target_results.json"
+        1: "../results/mles_finetuning_results.json"
     }
 
     models: {
         linear: {
-            enabled: true
+            enabled: false
             cls_name: sklearn.linear_model.LogisticRegression
             params: {},
             cpu_count: 1
@@ -88,7 +90,7 @@
             ]
         }
         xgb: {
-            enabled: true
+            enabled: false
             cls_name: xgboost.XGBClassifier
             params: {
                 n_jobs=4,
