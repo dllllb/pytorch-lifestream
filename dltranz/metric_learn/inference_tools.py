@@ -83,7 +83,8 @@ def infer_part_of_data(part_num, part_data, columns, model, conf, lock_obj=None)
     _, pred = score_model(model, valid_loader, conf['params'])
 
     if conf['params.device'] != 'cpu':
-        torch.cuda.empty_cache()
+        with torch.cuda.device(conf['params.device']):
+            torch.cuda.empty_cache()
         logger.info('torch.cuda.empty_cache()')
     if lock_obj:
         lock_obj.release()
@@ -132,7 +133,8 @@ def infer_iterable(part_num, iterable_dataset, columns, model, conf, lock_obj=No
     ids, pred = score_model(model, valid_loader, conf['params'])
 
     if conf['params.device'] != 'cpu':
-        torch.cuda.empty_cache()
+        with torch.cuda.device(conf['params.device']):
+            torch.cuda.empty_cache()
         logger.info('torch.cuda.empty_cache()')
     if lock_obj:
         lock_obj.release()
