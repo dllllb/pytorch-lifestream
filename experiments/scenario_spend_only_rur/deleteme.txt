@@ -1,0 +1,9 @@
+2020-09-14 15:52:45,438 INFO    expand_path            : Found 0 embedding files: [[]]
+2020-09-14 15:52:45,786 INFO    read_train_test        : Train size: 27000 clients
+2020-09-14 15:52:45,786 INFO    read_train_test        : Test size: 3000 clients
+2020-09-14 15:52:45,843 INFO    get_scores             : [scores: mles_finetuning_scores] Scoring started: {'target_scores_name': 'mles_finetuning_scores'}
+2020-09-14 15:52:46,165 INFO    main                   : Results:
+                               oof_accuracy                                                              test_accuracy                                                             
+                                       mean t_int_l t_int_h    std                                values          mean t_int_l t_int_h    std                                values
+name                                                                                                                                                                               
+scores: mles_finetuning_scores      14.3868 14.1171 14.6565 0.2172  [14.185 14.235 14.326 14.462 14.727]       14.5149 14.3599 14.6699 0.1248  [14.360 14.460 14.469 14.632 14.654]

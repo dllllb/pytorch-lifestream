@@ -1,0 +1,103 @@
+{
+  "params": {
+    "experiment": {
+      "name": "default"
+    },
+    "device": "cuda",
+    "model_type": "rnn",
+    "rnn": {
+      "type": "gru",
+      "hidden_size": 800,
+      "bidir": false,
+      "trainable_starter": "static"
+    },
+    "ml_projection_head": {
+      "output_size": 128
+    },
+    "aug_projection_head": {
+      "output_size": 2
+    },
+    "use_normalization_layer" : true,
+    "trx_encoder": {
+      "norm_embeddings": false,
+      "embeddings_noise": 0.003,
+      "embeddings": {
+        "trans_date": {"in": 800, "out": 16},
+        "small_group": {"in": 250, "out": 16}
+      },
+      "numeric_values": {
+        "amount_rur": "identity"
+      }
+    },
+    "lr_scheduler": {
+      "step_size": 30,
+      "step_gamma": 0.9025
+    },
+    "train": {
+      "num_workers": 16,
+      "batch_size": 64,
+      "split_strategies": [
+        {
+          "split_strategy": "SampleSlices",
+          "split_count": 3,
+          "cnt_min": 25,
+          "cnt_max": 150
+        },
+        {
+          "split_strategy": "SampleSlices",
+          "split_count": 2,
+          "cnt_min": 25,
+          "cnt_max": 150,
+          "reverse": true
+        }
+      ],
+      "sampling_strategy": "HardNegativePair",
+      "trx_dropout": 0.01,
+      "max_seq_len": 1200,
+      "neg_count": 5,
+      "loss": "ContrastiveLoss",
+      "margin": 0.5,
+      "ml_loss_weight": 0.5,
+      "lr": 0.002,
+      "weight_decay": 0.0,
+      "n_epoch": 100
+    },
+    "norm_scores": false,
+    "valid": {
+      "batch_size": 1024,
+      "num_workers": 16,
+      "split_strategies": [
+        {
+          "split_strategy": "SampleSlices",
+          "split_count": 3,
+          "cnt_min": 25,
+          "cnt_max": 150
+        },
+        {
+          "split_strategy": "SampleSlices",
+          "split_count": 2,
+          "cnt_min": 25,
+          "cnt_max": 150,
+          "reverse": true
+        }
+      ],
+      "max_seq_len": 1200
+    }
+  },
+
+  "stats": {
+    "path": "runs/age_pred_complex_result.json"
+  },
+
+  "save_model": true,
+  "model_path": {
+    "model": "models/complex_model.p",
+    "only_encoder": false
+  },
+
+  "output": {
+    "path": "data/complex_embeddings",
+    "format": "pickle",
+    "columns": ["client_id"]
+  }
+}
