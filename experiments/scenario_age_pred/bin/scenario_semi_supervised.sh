@@ -4,7 +4,7 @@
 python ../../metric_learning.py \
     params.device="$SC_DEVICE" \
     params.rnn.hidden_size=160 \
-	params.model_path="models/age_pred_ml_model_ss_ft.p" \
+	model_path.model="models/age_pred_ml_model_ss_ft.p" \
 	--conf "conf/dataset.hocon" "conf/mles_params.json"
 
 for SC_AMOUNT in 337 675 1350 2700 5400 10800 21600
@@ -28,7 +28,6 @@ do
     python -m scenario_age_pred fit_finetuning \
         params.device="$SC_DEVICE" \
         params.labeled_amount=$SC_AMOUNT \
-        params.rnn.hidden_size=160 \
         params.pretrained_model_path="models/cpc_model.p" \
         output.test.path="data/cpc_finetuning_scores_$SC_AMOUNT"/test \
         output.valid.path="data/cpc_finetuning_scores_$SC_AMOUNT"/valid \
