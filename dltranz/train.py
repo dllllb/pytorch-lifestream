@@ -23,11 +23,12 @@ logger = logging.getLogger(__name__)
 
 def batch_to_device(batch, device, non_blocking):
     x, y = batch
-    if not isinstance(x, dict):
+    if isinstance(x, PaddedBatch):
         new_x = {k: v.to(device=device, non_blocking=non_blocking) if isinstance(v, torch.Tensor) else v for k, v in x.payload.items()}
         new_y = y.to(device=device, non_blocking=non_blocking)
         return PaddedBatch(new_x, x.seq_lens), new_y
-    else:
+
+    elif isinstance(x, dict):
         batches = {}
         for key, sx in x.items():
             new_x = {k: v.to(device=device, non_blocking=non_blocking) if isinstance(v, torch.Tensor) else v for k, v in
@@ -35,6 +36,15 @@ def batch_to_device(batch, device, non_blocking):
             batches[key] = PaddedBatch(new_x, sx.seq_lens)
         new_y = y.to(device=device, non_blocking=non_blocking)
         return batches, new_y
+
+    elif isinstance(x, tuple):
+        batches = []
+        for sx in x:
+            new_x = {k: v.to(device=device, non_blocking=non_blocking) if isinstance(v, torch.Tensor) else v for k, v in
+                     sx.payload.items()}
+            batches.append(PaddedBatch(new_x, sx.seq_lens))
+        new_y = y.to(device=device, non_blocking=non_blocking)
+        return tuple(batches), new_y
 
 
 def get_optimizer(model, params):
@@ -228,7 +238,8 @@ def fit_model(model, train_loader, valid_loader, loss, optimizer, scheduler, par
         device=device,
         prepare_batch=batch_to_device,
         output_transform=lambda x, y, y_pred, loss: \
-                (loss.item(), x[next(iter(x.keys()))].seq_lens if isinstance(x, dict) else x.seq_lens),
+                (loss.item(), x.seq_lens if isinstance(x, PaddedBatch) else \
+                    x[next(iter(x.keys()))].seq_lens if isinstance(x, dict) else x[0].seq_lens),
     )
 
     RunningAverage(output_transform=lambda x: x[0]).attach(trainer, 'loss')

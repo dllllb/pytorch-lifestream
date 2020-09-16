@@ -39,13 +39,20 @@ python ../../ml_inference.py params.device="$SC_DEVICE" --conf conf/dataset.hoco
 # Fine tune the CPC model in supervised mode and save scores to the file
 python -m scenario_gender fit_finetuning params.device="$SC_DEVICE" --conf conf/dataset.hocon conf/fit_finetuning_on_cpc_params.json
 
+# Train the Sequence Order Prediction (SOP) model; inference
+python ../../train_sop.py params.device="$SC_DEVICE" --conf conf/dataset.hocon conf/sop_params.json
+python ../../ml_inference.py params.device="$SC_DEVICE" --conf conf/dataset.hocon conf/sop_params.json
+
+# Train the Next Sequence Prediction (NSP) model; inference
+python ../../train_sop.py params.device="$SC_DEVICE" --conf conf/dataset.hocon conf/nsp_params.json
+python ../../ml_inference.py params.device="$SC_DEVICE" --conf conf/dataset.hocon conf/nsp_params.json
 
 # Run estimation for different approaches
 # Check some options with `--help` argument
 python -m scenario_gender compare_approaches --n_workers 1 --models lgb \
     --output_file results/scenario_gender.csv \
     --baseline_name "agg_feat_embed.pickle" \
-    --embedding_file_names "mles_embeddings.pickle" "cpc_embeddings.pickle" \
+    --embedding_file_names "mles_embeddings.pickle" "cpc_embeddings.pickle" "sop_embeddings.pickle" "sop_embeddings.pickle" \
     --score_file_names "target_scores" "mles_finetuning_scores" "cpc_finetuning_scores"
 
 
