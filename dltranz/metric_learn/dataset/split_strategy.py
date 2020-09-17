@@ -51,36 +51,40 @@ class SplitRandom(AbsSplit):
 
 
 class SplitByWeeks(AbsSplit):
-    def __init__(self, split_count, seed = 29, **kwargs):
+    def __init__(self, split_count, cnt_max, seed=29, week_length=7, **kwargs):
         self.rs = np.random.RandomState(seed)
         self.split_count = split_count
+        self.cnt_max = cnt_max
+        self.week_length = week_length
 
     def split(self, dates):
         seq_len = len(dates)
-        n_weeks = ((dates - dates[0]) // 7).astype(np.int16)
+        n_weeks = ((dates - dates[0]).astype('timedelta64[D]') // self.week_length).astype(np.int16)
         n_weeks_unique = np.unique(n_weeks)
         n_weeks_nunique = len(n_weeks_unique)
 
-        if n_weeks_nunique < self.split_count: # split by days
+        if n_weeks_nunique < self.split_count:  # split by days
             n_weeks = (dates - dates[0]).astype(np.int16)
             n_weeks_unique = np.unique(n_weeks)
             n_weeks_nunique = len(n_weeks_unique)
 
-        if n_weeks_nunique < self.split_count: # split random
+        if n_weeks_nunique < self.split_count:  # split random
             n_weeks = np.arange(seq_len)
             n_weeks_unique = n_weeks
             n_weeks_nunique = len(n_weeks_unique)
 
         # divide n_weeks_unique for split_count parts
-        split_indexes = np.random.randint(0, self.split_count, n_weeks_nunique)
-        week_range = np.arange(n_weeks_nunique)
+        split_indexes = np.random.randint(0, self.split_count, n_weeks_nunique - self.split_count)
+        week_range = np.arange(self.split_count, n_weeks_nunique)
         n_weeks_idxes = [week_range[split_indexes == i] for i in range(self.split_count)]
+        n_weeks_idxes = [np.append(x, i) for i, x in enumerate(n_weeks_idxes)]
 
         # select indexes correspond to each part of weeks
         # x_ij == 1 <=>  j-th elenemt of sequence correspond to n_weeks_unique[i]
-        x = n_weeks.reshape(1, -1).repeat(n_weeks_nunique, axis = 0) == n_weeks_unique.reshape(-1,1).repeat(seq_len, axis=1)
+        x = n_weeks.reshape(1, -1).repeat(n_weeks_nunique, axis=0) == n_weeks_unique.reshape(-1, 1).repeat(seq_len,
+                                                                                                           axis=1)
         n_byweeks_idxes = [x[one_week_idxes].sum(axis=0).nonzero(as_tuple=False)[0] for one_week_idxes in n_weeks_idxes]
-
+        n_byweeks_idxes = [x[-self.cnt_max:] if len(x) > self.cnt_max else x for x in n_byweeks_idxes]
         return n_byweeks_idxes
 
 
