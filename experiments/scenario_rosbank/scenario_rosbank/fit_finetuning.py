@@ -5,7 +5,7 @@ import sys
 import torch
 from sklearn.model_selection import StratifiedKFold
 
-from dltranz.experiment import update_model_stats
+import numpy as np
 from dltranz.metric_learn.inference_tools import infer_part_of_data, save_scores
 from dltranz.seq_encoder import Squeeze, LastStepEncoder
 from dltranz.trx_encoder import TrxEncoder
@@ -117,3 +117,6 @@ def main(_):
     if stats_file is not None:
         with open(stats_file, 'w') as f:
             json.dump(results, f)
+
+    valid_scores = np.array([x['scores_valid']['auroc'] for x in results])
+    print(f'Valid scores: {valid_scores.mean():.3f} [{valid_scores}]')

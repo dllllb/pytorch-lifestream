@@ -182,3 +182,6 @@ def main(_):
     if stats_file is not None:
         with open(stats_file, 'w') as f:
             json.dump(results, f)
+
+    valid_scores = np.array([x['scores_valid']['auroc'] for x in results])
+    print(f'Valid scores: {valid_scores.mean():.3f} [{valid_scores}]')

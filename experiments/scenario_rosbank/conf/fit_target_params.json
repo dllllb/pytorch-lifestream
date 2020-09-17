@@ -5,13 +5,14 @@
     "model_type": "rnn",
     "ensemble_size": 1,
     "trx_encoder": {
-      "norm_embeddings": true,
-      "embeddings_noise": 0.003,
+      "use_batch_norm_with_lens": true,
+      "norm_embeddings": false,
+      "embeddings_noise": 0.0003,
       "embeddings": {
-        "mcc": {"in": 100, "out": 16},
-        "channel_type": {"in": 4, "out": 2},
-        "currency": {"in": 4, "out": 2},
-        "trx_category": {"in": 10, "out": 2}
+        "mcc": {"in": 100, "out": 24},
+        "channel_type": {"in": 4, "out": 4},
+        "currency": {"in": 4, "out": 4},
+        "trx_category": {"in": 10, "out": 4}
       },
       "numeric_values": {
         "amount": "identity"
@@ -41,13 +42,13 @@
       "batch_size": 32,
       "num_workers": 16,
       "loss": "bce",
-      "lr": 0.004,
+      "lr": 0.006,
       "weight_decay": 0.0,
       "n_epoch": 10
     },
     "lr_scheduler": {
-      "step_size": 1,
-      "step_gamma": 0.90
+      "step_size": 3,
+      "step_gamma": 0.25
     },
     "valid": {
       "max_seq_len": 1200,

@@ -9,6 +9,8 @@ if __name__ == '__main__':
     sys.path.append('../../')
 
     # reproducibility
+    import random
+    random.seed(42)
     np.random.seed(42)
     torch.backends.cudnn.benchmark = False
     torch.backends.cudnn.deterministic = True
