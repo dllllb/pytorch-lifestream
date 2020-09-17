@@ -250,7 +250,7 @@ def score_data(conf, y_true, y_predict):
     if model_type == 'rnn':
         cnt_features = conf['params.rnn.hidden_size']
     else:
-        raise AttributeError(f'Unknown model_type: "{metric_name}"')
+        raise AttributeError(f'Unknown model_type: "{model_type}"')
 
     y_predict = y_predict.set_index(col_id)
     y_true = pd.DataFrame([{col_id: rec[col_id], 'target': rec['target']} for rec in y_true])

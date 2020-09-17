@@ -43,7 +43,8 @@ def main(args=None):
     data = target_rm(data)
     data = prepare_embeddings(data, conf, is_train=True)
     if conf['dataset.client_list_shuffle_seed'] != 0:
-        data = sorted(data, key=lambda x: x.get('client_id', x.get('customer_id', x.get('installation_id'))))
+        dataset_col_id = conf['dataset'].get('col_id', 'client_id')
+        data = sorted(data, key=lambda x: x.get(dataset_col_id, x.get('customer_id', x.get('installation_id'))))
         random.Random(conf['dataset.client_list_shuffle_seed']).shuffle(data)
     data = list(data)
 
