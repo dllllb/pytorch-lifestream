@@ -70,7 +70,7 @@ python ../../ml_inference.py \
 
 # Compare
 python -m scenario_x5 compare_approaches --output_file "results/scenario_x5__smpl_strategy.csv" \
-    --embedding_file_names \
+    --embedding_file_names --models lgb \
     "mles_embeddings.pickle"                    \
     "emb__smpl_strategy_HardNegativePair_neg_count_5.pickle" \
     "emb__smpl_strategy_HardNegativePair_neg_count_9.pickle" \

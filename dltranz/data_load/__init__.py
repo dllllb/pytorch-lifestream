@@ -214,6 +214,7 @@ class AllTimeShuffleDataset(Dataset):
     def __init__(self, dataset, event_time_name='event_time'):
         self.dataset = dataset
         self.event_time_name = event_time_name
+        self.style = dataset.style
 
     def __len__(self):
         return len(self.dataset)
@@ -236,6 +237,7 @@ class AllTimeShuffleMLDataset(Dataset):
     def __init__(self, dataset, event_time_name='event_time'):
         self.core_dataset = dataset
         self.event_time_name = event_time_name
+        self.style = dataset.style
 
     def __len__(self):
         return len(self.core_dataset)

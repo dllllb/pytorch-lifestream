@@ -1,9 +1,9 @@
-
-of_accuracy                                                         test_accuracy                                                        
-                                                                           mean t_int_l t_int_h    std                           values          mean t_int_l t_int_h    std                           values
-name                                                                                                                                                                                                         
-lgb_embeds: emb__smpl_strategy_AllPositivePair.pickle                    0.5118  0.5092  0.5144 0.0019  [0.509 0.511 0.513 0.513 0.513]        0.5108  0.5105  0.5112 0.0003  [0.511 0.511 0.511 0.511 0.511]
-lgb_embeds: emb__smpl_strategy_DistanceWeightedPair.pickle               0.5145  0.5111  0.5178 0.0024  [0.512 0.512 0.513 0.517 0.517]        0.5137  0.5126  0.5149 0.0008  [0.513 0.513 0.513 0.514 0.515]
-lgb_embeds: emb__smpl_strategy_HardNegativePair_neg_count_2.pickle       0.5329  0.5308  0.5349 0.0015  [0.531 0.533 0.533 0.534 0.534]        0.5324  0.5303  0.5345 0.0015  [0.531 0.532 0.532 0.533 0.535]
-lgb_embeds: emb__smpl_strategy_HardNegativePair_neg_count_5.pickle       0.5365  0.5347  0.5382 0.0013  [0.534 0.537 0.537 0.537 0.537]        0.5353  0.5335  0.5371 0.0013  [0.534 0.535 0.535 0.536 0.537]
-lgb_embeds: emb__smpl_strategy_HardNegativePair_neg_count_9.pickle       0.5393  0.5374  0.5411 0.0013  [0.537 0.539 0.539 0.540 0.541]        0.5392  0.5375  0.5410 0.0013  [0.537 0.539 0.539 0.540 0.541]
+                                                                      oof_accuracy                                                         test_accuracy                                                        
+                                                                              mean t_int_l t_int_h    std                           values          mean t_int_l t_int_h    std                           values
+name                                                                                                                                                                                                            
+lgb_embeds: emb__smpl_strategy_AllPositivePair.pickle                       0.5301  0.5286  0.5316 0.0012  [0.528 0.529 0.530 0.531 0.531]        0.5295  0.5285  0.5305 0.0008  [0.528 0.529 0.529 0.530 0.530]
+lgb_embeds: emb__smpl_strategy_DistanceWeightedPair.pickle                  0.5355  0.5332  0.5377 0.0018  [0.533 0.535 0.536 0.536 0.538]        0.5345  0.5323  0.5368 0.0018  [0.533 0.533 0.534 0.535 0.537]
+lgb_embeds: emb__smpl_strategy_HardNegativePair_neg_count_2.pickle          0.5418  0.5399  0.5437 0.0015  [0.539 0.542 0.542 0.543 0.543]        0.5388  0.5380  0.5397 0.0007  [0.538 0.539 0.539 0.539 0.540]
+lgb_embeds: emb__smpl_strategy_HardNegativePair_neg_count_5.pickle          0.5366  0.5355  0.5377 0.0009  [0.535 0.536 0.537 0.537 0.538]        0.5363  0.5349  0.5377 0.0011  [0.535 0.535 0.537 0.537 0.537]
+lgb_embeds: emb__smpl_strategy_HardNegativePair_neg_count_9.pickle          0.5420  0.5396  0.5445 0.0020  [0.540 0.540 0.543 0.544 0.544]        0.5403  0.5394  0.5411 0.0007  [0.539 0.540 0.541 0.541 0.541]
+lgb_embeds: mles_embeddings.pickle                                          0.5366  0.5355  0.5377 0.0009  [0.535 0.536 0.537 0.537 0.538]        0.5363  0.5349  0.5377 0.0011  [0.535 0.535 0.537 0.537 0.537]

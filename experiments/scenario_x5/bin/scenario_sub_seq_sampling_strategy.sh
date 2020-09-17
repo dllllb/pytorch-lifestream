@@ -34,7 +34,7 @@ python ../../ml_inference.py \
 
 # Compare
 python -m scenario_x5 compare_approaches --output_file "results/scenario_x5__subseq_smpl_strategy.csv" \
-    --moedls "lgb" \
+    --models lgb \
     --embedding_file_names \
     "mles_embeddings.pickle"                    \
     "emb__SplitRandom.pickle" \

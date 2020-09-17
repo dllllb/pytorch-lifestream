@@ -1,4 +1,4 @@
-for SC_HIDDEN_SIZE in 0064 0160 0480 0800 1600
+for SC_HIDDEN_SIZE in 0064 0160 0480 0800
 do
   export SC_SUFFIX="hidden_size__hs_${SC_HIDDEN_SIZE}"
   python ../../metric_learning.py \
