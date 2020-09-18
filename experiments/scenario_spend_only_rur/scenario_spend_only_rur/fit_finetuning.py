@@ -59,13 +59,11 @@ def load_model(conf):
     if conf['use_batch_norm']:
         layers.append(torch.nn.BatchNorm1d(input_size))
 
-    big_extension = [torch.nn.Linear(input_size, int(0.5*input_size)),
-            torch.nn.BatchNorm1d(int(0.5*input_size)),
-            torch.nn.Linear(int(0.5*input_size), 2*head_output_size)),
-            torch.nn.ReLU(),
-            torch.nn.BatchNorm1d(2*head_output_size),
-            torch.nn.Linear(2*head_otput_size, head_output_size),
-            ]
+    big_extension = [torch.nn.Linear(input_size, int(0.5*input_size))]+\
+                    [torch.nn.ReLU(), torch.nn.BatchNorm1d(int(0.5*input_size)) ]+\
+                    [torch.nn.Linear(int(0.5*input_size), 2*head_output_size) ]+\
+                    [torch.nn.ReLU(), torch.nn.BatchNorm1d(2*head_output_size)]+\
+                    [torch.nn.Linear(2*head_output_size, head_output_size) ]
 
     if conf.get('big_extension', False):
         layers.extend(big_extension)
