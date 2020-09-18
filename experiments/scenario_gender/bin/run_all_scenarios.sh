@@ -18,7 +18,15 @@ python -m scenario_gender fit_target params.device="$SC_DEVICE" --conf conf/data
 python ../../metric_learning.py params.device="$SC_DEVICE" --conf conf/dataset.hocon conf/mles_params.json
 python ../../ml_inference.py    params.device="$SC_DEVICE" --conf conf/dataset.hocon conf/mles_params.json
 # Fine tune the MeLES model in supervised mode and save scores to the file
-python -m scenario_gender fit_finetuning params.device="$SC_DEVICE" --conf conf/dataset.hocon conf/fit_finetuning_on_mles_params.json
+
+python ../../metric_learning.py \
+  params.device="$SC_DEVICE" \
+  params.rnn.hidden_size=256 \
+  model_path.model="models/mles_model_for_finetuning.p" \
+  --conf conf/dataset.hocon conf/mles_params.json
+python -m scenario_gender fit_finetuning \
+  params.device="$SC_DEVICE" \
+  --conf conf/dataset.hocon conf/fit_finetuning_on_mles_params.json
 
 
 # Train the Contrastive Predictive Coding (CPC) model; inference

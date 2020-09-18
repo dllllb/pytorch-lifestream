@@ -1,4 +1,16 @@
 
+# LSTM encoder
+export SC_SUFFIX="encoder_lstm"
+python ../../metric_learning.py \
+    params.device="$SC_DEVICE" \
+    params.rnn.type="lstm" \
+    model_path.model="models/bowl2019_mlm__$SC_SUFFIX.p" \
+    --conf "conf/dataset.hocon" "conf/mles_params.json"
+python ../../ml_inference.py \
+    params.device="$SC_DEVICE" \
+    model_path.model="models/bowl2019_mlm__$SC_SUFFIX.p" \
+    output.path="data/emb__$SC_SUFFIX" \
+    --conf "conf/dataset.hocon" "conf/mles_params.json"
 
 
 # Transformer encoder
@@ -72,7 +84,6 @@ python -m scenario_bowl2019 compare_approaches --models 'lgb' --output_file "res
     --embedding_file_names \
     "mles_embeddings.pickle"              \
     "emb__encoder_lstm.pickle"                               \
-    "emb__encoder_gru.pickle"                                \
     "emb__encoder_transf_bs064_4head_64hs_4layers.pickle"         \
     "emb__encoder_transf_bs064_8head_64hs_4layers.pickle"         \
     "emb__encoder_transf_bs064_4head_64hs_8layers.pickle"
