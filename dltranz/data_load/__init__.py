@@ -127,7 +127,7 @@ def read_pyarrow_file(path, use_threads=True):
 
 def read_data_gen(path):
     ext = os.path.splitext(path)[1]
-    if ext == '.p':
+    if ext == '.p' or ext == '.pickle':
         with open(path, 'rb') as f:
             data = pickle.load(f)
             return iter(data)
@@ -391,6 +391,12 @@ class ConvertingTrxDataset(Dataset):
 
     def _one_item(self, item):
         x, y = item
+        #print(type(x['embedding']) )
+        #y = x['embedding']#.astype(np.float32)
+        #print(y.dtype)
+        #print(type(x['embedding'][0]))        
+        #print(torch.from_numpy(x['embedding']))
+        #quit()
         x = {k: torch.from_numpy(self.to_torch_compatible(v)) for k, v in x.items()}
         return x, y
 
@@ -398,6 +404,8 @@ class ConvertingTrxDataset(Dataset):
     def to_torch_compatible(a):
         if a.dtype == np.int8:
             return a.astype(np.int16)
+        if a.dtype == object:
+            return a.astype(np.float32)
         return a
 
 

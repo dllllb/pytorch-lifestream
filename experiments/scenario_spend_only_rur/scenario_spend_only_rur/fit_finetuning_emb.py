@@ -13,28 +13,17 @@ from scenario_spend_only_rur.fit_target import create_ds, run_experiment, read_c
 
 logger = logging.getLogger(__name__)
 
-class EmbTranslation(torch.nn.Module):
-    def __init__(self):
-        super(EmbTranslation, self).__init__()
-    def forward(self, x):
-        #print('fit_finetuning')
-        #print(x.payload['embedding'].shape)
-        #tensor_list = [x[0]['embedding'] for i in range(x.shape[0])]
-        #print(tensor_list)
-        #quit()
-        return x.payload['embedding']
 
 def load_model(conf):
-    if False:
-      pretraineid_model_path = conf['pretrained_model_path']
-    
-      pre_model = torch.load(pretrained_model_path)
-      if not isinstance(pre_model[0], TrxEncoder):
+    pretrained_model_path = conf['pretrained_model_path']
+
+    pre_model = torch.load(pretrained_model_path)
+    if not isinstance(pre_model[0], TrxEncoder):
         pre_model = pre_model[0]
-      trx_encoder = pre_model[0]
-      rnn_encoder = pre_model[1]
-      step_select_encoder = pre_model[2]
- 
+    trx_encoder = pre_model[0]
+    rnn_encoder = pre_model[1]
+    step_select_encoder = pre_model[2]
+
     model_type = conf['model_type']
     if model_type == 'rnn':
         input_size = conf['rnn.hidden_size']
@@ -46,9 +35,9 @@ def load_model(conf):
     head_output_size = 53
 
     layers = [
-        EmbTranslation()
-        #rnn_encoder,
-        #step_select_encoder,
+        trx_encoder,
+        rnn_encoder,
+        step_select_encoder,
     ]
 
     if conf.get('freeze_layers', False):
@@ -59,12 +48,22 @@ def load_model(conf):
     if conf['use_batch_norm']:
         layers.append(torch.nn.BatchNorm1d(input_size))
 
-    big_extension = [torch.nn.Linear(input_size, int(0.5*input_size)),
-            torch.nn.BatchNorm1d(int(0.5*input_size)),
-            torch.nn.Linear(int(0.5*input_size), 2*head_output_size)),
+    big_extension = [torch.nn.Linear(input_size, int(1.5*input_size)),
+            torch.nn.ReLU(),
+            torch.nn.BatchNorm1d(int(1.5*input_size)),
+            torch.nn.Linear(int(1.5*input_size), 2*input_size),
+            torch.nn.ReLU(),
+            torch.nn.BatchNorm1d(2*input_size),
+            torch.nn.Linear(2*input_size, 2*input_size),
+            torch.nn.ReLU(),
+            torch.nn.BatchNorm1d(2*input_size),
+            torch.nn.Linear(2*input_size, input_size),
+            torch.nn.ReLU(),
+            torch.nn.BatchNorm1d(input_size),
+            torch.nn.Linear(input_size, 2*head_output_size),
             torch.nn.ReLU(),
             torch.nn.BatchNorm1d(2*head_output_size),
-            torch.nn.Linear(2*head_otput_size, head_output_size),
+            torch.nn.Linear(2*head_output_size, head_output_size)
             ]
 
     if conf.get('big_extension', False):
@@ -93,12 +92,12 @@ def main(_):
     conf = get_conf(sys.argv[2:])
 
     model_f = load_model
-    train_data = read_embedding_data("data/mles_embeddings.pickle",conf['dataset.train_path'] , conf)
-    #train_data = read_consumer_data(conf['dataset.train_path'], conf)
+    #train_data = read_embedding_data("data/mles_embeddings.pickle",conf['dataset.train_path'] , conf)
+    train_data = read_consumer_data(conf['dataset.train_path'], conf)
     test_data = read_consumer_data(conf['dataset.test_path'], conf)
     
     # train
-    resu:ts = []
+    results = []
 
     skf = StratifiedKFold(conf['cv_n_split'])
     nrows = conf['params'].get('labeled_amount',-1) # semi-supervised setup. default = supervised
@@ -112,9 +111,6 @@ def main(_):
         if nrows > 0: i_train_data = i_train_data[:nrows]
 
         train_ds, valid_ds = create_ds(i_train_data, i_valid_data, conf)
-        #model = model_f(conf['params'])
-        #print(train_ds[0][0]['embedding'].shape)
-        #quit()
         model, result = run_experiment(train_ds, valid_ds, conf['params'], model_f)
 
         # inference

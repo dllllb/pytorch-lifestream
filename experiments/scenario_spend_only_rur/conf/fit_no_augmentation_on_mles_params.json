@@ -4,8 +4,8 @@
 
     "model_type": "rnn",
     "ensemble_size": 1,
-    "big_extension": true,
-    "freeze_layers": false,
+    "big_extension": false,
+    "freeze_layers": true,
     "trx_encoder": {
       "embeddings": {
         "trans_date": {"in": 800},
@@ -22,6 +22,7 @@
       "random_neg": false,
       "trx_dropout": 0.00,
       "max_seq_len": 1200,
+      "augmentation":false,
       "SubsamplingDataset": {
         "min_seq_len_s": 30,
         "min_seq_len_e": 300,
@@ -52,7 +53,7 @@
     "score_metric": "accuracy",
 
     "pretrained_model_path": "models/mles_model.p",
-    "use_batch_norm": false
+    "use_batch_norm": true
   },
 
   "save_model": false,

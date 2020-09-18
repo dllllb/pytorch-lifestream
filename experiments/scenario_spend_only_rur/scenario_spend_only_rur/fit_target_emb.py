@@ -73,7 +73,7 @@ class SubsamplingDataset(Dataset):
 
 
         rec = deepcopy(rec)
-        #r_pos = random.randint(0, r_pos)
+        r_pos = random.randint(0, r_pos)
 
         #rec['feature_arrays'] = {k: v[r_pos: r_pos + r_len] for k, v in rec['feature_arrays'].items()}
         #rec['event_time'] = rec['event_time'][r_pos: r_pos + r_len]
@@ -94,8 +94,8 @@ def read_embedding_data(emb_path, target_path, conf):
     for rec in target:
         if rec['target'] is not None:
             #if embeddings.iloc[i,:]['client_id'] == rec['client_id']:
-                emb = embeddings.iloc[i,:].iloc[1:].to_numpy() 
-                data.append({'feature_arrays':{'embedding':emb}, 'target':rec['target']} )
+                emb = embeddings.iloc[i,:].iloc[2:] 
+                data.append({'embedding':emb, 'target':rec['target']} )
                 i = i + 1
     return data
 
