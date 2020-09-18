@@ -7,18 +7,19 @@
     "model_type": "rnn",
     "rnn": {
       "type": "gru",
-      "hidden_size": 512,
+      "hidden_size": 1024,
       "bidir": false,
       "trainable_starter": "static"
     },
     "trx_encoder": {
+      "use_batch_norm_with_lens": true,
       "norm_embeddings": false,
-      "embeddings_noise": 0.003,
+      "embeddings_noise": 0.0003,
       "embeddings": {
-        "mcc": {"in": 100, "out": 16},
-        "channel_type": {"in": 4, "out": 2},
-        "currency": {"in": 4, "out": 2},
-        "trx_category": {"in": 10, "out": 2}
+        "mcc": {"in": 100, "out": 24},
+        "channel_type": {"in": 4, "out": 4},
+        "currency": {"in": 4, "out": 4},
+        "trx_category": {"in": 10, "out": 4}
       },
       "numeric_values": {
         "amount": "identity"
@@ -46,7 +47,7 @@
       "margin": 0.5,
       "lr": 0.004,
       "weight_decay": 0.0,
-      "n_epoch": 150,
+      "n_epoch": 50,
       "_checkpoints": {
         "save_interval": 10,
         "n_saved": 1000,

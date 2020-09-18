@@ -35,7 +35,7 @@
             target_options: {}
         }
         cpc_embeddings: {
-            enabled: false
+            enabled: true
             read_params: {file_name: ../data/cpc_embeddings.pickle}
             target_options: {}
         }
@@ -49,6 +49,7 @@
     external_scores: {
         0: "../results/fit_target_results.json"
         1: "../results/mles_finetuning_results.json"
+        2: "../results/cpc_finetuning_results.json"
     }
 
     models: {

@@ -6,10 +6,10 @@
     "ensemble_size": 1,
     "trx_encoder": {
       "embeddings": {
-        "mcc": {"in": 100, "out": 24},
-        "channel_type": {"in": 4, "out": 4},
-        "currency": {"in": 4, "out": 4},
-        "trx_category": {"in": 10, "out": 4}
+        "mcc": {"in": 100, "out": 16},
+        "channel_type": {"in": 4, "out": 2},
+        "currency": {"in": 4, "out": 2},
+        "trx_category": {"in": 10, "out": 2}
       },
       "numeric_values": {
         "amount": "identity"
@@ -29,17 +29,17 @@
       "batch_size": 32,
       "num_workers": 16,
       "loss": "bce",
-      "lr": 0.003,
+      "lr": 0.0015,
       "optimiser_params": {
         "0.": {"lr": 0.0001},
         "1.": {"lr": 0.0001}
       },
       "weight_decay": 0.0,
-      "n_epoch": 8
+      "n_epoch": 4
     },
     "lr_scheduler": {
       "step_size": 1,
-      "step_gamma": 0.40
+      "step_gamma": 0.60
     },
     "valid": {
       "max_seq_len": 1200,
@@ -49,19 +49,19 @@
     "norm_scores": false,
     "score_metric": "auroc",
 
-    "pretrained_model_path": "models/mles_model.p",
-    "use_batch_norm": true
+    "pretrained_model_path": "models/cpc_model.p",
+    "use_batch_norm": false
   },
 
   "save_model": false,
 
   "output": {
     "valid": {
-      "path": "data/mles_finetuning_scores/valid",
+      "path": "data/cpc_finetuning_scores/valid",
       "format": "pickle"
     },
     "test": {
-      "path": "data/mles_finetuning_scores/test",
+      "path": "data/cpc_finetuning_scores/test",
       "format": "pickle"
     },
     "columns": ["cl_id"]
@@ -69,7 +69,7 @@
 
   "stats": {
     "model_name": "nn",
-    "feature_name": "mles_finetuning",
-    "path": "results/mles_finetuning_results.json"
+    "feature_name": "cpc_finetuning",
+    "path": "results/cpc_finetuning_results.json"
   }
 }

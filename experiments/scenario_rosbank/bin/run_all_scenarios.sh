@@ -3,38 +3,48 @@
 echo "==== Device ${SC_DEVICE} will be used"
 
 
-#echo ""
-#echo "==== Main track"
-## Prepare agg feature encoder and take embedidngs; inference
-#python ../../metric_learning.py params.device="$SC_DEVICE" --conf conf/dataset.hocon conf/agg_features_params.json
-#python ../../ml_inference.py    params.device="$SC_DEVICE" --conf conf/dataset.hocon conf/agg_features_params.json
-#
-#
-## Train a supervised model and save scores to the file
-#python -m scenario_gender fit_target params.device="$SC_DEVICE" --conf conf/dataset.hocon conf/fit_target_params.json
-#
-#
-## Train the MeLES encoder and take embedidngs; inference
-#python ../../metric_learning.py params.device="$SC_DEVICE" --conf conf/dataset.hocon conf/mles_params.json
-#python ../../ml_inference.py    params.device="$SC_DEVICE" --conf conf/dataset.hocon conf/mles_params.json
-## Fine tune the MeLES model in supervised mode and save scores to the file
-#python -m scenario_gender fit_finetuning params.device="$SC_DEVICE" --conf conf/dataset.hocon conf/fit_finetuning_on_mles_params.json
-#
-#
+echo ""
+echo "==== Main track"
+# Prepare agg feature encoder and take embedidngs; inference
+python ../../metric_learning.py params.device="$SC_DEVICE" --conf conf/dataset.hocon conf/agg_features_params.json
+python ../../ml_inference.py    params.device="$SC_DEVICE" --conf conf/dataset.hocon conf/agg_features_params.json
+
+
+# Train a supervised model and save scores to the file
+python -m scenario_rosbank fit_target params.device="$SC_DEVICE" --conf conf/dataset.hocon conf/fit_target_params.json
+
+
+# Train the MeLES encoder and take embedidngs; inference
+python ../../metric_learning.py params.device="$SC_DEVICE" --conf conf/dataset.hocon conf/mles_params.json
+python ../../ml_inference.py    params.device="$SC_DEVICE" --conf conf/dataset.hocon conf/mles_params.json
+
+# Fine tune the MeLES model in supervised mode and save scores to the file
+python ../../metric_learning.py \
+    params.device="$SC_DEVICE" \
+    params.rnn.hidden_size=512 \
+    model_path.model="models/mles_model_for_finetuning.p" \
+    --conf conf/dataset.hocon conf/mles_params.json
+python -m scenario_rosbank fit_finetuning \
+    params.device="$SC_DEVICE" \
+    params.rnn.hidden_size=512 \
+    params.pretrained_model_path="models/mles_model_for_finetuning.p" \
+    --conf conf/dataset.hocon conf/fit_finetuning_on_mles_params.json
+
+
 ## Train the Contrastive Predictive Coding (CPC) model; inference
-#python ../../train_cpc.py    params.device="$SC_DEVICE" --conf conf/dataset.hocon conf/cpc_params.json
-#python ../../ml_inference.py params.device="$SC_DEVICE" --conf conf/dataset.hocon conf/cpc_params.json
+python ../../train_cpc.py    params.device="$SC_DEVICE" --conf conf/dataset.hocon conf/cpc_params.json
+python ../../ml_inference.py params.device="$SC_DEVICE" --conf conf/dataset.hocon conf/cpc_params.json
 ## Fine tune the CPC model in supervised mode and save scores to the file
-#python -m scenario_gender fit_finetuning params.device="$SC_DEVICE" --conf conf/dataset.hocon conf/fit_finetuning_on_cpc_params.json
-#
-#
-## Run estimation for different approaches
-## Check some options with `--help` argument
-#python -m scenario_gender compare_approaches --n_workers 5 --models lgb \
-#    --output_file results/scenario_gender.csv \
-#    --baseline_name "agg_feat_embed.pickle" \
-#    --embedding_file_names "mles_embeddings.pickle" "cpc_embeddings.pickle" \
-#    --score_file_names "target_scores" "mles_finetuning_scores" "cpc_finetuning_scores"
+python -m scenario_rosbank fit_finetuning params.device="$SC_DEVICE" --conf conf/dataset.hocon conf/fit_finetuning_on_cpc_params.json
+
+
+# Run estimation for different approaches
+# Check some options with `--help` argument
+# Compare
+rm results/scenario_rosbank.txt
+# rm -r conf/embeddings_validation.work/
+LUIGI_CONFIG_PATH=conf/luigi.cfg python -m embeddings_validation \
+    --conf conf/embeddings_validation.hocon --workers 10 --total_cpu_count 20
 
 
 echo ""
