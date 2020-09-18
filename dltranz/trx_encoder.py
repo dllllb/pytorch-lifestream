@@ -35,6 +35,10 @@ class NoisyEmbedding(nn.Embedding):
     def __init__(self, num_embeddings, embedding_dim, padding_idx=None, max_norm=None,
                  norm_type=2.0, scale_grad_by_freq=False, sparse=False, _weight=None,
                  noise_scale=0, dropout=0):
+        if max_norm is not None:
+            raise AttributeError("Please don't use embedding normalisation. "
+                                 "https://github.com/pytorch/pytorch/issues/44792")
+
         super().__init__(num_embeddings, embedding_dim, padding_idx, max_norm,
                          norm_type, scale_grad_by_freq, sparse, _weight)
         self.noise = torch.distributions.Normal(0, noise_scale)
