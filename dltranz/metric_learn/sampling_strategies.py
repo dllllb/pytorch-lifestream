@@ -36,8 +36,8 @@ class AllPositivePairSelector(PairSelector):
         n = labels.size(0)
         x = labels.expand(n,n) - labels.expand(n,n).t()        
             
-        positive_pairs = torch.triu((x == 0).int(), diagonal = 1).nonzero()
-        negative_pairs = torch.triu((x != 0).int(), diagonal = 1).nonzero()
+        positive_pairs = torch.triu((x == 0).int(), diagonal = 1).nonzero(as_tuple=False)
+        negative_pairs = torch.triu((x != 0).int(), diagonal = 1).nonzero(as_tuple=False)
         
         if self.balance:
             negative_pairs = negative_pairs[torch.randperm(len(negative_pairs))[:len(positive_pairs)]]
@@ -61,7 +61,7 @@ class HardNegativePairSelector(PairSelector):
         x = labels.expand(n,n) - labels.expand(n,n).t()        
             
         # positive pairs
-        positive_pairs = torch.triu((x == 0).int(), diagonal = 1).nonzero()
+        positive_pairs = torch.triu((x == 0).int(), diagonal = 1).nonzero(as_tuple=False)
         
         # hard negative minning
         mat_distances = outer_pairwise_distance(embeddings.detach()) # pairwise_distance
@@ -224,7 +224,7 @@ class RandomNegativeTripletSelector(TripletSelector):
         # construct matrix x, such as x_ij == 1 <==> labels[i] == labels[j]
         x = labels.expand(n,n) - labels.expand(n,n).t()
 
-        positive_pairs = torch.triu((x == 0).int(), diagonal = 1).nonzero()
+        positive_pairs = torch.triu((x == 0).int(), diagonal = 1).nonzero(as_tuple=False)
 
         m = positive_pairs.size(0)
         acnhor_labels = labels[positive_pairs[:,0]]
@@ -257,7 +257,7 @@ class HardTripletSelector(TripletSelector):
         # construct matrix x, such as x_ij == 0 <==> labels[i] == labels[j]
         x = labels.expand(n,n) - labels.expand(n,n).t()
 
-        positive_pairs = torch.triu((x == 0).int(), diagonal = 1).nonzero()
+        positive_pairs = torch.triu((x == 0).int(), diagonal = 1).nonzero(as_tuple=False)
 
         m = positive_pairs.size(0)
 
@@ -303,7 +303,7 @@ class SemiHardTripletSelector(TripletSelector):
         # construct matrix x, such as x_ij == 0 <==> labels[i] == labels[j]
         x = labels.expand(n,n) - labels.expand(n,n).t()
 
-        positive_pairs = torch.triu((x == 0).int(), diagonal = 1).nonzero()
+        positive_pairs = torch.triu((x == 0).int(), diagonal = 1).nonzero(as_tuple=False)
 
         m = positive_pairs.size(0)
 

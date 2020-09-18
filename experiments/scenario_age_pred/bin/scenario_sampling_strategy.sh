@@ -29,6 +29,7 @@ python ../../ml_inference.py \
 
 # Compare
 python -m scenario_age_pred compare_approaches --output_file "results/scenario_age_pred__smpl_strategy.csv" \
-    --embedding_file_names \
+    --n_workers 2 --models lgb --embedding_file_names \
+    "mles_embeddings.pickle"              \
     "emb__smpl_strategy_AllPositivePair.pickle"                     \
     "emb__smpl_strategy_DistanceWeightedPair.pickle"

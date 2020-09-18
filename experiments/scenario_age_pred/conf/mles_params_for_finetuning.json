@@ -71,13 +71,14 @@
     }
   },
 
-  "stats": {
-    "path": "runs/age_pred_ml_ft_result.json"
-  },
-
   "save_model": true,
   "model_path": {
     "model": "models/mles_model_for_finetuning.p",
     "only_encoder": false
+  },
+
+  "stats": {
+    "path": "runs/mles_result.json"
   }
+
 }

@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 def load_model(conf):
     pretrained_model_path = conf['pretrained_model_path']
 
-    pre_model = torch.load(pretrained_model_path)
+    pre_model = torch.load(pretrained_model_path, map_location=torch.device("cpu"))
 
     if not isinstance(pre_model[0], TrxEncoder):
         pre_model = pre_model[0]

@@ -114,7 +114,7 @@ class HistogramLoss(torch.nn.Module):
             s_repeat_ = s_repeat.clone()
             indsa = (s_repeat_floor - (self.t - self.step) > -self.eps) & (s_repeat_floor - (self.t - self.step) < self.eps) & inds
 
-            assert indsa.nonzero().size()[0] == size, 'Another number of bins should be used'
+            assert indsa.nonzero(as_tuple=False).size()[0] == size, 'Another number of bins should be used'
             zeros = torch.zeros((1, indsa.size()[1])).bool()
             zeros = zeros.to(self.device)
             indsb = torch.cat((indsa, zeros))[1:, :]

@@ -49,7 +49,7 @@ python ../../ml_inference.py \
 
 # Compare
 python -m scenario_bowl2019 compare_approaches --output_file "results/scenario_bowl2019__hidden_size.csv" \
-    --embedding_file_names \
+    --models 'lgb' --embedding_file_names \
     "emb__hidden_size_0032.pickle" \
     "emb__hidden_size_0064.pickle" \
     "emb__hidden_size_0100.pickle" \

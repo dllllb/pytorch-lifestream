@@ -8,7 +8,7 @@ from copy import deepcopy
 
 import numpy as np
 import pandas as pd
-from sklearn.metrics import roc_auc_score
+from sklearn.metrics import accuracy_score, roc_auc_score
 from sklearn.model_selection import StratifiedKFold
 from torch.utils.data import Dataset
 from torch.utils.data.dataloader import DataLoader
@@ -20,7 +20,7 @@ from dltranz.models import model_by_type
 from dltranz.train import get_optimizer, get_lr_scheduler, fit_model
 from dltranz.util import init_logger, get_conf
 from dltranz.experiment import get_epoch_score_metric, update_model_stats
-from dltranz.metric_learn.inference_tools import infer_part_of_data, save_scores
+from dltranz.metric_learn.inference_tools import infer_part_of_data, save_scores, score_data
 from metric_learning import prepare_embeddings
 
 logger = logging.getLogger(__name__)
@@ -118,32 +118,6 @@ def run_experiment(train_ds, valid_ds, params, model_f):
 def prepare_parser(parser):
     pass
 
-
-def score_data(conf, y_true, y_predict):
-    metric_name = conf['params.score_metric']
-    if metric_name == 'auroc':
-        metric = roc_auc_score
-    else:
-        raise AttributeError(f'Unknown metric: "{metric_name}"')
-
-    col_id = conf['output.columns'][0]
-
-    model_type = conf['params.model_type']
-    if model_type == 'rnn':
-        cnt_features = conf['params.rnn.hidden_size']
-    else:
-        raise AttributeError(f'Unknown model_type: "{metric_name}"')
-
-    y_predict = y_predict.set_index(col_id)
-    y_true = pd.DataFrame([{col_id: rec[col_id], 'target': rec['target']} for rec in y_true])
-    y_true = y_true.set_index(col_id).reindex(index=y_predict.index)
-    df = y_predict.merge(y_true, on=col_id, how='left')
-    score = metric(df['target'], df.iloc[:, 0])
-    return {
-        metric_name: score,
-        'cnt_samples': len(y_true),
-        'cnt_features': cnt_features,
-    }
 
 def main(_):
     init_logger(__name__)
