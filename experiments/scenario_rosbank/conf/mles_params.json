@@ -6,7 +6,7 @@
     "device": "cuda",
     "model_type": "rnn",
     "rnn": {
-      "type": "gru",
+      "type": "lstm",
       "hidden_size": 1024,
       "bidir": false,
       "trainable_starter": "static"
@@ -47,7 +47,7 @@
       "margin": 0.5,
       "lr": 0.004,
       "weight_decay": 0.0,
-      "n_epoch": 50,
+      "n_epoch": 60,
       "_checkpoints": {
         "save_interval": 10,
         "n_saved": 1000,
