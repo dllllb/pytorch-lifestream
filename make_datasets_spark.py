@@ -268,10 +268,10 @@ def update_with_target(features, data_path, target_files, col_client_id, col_tar
     #print(id[indexes])
     #row = df_target.filter(df_target.client_id == 16217).collect()
     #print(np.array(row))
-    #quit()
     #print(col_target)
     #print(df_targetinput.withColumn("marks", f.array(columns)).select("name", "marks"),'-----------')
-    #df_target.show()
+    #df_target.show()    
+    #quit()
     col_list = [F.col(col_client_id).alias(col_client_id)]
     if type(col_target) is list:
         for col in col_target:
@@ -279,6 +279,8 @@ def update_with_target(features, data_path, target_files, col_client_id, col_tar
         del col_list[0]
         df_target = df_target.withColumn("target", F.array(col_list)) 
         df_target = df_target.select(col_client_id, "target")
+        #df_target.show()
+        #quit()
     else:
         col_list.append(F.col(col_target).cast('int').alias('target'))
     

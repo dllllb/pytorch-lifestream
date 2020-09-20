@@ -194,8 +194,8 @@ class PercentPredictMetric(ignite.metrics.Metric):
 
    def numpy_estim(y_pred, y):
        soft_pred = softmax(y_pred[:,1:53], axis=1)
-       delta = np.linalg.norm(soft_pred - y[:,1:53], axis=1)
-       rel_delta = 100*np.mean(delta)/sqrt(2)
+       delta = np.linalg.norm(soft_pred - y[:,1:53], ord=1,axis=1)
+       rel_delta = 100*np.mean(delta)/2
        item_val =rel_delta.item()
        print(type(item_val))
        print(item_val)       

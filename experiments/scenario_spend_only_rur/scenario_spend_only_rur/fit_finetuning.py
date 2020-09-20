@@ -92,11 +92,12 @@ def main(_):
 
     model_f = load_model
     train_data = read_embedding_data("data/mles_embeddings.pickle",conf['dataset.train_path'] , conf)
+    test_data = read_embedding_data("data/mles_embeddings.pickle",conf['dataset.test_path'] , conf)
     #train_data = read_consumer_data(conf['dataset.train_path'], conf)
-    test_data = read_consumer_data(conf['dataset.test_path'], conf)
+    #test_data = read_consumer_data(conf['dataset.test_path'], conf)
     
     # train
-    resu:ts = []
+    results = []
 
     skf = StratifiedKFold(conf['cv_n_split'])
     nrows = conf['params'].get('labeled_amount',-1) # semi-supervised setup. default = supervised

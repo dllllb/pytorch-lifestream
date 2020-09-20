@@ -4,20 +4,25 @@ import numpy as np
 import warnings
 warnings.filterwarnings("ignore")
 
-file_path = "/home/ikruzhilov/pytorch-lifestream/experiments/scenario_spend_pred/data/transactions_train.csv"
+#maximum  number of transaction types to analyse, rare transaction are grouped in one item
+TRANSACTION_CONST = 52     
+file_path = "data/transactions_train.csv"
+
+
 data = pd.read_csv(file_path)
 #print('example of input data:', data.head(20))
 #pd.set_option('display.max_rows', None)
-small_groups = data.small_group.value_counts()[data.small_group.value_counts()>45000]
+threshold = data.small_group.value_counts().to_numpy()[TRANSACTION_CONST-1] 
+
+small_groups = data.small_group.value_counts()[data.small_group.value_counts()>threshold] #45000]
 #list of frequent type of transactions
 valid_transaction_indexes = small_groups.index
 inverted_indexes = np.zeros(shape=[valid_transaction_indexes.max()+1])
 #print(inverted_indexes, valid_transaction_indexes.max())
-print(valid_transaction_indexes[0])
 for idx in range(valid_transaction_indexes.shape[0]):
     inverted_indexes[valid_transaction_indexes.values[idx]] = idx
 inverted_indexes = inverted_indexes.astype(int)
-print('inverted valid indexes:', inverted_indexes)    
+#print('inverted valid indexes:', inverted_indexes)    
 valid_statistics = data[data['small_group'].isin(valid_transaction_indexes)]
 non_valid_statistics = data[~data['small_group'].isin(valid_transaction_indexes)]
 val_sum = valid_statistics['amount_rur'].sum()
@@ -35,17 +40,20 @@ non_valid_statistics = data[~data['small_group'].isin(valid_transaction_indexes)
 #print('transactions by total number in dataset:',small_groups)
 client_ids = data.client_id.unique()
 #translates dates to monthes
-data['trans_date'] = (data['trans_date'] - data['trans_date'].min()) // 328
+data['trans_date'] = (data['trans_date'] - data['trans_date'].min()) // (3*328)
 
 #transactions for the client with a certain id
 i = 0
-ids_ground_truth = np.zeros(shape=[client_ids.shape[0],106])
+ids_ground_truth = np.zeros(shape=[client_ids.shape[0], TRANSACTION_CONST+2])
 for id in client_ids:
     id_data = data[data['client_id']==id]
     split_day = id_data.groupby('trans_date')
+    #table with pairs transactions type and sum for a certain perion and person with id
     month_transac = dict(tuple(split_day))[0][['small_group','amount_rur']]
     #print('transaction types and their values:', month_transac)
     transactions_grouped = month_transac.groupby(['small_group']).agg(['count', 'sum'])
+
+    #the rest (rare) transactions
     not_valid_transactions = transactions_grouped[~transactions_grouped.index.isin(valid_transaction_indexes)]
     counts_non_valid = not_valid_transactions.iloc[:,0].sum()
     rur_non_valid = not_valid_transactions.iloc[:,1].sum()
@@ -54,39 +62,45 @@ for id in client_ids:
     #print(last_row)
     last_row.iloc[0] = counts_non_valid
     last_row.iloc[1] = rur_non_valid
+    
     #print(transactions_grouped)
     transactions_grouped = transactions_grouped.append(last_row ,ignore_index=False)
     #print(transactions_grouped)
     total_number_transactions = transactions_grouped.iloc[:,0].sum()
-    normalized_counts = transactions_grouped.iloc[:,0]/total_number_transactions
+    total_sum_rur = transactions_grouped.iloc[:,1].sum()
+    #uncomment if counts, not sums needed. Comment the next row.
+    #normalized_counts = transactions_grouped.iloc[:,0]/total_number_transactions
+    #this is normalized sums, not counts, the name is saved for the consistency
+    normalized_counts = transactions_grouped.iloc[:,1]/total_sum_rur
+    #mean value of transactions
     mean_rur = transactions_grouped.iloc[:,1]/transactions_grouped.iloc[:,0]
     mean_norm_counts = pd.DataFrame(index=valid_transaction_indexes ,columns = ['norm_counts', 'mean_rur'])
     mean_norm_counts = mean_norm_counts.fillna(0)
     mean_norm_counts['mean_rur'].iloc[inverted_indexes[normalized_counts.index]] = mean_rur
     mean_norm_counts['norm_counts'].iloc[inverted_indexes[normalized_counts.index]] = normalized_counts
+    
     last_row = mean_norm_counts.iloc[0,:]
     last_row.iloc[0] = 1 - mean_norm_counts['norm_counts'].sum()
     last_row.iloc[1] = mean_rur.sum() - mean_norm_counts['mean_rur'].sum()
     last_row.rename('666')
+
     mean_norm_counts = mean_norm_counts.append(last_row, ignore_index=True)
     positive_rur = mean_norm_counts['mean_rur']>0
     mean_norm_counts['mean_rur'][positive_rur] = np.log(mean_norm_counts['mean_rur'][positive_rur])
     #print('valid transactions:', mean_norm_counts)
     #print('nonvalid transactions:')
     #print(not_valid_transactions)
-    np_row = np.hstack([np.array([id, total_number_transactions]), mean_norm_counts['norm_counts'].to_numpy(), mean_norm_counts['mean_rur'].to_numpy()] )
+    np_row = np.hstack([np.array([id, total_sum_rur]), mean_norm_counts['norm_counts'].to_numpy() ])
 
     ids_ground_truth[i,:] = np_row
     #print(np_row.shape)
     i = i + 1
     #if i >1:
     #    break
-col_names = ['client_id','transac_total'] + ['p_trans'+str(i) for i in range(52)] + ['mean_rur'+str(i) for i in range(52)] 
+col_names = ['client_id','transac_total'] + ['p_trans'+str(i) for i in range( TRANSACTION_CONST)] 
 df_ground_truth = pd.DataFrame(ids_ground_truth, columns=col_names)
 df_ground_truth = df_ground_truth.astype({'client_id':int})
 df_ground_truth = df_ground_truth.astype({'client_id':int}) 
-
-print(type(df_ground_truth['client_id'][1]) )
 
 df_ground_truth.to_csv('train_target.csv', index=False)
 

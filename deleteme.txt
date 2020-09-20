@@ -1,0 +1,1 @@
+/mnt/data/kruzhilov/miniconda3/envs/embenv/bin/python: No module named scenario_spend_only_rur

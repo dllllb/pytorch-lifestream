@@ -64,22 +64,13 @@ class KruzhLoss(nn.Module):
         self.mean_rur_weight = mean_rur_weight
 
     def forward(self, pred, true):
+        #print('loss.py')
+        #print(pred.shape)
+        #print(true.shape, true)        
+        #quit()
         loss_trans_number = self.lossl1(pred[:,0], true[:,0])
         loss_transaction_types = self.bce_with_logits(pred[:,1:53], true[:,1:53])
-        #soft_pred = torch.nn.Softmax(dim=1)(pred[:,1:53])
-        #only non-zero transaction mean values are to be counted
-        #mask = torch.zeros(true[:,1:53].shape)
-        #mask[true[:,1:53]>0] = 1
-        #mask = mask.to(true.device)
-        
-        #loss_mean_rur = self.lossl1(mask*pred[:,53:], true[:,53:])
-        #loss_mean_rur1 = 0.5*self.lossl1(soft_pred*torch.exp(pred[:,53:]), soft_pred*torch.exp(true[:,53:]))
-        #regularization = torch.abs(torch.max(pred[:,53])) + 0.1*torch.abs(torch.min(pred[:,53:]))
-        #print(loss_transaction_types.cpu().item(), loss_mean_rur.cpu().item(), loss_mean_rur1.cpu().item() )
-        #print((true[:,1:53]*pred[:,53:]).mean(dim=0) )
         loss =  loss_transaction_types# + \
-                #self.mean_rur_weight*(loss_mean_rur1+loss_mean_rur1)
-        #loss = loss_mean_rur
         return loss
 
 

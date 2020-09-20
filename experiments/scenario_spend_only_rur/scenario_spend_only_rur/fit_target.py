@@ -4,7 +4,7 @@ import pickle
 import sys
 import random
 from copy import deepcopy
-
+import pandas
 import numpy as np
 from sklearn.model_selection import StratifiedKFold
 from torch.utils.data import Dataset
@@ -89,14 +89,19 @@ def read_embedding_data(emb_path, target_path, conf):
     target = read_data_gen(target_path)
     with open(emb_path, 'rb') as f:
         embeddings = pickle.load(f)
+    target_id = [int(rec['client_id']) for rec in target]
+    #print(target_id)
+    embeddings.client_id = pandas.to_numeric(embeddings.client_id)
+    embeddings.set_index('client_id', inplace=True)
+    embdeddings = embeddings.loc[target_id]
+    #quit()
     data = []
-    i = 0
+    target = read_data_gen(target_path)
+
     for rec in target:
         if rec['target'] is not None:
-            #if embeddings.iloc[i,:]['client_id'] == rec['client_id']:
-                emb = embeddings.iloc[i,:].iloc[1:].to_numpy() 
+                emb = embeddings.loc[int(rec['client_id'])].to_numpy() 
                 data.append({'feature_arrays':{'embedding':emb}, 'target':rec['target']} )
-                i = i + 1
     return data
 
 def read_consumer_data(path, conf):
