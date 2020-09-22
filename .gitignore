@@ -9,6 +9,8 @@ deb.env
 .ipynb_checkpoints
 experiments/*/runs
 experiments/*/models
+experiments/scenario_spend_only_rur/statistics.py
+experiments/scenario_spend_predict
 *.egg-info
 *.txt
 .DS_Store
