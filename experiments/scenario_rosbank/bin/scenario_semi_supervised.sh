@@ -1,4 +1,4 @@
-for SC_AMOUNT in 7800 3900 2000 1000 0500
+for SC_AMOUNT in 3600 1800 0900 0450 0225
 do
 	python -m scenario_rosbank fit_target \
         params.device="$SC_DEVICE" \

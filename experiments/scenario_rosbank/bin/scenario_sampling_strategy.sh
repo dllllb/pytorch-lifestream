@@ -40,7 +40,7 @@ do
   python ../../ml_inference.py \
       params.device="$SC_DEVICE" \
       model_path.model="models/mles__$SC_SUFFIX.p" \
-      output.path="data/emb__$SC_SUFFIX" \
+      output.path="data/emb_mles__$SC_SUFFIX" \
       --conf "conf/dataset.hocon" "conf/mles_params.json"
 done
 

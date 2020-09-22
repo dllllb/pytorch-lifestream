@@ -29,105 +29,105 @@
     }
 
     features: {
-        baseline_0500: {
+        baseline_0225: {
             enabled: true
             read_params: {file_name: ../data/agg_feat_embed.pickle}
-            target_options: {labeled_amount: 500, random_state: 42}
+            target_options: {labeled_amount: 225, random_state: 42}
         }
-        baseline_1000: {
+        baseline_0450: {
             enabled: true
             read_params: {file_name: ../data/agg_feat_embed.pickle}
-            target_options: {labeled_amount: 1000, random_state: 42}
+            target_options: {labeled_amount: 0450, random_state: 42}
         }
-        baseline_2000: {
+        baseline_0900: {
             enabled: true
             read_params: {file_name: ../data/agg_feat_embed.pickle}
-            target_options: {labeled_amount: 2000, random_state: 42}
+            target_options: {labeled_amount: 0900, random_state: 42}
         }
-        baseline_3900: {
+        baseline_1800: {
             enabled: true
             read_params: {file_name: ../data/agg_feat_embed.pickle}
-            target_options: {labeled_amount: 3900, random_state: 42}
+            target_options: {labeled_amount: 1800, random_state: 42}
         }
-        baseline_7800: {
+        baseline_3600: {
             enabled: true
             read_params: {file_name: ../data/agg_feat_embed.pickle}
-            target_options: {labeled_amount: 7800, random_state: 42}
+            target_options: {labeled_amount: 3600, random_state: 42}
         }
 
-        mles_embeddings_0500: {
+        mles_embeddings_0225: {
             enabled: true
             read_params: {file_name: ../data/mles_embeddings.pickle}
-            target_options: {labeled_amount: 500, random_state: 42}
+            target_options: {labeled_amount: 225, random_state: 42}
         }
-        mles_embeddings_1000: {
+        mles_embeddings_0450: {
             enabled: true
             read_params: {file_name: ../data/mles_embeddings.pickle}
-            target_options: {labeled_amount: 1000, random_state: 42}
+            target_options: {labeled_amount: 450, random_state: 42}
         }
-        mles_embeddings_2000: {
+        mles_embeddings_0900: {
             enabled: true
             read_params: {file_name: ../data/mles_embeddings.pickle}
-            target_options: {labeled_amount: 2000, random_state: 42}
+            target_options: {labeled_amount: 900, random_state: 42}
         }
-        mles_embeddings_3900: {
+        mles_embeddings_1800: {
             enabled: true
             read_params: {file_name: ../data/mles_embeddings.pickle}
-            target_options: {labeled_amount: 3900, random_state: 42}
+            target_options: {labeled_amount: 1800, random_state: 42}
         }
-        mles_embeddings_7800: {
+        mles_embeddings_3600: {
             enabled: true
             read_params: {file_name: ../data/mles_embeddings.pickle}
-            target_options: {labeled_amount: 7800, random_state: 42}
+            target_options: {labeled_amount: 3600, random_state: 42}
         }
 
-        cpc_embeddings_0500: {
+        cpc_embeddings_0225: {
             enabled: true
             read_params: {file_name: ../data/cpc_embeddings.pickle}
-            target_options: {labeled_amount: 500, random_state: 42}
+            target_options: {labeled_amount: 225, random_state: 42}
         }
-        cpc_embeddings_1000: {
+        cpc_embeddings_0450: {
             enabled: true
             read_params: {file_name: ../data/cpc_embeddings.pickle}
-            target_options: {labeled_amount: 1000, random_state: 42}
+            target_options: {labeled_amount: 450, random_state: 42}
         }
-        cpc_embeddings_2000: {
+        cpc_embeddings_0900: {
             enabled: true
             read_params: {file_name: ../data/cpc_embeddings.pickle}
-            target_options: {labeled_amount: 2000, random_state: 42}
+            target_options: {labeled_amount: 900, random_state: 42}
         }
-        cpc_embeddings_3900: {
+        cpc_embeddings_1800: {
             enabled: true
             read_params: {file_name: ../data/cpc_embeddings.pickle}
-            target_options: {labeled_amount: 3900, random_state: 42}
+            target_options: {labeled_amount: 1800, random_state: 42}
         }
-        cpc_embeddings_7800: {
+        cpc_embeddings_3600: {
             enabled: true
             read_params: {file_name: ../data/cpc_embeddings.pickle}
-            target_options: {labeled_amount: 7800, random_state: 42}
+            target_options: {labeled_amount: 3600, random_state: 42}
         }
     }
 
     external_scores: {
-        t_500: "../results/fit_target_0500_results.json"
-        m_500: "../results/mles_finetuning_0500_results.json"
-        c_500: "../results/cpc_finetuning_0500_results.json"
+        t_0225: "../results/fit_target_0225_results.json"
+        m_0225: "../results/mles_finetuning_0225_results.json"
+        c_0225: "../results/cpc_finetuning_0225_results.json"
 
-        t_1000: "../results/fit_target_1000_results.json"
-        m_1000: "../results/mles_finetuning_1000_results.json"
-        c_1000: "../results/cpc_finetuning_1000_results.json"
+        t_0450: "../results/fit_target_0450_results.json"
+        m_0450: "../results/mles_finetuning_0450_results.json"
+        c_0450: "../results/cpc_finetuning_0450_results.json"
 
-        t_2000: "../results/fit_target_2000_results.json"
-        m_2000: "../results/mles_finetuning_2000_results.json"
-        c_2000: "../results/cpc_finetuning_2000_results.json"
+        t_0900: "../results/fit_target_0900_results.json"
+        m_0900: "../results/mles_finetuning_0900_results.json"
+        c_0900: "../results/cpc_finetuning_0900_results.json"
 
-        t_3900: "../results/fit_target_3900_results.json"
-        m_3900: "../results/mles_finetuning_3900_results.json"
-        c_3900: "../results/cpc_finetuning_3900_results.json"
+        t_1800: "../results/fit_target_1800_results.json"
+        m_1800: "../results/mles_finetuning_1800_results.json"
+        c_1800: "../results/cpc_finetuning_1800_results.json"
 
-        t_7800: "../results/fit_target_7800_results.json"
-        m_7800: "../results/mles_finetuning_7800_results.json"
-        c_7800: "../results/cpc_finetuning_7800_results.json"
+        t_3600: "../results/fit_target_3600_results.json"
+        m_3600: "../results/mles_finetuning_3600_results.json"
+        c_3600: "../results/cpc_finetuning_3600_results.json"
     }
 
     models: {
