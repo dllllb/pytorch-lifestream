@@ -1,0 +1,197 @@
+{
+    environment: {
+        work_dir: "embeddings_validation_semi_supervised.work"
+    }
+    report_file: "../results/scenario_rosbank__semi_supervised.txt"
+
+    target: {
+        file_name: "../data/train.csv"
+        cols_id: [cl_id]
+        cols_id_type: [int]
+        col_target: target_flag
+        drop_duplicated_ids: true
+    }
+
+    split: {
+        fit_ids: true
+
+        train_id: {
+            file_name: "../data/train.csv"
+            drop_duplicated_ids: true
+        }
+        test_id: {
+            file_name: "../data/test_ids.csv"
+        }
+
+        cv_split_count: 5
+        is_stratify: true
+        random_state: 42
+    }
+
+    features: {
+        baseline_0500: {
+            enabled: true
+            read_params: {file_name: ../data/agg_feat_embed.pickle}
+            target_options: {labeled_amount: 500, random_state: 42}
+        }
+        baseline_1000: {
+            enabled: true
+            read_params: {file_name: ../data/agg_feat_embed.pickle}
+            target_options: {labeled_amount: 1000, random_state: 42}
+        }
+        baseline_2000: {
+            enabled: true
+            read_params: {file_name: ../data/agg_feat_embed.pickle}
+            target_options: {labeled_amount: 2000, random_state: 42}
+        }
+        baseline_3900: {
+            enabled: true
+            read_params: {file_name: ../data/agg_feat_embed.pickle}
+            target_options: {labeled_amount: 3900, random_state: 42}
+        }
+        baseline_7800: {
+            enabled: true
+            read_params: {file_name: ../data/agg_feat_embed.pickle}
+            target_options: {labeled_amount: 7800, random_state: 42}
+        }
+
+        mles_embeddings_0500: {
+            enabled: true
+            read_params: {file_name: ../data/mles_embeddings.pickle}
+            target_options: {labeled_amount: 500, random_state: 42}
+        }
+        mles_embeddings_1000: {
+            enabled: true
+            read_params: {file_name: ../data/mles_embeddings.pickle}
+            target_options: {labeled_amount: 1000, random_state: 42}
+        }
+        mles_embeddings_2000: {
+            enabled: true
+            read_params: {file_name: ../data/mles_embeddings.pickle}
+            target_options: {labeled_amount: 2000, random_state: 42}
+        }
+        mles_embeddings_3900: {
+            enabled: true
+            read_params: {file_name: ../data/mles_embeddings.pickle}
+            target_options: {labeled_amount: 3900, random_state: 42}
+        }
+        mles_embeddings_7800: {
+            enabled: true
+            read_params: {file_name: ../data/mles_embeddings.pickle}
+            target_options: {labeled_amount: 7800, random_state: 42}
+        }
+
+        cpc_embeddings_0500: {
+            enabled: true
+            read_params: {file_name: ../data/cpc_embeddings.pickle}
+            target_options: {labeled_amount: 500, random_state: 42}
+        }
+        cpc_embeddings_1000: {
+            enabled: true
+            read_params: {file_name: ../data/cpc_embeddings.pickle}
+            target_options: {labeled_amount: 1000, random_state: 42}
+        }
+        cpc_embeddings_2000: {
+            enabled: true
+            read_params: {file_name: ../data/cpc_embeddings.pickle}
+            target_options: {labeled_amount: 2000, random_state: 42}
+        }
+        cpc_embeddings_3900: {
+            enabled: true
+            read_params: {file_name: ../data/cpc_embeddings.pickle}
+            target_options: {labeled_amount: 3900, random_state: 42}
+        }
+        cpc_embeddings_7800: {
+            enabled: true
+            read_params: {file_name: ../data/cpc_embeddings.pickle}
+            target_options: {labeled_amount: 7800, random_state: 42}
+        }
+    }
+
+    external_scores: {
+        t_500: "../results/fit_target_0500_results.json"
+        m_500: "../results/mles_finetuning_0500_results.json"
+        c_500: "../results/cpc_finetuning_0500_results.json"
+
+        t_1000: "../results/fit_target_1000_results.json"
+        m_1000: "../results/mles_finetuning_1000_results.json"
+        c_1000: "../results/cpc_finetuning_1000_results.json"
+
+        t_2000: "../results/fit_target_2000_results.json"
+        m_2000: "../results/mles_finetuning_2000_results.json"
+        c_2000: "../results/cpc_finetuning_2000_results.json"
+
+        t_3900: "../results/fit_target_3900_results.json"
+        m_3900: "../results/mles_finetuning_3900_results.json"
+        c_3900: "../results/cpc_finetuning_3900_results.json"
+
+        t_7800: "../results/fit_target_7800_results.json"
+        m_7800: "../results/mles_finetuning_7800_results.json"
+        c_7800: "../results/cpc_finetuning_7800_results.json"
+    }
+
+    models: {
+        lgbm: {
+            enabled: true
+            cls_name: lightgbm.LGBMClassifier,
+            params: {
+                n_estimators: 500
+                boosting_type: gbdt
+                objective: binary
+                metric: auc
+                subsample: 0.5
+                subsample_freq: 1
+                learning_rate: 0.02
+                feature_fraction: 0.75
+                max_depth: 6
+                lambda_l1: 1
+                lambda_l2: 1
+                min_data_in_leaf: 50
+                random_state: 42
+                n_jobs: 8
+                reg_alpha: null
+                reg_lambda: null
+                colsample_bytree: null
+                min_child_samples: null
+            },
+            cpu_count: 8
+            preprocessing: [
+                [sklearn.preprocessing.MaxAbsScaler, {}]
+            ]
+        }
+    }
+
+    metrics: {
+        auroc: {
+            enabled: true
+            score_func: sklearn.metrics.roc_auc_score
+            scorer_params: {needs_proba: true}
+
+        }
+        accuracy: {
+            enabled: true
+            score_func: sklearn.metrics.accuracy_score
+            scorer_params: {needs_proba: false}
+        }
+    }
+
+    report: {
+        is_check_train: false
+        error_handling: fail
+
+        auroc: {float_format: "{:.3f}"}
+        accuracy: {float_format: "{:.3f}"}
+
+        cnt_features: {float_format: "{:.0f}", keep_columns: ["mean"]}
+        cnt_samples: {float_format: "{:9,.0f}", keep_columns: ["mean"]}
+
+        feature_load_time: {float_format: "{:,.1f}"}
+        train_fit_transform_time: {float_format: "{:,.1f}"}
+        feature_transform_time: {float_format: "{:,.1f}"}
+        train_time: {float_format: "{:,.1f}"}
+        auroc_score_time {float_format: "{:,.1f}"}
+        accuracy_score_time: {float_format: "{:,.1f}"}
+
+        feature_fit_info: {keep_columns: ["first"]}
+    }
+}

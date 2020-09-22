@@ -1,6 +1,6 @@
-for SC_AMOUNT in 0378 0756 1512 3024 6048
+for SC_AMOUNT in 7800 3900 2000 1000 0500
 do
-	python -m scenario_gender fit_target \
+	python -m scenario_rosbank fit_target \
         params.device="$SC_DEVICE" \
         params.labeled_amount=$SC_AMOUNT \
         params.train.n_epoch=20 \
@@ -10,7 +10,7 @@ do
         stats.path="results/fit_target_${SC_AMOUNT}_results.json" \
         --conf conf/dataset.hocon conf/fit_target_params.json
 
-  python -m scenario_gender fit_finetuning \
+  python -m scenario_rosbank fit_finetuning \
         params.device="$SC_DEVICE" \
         params.labeled_amount=$SC_AMOUNT \
         params.train.n_epoch=10 \
@@ -20,7 +20,7 @@ do
         stats.path="results/mles_finetuning_${SC_AMOUNT}_results.json" \
         --conf conf/dataset.hocon conf/fit_finetuning_on_mles_params.json
 
-  python -m scenario_gender fit_finetuning \
+  python -m scenario_rosbank fit_finetuning \
         params.device="$SC_DEVICE" \
         params.labeled_amount=$SC_AMOUNT \
         params.train.n_epoch=10 \
@@ -31,3 +31,7 @@ do
         --conf conf/dataset.hocon conf/fit_finetuning_on_cpc_params.json
 done
 
+rm results/scenario_rosbank__semi_supervised.txt
+# rm -r conf/embeddings_validation.work/
+LUIGI_CONFIG_PATH=conf/luigi.cfg python -m embeddings_validation \
+    --conf conf/embeddings_validation_semi_supervised.hocon --workers 10 --total_cpu_count 20

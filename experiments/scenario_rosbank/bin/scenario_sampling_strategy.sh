@@ -27,6 +27,23 @@ python ../../ml_inference.py \
     --conf "conf/dataset.hocon" "conf/mles_params.json"
 
 
+# HardNegativePair
+for SC_NEG_COUNT in 2 5 9
+do
+  export SC_SUFFIX="smpl_strategy_HardNegativePair_neg_count_${SC_NEG_COUNT}"
+  python ../../metric_learning.py \
+      params.device="$SC_DEVICE" \
+      params.train.sampling_strategy="HardNegativePair" \
+      params.train.neg_count=${SC_NEG_COUNT} \
+      model_path.model="models/mles__$SC_SUFFIX.p" \
+      --conf "conf/dataset.hocon" "conf/mles_params.json"
+  python ../../ml_inference.py \
+      params.device="$SC_DEVICE" \
+      model_path.model="models/mles__$SC_SUFFIX.p" \
+      output.path="data/emb__$SC_SUFFIX" \
+      --conf "conf/dataset.hocon" "conf/mles_params.json"
+done
+
 # Compare
 rm results/scenario_rosbank__smpl_strategy.txt
 # rm -r conf/embeddings_validation.work/
