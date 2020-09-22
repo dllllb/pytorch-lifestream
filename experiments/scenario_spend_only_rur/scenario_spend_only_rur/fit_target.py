@@ -67,16 +67,7 @@ class SubsamplingDataset(Dataset):
 
     def __getitem__(self, item):
         rec = self.dataset[item]
-
-      #  if random.random() >= self.crop_proba:
-       #     return rec
-
-
         rec = deepcopy(rec)
-        #r_pos = random.randint(0, r_pos)
-
-        #rec['feature_arrays'] = {k: v[r_pos: r_pos + r_len] for k, v in rec['feature_arrays'].items()}
-        #rec['event_time'] = rec['event_time'][r_pos: r_pos + r_len]
         return rec
 
 
@@ -90,32 +81,23 @@ def read_embedding_data(emb_path, target_path, conf):
     with open(emb_path, 'rb') as f:
         embeddings = pickle.load(f)
     target_id = [int(rec['client_id']) for rec in target]
-    #print(target_id)
     embeddings.client_id = pandas.to_numeric(embeddings.client_id)
     embeddings.set_index('client_id', inplace=True)
     embdeddings = embeddings.loc[target_id]
-    #quit()
     data = []
     target = read_data_gen(target_path)
 
     for rec in target:
         if rec['target'] is not None:
                 emb = embeddings.loc[int(rec['client_id'])].to_numpy() 
-                data.append({'feature_arrays':{'embedding':emb}, 'target':rec['target']} )
+                rec_nump = np.array(rec['target'], dtype=np.float32)
+                data.append({'feature_arrays':{'embedding':emb}, 'target':rec_nump} )
     return data
 
 def read_consumer_data(path, conf):
     logger.info(f'Data loading...')
 
     data = read_data_gen(path)
-    #for rec in data:
-     #print(rec)
-     #print(rec['target'])
-     #print(type(rec['target']))
-     #print(rec['target'][0])
-     #quit()
-    
-    #data = (rec for rec in data if rec['target'] is not None and not np.isnan(rec['target']))
     data = (rec for rec in data if rec['target'] is not None )
 
     data = prepare_embeddings(data, conf, is_train=False)
@@ -156,11 +138,17 @@ def run_experiment(train_ds, valid_ds, params, model_f):
     opt = get_optimizer(model, params)
     scheduler = get_lr_scheduler(opt, params)
 
-    metric_name = params['score_metric']
-    metric = get_epoch_score_metric(metric_name)()
+    metric_names = params['score_metric']
+    if isinstance(metric_names, list):
+      metric_dict = dict()
+      for metric_name in metric_names:
+        metric = get_epoch_score_metric(metric_name)()
+        metric_dict.update({metric_name:metric})
+    else:
+        metric_dict = {metric_names:get_epoch_score_metric(metric_names)}  
     handlers = []
 
-    scores = fit_model(model, train_loader, valid_loader, loss, opt, scheduler, params, {metric_name: metric}, handlers)
+    scores = fit_model(model, train_loader, valid_loader, loss, opt, scheduler, params, metric_dict, handlers)
 
     return model, {
         **scores,

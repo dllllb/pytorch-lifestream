@@ -1,3 +1,5 @@
+# create ground truth file for the transaction type prediction
+
 import pandas as pd
 import numpy as np
 

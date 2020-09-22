@@ -351,20 +351,20 @@ class TrxDataset(Dataset):
         for rec in iter(self.data):
             x = rec['feature_arrays']
             y = rec.get('target', None)
-            y = y.astype(np.float)
+            #y = y.astype(np.float)
             yield x, self.y_dtype(y)
 
     def __getitem__(self, idx):
         x = self.data[idx]['feature_arrays']
         y = self.data[idx].get('target', None)
-        if isinstance(y,(int, float)):
-          yf = y
-        else:
-          yf = y.astype(np.float)
+        #if isinstance(y,(int, float)):
+          #yf = y
+        #else:
+          #yf = y.astype(np.float)
         #this code should be removed after understanding the reason of none in y
-        if np.isnan(yf).any():
-            yf[np.isnan(yf)] = 0
-        return x, self.y_dtype(yf)
+        #if np.isnan(y).any():
+        #    y[np.isnan(y)] = 0
+        return x, self.y_dtype(y)
 
 
 class ConvertingTrxDataset(Dataset):
@@ -391,12 +391,6 @@ class ConvertingTrxDataset(Dataset):
 
     def _one_item(self, item):
         x, y = item
-        #print(type(x['embedding']) )
-        #y = x['embedding']#.astype(np.float32)
-        #print(y.dtype)
-        #print(type(x['embedding'][0]))        
-        #print(torch.from_numpy(x['embedding']))
-        #quit()
         x = {k: torch.from_numpy(self.to_torch_compatible(v)) for k, v in x.items()}
         return x, y
 
@@ -404,10 +398,9 @@ class ConvertingTrxDataset(Dataset):
     def to_torch_compatible(a):
         if a.dtype == np.int8:
             return a.astype(np.int16)
-        if a.dtype == object:
-            return a.astype(np.float32)
+        #if a.dtype == object:
+        #    return a.astype(np.float32)
         return a
-
 
 def pad_sequence(sequence, alignment, max_len=None, pad_value=0.0):
     def get_pad(x, max_len):

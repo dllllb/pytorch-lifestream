@@ -17,11 +17,6 @@ class EmbTranslation(torch.nn.Module):
     def __init__(self):
         super(EmbTranslation, self).__init__()
     def forward(self, x):
-        #print('fit_finetuning')
-        #print(x.payload['embedding'].shape)
-        #tensor_list = [x[0]['embedding'] for i in range(x.shape[0])]
-        #print(tensor_list)
-        #quit()
         return x.payload['embedding']
 
 def load_model(conf):
@@ -45,11 +40,7 @@ def load_model(conf):
 
     head_output_size = 53
 
-    layers = [
-        EmbTranslation()
-        #rnn_encoder,
-        #step_select_encoder,
-    ]
+    layers = [EmbTranslation()]
 
     if conf.get('freeze_layers', False):
         for i,_ in enumerate(layers):
@@ -70,11 +61,6 @@ def load_model(conf):
     else:
         layers.extend([torch.nn.Linear(input_size, head_output_size) ])
 
-    #for i,_ in enumerate(layers):
-    #    for p in layers[i].parameters():
-    #        print(p.requires_grad)
-    #quit()
-
     model = torch.nn.Sequential(*layers)
     return model
 
@@ -91,10 +77,11 @@ def main(_):
     conf = get_conf(sys.argv[2:])
 
     model_f = load_model
-    train_data = read_embedding_data("data/mles_embeddings.pickle",conf['dataset.train_path'] , conf)
-    test_data = read_embedding_data("data/mles_embeddings.pickle",conf['dataset.test_path'] , conf)
-    #train_data = read_consumer_data(conf['dataset.train_path'], conf)
-    #test_data = read_consumer_data(conf['dataset.test_path'], conf)
+    if conf['params'].get('embeddings_path', False):
+     train_data = read_embedding_data(conf['params']['embeddings_path'], conf['dataset.train_path'] , conf)
+     test_data = read_embedding_data(conf['params']['embeddings_path'], conf['dataset.test_path'] , conf)
+    else:
+     print('Set embeddings_path in config file!!!')
     
     # train
     results = []
@@ -111,9 +98,6 @@ def main(_):
         if nrows > 0: i_train_data = i_train_data[:nrows]
 
         train_ds, valid_ds = create_ds(i_train_data, i_valid_data, conf)
-        #model = model_f(conf['params'])
-        #print(train_ds[0][0]['embedding'].shape)
-        #quit()
         model, result = run_experiment(train_ds, valid_ds, conf['params'], model_f)
 
         # inference

@@ -260,30 +260,14 @@ def trx_to_features(df_data, print_dataset_info,
 
 def update_with_target(features, data_path, target_files, col_client_id, col_target):
     df_target = load_source_data(data_path, target_files)
-    #column = np.array(df_target.select(F.col('mean_rur0')).collect() )
-    #print(column)
-    #indexes = np.argwhere(column==None)[:,0]
-    #print(indexes)
-    #id = np.array(df_target.select(F.col('client_id')).collect())
-    #print(id[indexes])
-    #row = df_target.filter(df_target.client_id == 16217).collect()
-    #print(np.array(row))
-    #print(col_target)
-    #print(df_targetinput.withColumn("marks", f.array(columns)).select("name", "marks"),'-----------')
-    #df_target.show()    
-    #quit()
-    col_list = [F.col(col_client_id).alias(col_client_id)]
     if type(col_target) is list:
         for col in col_target:
             col_list.append(F.col(col)) #.alias(f'target_{col}'))
-        del col_list[0]
         df_target = df_target.withColumn("target", F.array(col_list)) 
         df_target = df_target.select(col_client_id, "target")
-        #df_target.show()
-        #quit()
     else:
-        col_list.append(F.col(col_target).cast('int').alias('target'))
-    
+        col_list = [F.col(col_client_id).alias(col_client_id)]
+        col_list.append(F.col(col_target).cast('int').alias('target'))    
         df_target = df_target.select(*col_list)
         df_target = df_target.repartition(1)
 
@@ -410,9 +394,6 @@ if __name__ == '__main__':
         )
 
     train, test, save_test_id = None, None, False
-    #client_features.show()
-    #client_features.printSchema()
-    #quit()
     if config.test_size == 'predefined':
         train, test = split_dataset_predefined(
             all_data=client_features,

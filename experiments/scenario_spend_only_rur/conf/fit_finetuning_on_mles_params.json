@@ -5,7 +5,6 @@
     "model_type": "rnn",
     "ensemble_size": 1,
     "big_extension": true,
-    "freeze_layers": false,
     "trx_encoder": {
       "embeddings": {
         "trans_date": {"in": 800},
@@ -49,9 +48,9 @@
       "num_workers": 8
     },
     "norm_scores": false,
-    "score_metric": "accuracy",
-
+    "score_metric": ["r2", "dissimilarity"],
     "pretrained_model_path": "models/mles_model.p",
+    "embeddings_path": "data/mles_embeddings.pickle",
     "use_batch_norm": false
   },
 

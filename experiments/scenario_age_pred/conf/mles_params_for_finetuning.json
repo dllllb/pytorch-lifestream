@@ -55,7 +55,7 @@
       "margin": 0.5,
       "lr": 0.002,
       "weight_decay": 0.0,
-      "n_epoch": 100
+      "n_epoch": 2
     },
     "norm_scores": false,
     "valid": {

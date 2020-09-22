@@ -14,7 +14,6 @@ warnings.filterwarnings('ignore', module='tensorboard.compat.tensorflow_stub.dty
 from torch.utils.tensorboard import SummaryWriter
 
 from dltranz.seq_encoder import PaddedBatch
-from dltranz.metric_learn.metric import PercentR2Metric, PercentPredictMetric
 
 from ignite.engine import Engine, Events, create_supervised_trainer, create_supervised_evaluator
 import ignite
@@ -25,10 +24,6 @@ logger = logging.getLogger(__name__)
 
 def batch_to_device(batch, device, non_blocking):
     x, y = batch
-    y = y.type(torch.FloatTensor)
-    #print('shape',y.shape)
-    #print('y',torch.sum(y[:,1:], axis=1) )
-    #quit()
     if not isinstance(x, dict):
         new_x = {k: v.to(device=device, non_blocking=non_blocking) if isinstance(v, torch.Tensor) else v for k, v in x.payload.items()}
         new_y = y.to(device=device, non_blocking=non_blocking)
@@ -242,31 +237,17 @@ def fit_model(model, train_loader, valid_loader, loss, optimizer, scheduler, par
     pbar = ProgressBar(persist=True, bar_format="")
     pbar.attach(trainer, ['loss', 'seq_len'])
 
-    metrics={'type_transac':PercentPredictMetric(), 'r2_transac':PercentR2Metric() }
     validation_evaluator = create_supervised_evaluator(
         model=model,
         device=device,
         prepare_batch=batch_to_device,
-        metrics= valid_metrics if params.get("experiment",False) else metrics 
-        #metrics={'total_number':SpendPredictMetric(), 'type_transac':PercentPredictMetric(), 'mean_rur':MeanSumPredictMetric()}
+        metrics= valid_metrics 
     )
 
     pbar = ProgressBar(persist=True, bar_format="")
     pbar.attach(validation_evaluator)
 
-    # valid_metric_name = valid_metric.__class__.__name__
-    # valid_metric.attach(validation_evaluator, valid_metric_name)
-
-    trainer.add_event_handler(Events.ITERATION_COMPLETED, PrepareEpoch(train_loader))
-
-    # @trainer.on(Events.GET_BATCH_COMPLETED)
-    #def log_training_first_iterations(trainer):
-    #    print(trainer.state.batch)
-    #    x,y = batch_to_device(trainer.state.batch, device, True)
-    #    y_output = model(x)
-    #    print(y_output)
-    #    print("------------------------------")
-    #    quit()
+    trainer.add_event_handler(Events.EPOCH_STARTED, PrepareEpoch(train_loader))
 
     @trainer.on(Events.EPOCH_COMPLETED)
     def log_training_results(engine):
