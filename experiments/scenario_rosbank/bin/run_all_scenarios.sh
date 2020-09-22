@@ -21,12 +21,12 @@ python ../../ml_inference.py    params.device="$SC_DEVICE" --conf conf/dataset.h
 # Fine tune the MeLES model in supervised mode and save scores to the file
 python ../../metric_learning.py \
     params.device="$SC_DEVICE" \
-    params.rnn.hidden_size=512 \
+    params.rnn.type="gru" params.rnn.hidden_size=512 params.train.n_epoch=50 \
     model_path.model="models/mles_model_for_finetuning.p" \
     --conf conf/dataset.hocon conf/mles_params.json
 python -m scenario_rosbank fit_finetuning \
     params.device="$SC_DEVICE" \
-    params.rnn.hidden_size=512 \
+    params.rnn.type="gru" params.rnn.hidden_size=512 \
     params.pretrained_model_path="models/mles_model_for_finetuning.p" \
     --conf conf/dataset.hocon conf/fit_finetuning_on_mles_params.json
 
