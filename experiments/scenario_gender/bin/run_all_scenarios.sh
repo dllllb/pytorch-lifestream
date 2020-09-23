@@ -56,7 +56,6 @@ sh bin/scenario_sampling_strategy.sh
 sh bin/scenario_sub_seq_sampling_strategy.sh
 
 sh bin/scenario_semi_supervised_with_embedd_validation.sh
-python -m embeddings_validation --conf conf/embeddings_validation_semi_supervised.hocon --workers 10 --total_cpu_count 18
 
 echo ""
 echo "==== Other scenarios"

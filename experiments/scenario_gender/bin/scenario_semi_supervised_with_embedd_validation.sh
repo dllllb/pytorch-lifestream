@@ -31,3 +31,5 @@ do
         --conf conf/dataset.hocon conf/fit_finetuning_on_cpc_params.json
 done
 
+python -m embeddings_validation --conf conf/embeddings_validation_semi_supervised.hocon --workers 10 --total_cpu_count 18
+
