@@ -11,7 +11,7 @@ bin/make-datasets-spark.sh
 #create ground truth - a share of each transaction type for a client
 python transac2statistics.py
 ```
-
+```sh
 # Main scenario
 export SC_DEVICE="cuda" #"cuda:1" if cuda:0 is busy
 
