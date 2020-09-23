@@ -32,6 +32,6 @@ do
 done
 
 rm results/scenario_rosbank__semi_supervised.txt
-# rm -r conf/embeddings_validation.work/
+# rm -r conf/embeddings_validation_semi_supervised.work/
 LUIGI_CONFIG_PATH=conf/luigi.cfg python -m embeddings_validation \
     --conf conf/embeddings_validation_semi_supervised.hocon --workers 10 --total_cpu_count 20
