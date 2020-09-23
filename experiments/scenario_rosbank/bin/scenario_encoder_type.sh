@@ -1,3 +1,16 @@
+# GRU encoder
+export SC_SUFFIX="encoder_gru"
+python ../../metric_learning.py \
+    params.device="$SC_DEVICE" \
+    params.rnn.type="gru" \
+    model_path.model="models/mles__$SC_SUFFIX.p" \
+    --conf conf/dataset.hocon conf/mles_params.json
+python ../../ml_inference_lazy.py \
+    params.device="$SC_DEVICE" \
+    model_path.model="models/mles__$SC_SUFFIX.p" \
+    output.path="data/emb_mles__$SC_SUFFIX" \
+    --conf conf/dataset.hocon conf/mles_params.json
+#
 # LSTM encoder
 export SC_SUFFIX="encoder_lstm"
 python ../../metric_learning.py \
@@ -43,5 +56,4 @@ LUIGI_CONFIG_PATH=conf/luigi.cfg python -m embeddings_validation \
     --conf conf/embeddings_validation_short.hocon --workers 10 --total_cpu_count 20 \
     --conf_extra \
       'report_file: "../results/scenario_rosbank__encoder_types.txt",
-      auto_features: ["../data/emb_mles__encoder_*.pickle"]
-      '
+      auto_features: ["../data/emb_mles__encoder_*.pickle"]'
