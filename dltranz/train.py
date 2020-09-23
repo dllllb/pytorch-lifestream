@@ -254,8 +254,7 @@ def fit_model(model, train_loader, valid_loader, loss, optimizer, scheduler, par
         validation_evaluator.run(valid_loader)
         metrics = validation_evaluator.state.metrics
         msgs = []
-        metrics_list =  ['type_transac', 'r2_transac'] if 'type_transac' in metrics.keys() else valid_metrics
-        for metric in metrics_list:
+        for metric in metrics.keys():
             msgs.append(f'{metric}: {metrics[metric]:.3f}')
         pbar.log_message(
             f'Epoch: {engine.state.epoch},  {", ".join(msgs)}')
