@@ -22,7 +22,7 @@ class InfiniteDataset(Dataset):
         self.file_batch_size = dataset_params.get('file_batch_size', self.n_workers)
         if self.max_file_read is not None and self.n_workers > 1:
             self.n_workers = 1
-            logger.warning(f'max_file_read mode is active. n_workers reduced to 1')
+            logger.warning('max_file_read mode is active. n_workers reduced to 1')
         self.progress = progress
 
         self._file_list = get_data_files(dataset_params)

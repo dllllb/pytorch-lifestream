@@ -1,4 +1,5 @@
 import pytorch_lightning as pl
+from pyhocon import ConfigFactory
 
 from dltranz.train import get_optimizer, get_lr_scheduler
 from dltranz.metric_learn.losses import get_loss
@@ -18,15 +19,16 @@ class SequenceMetricLearning(pl.LightningModule):
         self.model = model_f(params)
 
     def forward(self, x):
-        self.model(x)
+        return self.model(x)
 
-    def training_step(self, batch, batch_nb):
+    def training_step(self, batch, _):
         x, y = batch
         y_h = self(x)
         loss = self.loss(y_h, y)
-        return {'loss': loss}
+        return pl.TrainResult(minimize=loss)
 
     def configure_optimizers(self):
-        optimizer = get_optimizer(self.parameters(), self.hparams)
-        scheduler = get_lr_scheduler(optimizer, self.hparams)
+        params = ConfigFactory.from_dict(self.hparams)
+        optimizer = get_optimizer(self, params)
+        scheduler = get_lr_scheduler(optimizer, params)
         return {'optimizer': optimizer, 'lr_scheduler': scheduler}

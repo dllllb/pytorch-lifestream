@@ -30,8 +30,10 @@ def create_train_data_loader(data, conf):
     )
     dataset = TargetEnumeratorDataset(dataset)
     dataset = ConvertingTrxDataset(dataset)
-    dataset = DropoutTrxDataset(dataset, trx_dropout=conf['params.train.trx_dropout'],
-                                seq_len=conf['params.train.max_seq_len'])
+    dataset = DropoutTrxDataset(
+        dataset,
+        trx_dropout=conf['params.train.trx_dropout'],
+        seq_len=conf['params.train.max_seq_len'])
 
     data_loader = DataLoader(
         dataset,

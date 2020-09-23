@@ -23,7 +23,7 @@ tensorboard = ">=2.1.0"
 xgboost = ">=0.90"
 fastai = {version = ">=1.0.6", sys_platform = "!= 'darwin'"}
 pyarrow = ">=1"
-pytorch-lightning = "*"
+pytorch-lightning = ">=0.9"
 
 [requires]
 python_version = "3.8"

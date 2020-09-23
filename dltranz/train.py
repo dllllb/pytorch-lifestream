@@ -66,20 +66,26 @@ def get_optimizer(model, params):
     return optimizer
 
 
-class SchedulerWrapper:
+class SchedulerWrapper(torch.optim.lr_scheduler._LRScheduler):
     def __init__(self, scheduler):
         self.scheduler = scheduler
 
     def __call__(self, *args, **kwargs):
         self.scheduler.step()
 
+    def step(self, epoch=None):
+        self.scheduler.step(epoch)
 
-class ReduceLROnPlateauWrapper:
+
+class ReduceLROnPlateauWrapper(torch.optim.lr_scheduler.ReduceLROnPlateau):
     def __init__(self, scheduler):
         self.scheduler = scheduler
 
     def __call__(self, metric_value, *args, **kwargs):
         self.scheduler.step(metric_value)
+
+    def step(self, metric, epoch=None):
+        self.scheduler.step(metric, epoch)
 
 
 class MultiGammaScheduler(torch.optim.lr_scheduler.MultiStepLR):
