@@ -23,7 +23,7 @@ do
 done
 rm results/scenario_tuning.txt
 LUIGI_CONFIG_PATH=conf/luigi.cfg python -m embeddings_validation \
-    --conf conf/embeddings_validation.hocon --workers 10 --total_cpu_count 18 \
+    --conf conf/embeddings_validation_short.hocon --workers 10 --total_cpu_count 18 \
     --conf_extra 'report_file: "../results/scenario_tuning.txt", auto_features: ["../data/mles_emb_tuning_*.pickle"]'
 less -S results/scenario_tuning.txt
 
@@ -51,7 +51,7 @@ done
 rm results/scenario_tuning.txt
 rm -r conf/embeddings_validation.work/m_lgbm__f_mles_emb_tuning_${SC_SUFFIX}_*
 LUIGI_CONFIG_PATH=conf/luigi.cfg python -m embeddings_validation \
-    --conf conf/embeddings_validation.hocon --workers 10 --total_cpu_count 18 \
+    --conf conf/embeddings_validation_short.hocon --workers 10 --total_cpu_count 18 \
     --conf_extra 'report_file: "../results/scenario_tuning.txt", auto_features: ["../data/mles_emb_tuning_*.pickle"]'
 less -S results/scenario_tuning.txt
 
@@ -77,7 +77,7 @@ do
 done
 #rm results/scenario_tuning.txt
 #LUIGI_CONFIG_PATH=conf/luigi.cfg python -m embeddings_validation \
-#    --conf conf/embeddings_validation.hocon --workers 10 --total_cpu_count 18 \
+#    --conf conf/embeddings_validation_short.hocon --workers 10 --total_cpu_count 18 \
 #    --conf_extra 'report_file: "../results/scenario_tuning.txt", auto_features: ["../data/mles_emb_tuning_*.pickle"]'
 #less -S results/scenario_tuning.txt
 
@@ -102,7 +102,7 @@ do
 done
 #rm results/scenario_tuning.txt
 #LUIGI_CONFIG_PATH=conf/luigi.cfg python -m embeddings_validation \
-#    --conf conf/embeddings_validation.hocon --workers 10 --total_cpu_count 18 \
+#    --conf conf/embeddings_validation_short.hocon --workers 10 --total_cpu_count 18 \
 #    --conf_extra 'report_file: "../results/scenario_tuning.txt", auto_features: ["../data/mles_emb_tuning_*.pickle"]'
 #less -S results/scenario_tuning.txt
 
@@ -127,7 +127,7 @@ do
 done
 #rm results/scenario_tuning.txt
 #LUIGI_CONFIG_PATH=conf/luigi.cfg python -m embeddings_validation \
-#    --conf conf/embeddings_validation.hocon --workers 10 --total_cpu_count 18 \
+#    --conf conf/embeddings_validation_short.hocon --workers 10 --total_cpu_count 18 \
 #    --conf_extra 'report_file: "../results/scenario_tuning.txt", auto_features: ["../data/mles_emb_tuning_*.pickle"]'
 #less -S results/scenario_tuning.txt
 
@@ -152,7 +152,7 @@ do
 done
 rm results/scenario_tuning.txt
 LUIGI_CONFIG_PATH=conf/luigi.cfg python -m embeddings_validation \
-    --conf conf/embeddings_validation.hocon --workers 10 --total_cpu_count 18 \
+    --conf conf/embeddings_validation_short.hocon --workers 10 --total_cpu_count 18 \
     --conf_extra 'report_file: "../results/scenario_tuning.txt", auto_features: ["../data/mles_emb_tuning_*.pickle"]'
 less -S results/scenario_tuning.txt
 

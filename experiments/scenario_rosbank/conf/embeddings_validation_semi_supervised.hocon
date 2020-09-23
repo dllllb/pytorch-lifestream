@@ -176,22 +176,16 @@
     }
 
     report: {
-        is_check_train: false
+        is_check_train: true
         error_handling: fail
+        print_all_metrics: false
 
-        auroc: {float_format: "{:.3f}"}
-        accuracy: {float_format: "{:.3f}"}
+        metrics: {
+            auroc: {float_format: "{:.3f}"}
+            accuracy: {float_format: "{:.3f}"}
 
-        cnt_features: {float_format: "{:.0f}", keep_columns: ["mean"]}
-        cnt_samples: {float_format: "{:9,.0f}", keep_columns: ["mean"]}
-
-        feature_load_time: {float_format: "{:,.1f}"}
-        train_fit_transform_time: {float_format: "{:,.1f}"}
-        feature_transform_time: {float_format: "{:,.1f}"}
-        train_time: {float_format: "{:,.1f}"}
-        auroc_score_time {float_format: "{:,.1f}"}
-        accuracy_score_time: {float_format: "{:,.1f}"}
-
-        feature_fit_info: {keep_columns: ["first"]}
+            cnt_features: {float_format: "{:.0f}", keep_columns: ["mean"]}
+            cnt_samples: {float_format: "{:9,.0f}", keep_columns: ["mean"]}
+        }
     }
 }

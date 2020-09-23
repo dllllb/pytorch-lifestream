@@ -2,7 +2,7 @@
     environment: {
         work_dir: "embeddings_validation.work"
     }
-    report_file: "../results/scenario_rosbank.txt"
+    report_file: "../results/scenario_rosbank_short.txt"
 
     target: {
         file_name: "../data/train.csv"
@@ -29,16 +29,6 @@
     }
 
     features: {
-        baseline: {
-            enabled: true
-            read_params: {file_name: ../data/agg_feat_embed.pickle}
-            target_options: {}
-        }
-        cpc_embeddings: {
-            enabled: true
-            read_params: {file_name: ../data/cpc_embeddings.pickle}
-            target_options: {}
-        }
         mles_embeddings: {
             enabled: true
             read_params: {file_name: ../data/mles_embeddings.pickle}
@@ -47,21 +37,9 @@
     }
 
     external_scores: {
-        0: "../results/fit_target_results.json"
-        1: "../results/mles_finetuning_results.json"
-        2: "../results/cpc_finetuning_results.json"
     }
 
     models: {
-        linear: {
-            enabled: false
-            cls_name: sklearn.linear_model.LogisticRegression
-            params: {},
-            cpu_count: 1
-            preprocessing: [
-                [sklearn.preprocessing.MaxAbsScaler, {}]
-            ]
-        }
         lgbm: {
             enabled: true
             cls_name: lightgbm.LGBMClassifier,
@@ -90,19 +68,6 @@
                 [sklearn.preprocessing.MaxAbsScaler, {}]
             ]
         }
-        xgb: {
-            enabled: false
-            cls_name: xgboost.XGBClassifier
-            params: {
-                n_jobs=4,
-                seed=42,
-                n_estimators=300,
-            },
-            cpu_count: 4
-            preprocessing: [
-                [sklearn.preprocessing.MaxAbsScaler, {}]
-            ]
-        }
     }
 
     metrics: {
@@ -122,23 +87,11 @@
     report: {
         is_check_train: false
         error_handling: fail
-        print_all_metrics: true
+        print_all_metrics: false
 
         metrics: {
-            auroc: {float_format: "{:.3f}", baseline_key=["lgbm", "baseline"]}
-            accuracy: {float_format: "{:.3f}", baseline_key=["lgbm", "baseline"]}
-
-            cnt_features: {float_format: "{:.0f}", keep_columns: ["mean"]}
-            cnt_samples: {float_format: "{:9,.0f}", keep_columns: ["mean"]}
-
-            feature_load_time: {float_format: "{:,.1f}"}
-            train_fit_transform_time: {float_format: "{:,.1f}"}
-            feature_transform_time: {float_format: "{:,.1f}"}
-            train_time: {float_format: "{:,.1f}"}
-            auroc_score_time {float_format: "{:,.1f}"}
-            accuracy_score_time: {float_format: "{:,.1f}"}
-
-            feature_fit_info: {keep_columns: ["first"]}
+            auroc: {float_format: "{:.3f}", baseline_key=["lgbm", "mles_embeddings"], split_columns: true}
+            accuracy: {float_format: "{:.3f}", baseline_key=["lgbm", "mles_embeddings"], split_columns: true}
         }
     }
 }

@@ -19,11 +19,8 @@ done
 rm results/scenario_rosbank__hidden_size.txt
 # rm -r conf/embeddings_validation.work/
 LUIGI_CONFIG_PATH=conf/luigi.cfg python -m embeddings_validation \
-    --conf conf/embeddings_validation.hocon --workers 10 --total_cpu_count 20 \
+    --conf conf/embeddings_validation_short.hocon --workers 10 --total_cpu_count 20 \
     --conf_extra \
       'report_file: "../results/scenario_rosbank__hidden_size.txt",
-      auto_features: ["../data/emb_mles__hidden_size_*.pickle"],
-      features.baseline.enabled: false,
-      report.auroc.baseline_key=["lgbm", "mles_embeddings"],
-      report.accuracy.baseline_key=["lgbm", "mles_embeddings"]'
+      auto_features: ["../data/emb_mles__hidden_size_*.pickle"]'
 # less -S results/scenario_rosbank__hidden_size.txt
