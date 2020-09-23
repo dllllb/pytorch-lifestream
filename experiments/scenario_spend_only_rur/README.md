@@ -5,11 +5,12 @@ cd experiments/scenario_spend_only_rur
 # download datasets
 bin/get-data.sh
 
+#create ground truth - a share of each transaction type for a client
+python transac2statistics.py
 # convert datasets from transaction list to features for metric learning
 bin/make-datasets-spark.sh
 #if the previous command does not work, set - export SPARK_LOCAL_IP="127.0.0.1" before 
-#create ground truth - a share of each transaction type for a client
-python transac2statistics.py
+
 ```
 ```sh
 # Main scenario
