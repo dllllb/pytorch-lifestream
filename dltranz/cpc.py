@@ -130,10 +130,10 @@ def run_experiment(train_ds, valid_ds, model, conf):
     valid_loader = create_validation_loader(valid_ds, params['valid'])
 
     train_handlers = []
-    if 'checkpoints' in conf['params.train']:
+    if 'checkpoints' in params['train']:
         checkpoint = CheckpointHandler(
             model=model,
-            **conf['params.train.checkpoints']
+            **params['train.checkpoints']
         )
         train_handlers.append(checkpoint)
 
