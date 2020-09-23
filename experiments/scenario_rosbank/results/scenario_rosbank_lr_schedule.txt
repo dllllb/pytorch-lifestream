@@ -1,164 +1,44 @@
 ------------------------------------------------------------------------------------------------------------------------
 Vector testing report
 Params:
-    conf: "conf/embeddings_validation_1600716172.hocon"
+    conf: "conf/embeddings_validation_short_1600856889.hocon"
 
-Collected 28 files with 0 errors
+Collected 20 files with 0 errors
 
 ------------------------------------------------------------------------------------------------------------------------
 Metric: "auroc"
-                                                   scores_valid                                                                                                                  scores_test                                                                                                                 
-                                                           mean  t_pm t_int_l t_int_h   std                           values t_f_stat t_f_alpha t_t_stat t_t_alpha    t_A t_A_pp        mean  t_pm t_int_l t_int_h   std                           values t_f_stat t_f_alpha t_t_stat t_t_alpha    t_A t_A_pp
-model_name feature_name                                                                                                                                                                                                                                                                                      
-lgbm       cpc_embeddings                                 0.808 0.016   0.793   0.824 0.013  [0.823 0.793 0.818 0.799 0.807]    1.177     0.561   -1.738     0.060 -0.030 -3.609       0.802 0.005   0.796   0.807 0.004  [0.798 0.806 0.804 0.804 0.796]    0.381     0.186  -18.067     0.000 -0.046 -5.438
-           emb_mles__lr_cosine_annealing                  0.816 0.009   0.807   0.825 0.008  [0.826 0.805 0.816 0.815 0.818]    3.224     0.858   -0.959     0.183 -0.020 -2.379       0.842 0.005   0.837   0.847 0.004  [0.837 0.846 0.845 0.838 0.842]    0.451     0.229   -0.798     0.224 -0.006 -0.683
-           emb_mles__lr_reduce_on_plateau                 0.824 0.014   0.810   0.837 0.011  [0.837 0.808 0.828 0.818 0.827]    1.547     0.659    0.136     0.553 -0.013 -1.631       0.839 0.002   0.837   0.841 0.001  [0.838 0.840 0.838 0.839 0.840]    4.498     0.913   -3.366     0.005 -0.007 -0.828
-           emb_mles__lr_reduce_on_plateau_x2epochs        0.822 0.011   0.811   0.833 0.009  [0.830 0.807 0.824 0.822 0.826]    2.306     0.781   -0.110     0.458 -0.014 -1.739       0.843 0.004   0.839   0.847 0.003  [0.842 0.846 0.840 0.841 0.847]    0.736     0.387   -0.185     0.429 -0.004 -0.450
-           mles_embeddings                                0.823 0.017   0.806   0.839 0.014  [0.837 0.803 0.831 0.815 0.827]    1.000     0.500    0.000     0.500 -0.016 -1.939       0.843 0.003   0.840   0.847 0.003  [0.839 0.844 0.844 0.843 0.847]    1.000     0.500    0.000     0.500 -0.003 -0.377
-nn         cpc_finetuning                                 0.801 0.015   0.787   0.816 0.012  [0.810 0.803 0.797 0.783 0.814]    1.298     0.597   -2.626     0.015 -0.036 -4.402       0.820 0.008   0.812   0.827 0.006  [0.819 0.811 0.828 0.820 0.820]    0.197     0.072   -7.922     0.000 -0.029 -3.456
-           mles_finetuning                                0.816 0.015   0.800   0.831 0.012  [0.827 0.821 0.802 0.802 0.826]    1.187     0.564   -0.849     0.210 -0.022 -2.711       0.829 0.012   0.817   0.840 0.009  [0.837 0.818 0.827 0.840 0.821]    0.083     0.017   -3.398     0.005 -0.023 -2.725
-           target_scores                                  0.809 0.016   0.793   0.825 0.013  [0.821 0.810 0.797 0.796 0.823]    1.092     0.533   -1.569     0.078 -0.029 -3.500       0.820 0.008   0.812   0.828 0.007  [0.822 0.809 0.827 0.823 0.820]    0.170     0.057   -7.388     0.000 -0.029 -3.478
+                                                   scores_valid                                                                                                                 
+                                                           mean  t_pm t_int_l t_int_h   std                           values t_f_stat t_f_alpha t_t_stat t_t_alpha    t_A t_A_pp
+model_name feature_name                                                                                                                                                         
+lgbm       emb_mles__lr_cosine_annealing                  0.816 0.009   0.807   0.825 0.008  [0.826 0.805 0.816 0.815 0.818]    3.224     0.858   -0.959     0.183 -0.020 -2.379
+           emb_mles__lr_reduce_on_plateau                 0.824 0.014   0.810   0.837 0.011  [0.837 0.808 0.828 0.818 0.827]    1.547     0.659    0.136     0.553 -0.013 -1.631
+           emb_mles__lr_reduce_on_plateau_x2epochs        0.822 0.011   0.811   0.833 0.009  [0.830 0.807 0.824 0.822 0.826]    2.306     0.781   -0.110     0.458 -0.014 -1.739
+           mles_embeddings                                0.823 0.017   0.806   0.839 0.014  [0.837 0.803 0.831 0.815 0.827]    1.000     0.500    0.000     0.500 -0.016 -1.939
+                                                   scores_test                                                                                                                 
+                                                          mean  t_pm t_int_l t_int_h   std                           values t_f_stat t_f_alpha t_t_stat t_t_alpha    t_A t_A_pp
+model_name feature_name                                                                                                                                                        
+lgbm       emb_mles__lr_cosine_annealing                 0.842 0.005   0.837   0.847 0.004  [0.837 0.846 0.845 0.838 0.842]    0.451     0.229   -0.798     0.224 -0.006 -0.683
+           emb_mles__lr_reduce_on_plateau                0.839 0.002   0.837   0.841 0.001  [0.838 0.840 0.838 0.839 0.840]    4.498     0.913   -3.366     0.005 -0.007 -0.828
+           emb_mles__lr_reduce_on_plateau_x2epochs       0.843 0.004   0.839   0.847 0.003  [0.842 0.846 0.840 0.841 0.847]    0.736     0.387   -0.185     0.429 -0.004 -0.450
+           mles_embeddings                               0.843 0.003   0.840   0.847 0.003  [0.839 0.844 0.844 0.843 0.847]    1.000     0.500    0.000     0.500 -0.003 -0.377
 
 ------------------------------------------------------------------------------------------------------------------------
 Metric: "accuracy"
-                                                   scores_valid                                                                                                                  scores_test                                                                                                                 
-                                                           mean  t_pm t_int_l t_int_h   std                           values t_f_stat t_f_alpha t_t_stat t_t_alpha    t_A t_A_pp        mean  t_pm t_int_l t_int_h   std                           values t_f_stat t_f_alpha t_t_stat t_t_alpha    t_A t_A_pp
-model_name feature_name                                                                                                                                                                                                                                                                                      
-lgbm       cpc_embeddings                                 0.736 0.015   0.721   0.750 0.012  [0.756 0.730 0.736 0.726 0.731]    2.326     0.783   -0.999     0.174 -0.027 -3.670       0.727 0.017   0.710   0.744 0.014  [0.718 0.712 0.748 0.726 0.732]    0.586     0.309   -4.548     0.001 -0.050 -6.575
-           emb_mles__lr_cosine_annealing                  0.745 0.011   0.733   0.756 0.009  [0.758 0.743 0.733 0.748 0.741]    3.947     0.894   -0.050     0.481 -0.017 -2.295       0.762 0.008   0.753   0.770 0.007  [0.750 0.764 0.764 0.764 0.766]    2.645     0.815   -0.215     0.418 -0.012 -1.519
-           emb_mles__lr_reduce_on_plateau                 0.750 0.013   0.737   0.763 0.010  [0.768 0.740 0.746 0.750 0.748]    2.907     0.837    0.551     0.702 -0.012 -1.629       0.765 0.006   0.758   0.771 0.005  [0.768 0.764 0.760 0.772 0.760]    4.162     0.902    0.377     0.642 -0.008 -1.030
-           emb_mles__lr_reduce_on_plateau_x2epochs        0.748 0.013   0.735   0.761 0.010  [0.756 0.730 0.750 0.753 0.753]    2.904     0.837    0.359     0.636 -0.014 -1.868       0.767 0.009   0.758   0.776 0.007  [0.778 0.770 0.758 0.766 0.764]    2.051     0.748    0.758     0.765 -0.006 -0.838
-           mles_embeddings                                0.745 0.022   0.723   0.767 0.018  [0.764 0.723 0.749 0.730 0.759]    1.000     0.500    0.000     0.500 -0.021 -2.824       0.763 0.013   0.750   0.776 0.011  [0.768 0.754 0.752 0.778 0.762]    1.000     0.500    0.000     0.500 -0.013 -1.640
-nn         cpc_finetuning                                   nan   nan     nan     nan   nan            [nan nan nan nan nan]      nan       nan      nan       nan    nan    nan         nan   nan     nan     nan   nan            [nan nan nan nan nan]      nan       nan      nan       nan    nan    nan
-           mles_finetuning                                  nan   nan     nan     nan   nan            [nan nan nan nan nan]      nan       nan      nan       nan    nan    nan         nan   nan     nan     nan   nan            [nan nan nan nan nan]      nan       nan      nan       nan    nan    nan
-           target_scores                                    nan   nan     nan     nan   nan            [nan nan nan nan nan]      nan       nan      nan       nan    nan    nan         nan   nan     nan     nan   nan            [nan nan nan nan nan]      nan       nan      nan       nan    nan    nan
+                                                   scores_valid                                                                                                                 
+                                                           mean  t_pm t_int_l t_int_h   std                           values t_f_stat t_f_alpha t_t_stat t_t_alpha    t_A t_A_pp
+model_name feature_name                                                                                                                                                         
+lgbm       emb_mles__lr_cosine_annealing                  0.745 0.011   0.733   0.756 0.009  [0.758 0.743 0.733 0.748 0.741]    3.947     0.894   -0.050     0.481 -0.017 -2.295
+           emb_mles__lr_reduce_on_plateau                 0.750 0.013   0.737   0.763 0.010  [0.768 0.740 0.746 0.750 0.748]    2.907     0.837    0.551     0.702 -0.012 -1.629
+           emb_mles__lr_reduce_on_plateau_x2epochs        0.748 0.013   0.735   0.761 0.010  [0.756 0.730 0.750 0.753 0.753]    2.904     0.837    0.359     0.636 -0.014 -1.868
+           mles_embeddings                                0.745 0.022   0.723   0.767 0.018  [0.764 0.723 0.749 0.730 0.759]    1.000     0.500    0.000     0.500 -0.021 -2.824
+                                                   scores_test                                                                                                                 
+                                                          mean  t_pm t_int_l t_int_h   std                           values t_f_stat t_f_alpha t_t_stat t_t_alpha    t_A t_A_pp
+model_name feature_name                                                                                                                                                        
+lgbm       emb_mles__lr_cosine_annealing                 0.762 0.008   0.753   0.770 0.007  [0.750 0.764 0.764 0.764 0.766]    2.645     0.815   -0.215     0.418 -0.012 -1.519
+           emb_mles__lr_reduce_on_plateau                0.765 0.006   0.758   0.771 0.005  [0.768 0.764 0.760 0.772 0.760]    4.162     0.902    0.377     0.642 -0.008 -1.030
+           emb_mles__lr_reduce_on_plateau_x2epochs       0.767 0.009   0.758   0.776 0.007  [0.778 0.770 0.758 0.766 0.764]    2.051     0.748    0.758     0.765 -0.006 -0.838
+           mles_embeddings                               0.763 0.013   0.750   0.776 0.011  [0.768 0.754 0.752 0.778 0.762]    1.000     0.500    0.000     0.500 -0.013 -1.640
 
 ------------------------------------------------------------------------------------------------------------------------
-Metric: "cnt_features"
-                                                   scores_valid scores_test
-                                                           mean        mean
-model_name feature_name                                                    
-lgbm       cpc_embeddings                                   512         512
-           emb_mles__lr_cosine_annealing                   1024        1024
-           emb_mles__lr_reduce_on_plateau                  1024        1024
-           emb_mles__lr_reduce_on_plateau_x2epochs         1024        1024
-           mles_embeddings                                 1024        1024
-nn         cpc_finetuning                                   512         512
-           mles_finetuning                                  512         512
-           target_scores                                     48          48
-
-------------------------------------------------------------------------------------------------------------------------
-Metric: "cnt_samples"
-                                                   scores_valid scores_test
-                                                           mean        mean
-model_name feature_name                                                    
-lgbm       cpc_embeddings                                   900         500
-           emb_mles__lr_cosine_annealing                    900         500
-           emb_mles__lr_reduce_on_plateau                   900         500
-           emb_mles__lr_reduce_on_plateau_x2epochs          900         500
-           mles_embeddings                                  900         500
-nn         cpc_finetuning                                   900         500
-           mles_finetuning                                  900         500
-           target_scores                                    900         500
-
-------------------------------------------------------------------------------------------------------------------------
-Metric: "feature_load_time"
-                                                   process_info                                                
-                                                           mean t_pm t_int_l t_int_h std                 values
-model_name feature_name                                                                                        
-lgbm       cpc_embeddings                                   0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]
-           emb_mles__lr_cosine_annealing                    0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]
-           emb_mles__lr_reduce_on_plateau                   0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]
-           emb_mles__lr_reduce_on_plateau_x2epochs          0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]
-           mles_embeddings                                  0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]
-nn         cpc_finetuning                                   nan  nan     nan     nan nan  [nan nan nan nan nan]
-           mles_finetuning                                  nan  nan     nan     nan nan  [nan nan nan nan nan]
-           target_scores                                    nan  nan     nan     nan nan  [nan nan nan nan nan]
-
-------------------------------------------------------------------------------------------------------------------------
-Metric: "train_fit_transform_time"
-                                                   process_info                                                
-                                                           mean t_pm t_int_l t_int_h std                 values
-model_name feature_name                                                                                        
-lgbm       cpc_embeddings                                   0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]
-           emb_mles__lr_cosine_annealing                    0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]
-           emb_mles__lr_reduce_on_plateau                   0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]
-           emb_mles__lr_reduce_on_plateau_x2epochs          0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]
-           mles_embeddings                                  0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]
-nn         cpc_finetuning                                   nan  nan     nan     nan nan  [nan nan nan nan nan]
-           mles_finetuning                                  nan  nan     nan     nan nan  [nan nan nan nan nan]
-           target_scores                                    nan  nan     nan     nan nan  [nan nan nan nan nan]
-
-------------------------------------------------------------------------------------------------------------------------
-Metric: "feature_transform_time"
-                                                   scores_valid                                                 scores_test                                                
-                                                           mean t_pm t_int_l t_int_h std                 values        mean t_pm t_int_l t_int_h std                 values
-model_name feature_name                                                                                                                                                    
-lgbm       cpc_embeddings                                   0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]         0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]
-           emb_mles__lr_cosine_annealing                    0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]         0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]
-           emb_mles__lr_reduce_on_plateau                   0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]         0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]
-           emb_mles__lr_reduce_on_plateau_x2epochs          0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]         0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]
-           mles_embeddings                                  0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]         0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]
-nn         cpc_finetuning                                   nan  nan     nan     nan nan  [nan nan nan nan nan]         nan  nan     nan     nan nan  [nan nan nan nan nan]
-           mles_finetuning                                  nan  nan     nan     nan nan  [nan nan nan nan nan]         nan  nan     nan     nan nan  [nan nan nan nan nan]
-           target_scores                                    nan  nan     nan     nan nan  [nan nan nan nan nan]         nan  nan     nan     nan nan  [nan nan nan nan nan]
-
-------------------------------------------------------------------------------------------------------------------------
-Metric: "train_time"
-                                                   process_info                                                
-                                                           mean t_pm t_int_l t_int_h std                 values
-model_name feature_name                                                                                        
-lgbm       cpc_embeddings                                   2.0  0.0     2.0     2.0 0.0  [2.0 2.0 2.0 2.0 2.0]
-           emb_mles__lr_cosine_annealing                    4.0  0.0     4.0     4.0 0.0  [4.0 4.0 4.0 4.0 4.0]
-           emb_mles__lr_reduce_on_plateau                   4.0  0.0     4.0     4.0 0.0  [4.0 4.0 4.0 4.0 4.0]
-           emb_mles__lr_reduce_on_plateau_x2epochs          4.0  0.0     4.0     4.0 0.0  [4.0 4.0 4.0 4.0 4.0]
-           mles_embeddings                                  4.0  0.0     4.0     4.0 0.0  [4.0 4.0 4.0 4.0 4.0]
-nn         cpc_finetuning                                   nan  nan     nan     nan nan  [nan nan nan nan nan]
-           mles_finetuning                                  nan  nan     nan     nan nan  [nan nan nan nan nan]
-           target_scores                                    nan  nan     nan     nan nan  [nan nan nan nan nan]
-
-------------------------------------------------------------------------------------------------------------------------
-Metric: "auroc_score_time"
-                                                   scores_valid                                                 scores_test                                                
-                                                           mean t_pm t_int_l t_int_h std                 values        mean t_pm t_int_l t_int_h std                 values
-model_name feature_name                                                                                                                                                    
-lgbm       cpc_embeddings                                   0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]         0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]
-           emb_mles__lr_cosine_annealing                    0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]         0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]
-           emb_mles__lr_reduce_on_plateau                   0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]         0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]
-           emb_mles__lr_reduce_on_plateau_x2epochs          0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]         0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]
-           mles_embeddings                                  0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]         0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]
-nn         cpc_finetuning                                   nan  nan     nan     nan nan  [nan nan nan nan nan]         nan  nan     nan     nan nan  [nan nan nan nan nan]
-           mles_finetuning                                  nan  nan     nan     nan nan  [nan nan nan nan nan]         nan  nan     nan     nan nan  [nan nan nan nan nan]
-           target_scores                                    nan  nan     nan     nan nan  [nan nan nan nan nan]         nan  nan     nan     nan nan  [nan nan nan nan nan]
-
-------------------------------------------------------------------------------------------------------------------------
-Metric: "accuracy_score_time"
-                                                   scores_valid                                                 scores_test                                                
-                                                           mean t_pm t_int_l t_int_h std                 values        mean t_pm t_int_l t_int_h std                 values
-model_name feature_name                                                                                                                                                    
-lgbm       cpc_embeddings                                   0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]         0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]
-           emb_mles__lr_cosine_annealing                    0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]         0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]
-           emb_mles__lr_reduce_on_plateau                   0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]         0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]
-           emb_mles__lr_reduce_on_plateau_x2epochs          0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]         0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]
-           mles_embeddings                                  0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]         0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]
-nn         cpc_finetuning                                   nan  nan     nan     nan nan  [nan nan nan nan nan]         nan  nan     nan     nan nan  [nan nan nan nan nan]
-           mles_finetuning                                  nan  nan     nan     nan nan  [nan nan nan nan nan]         nan  nan     nan     nan nan  [nan nan nan nan nan]
-           target_scores                                    nan  nan     nan     nan nan  [nan nan nan nan nan]         nan  nan     nan     nan nan  [nan nan nan nan nan]
-
-------------------------------------------------------------------------------------------------------------------------
-Metric: "feature_fit_info"
-                                                   process_info
-                                                          first
-model_name feature_name                                        
-lgbm       cpc_embeddings                                   nan
-           emb_mles__lr_cosine_annealing                    nan
-           emb_mles__lr_reduce_on_plateau                   nan
-           emb_mles__lr_reduce_on_plateau_x2epochs          nan
-           mles_embeddings                                  nan
-nn         cpc_finetuning                                   nan
-           mles_finetuning                                  nan
-           target_scores                                    nan
-
-------------------------------------------------------------------------------------------------------------------------
-End of report.     Current time: 2020-09-21 19:23:42
+End of report.     Current time: 2020-09-23 10:28:12
 ------------------------------------------------------------------------------------------------------------------------

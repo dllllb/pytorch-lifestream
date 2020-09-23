@@ -125,8 +125,8 @@
         print_all_metrics: true
 
         metrics: {
-            auroc: {float_format: "{:.3f}", baseline_key=["lgbm", "baseline"]}
-            accuracy: {float_format: "{:.3f}", baseline_key=["lgbm", "baseline"]}
+            auroc: {float_format: "{:.3f}", baseline_key=["lgbm", "baseline"], split_columns: true}
+            accuracy: {float_format: "{:.3f}", baseline_key=["lgbm", "baseline"], split_columns: true}
 
             cnt_features: {float_format: "{:.0f}", keep_columns: ["mean"]}
             cnt_samples: {float_format: "{:9,.0f}", keep_columns: ["mean"]}
