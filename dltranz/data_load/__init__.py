@@ -351,19 +351,11 @@ class TrxDataset(Dataset):
         for rec in iter(self.data):
             x = rec['feature_arrays']
             y = rec.get('target', None)
-            #y = y.astype(np.float)
             yield x, self.y_dtype(y)
 
     def __getitem__(self, idx):
         x = self.data[idx]['feature_arrays']
         y = self.data[idx].get('target', None)
-        #if isinstance(y,(int, float)):
-          #yf = y
-        #else:
-          #yf = y.astype(np.float)
-        #this code should be removed after understanding the reason of none in y
-        #if np.isnan(y).any():
-        #    y[np.isnan(y)] = 0
         return x, self.y_dtype(y)
 
 
