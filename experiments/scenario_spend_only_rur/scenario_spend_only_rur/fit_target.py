@@ -89,9 +89,10 @@ def read_embedding_data(emb_path, target_path, conf):
 
     for rec in target:
         if rec['target'] is not None:
-                emb = embeddings.loc[int(rec['client_id'])].to_numpy() 
+                client_id = int(rec['client_id'])
+                emb = embeddings.loc[client_id].to_numpy() 
                 rec_nump = np.array(rec['target'], dtype=np.float32)
-                data.append({'feature_arrays':{'embedding':emb}, 'target':rec_nump} )
+                data.append({'client_id':client_id,'feature_arrays':{'embedding':emb}, 'target':rec_nump} )
     return data
 
 def read_consumer_data(path, conf):

@@ -37,18 +37,18 @@ def get_scores(args):
 
         def numpy_estim(y_pred, y):
           soft_pred = softmax(y_pred, axis=1)
-          delta = np.linalg.norm(soft_pred - y, axis=1)
-          rel_delta = 100*np.mean(delta)/sqrt(2)
-          item_val =rel_delta.item()
-          return item_val
+          rss = np.linalg.norm(soft_pred - y, ord=1, axis=1)**2
+          apriori_mean = y.mean(axis=0)
+          apriori_mean = np.repeat(np.expand_dims(apriori_mean,0), y_pred.shape[0], 0)
+          tss = np.linalg.norm(soft_pred - apriori_mean, ord=1, axis=1)**2
+          r2 = 1 - rss/tss
+          return np.mean(r2).item()
         
         y_pred = valid_fold.iloc[:,1:53].to_numpy()
-        y = valid_fold.iloc[:,54:].to_numpy() 
-        y[np.isnan(y)] = 0
+        y = valid_fold.iloc[:,55:].to_numpy() 
         valid_metr = numpy_estim(y_pred, y)
         y_pred = test_fold.iloc[:,1:53].to_numpy()
-        y = test_fold.iloc[:,54:].to_numpy() 
-        y[np.isnan(y)] = 0
+        y = test_fold.iloc[:,55:].to_numpy() 
         test_metr = numpy_estim(y_pred, y)
         result.append({
             'name': name,
