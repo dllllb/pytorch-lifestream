@@ -1,59 +1,27 @@
-import pickle
 import logging
-import random
-from itertools import islice
-
-import numpy as np
 import torch
 
-from tqdm.auto import tqdm
 from dltranz.metric_learn.ml_models import ml_model_by_type
-from dltranz.seq_encoder import RnnEncoder, LastStepEncoder
-from dltranz.trx_encoder import TrxEncoder
-from dltranz.metric_learn.dataset import create_train_data_loader, create_valid_data_loader
-from dltranz.cpc import CPC_Ecoder, run_experiment
+from dltranz.seq_encoder import LastStepEncoder
+from dltranz.baselines.cpc import run_experiment
 from dltranz.util import init_logger, get_conf
-from dltranz.data_load import TrxDataset, ConvertingTrxDataset, read_data_gen, SameTimeShuffleDataset, \
-    AllTimeShuffleDataset
-from metric_learning import prepare_embeddings
+from dltranz.data_load import TrxDataset, ConvertingTrxDataset, SameTimeShuffleDataset, AllTimeShuffleDataset
+from metric_learning import prepare_data
 
 logger = logging.getLogger(__name__)
 
-def create_ds(train_data, valid_data, conf):
 
+def create_ds(train_data, valid_data, conf):
     train_ds = ConvertingTrxDataset(TrxDataset(train_data))
     valid_ds = ConvertingTrxDataset(TrxDataset(valid_data))
 
     return train_ds, valid_ds
 
 
-def target_rm(seq):
-    for rec in seq:
-        rec['target'] = -1
-        yield rec
-
-
 def main(args=None):
     conf = get_conf(args)
 
-    data = read_data_gen(conf['dataset.train_path'])
-    data = tqdm(data)
-    if 'max_rows' in conf['dataset']:
-        data = islice(data, conf['dataset.max_rows'])
-    data = target_rm(data)
-    data = prepare_embeddings(data, conf, is_train=True)
-    if conf['dataset.client_list_shuffle_seed'] != 0:
-        data = sorted(data, key=lambda x: x.get('client_id', x.get('customer_id', x.get('installation_id'))))
-        random.Random(conf['dataset.client_list_shuffle_seed']).shuffle(data)
-    data = list(data)
-
-    valid_ix = np.arange(len(data))
-    valid_ix = np.random.choice(valid_ix, size=int(len(data) * conf['dataset.valid_size']), replace=False)
-    valid_ix = set(valid_ix.tolist())
-
-    train_data = [rec for i, rec in enumerate(data) if i not in valid_ix]
-    valid_data = [rec for i, rec in enumerate(data) if i in valid_ix]
-
+    train_data, valid_data = prepare_data(conf)
     train_ds, valid_ds = create_ds(train_data, valid_data, conf)
     if conf['params.train'].get('same_time_shuffle', False):
         train_ds = SameTimeShuffleDataset(train_ds)
@@ -75,6 +43,7 @@ def main(args=None):
 
         torch.save(enc_agr_model, conf['model_path.model'])
         logger.info(f'Model saved to "{conf["model_path.model"]}"')
+
 
 if __name__ == '__main__':
     init_logger(__name__)

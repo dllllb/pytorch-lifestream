@@ -24,7 +24,10 @@ def trx_avg2_model(params):
 def rnn_model(params):
     p = TrxEncoder(params['trx_encoder'])
     e = RnnEncoder(TrxEncoder.output_size(params['trx_encoder']), params['rnn'])
-    h = scoring_head(params['rnn.hidden_size'], params['head'])
+    h = scoring_head(
+        input_size=params['rnn.hidden_size'] * (2 if params['rnn.bidir'] else 1),
+        params=params['head']
+    )
 
     m = torch.nn.Sequential(p, e, h)
     return m
@@ -34,7 +37,10 @@ def rnn_shuffle_model(params):
     p = TrxEncoder(params['trx_encoder'])
     p = torch.nn.Sequential(p, TimeStepShuffle())
     e = RnnEncoder(TrxEncoder.output_size(params['trx_encoder']), params['rnn'])
-    h = scoring_head(params['rnn.hidden_size'], params['head'])
+    h = scoring_head(
+        input_size=params['rnn.hidden_size'] * (2 if params['rnn.bidir'] else 1),
+        params=params['head']
+    )
 
     m = torch.nn.Sequential(p, e, h)
     return m
@@ -43,7 +49,10 @@ def rnn_shuffle_model(params):
 def skip_rnn2_model(params):
     p = TrxEncoder(params['trx_encoder'])
     e = skip_rnn_encoder(TrxEncoder.output_size(params['trx_encoder']), params['skip_rnn'])
-    h = scoring_head(params['skip_rnn.rnn1.hidden_size'], params['head'])
+    h = scoring_head(
+        input_size=params['skip_rnn.rnn1.hidden_size'] * (2 if params['skip_rnn.rnn1.bidir'] else 1),
+        params=params['head']
+    )
 
     m = torch.nn.Sequential(p, e, h)
     return m

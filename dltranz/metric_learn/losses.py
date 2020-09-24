@@ -3,7 +3,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from numpy.testing import assert_almost_equal
 
-from dltranz.cpc import CPCLossV2
+from dltranz.baselines.cpc import CPCLossV2
 from .metric import outer_cosine_similarity
 
 

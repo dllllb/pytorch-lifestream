@@ -40,21 +40,14 @@
       "split_strategy": {
         "split_strategy": "SampleSlices",
         "split_count": 4,
-        "cnt_min": 25,
-        "cnt_max": 100
+        "cnt_min": 50,
+        "cnt_max": 200
       },
       "loss": "bce",
       "lr": 0.001,
       "weight_decay": 0.0,
       "n_epoch": 100,
-      "use_best_epoch": true,
-      "_checkpoints": {
-        "save_interval": 15,
-        "n_saved": 1000,
-        "dirname": "models/sop_checkpoints/",
-        "filename_prefix": "sop",
-        "create_dir": true
-      }
+      "use_best_epoch": true
     },
     "norm_scores": false,
     "valid": {
@@ -63,7 +56,7 @@
       "split_strategy": {
         "split_strategy": "SampleSlices",
         "split_count": 4,
-        "cnt_min": 25,
+        "cnt_min": 50,
         "cnt_max": 200
       },
       "max_seq_len": 1200

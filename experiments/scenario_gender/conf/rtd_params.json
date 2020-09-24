@@ -5,12 +5,6 @@
     },
     "device": "cuda",
     "model_type": "rnn",
-    "rnn": {
-      "type": "gru",
-      "hidden_size": 256,
-      "bidir": false,
-      "trainable_starter": "static"
-    },
     "trx_encoder": {
       "norm_embeddings": false,
       "embeddings_noise": 0.003,
@@ -22,11 +16,32 @@
         "amount": "identity"
       }
     },
-    "use_normalization_layer": false,
+    "rnn": {
+      "type": "gru",
+      "hidden_size": 256,
+      "bidir": false,
+      "trainable_starter": "static"
+    },
+    "transf": {
+      "train_starter": false,
+      "shared_layers": false,
+      "input_size": 256,
+      "n_heads": 8,
+      "dim_hidden": 256,
+      "dropout": 0.1,
+      "n_layers": 4,
+      "use_positional_encoding": false,
+      "max_seq_len": 400,
+      "use_after_mask": false,
+      "use_src_key_padding_mask": true
+    },
     "head": {
-      "hidden_size": 512,
-      "drop_p": 0.5,
-      "pred_all_states": false
+      "pred_all_states": true,
+      "pred_all_states_mean": false,
+      "pred_flatten": true,
+      "explicit_lengths": false,
+      "norm_input": false,
+      "use_batch_norm": false
     },
     "lr_scheduler": {
       "ReduceLROnPlateau": true,
@@ -34,14 +49,12 @@
     },
     "train": {
       "num_workers": 8,
-      "batch_size": 256,
+      "batch_size": 128,
       "trx_dropout": 0.01,
       "max_seq_len": 1200,
-      "split_strategy": {
-        "split_strategy": "SampleSlices",
-        "split_count": 4,
-        "cnt_min": 25,
-        "cnt_max": 200
+      "replace_token": {
+        "replace_prob": 0.15,
+        "skip_first": 1
       },
       "loss": "bce",
       "lr": 0.001,
@@ -51,14 +64,8 @@
     },
     "norm_scores": false,
     "valid": {
-      "batch_size": 1024,
+      "batch_size": 256,
       "num_workers": 16,
-      "split_strategy": {
-        "split_strategy": "SampleSlices",
-        "split_count": 4,
-        "cnt_min": 25,
-        "cnt_max": 200
-      },
       "max_seq_len": 1200
     },
     "score_metric": "auroc"
@@ -66,18 +73,18 @@
 
   "save_model": true,
   "model_path": {
-    "model": "models/nsp_model.p",
+    "model": "models/rtd_model.p",
     "only_encoder": false
   },
 
   "output": {
-    "path": "data/nsp_embeddings",
+    "path": "data/rtd_embeddings",
     "format": "pickle",
     "columns": ["customer_id"]
   },
 
   "stats": {
-    "path": "runs/nsp_result.json"
+    "path": "runs/rtd_result.json"
   }
 
 }

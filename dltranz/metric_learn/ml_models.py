@@ -8,7 +8,7 @@ import torch.nn as nn
 from torch.autograd import Function
 
 from dltranz.agg_feature_model import AggFeatureModel
-from dltranz.cpc import CPC_Ecoder
+from dltranz.baselines.cpc import CPC_Ecoder
 from dltranz.transf_seq_encoder import TransformerSeqEncoder
 
 script_dir = os.path.dirname(os.path.realpath(__file__))

@@ -5,10 +5,10 @@ import torch
 
 from torch.utils.data import Dataset
 
-from dltranz.sop import padded_collate
+from dltranz.data_load import padded_collate_wo_target
 
 
-class NSPDataset(Dataset):
+class SequencePairsDataset(Dataset):
     def __init__(self, delegate):
         self.delegate = delegate
 
@@ -38,22 +38,22 @@ class NSPDataset(Dataset):
 def collate_nsp_pairs(batch):
     batch = functools.reduce(operator.iadd, batch)
 
-    lefts = [left for (left, _), _ in batch] * 2
+    lefts = [left for left, _ in batch] * 2
 
-    rights = [right for (_, right), _ in batch]
+    rights = [right for _, right in batch]
     rights_ = rights[:]
     random.shuffle(rights_)
     rights += rights_
 
     targets = torch.cat([
-        torch.ones(len(rights_), dtype=torch.int64),
-        torch.zeros(len(rights_), dtype=torch.int64),
+        torch.ones(len(batch), dtype=torch.int64),
+        torch.zeros(len(batch), dtype=torch.int64),
     ])
 
     return (
         (
-            padded_collate(lefts),
-            padded_collate(rights)
+            padded_collate_wo_target(lefts),
+            padded_collate_wo_target(rights)
         ),
         targets
     )

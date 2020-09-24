@@ -3,16 +3,16 @@ import os
 import numpy as np
 import torch
 
+from functools import partial
 from torch.utils.data import DataLoader
 
-from dltranz.data_load import ConvertingTrxDataset
+from dltranz.data_load import TrxDataset, ConvertingTrxDataset, DropoutTrxDataset
+from dltranz.baselines.rtd import collate_rtd_batch
 from dltranz.experiment import update_model_stats, get_epoch_score_metric
 from dltranz.loss import get_loss
-from dltranz.metric_learn.dataset import SplittingDataset, split_strategy
-from dltranz.metric_learn.ml_models import ml_model_by_type
-from dltranz.baselines.sop import SentencePairsHead, collate_sop_pairs
-from dltranz.baselines.nsp import SequencePairsDataset
-from dltranz.train import get_optimizer, get_lr_scheduler, fit_model
+from dltranz.models import model_by_type
+from dltranz.seq_encoder import LastStepEncoder, MeanStepEncoder
+from dltranz.train import get_optimizer, get_lr_scheduler, fit_model, CheckpointHandler
 from dltranz.util import init_logger, get_conf
 from metric_learning import prepare_data
 
@@ -30,32 +30,28 @@ if __name__ == '__main__':
 def create_data_loaders(conf):
     train_data, valid_data = prepare_data(conf)
 
-    train_dataset = SplittingDataset(
-        train_data,
-        split_strategy.create(**conf['params.train.split_strategy'])
+    collate_fn = partial(
+        collate_rtd_batch,
+        replace_prob=conf['params.train.replace_token.replace_prob'],
+        skip_first=conf['params.train.replace_token.skip_first']
     )
-    train_dataset = ConvertingTrxDataset(train_dataset, with_target=False)
-    train_dataset = SequencePairsDataset(train_dataset)
 
+    train_dataset = ConvertingTrxDataset(TrxDataset(train_data, y_dtype=np.int64))
+    train_dataset = DropoutTrxDataset(train_dataset, conf['params.train.trx_dropout'], conf['params.train.max_seq_len'])
     train_loader = DataLoader(
         dataset=train_dataset,
         shuffle=True,
-        collate_fn=collate_sop_pairs,
+        collate_fn=collate_fn,
         num_workers=conf['params.train'].get('num_workers', 0),
         batch_size=conf['params.train.batch_size'],
     )
 
-    valid_dataset = SplittingDataset(
-        valid_data,
-        split_strategy.create(**conf['params.valid.split_strategy'])
-    )
-    valid_dataset = ConvertingTrxDataset(valid_dataset, with_target=False)
-    valid_dataset = SequencePairsDataset(valid_dataset)
-
+    valid_dataset = ConvertingTrxDataset(TrxDataset(valid_data, y_dtype=np.int64))
+    valid_dataset = DropoutTrxDataset(valid_dataset, 0, conf['params.valid.max_seq_len'])
     valid_loader = DataLoader(
         dataset=valid_dataset,
         shuffle=False,
-        collate_fn=collate_sop_pairs,
+        collate_fn=collate_fn,
         num_workers=conf['params.valid'].get('num_workers', 0),
         batch_size=conf['params.valid.batch_size'],
     )
@@ -89,7 +85,10 @@ def run_experiment(model, conf):
         save_dir = os.path.dirname(conf['model_path.model'])
         os.makedirs(save_dir, exist_ok=True)
 
-        m_encoder = model.base_model[0] if conf['model_path.only_encoder'] else model.base_model
+        if 'rnn' in conf['params']:
+            m_encoder = torch.nn.Sequential(*model[:-1], LastStepEncoder())
+        elif 'transf' in conf['params']:
+            m_encoder = torch.nn.Sequential(*model[:-1], MeanStepEncoder())
 
         torch.save(m_encoder, conf['model_path.model'])
         logger.info(f'Model saved to "{conf["model_path.model"]}"')
@@ -106,17 +105,8 @@ def run_experiment(model, conf):
 def main(args=None):
     conf = get_conf(args)
 
-    model_f = ml_model_by_type(conf['params.model_type'])
-    base_model = model_f(conf['params'])
-
-    if 'rnn' in conf['params']:
-        embeddings_size = conf['params.rnn.hidden_size']
-    elif 'transf' in conf['params']:
-        embeddings_size = conf['params.transf.input_size']
-    else:
-        raise AttributeError
-
-    model = SentencePairsHead(base_model, embeddings_size, conf['params.head'])
+    model_f = model_by_type(conf['params.model_type'])
+    model = model_f(conf['params'])
 
     return run_experiment(model, conf)
 

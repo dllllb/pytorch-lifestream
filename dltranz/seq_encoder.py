@@ -176,6 +176,12 @@ class FirstStepEncoder(nn.Module):
         return h
 
 
+class MeanStepEncoder(nn.Module):
+    def forward(self, x: PaddedBatch):
+        means = torch.stack([e[0:l].mean(dim=0) for e, l in zip(x.payload, x.seq_lens)])
+        return means
+
+
 class NormEncoder(nn.Module):
     def forward(self, x: torch.Tensor):
         return x / x.pow(2).sum(dim=1).pow(0.5).unsqueeze(-1).expand(*x.size())
@@ -205,6 +211,18 @@ class AllStepsMeanHead(nn.Module):
         out = self.head(x.payload)
         means = torch.tensor([e[0:l].mean() for e, l in zip(out, x.seq_lens)])
         return means
+
+
+class FlattenHead(nn.Module):
+    def __init__(self):
+        super().__init__()
+
+    def forward(self, x: PaddedBatch):
+        mask = torch.zeros(x.payload.shape, dtype=bool)
+        for i, length in enumerate(x.seq_lens):
+            mask[i, :length] = True
+
+        return x.payload.flatten()[mask.flatten()]
 
 
 def skip_rnn_encoder(input_size, params):
@@ -248,14 +266,6 @@ def scoring_head(input_size, params):
         layers.append(head)
         return nn.Sequential(*layers)
 
-    if params.get('neural_automl', False):
-        if params['pred_all_states']:
-            raise AttributeError('neural_automl not supported with `pred_all_states` for now')
-        layers.append(nn.BatchNorm1d(input_size))
-        head = node.get_model(model_config=params['neural_automl'], input_size=input_size)
-        layers.append(head)
-        return nn.Sequential(*layers)
-
     if "head_layers" not in params:
         head_output_size = params.get('num_classes', 1)
         if params.get('objective', 'classification') == 'classification':
@@ -272,6 +282,9 @@ def scoring_head(input_size, params):
             else:
                 h = AllStepsHead(h)
                 layers.append(h)
+                if params.get('pred_flatten', False):
+                    layers.append(FlattenHead())
+
         else:
             layers.append(h)
     else:
