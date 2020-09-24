@@ -79,5 +79,5 @@ def test_train_loop():
     params = tst_params()
 
     model = SequenceMetricLearningTesting(params)
-    trainer = pl.Trainer()
+    trainer = pl.Trainer(max_epochs=1)
     trainer.fit(model)
