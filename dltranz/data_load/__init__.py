@@ -390,8 +390,6 @@ class ConvertingTrxDataset(Dataset):
     def to_torch_compatible(a):
         if a.dtype == np.int8:
             return a.astype(np.int16)
-        #if a.dtype == object:
-        #    return a.astype(np.float32)
         return a
 
 def pad_sequence(sequence, alignment, max_len=None, pad_value=0.0):
