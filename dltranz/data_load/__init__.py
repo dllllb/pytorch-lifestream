@@ -138,38 +138,6 @@ def read_data_gen(path):
         raise NotImplementedError(f'Unknown input file extension: "{ext}"')
 
 
-class DropoutTrxDatasetIpoteka(Dataset):
-    def get_targets(self):
-        self.core_dataset.get_targets()
-
-    def __init__(self, dataset: Dataset, trx_dropout, seq_len):
-        self.core_dataset = dataset
-        self.trx_dropout = trx_dropout
-        self.max_seq_len = seq_len
-
-    def __len__(self):
-        return len(self.core_dataset)
-
-    def __getitem__(self, idx):
-        inp, y = self.core_dataset[idx]
-
-        outs = dict()
-        for key, x in inp.items():
-            seq_len = len(next(iter(x.values())))
-
-            if self.trx_dropout > 0:
-                idx = np.random.choice(seq_len, size=int(seq_len * (1 - self.trx_dropout)+1), replace=False)
-                idx = np.sort(idx)
-            else:
-                idx = np.arange(seq_len)
-
-            idx = idx[-self.max_seq_len:]
-            new_x = {k: v[idx] for k, v in x.items()}
-            outs[key] = new_x
-
-        return outs, y
-
-
 class DropoutTrxDataset(Dataset):
     def __init__(self, dataset: Dataset, trx_dropout, seq_len):
         self.core_dataset = dataset
@@ -446,32 +414,6 @@ def padded_collate(batch):
     return PaddedBatch(new_x, lengths), new_y
 
 
-def padded_collate_ipoteka(batch):
-
-    def padded_collate_(batch, key):
-        new_x_ = {}
-        for x, _ in batch:
-            for k, v in x[key].items():
-                if k in new_x_:
-                    new_x_[k].append(v)
-                else:
-                    new_x_[k] = [v]
-
-        lengths = torch.LongTensor([len(e) for e in next(iter(new_x_.values()))])
-
-        new_x = {k: torch.nn.utils.rnn.pad_sequence(v, batch_first=True) for k, v in new_x_.items()}
-        new_y = torch.tensor([y for _, y in batch])
-
-        return PaddedBatch(new_x, lengths), new_y
-
-    batches, target = dict(), None
-    for key in batch[0][0].keys():
-        b, target = padded_collate_(batch, key)
-        batches[key] = b
-
-    return batches, target
-
-
 class ZeroDownSampler(Sampler):
     def __init__(self, targets):
         super().__init__(None)
@@ -501,25 +443,13 @@ def create_weighted_random_sampler(targets):
     return WeightedRandomSampler(weights, n_take)
 
 
-def create_train_loader(dataset, params, sampler=None):
-    if isinstance(list(next(iter(dataset))[0].values())[0], dict):
-        return create_train_loader_ipoteka(dataset, params, sampler)
+def create_train_loader(dataset, params):
+    if params.get('random_neg', False):
+        targets = [y for x, y in dataset]
+        sampler = ZeroDownSampler(targets)
     else:
-        return create_train_loader_common(dataset, params, sampler)
+        sampler = None
 
-
-def create_validation_loader(dataset, params):
-    ipoteka_style_dataset = False
-    # Fetch takes time in case of iterable dataset
-    # TODO: choose dataset style from config
-    # ipoteka_style_dataset = isinstance(list(next(iter(dataset))[0].values())[0], dict)
-    if ipoteka_style_dataset:
-        return create_validation_loader_ipoteka(dataset, params)
-    else:
-        return create_validation_loader_common(dataset, params)
-
-
-def create_train_loader_common(dataset, params, sampler=None):
     dataset = DropoutTrxDataset(dataset, params['trx_dropout'], params['max_seq_len'])
 
     valid_loader = DataLoader(
@@ -552,7 +482,7 @@ class IterableDatasetWrapper(torch.utils.data.IterableDataset):
         return iter(self.data)
 
 
-def create_validation_loader_common(dataset, params):
+def create_validation_loader(dataset, params):
     dataset = DropoutTrxDataset(dataset, 0, params['max_seq_len'])
 
     if dataset.style == 'iterable':
@@ -568,32 +498,5 @@ def create_validation_loader_common(dataset, params):
         shuffle=False,
         num_workers=params['num_workers'],
         collate_fn=padded_collate)
-
-    return valid_loader
-
-
-def create_train_loader_ipoteka(dataset, params, sampler=None):
-    dataset = DropoutTrxDatasetIpoteka(dataset, params['trx_dropout'], params['seq_len'])
-
-    valid_loader = DataLoader(
-        dataset,
-        batch_size=params['batch_size'],
-        shuffle=sampler is None,
-        sampler=sampler,
-        num_workers=params['num_workers'],
-        collate_fn=padded_collate_ipoteka)
-
-    return valid_loader
-
-
-def create_validation_loader_ipoteka(dataset, params):
-    dataset = DropoutTrxDatasetIpoteka(dataset, 0, params['seq_len'])
-
-    valid_loader = DataLoader(
-        dataset,
-        batch_size=params['batch_size'],
-        shuffle=False,
-        num_workers=params['num_workers'],
-        collate_fn=padded_collate_ipoteka)
 
     return valid_loader

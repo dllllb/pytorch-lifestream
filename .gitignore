@@ -11,3 +11,4 @@ experiments/*/runs
 experiments/*/models
 *.egg-info
 .DS_Store
+lightning_logs

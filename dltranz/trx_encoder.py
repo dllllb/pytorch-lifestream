@@ -19,6 +19,13 @@ class PaddedBatch:
     def seq_lens(self):
         return self._length
 
+    def to(self, device, non_blocking=False):
+        length = self._length.to(device=device, non_blocking=non_blocking)
+        payload = {
+            k: v.to(device=device, non_blocking=non_blocking) for k, v in self._payload.items()
+        }
+        return PaddedBatch(payload, length)
+
 
 class NoisyEmbedding(nn.Embedding):
     """
