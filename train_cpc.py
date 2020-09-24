@@ -42,7 +42,6 @@ def main(args=None):
         data = islice(data, conf['dataset.max_rows'])
     data = target_rm(data)
     data = prepare_embeddings(data, conf, is_train=True)
-    data = prepare_embeddings(data, conf, is_train=True)
     if conf['dataset.client_list_shuffle_seed'] != 0:
         data = sorted(data, key=lambda x: x.get('client_id', x.get('customer_id', x.get('installation_id'))))
         random.Random(conf['dataset.client_list_shuffle_seed']).shuffle(data)

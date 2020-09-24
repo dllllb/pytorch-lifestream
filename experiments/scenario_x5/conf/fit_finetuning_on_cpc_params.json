@@ -58,7 +58,7 @@
     "norm_scores": false,
     "score_metric": "accuracy",
 
-    "model_path": {"model": "models/cpc_checkpoints/cpc_model_28.pth"},
+    "model_path": {"model": "models/cpc_checkpoints/cpc_model_28.pt"},
     "use_batch_norm": true
   },
 

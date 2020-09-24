@@ -209,7 +209,7 @@ class CPCLossV2(torch.nn.Module):
 
         # negatives
         x = ((target.expand(n * k_pos_samples, n * k_pos_samples) -
-              target.expand(n * k_pos_samples, n * k_pos_samples).t()) != 0).nonzero()[:, 1]
+              target.expand(n * k_pos_samples, n * k_pos_samples).t()) != 0).nonzero(as_tuple=False)[:, 1]
         neg_samples = x.view(n, k_pos_samples, -1)[:, 0, :]
         perm_ix = torch.cat(
             [torch.stack([torch.ones(m_neg_samples).long() * i,

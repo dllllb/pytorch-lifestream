@@ -34,7 +34,7 @@
         "split_strategy": "SampleSlices",
         "split_count": 5,
         "cnt_min": 25,
-        "cnt_max": 150
+        "cnt_max": 200
       },
       "sampling_strategy": "HardNegativePair",
       "trx_dropout": 0.01,
@@ -42,9 +42,9 @@
       "neg_count": 5,
       "loss": "ContrastiveLoss",
       "margin": 0.5,
-      "lr": 0.002,
+      "lr": 0.001,
       "weight_decay": 0.0,
-      "n_epoch": 100,
+      "n_epoch": 150,
       "_checkpoints": {
         "save_interval": 10,
         "n_saved": 1000,
@@ -67,10 +67,6 @@
     }
   },
 
-  "stats": {
-    "path": "runs/age_pred_ml_result.json"
-  },
-
   "save_model": true,
   "model_path": {
     "model": "models/mles_model.p",
@@ -81,5 +77,10 @@
     "path": "data/mles_embeddings",
     "format": "pickle",
     "columns": ["client_id"]
+  },
+
+  "stats": {
+    "path": "runs/mles_result.json"
   }
+
 }

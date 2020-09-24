@@ -54,10 +54,6 @@
 
   "save_model": false,
 
-  "stats": {
-    "path": "runs/results.json"
-  },
-
   "output": {
     "valid": {
       "path": "data/transf_finetuning_scores/valid",
@@ -68,5 +64,11 @@
       "format": "pickle"
     },
     "columns": ["client_id"]
+  },
+
+  "stats": {
+    "model_name": "nn",
+    "feature_name": "transf_finetuning",
+    "path": "results/transf_finetuning_results.json"
   }
 }

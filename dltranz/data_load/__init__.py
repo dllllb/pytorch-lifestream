@@ -119,7 +119,8 @@ def read_pyarrow_file(path, use_threads=True):
             col_arrays = [rb.column(i) for i, _ in enumerate(col_indexes)]
             col_arrays = [a.to_numpy(zero_copy_only=False) for a in col_arrays]
             for row in zip(*col_arrays):
-                rec = {n: a for n, a in zip(col_indexes, row)}
+                # np.array(a) makes `a` writable for future usage
+                rec = {n: np.array(a) if isinstance(a, np.ndarray) else a for n, a in zip(col_indexes, row)}
                 yield rec
 
     return get_records()
@@ -181,6 +182,7 @@ class AllTimeShuffleDataset(Dataset):
     def __init__(self, dataset, event_time_name='event_time'):
         self.dataset = dataset
         self.event_time_name = event_time_name
+        self.style = dataset.style
 
     def __len__(self):
         return len(self.dataset)
@@ -203,6 +205,7 @@ class AllTimeShuffleMLDataset(Dataset):
     def __init__(self, dataset, event_time_name='event_time'):
         self.core_dataset = dataset
         self.event_time_name = event_time_name
+        self.style = dataset.style
 
     def __len__(self):
         return len(self.core_dataset)
@@ -360,6 +363,27 @@ class ConvertingTrxDataset(Dataset):
         if a.dtype == np.int8:
             return a.astype(np.int16)
         return a
+
+
+class ProcessDataset(Dataset):
+    def __init__(self, delegate, process_fun):
+        self.delegate = delegate
+        self.process_fun = process_fun
+
+    def __len__(self):
+        return len(self.delegate)
+
+    def __getitem__(self, idx):
+        item = self.delegate[idx]
+        if type(item) is list:
+            return [self._one_item(t) for t in item]
+        else:
+            return self._one_item(item)
+
+    def _one_item(self, item):
+        x, y = item
+        x = self.process_fun(x)
+        return x, y
 
 
 def pad_sequence(sequence, alignment, max_len=None, pad_value=0.0):

@@ -357,3 +357,107 @@ def test_transf_seq_encoder():
 
     assert len(out.size()) == 1
     assert out.size()[0] == 12
+
+
+def test_rnn_iterative_no_starter():
+    """
+    x_a - clients with 2 parts of transactions: x_a_1 and x_a_2
+    x_b_2 - clients with only one second part or transactions
+
+    We run inference in 2 steps:
+    x_a_1          -> out_1
+    x_a_1 + x_b_2  -> out_2
+
+    Also we run an other kind os splits, for `a` and `b` groups
+    x_a   -> out_a
+    x_b_2 -> out_b
+
+    We expect the same results in specific positions of out_1, out_2 and out_a, out_b
+
+    :return:
+    """
+    GRP_A_CLIENT_COUNT = 3
+    GRP_B_CLIENT_COUNT = 6
+    PART_1_TRX_COUNT = 7
+    PART_2_TRX_COUNT = 2
+    INPUT_SIZE = 4
+    OUTPUT_SIZE = 5
+
+    conf = {
+        'hidden_size': OUTPUT_SIZE,
+        'type': 'gru',
+        'bidir': False,
+        'trainable_starter': 'none',
+    }
+
+    m = RnnEncoder(INPUT_SIZE, conf)
+    m.eval()
+    print(m)
+
+    x_a_1 = torch.rand(GRP_A_CLIENT_COUNT, PART_1_TRX_COUNT, INPUT_SIZE)
+    x_a_2 = torch.rand(GRP_A_CLIENT_COUNT, PART_2_TRX_COUNT, INPUT_SIZE)
+    x_b_2 = torch.rand(GRP_B_CLIENT_COUNT, PART_2_TRX_COUNT, INPUT_SIZE)
+
+    out_a = m(PaddedBatch(torch.cat([x_a_1, x_a_2], dim=1), None))
+    out_b = m(PaddedBatch(x_b_2, None))
+    out_1 = m(PaddedBatch(x_a_1, None))
+    starter = torch.cat([out_1.payload[:, -1, :], torch.zeros(GRP_B_CLIENT_COUNT, OUTPUT_SIZE)], dim=0)
+    out_2 = m(PaddedBatch(torch.cat([x_a_2, x_b_2], dim=0), None), starter.unsqueeze(0))
+
+    out_a_merged = torch.cat([out_1.payload, out_2.payload[:GRP_A_CLIENT_COUNT]], dim=1)
+    assert ((out_a.payload - out_a_merged).abs() < 1e-4).all()
+
+    out_b_merged = out_2.payload[GRP_A_CLIENT_COUNT:]
+    assert ((out_b.payload - out_b_merged).abs() < 1e-4).all()
+
+
+def test_rnn_iterative_with_starter():
+    """
+    x_a - clients with 2 parts of transactions: x_a_1 and x_a_2
+    x_b_2 - clients with only one second part or transactions
+
+    We run inference in 2 steps:
+    x_a_1          -> out_1
+    x_a_1 + x_b_2  -> out_2
+
+    Also we run an other kind os splits, for `a` and `b` groups
+    x_a   -> out_a
+    x_b_2 -> out_b
+
+    We expect the same results in specific positions of out_1, out_2 and out_a, out_b
+
+    :return:
+    """
+    GRP_A_CLIENT_COUNT = 3
+    GRP_B_CLIENT_COUNT = 6
+    PART_1_TRX_COUNT = 7
+    PART_2_TRX_COUNT = 2
+    INPUT_SIZE = 4
+    OUTPUT_SIZE = 5
+
+    conf = {
+        'hidden_size': OUTPUT_SIZE,
+        'type': 'gru',
+        'bidir': False,
+        'trainable_starter': 'static',
+    }
+
+    m = RnnEncoder(INPUT_SIZE, conf)
+    m.eval()
+    print(m)
+
+    x_a_1 = torch.rand(GRP_A_CLIENT_COUNT, PART_1_TRX_COUNT, INPUT_SIZE)
+    x_a_2 = torch.rand(GRP_A_CLIENT_COUNT, PART_2_TRX_COUNT, INPUT_SIZE)
+    x_b_2 = torch.rand(GRP_B_CLIENT_COUNT, PART_2_TRX_COUNT, INPUT_SIZE)
+
+    out_a = m(PaddedBatch(torch.cat([x_a_1, x_a_2], dim=1), None))
+    out_b = m(PaddedBatch(x_b_2, None))
+    out_1 = m(PaddedBatch(x_a_1, None))
+    starter = torch.cat([out_1.payload[:, -1, :], torch.zeros(GRP_B_CLIENT_COUNT, OUTPUT_SIZE)], dim=0)
+    out_2 = m(PaddedBatch(torch.cat([x_a_2, x_b_2], dim=0), None), starter.unsqueeze(0))
+
+    out_a_merged = torch.cat([out_1.payload, out_2.payload[:GRP_A_CLIENT_COUNT]], dim=1)
+    assert ((out_a.payload - out_a_merged).abs() < 1e-4).all()
+
+    out_b_merged = out_2.payload[GRP_A_CLIENT_COUNT:]
+    assert ((out_b.payload - out_b_merged).abs() < 1e-4).all()

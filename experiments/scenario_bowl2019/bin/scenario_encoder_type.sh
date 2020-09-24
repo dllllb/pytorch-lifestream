@@ -70,6 +70,7 @@ python ../../ml_inference.py \
 # Compare
 python -m scenario_bowl2019 compare_approaches --models 'lgb' --output_file "results/scenario_bowl2019__encoder_types.csv" \
     --embedding_file_names \
+    "mles_embeddings.pickle"              \
     "emb__encoder_lstm.pickle"                               \
     "emb__encoder_gru.pickle"                                \
     "emb__encoder_transf_bs064_4head_64hs_4layers.pickle"         \

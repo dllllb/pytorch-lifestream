@@ -63,10 +63,6 @@
     }
   },
 
-  "stats": {
-    "path": "runs/age_pred_ml_result.json"
-  },
-
   "save_model": true,
   "model_path": {
     "model": "models/mles_proj_head_model.p",
@@ -77,5 +73,9 @@
     "path": "data/mles_proj_head_embeddings",
     "format": "pickle",
     "columns": ["client_id"]
+  },
+
+  "stats": {
+    "path": "runs/mles_result.json"
   }
 }

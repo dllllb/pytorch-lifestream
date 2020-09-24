@@ -49,19 +49,16 @@ def main(conf):
             for file_name in embedding_file_names
         },
     }
-    if conf['add_baselines']:
+    if conf['baseline_name']:
         approaches_to_train.update({
-            'baseline': {'use_client_agg': True, 'use_mcc_code_stat': True, 'use_tr_type_stat': True},
+            'baseline': {'metric_learning_embedding_name': conf['baseline_name']},
         })
-
-    if conf['add_baselines'] and conf['add_emb_baselines']:
-        approaches_to_train.update({
-            f"embeds: {file_name} and baseline": {
-                'metric_learning_embedding_name': file_name,
-                'use_client_agg': True, 'use_mcc_code_stat': True, 'use_tr_type_stat': True,
-            }
-            for file_name in embedding_file_names
-        })
+        # approaches_to_train.update({
+        #     f"embeds: {file_name} and baseline": {
+        #         'metric_learning_embedding_name': [file_name, conf['baseline_name']]
+        #     }
+        #     for file_name in embedding_file_names
+        # })
 
     approaches_to_score = {
         f"scores: {file_name}": {'target_scores_name': file_name}
@@ -91,11 +88,11 @@ def main(conf):
                 subsample=0.5,
                 subsample_freq=1,
                 learning_rate=0.02,
-                feature_fraction=0.75,
+                feature_fraction=0.75, colsample_bytree=None,
                 max_depth=6,
-                lambda_l1=1,
-                lambda_l2=1,
-                min_data_in_leaf=50,
+                lambda_l1=1, reg_alpha=None,
+                lambda_l2=1, reg_lambda=None,
+                min_data_in_leaf=50, min_child_samples=None,
                 random_state=conf['model_seed'],
                 n_jobs=8,
             ),

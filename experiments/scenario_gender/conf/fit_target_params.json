@@ -58,10 +58,6 @@
 
   "save_model": false,
 
-  "stats": {
-    "path": "runs/fit_target.json"
-  },
-
   "output": {
     "valid": {
       "path": "data/target_scores/valid",
@@ -72,5 +68,11 @@
       "format": "pickle"
     },
     "columns": ["customer_id"]
+  },
+
+  "stats": {
+    "model_name": "nn",
+    "feature_name": "target_scores",
+    "path": "results/fit_target_results.json"
   }
 }

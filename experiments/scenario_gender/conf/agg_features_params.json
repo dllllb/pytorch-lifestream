@@ -14,7 +14,7 @@
         "amount": "identity"
       },
       "was_logified": true,
-      "log_scale_factor": 20
+      "log_scale_factor": 1
     },
     "use_normalization_layer": true,
     "lr_scheduler": {
@@ -57,7 +57,7 @@
 
   "save_model": true,
   "model_path": {
-    "model": "models/agg_feature_model.p",
+    "model": "models/agg_features_model.p",
     "only_encoder": true
   },
 
@@ -68,7 +68,7 @@
   },
 
   "stats": {
-    "path": "runs/agg_feature_result.json"
+    "path": "runs/agg_features_result.json"
   }
 
 }

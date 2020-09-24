@@ -2,6 +2,7 @@ import logging
 import warnings
 
 import torch
+from copy import deepcopy
 from ignite.contrib.handlers import ProgressBar, LRScheduler, create_lr_scheduler_with_warmup
 from ignite.contrib.handlers.param_scheduler import ParamScheduler
 from ignite.handlers import ModelCheckpoint
@@ -11,7 +12,6 @@ import pandas as pd
 
 warnings.filterwarnings('ignore', module='tensorboard.compat.tensorflow_stub.dtypes')
 from torch.utils.tensorboard import SummaryWriter
-
 from dltranz.seq_encoder import PaddedBatch
 
 from ignite.engine import Engine, Events, create_supervised_trainer, create_supervised_evaluator
@@ -275,10 +275,26 @@ def fit_model(model, train_loader, valid_loader, loss, optimizer, scheduler, par
         else:
             scheduler()
 
+    if params.get('train.use_best_epoch', False):
+        best_metric_value = float('-inf')
+        best_parameters = {}
+
+        @validation_evaluator.on(Events.COMPLETED)
+        def save_best_parameters(engine):
+            metric_value = next(iter(engine.state.metrics.values()))
+            nonlocal best_metric_value
+            nonlocal best_parameters
+            if best_metric_value < metric_value:
+                best_metric_value = metric_value
+                best_parameters = deepcopy(model.state_dict())
+
     for handler in train_handlers:
         handler(trainer, validation_evaluator, optimizer)
 
     trainer.run(train_loader, max_epochs=params['train.n_epoch'])
+
+    if params.get('train.use_best_epoch', False):
+        model.load_state_dict(best_parameters)
 
     return validation_evaluator.state.metrics
 
