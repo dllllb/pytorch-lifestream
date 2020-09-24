@@ -419,7 +419,13 @@ def create_weighted_random_sampler(targets):
     return WeightedRandomSampler(weights, n_take)
 
 
-def create_train_loader(dataset, params, sampler=None):
+def create_train_loader(dataset, params):
+    if params.get('random_neg', False):
+        targets = [y for x, y in dataset]
+        sampler = ZeroDownSampler(targets)
+    else:
+        sampler = None
+
     dataset = DropoutTrxDataset(dataset, params['trx_dropout'], params['max_seq_len'])
 
     valid_loader = DataLoader(

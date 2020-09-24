@@ -8,6 +8,7 @@ from pyhocon import ConfigFactory
 
 def tst_params():
     params = {
+        'model_type': 'rnn',
         'rnn': {
             'trainable_starter': 'empty',
             'hidden_size': 16,
