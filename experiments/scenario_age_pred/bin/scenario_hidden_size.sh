@@ -9,6 +9,7 @@ do
       --conf "conf/dataset.hocon" "conf/mles_params.json"
   python ../../ml_inference.py \
       params.device="$SC_DEVICE" \
+      params.valid.batch_size=512 \
       model_path.model="models/age_pred_mlm__$SC_SUFFIX.p" \
       output.path="data/emb__$SC_SUFFIX" \
       --conf "conf/dataset.hocon" "conf/mles_params.json"

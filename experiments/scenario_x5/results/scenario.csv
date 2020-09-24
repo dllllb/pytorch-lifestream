@@ -1,5 +1,0 @@
-                               oof_accuracy                                                         test_accuracy                                                        
-                                       mean t_int_l t_int_h    std                           values          mean t_int_l t_int_h    std                           values
-name                                                                                                                                                                    i
-lgb_embeds: mles_embeddings.pickle     0.5422  0.5398  0.5446 0.0017  [0.540 0.541 0.543 0.543 0.545]        0.5439  0.5421  0.5457 0.0013  [0.542 0.544 0.544 0.545 0.545] 
-cores: mles_finetuning_scores          0.5581  0.5548  0.5614 0.0024  [0.555 0.557 0.558 0.560 0.561]        0.5415  0.5401  0.5430 0.0010  [0.540 0.541 0.541 0.542 0.543]

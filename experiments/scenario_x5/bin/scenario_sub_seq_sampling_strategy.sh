@@ -9,6 +9,7 @@ python ../../metric_learning.py \
     model_path.model="models/x5_mlm__$SC_SUFFIX.p" \
     --conf "conf/dataset.hocon" "conf/mles_params.json"
 python ../../ml_inference.py \
+    params.device="$SC_DEVICE" \
     model_path.model="models/x5_mlm__$SC_SUFFIX.p" \
     output.path="data/emb__$SC_SUFFIX" \
     --conf "conf/dataset.hocon" "conf/mles_params.json"
@@ -25,6 +26,7 @@ python ../../metric_learning.py \
     model_path.model="models/x5_mlm__$SC_SUFFIX.p" \
     --conf "conf/dataset.hocon" "conf/mles_params.json"
 python ../../ml_inference.py \
+    params.device="$SC_DEVICE" \
     model_path.model="models/x5_mlm__$SC_SUFFIX.p" \
     output.path="data/emb__$SC_SUFFIX" \
     --conf "conf/dataset.hocon" "conf/mles_params.json"
@@ -32,7 +34,7 @@ python ../../ml_inference.py \
 
 # Compare
 python -m scenario_x5 compare_approaches --output_file "results/scenario_x5__subseq_smpl_strategy.csv" \
-    --moedls "lgb" \
+    --models lgb \
     --embedding_file_names \
     "mles_embeddings.pickle"                    \
     "emb__SplitRandom.pickle" \
