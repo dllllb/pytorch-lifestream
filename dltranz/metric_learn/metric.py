@@ -200,7 +200,7 @@ class PercentPredictMetric(ignite.metrics.Metric):
        y_pred, y = output
        soft_pred = self.softmax(y_pred[:,1:53])
        delta=torch.nn.functional.cosine_similarity(soft_pred, y[:,1:53], dim=1)
-       rel_delta = (-torch.mean(delta)+1)/2 #from 0 to 1, low is better
+       rel_delta = -torch.mean(delta)+1 #from 0 to 1, low is better
        self._relative_error += [rel_delta.item()]
 
    @sync_all_reduce("_relative_error")

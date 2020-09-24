@@ -54,23 +54,13 @@ class MultiLoss(nn.Module):
 
         return loss
 
-class KruzhLoss(nn.Module):
-    def __init__(self, type_weight=20, mean_rur_weight=1):
+class TransactionSumLoss(nn.Module):
+    def __init__(self):
         super().__init__()
-        self.lossl1 = nn.L1Loss()
-        self.lossl2 = nn.MSELoss()
         self.bce_with_logits = nn.BCEWithLogitsLoss()
-        self.type_weight = type_weight
-        self.mean_rur_weight = mean_rur_weight
 
     def forward(self, pred, true):
-        #print('loss.py')
-        #print(pred.shape)
-        #print(true.shape, true)        
-        #quit()
-        loss_trans_number = self.lossl1(pred[:,0], true[:,0])
-        loss_transaction_types = self.bce_with_logits(pred[:,1:53], true[:,1:53])
-        loss =  loss_transaction_types# + \
+        loss = self.bce_with_logits(pred[:,1:53], true[:,1:53])
         return loss
 
 
@@ -155,8 +145,8 @@ def get_loss(params):
         loss = nn.L1Loss()
     elif loss_type == 'mse':
         loss = MSELoss()
-    elif loss_type == 'kruzh':
-        loss = KruzhLoss()
+    elif loss_type == 'transaction_sum':
+        loss = TransactionSumLoss()
     elif loss_type == 'pseudo_labeled':
         loss = PseudoLabeledLoss(
             loss=get_loss(params['labeled']),
