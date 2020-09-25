@@ -1,13 +1,12 @@
 import logging
 import os
-import random
 from itertools import islice
 
 import numpy as np
 import torch
 from torch.utils.data import DataLoader
 
-from metric_learning import prepare_embeddings
+from metric_learning import prepare_embeddings, shuffle_client_list_reproducible
 from dltranz.data_load import ConvertingTrxDataset, DropoutTrxDataset, read_data_gen, AllTimeShuffleMLDataset
 from dltranz.experiment import update_model_stats
 from dltranz.metric_learn.dataset import SeveralSplittingsDataset, split_strategy
@@ -29,10 +28,8 @@ def create_data_loaders(conf):
     data = read_data_gen(conf['dataset.train_path'])
     if 'max_rows' in conf['dataset']:
         data = islice(data, conf['dataset.max_rows'])
-    dataset_col_id = conf['dataset'].get('col_id', 'client_id')
     data = prepare_embeddings(data, conf, is_train=True)
-    data = sorted(data, key=lambda x: x.get(dataset_col_id, x.get('customer_id', x.get('installation_id'))))
-    random.Random(conf['dataset.client_list_shuffle_seed']).shuffle(data)
+    data = shuffle_client_list_reproducible(conf, data)
     data = list(data)
     if 'client_list_keep_count' in conf['dataset']:
         data = data[:conf['dataset.client_list_keep_count']]

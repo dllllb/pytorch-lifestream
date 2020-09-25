@@ -282,7 +282,9 @@ class CustomMetric(Metric):
 
 def switch_reproducibility_on():
     import torch
+    import random
 
+    random.seed(42)
     np.random.seed(42)
     torch.backends.cudnn.benchmark = False
     torch.backends.cudnn.deterministic = True

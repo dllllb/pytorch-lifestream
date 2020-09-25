@@ -1,6 +1,4 @@
-import pickle
 import logging
-import random
 from itertools import islice
 
 import numpy as np
@@ -15,7 +13,7 @@ from dltranz.cpc import CPC_Ecoder, run_experiment
 from dltranz.util import init_logger, get_conf, switch_reproducibility_on
 from dltranz.data_load import TrxDataset, ConvertingTrxDataset, read_data_gen, SameTimeShuffleDataset, \
     AllTimeShuffleDataset
-from metric_learning import prepare_embeddings
+from metric_learning import prepare_embeddings, shuffle_client_list_reproducible
 
 logger = logging.getLogger(__name__)
 
@@ -46,9 +44,7 @@ def main(args=None):
         data = islice(data, conf['dataset.max_rows'])
     data = target_rm(data)
     data = prepare_embeddings(data, conf, is_train=True)
-    if conf['dataset.client_list_shuffle_seed'] != 0:
-        data = sorted(data, key=lambda x: x.get('client_id', x.get('customer_id', x.get('installation_id'))))
-        random.Random(conf['dataset.client_list_shuffle_seed']).shuffle(data)
+    data = shuffle_client_list_reproducible(conf, data)
     data = list(data)
 
     valid_ix = np.arange(len(data))

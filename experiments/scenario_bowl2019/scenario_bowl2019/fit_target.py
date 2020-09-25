@@ -18,7 +18,7 @@ from dltranz.train import get_optimizer, get_lr_scheduler, fit_model
 from dltranz.util import init_logger, get_conf
 from dltranz.experiment import get_epoch_score_metric, update_model_stats
 from dltranz.metric_learn.inference_tools import infer_part_of_data, save_scores
-from metric_learning import prepare_embeddings
+from metric_learning import prepare_embeddings, shuffle_client_list_reproducible
 
 logger = logging.getLogger(__name__)
 
@@ -103,7 +103,9 @@ def read_consumer_data(path, conf):
     data = [rec for rec in data if rec['target'] is not None]
     logger.info(f'Loaded data with target: {len(data)}')
 
-    data = list(prepare_embeddings(data, conf, is_train=False))
+    data = prepare_embeddings(data, conf, is_train=False)
+    data = shuffle_client_list_reproducible(conf, data)
+    data = list(data)
     logger.info(f'Fit data to config')
 
     return data

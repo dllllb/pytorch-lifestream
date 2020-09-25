@@ -25,8 +25,7 @@ if __name__ == '__main__':
     switch_reproducibility_on()
 
 
-# TODO: use `is_train=False` when inference and validation
-def prepare_embeddings(seq, conf, is_train=True):
+def prepare_embeddings(seq, conf, is_train):
     min_seq_len = conf['dataset'].get('min_seq_len', 1)
     embeddings = list(conf['params.trx_encoder.embeddings'].keys())
 
@@ -58,16 +57,21 @@ def prepare_embeddings(seq, conf, is_train=True):
         yield rec
 
 
+def shuffle_client_list_reproducible(conf, data):
+    if conf['dataset.client_list_shuffle_seed'] != 0:
+        dataset_col_id = conf['dataset'].get('col_id', 'client_id')
+        data = sorted(data, key=lambda x: x.get(dataset_col_id, x.get('customer_id', x.get('installation_id'))))
+        random.Random(conf['dataset.client_list_shuffle_seed']).shuffle(data)
+    return data
+
+
 def create_data_loaders(conf):
     data = read_data_gen(conf['dataset.train_path'])
     data = tqdm(data)
     if 'max_rows' in conf['dataset']:
         data = islice(data, conf['dataset.max_rows'])
     data = prepare_embeddings(data, conf, is_train=True)
-    if conf['dataset.client_list_shuffle_seed'] != 0:
-        dataset_col_id = conf['dataset'].get('col_id', 'client_id')
-        data = sorted(data, key=lambda x: x.get(dataset_col_id, x.get('customer_id', x.get('installation_id'))))
-        random.Random(conf['dataset.client_list_shuffle_seed']).shuffle(data)
+    data = shuffle_client_list_reproducible(conf, data)
     data = list(data)
     if 'client_list_keep_count' in conf['dataset']:
         data = data[:conf['dataset.client_list_keep_count']]
