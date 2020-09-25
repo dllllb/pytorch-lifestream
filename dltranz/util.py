@@ -84,8 +84,25 @@ def get_conf(args=None):
 
     overrides = ','.join(overrides)
     over_conf = ConfigFactory.parse_string(overrides)
-    conf = over_conf.with_fallback(file_conf)
+    if len(over_conf) > 0:
+        logger.info(f'New overrides:')
 
+        def print_differences(root=''):
+            if len(root) > 0:
+                c = over_conf[root[:-1]]
+            else:
+                c = over_conf
+
+            for k, v in c.items():
+                old = file_conf.get(f"{root}{k}", None)
+                if isinstance(v, dict) and isinstance(old, dict):
+                    print_differences(f'{k}.')
+                else:
+                    logger.info(f'    For key "{root}{k}" provided new value "{v}", was "{old}"')
+
+        print_differences()
+    conf = over_conf.with_fallback(file_conf)
+    exit()
     return conf
 
 
