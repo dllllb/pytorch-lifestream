@@ -96,13 +96,12 @@ def get_conf(args=None):
             for k, v in c.items():
                 old = file_conf.get(f"{root}{k}", None)
                 if isinstance(v, dict) and isinstance(old, dict):
-                    print_differences(f'{k}.')
+                    print_differences(f'{root}{k}.')
                 else:
                     logger.info(f'    For key "{root}{k}" provided new value "{v}", was "{old}"')
 
         print_differences()
     conf = over_conf.with_fallback(file_conf)
-    exit()
     return conf
 
 
