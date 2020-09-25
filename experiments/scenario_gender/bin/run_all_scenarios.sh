@@ -22,6 +22,7 @@ python ../../ml_inference.py    params.device="$SC_DEVICE" --conf conf/dataset.h
 python ../../metric_learning.py \
   params.device="$SC_DEVICE" \
   params.rnn.hidden_size=256 \
+  params.train.loss="MarginLoss" params.train.margin=0.2 params.train.beta=0.4 \
   model_path.model="models/mles_model_for_finetuning.p" \
   --conf conf/dataset.hocon conf/mles_params.json
 python -m scenario_gender fit_finetuning \
