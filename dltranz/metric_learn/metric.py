@@ -4,6 +4,7 @@ import numpy as np
 from functools import partial
 from ignite.metrics import EpochMetric, Metric
 
+
 def outer_pairwise_distance(A, B=None):
     """
         Compute pairwise_distance of Tensors
@@ -118,7 +119,7 @@ class ignite_Recall_top_K(EpochMetric):
 
     def __init__(self, output_transform=lambda x: x, K=3, metric='cosine'):
         super(ignite_Recall_top_K, self).__init__(
-            partial(metric_Recall_top_K, K = K, metric = metric), 
+            partial(metric_Recall_top_K, K=K, metric=metric),
             output_transform=output_transform
         )
 

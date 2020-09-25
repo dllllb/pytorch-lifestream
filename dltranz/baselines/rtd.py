@@ -1,11 +1,11 @@
 import torch
 
-from dltranz.data_load import padded_collate_wo_target
+from dltranz.data_load import padded_collate
 from dltranz.seq_encoder import PaddedBatch
 
 
 def collate_rtd_batch(batch, replace_prob, skip_first=0):
-    padded_batch = padded_collate_wo_target(batch)
+    padded_batch, _ = padded_collate(batch)
 
     new_x, lengths = padded_batch.payload, padded_batch.seq_lens
 

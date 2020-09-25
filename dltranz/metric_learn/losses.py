@@ -83,8 +83,8 @@ class TripletLoss(nn.Module):
         if embeddings.is_cuda:
             triplets = triplets.cuda()
 
-        ap_distances = F.pairwise_distance(embeddings[triplets[:, 0]], embeddings[triplets[:, 1]]) # .pow(.5)
-        an_distances = F.pairwise_distance(embeddings[triplets[:, 0]], embeddings[triplets[:, 2]])  # .pow(.5)
+        ap_distances = F.pairwise_distance(embeddings[triplets[:, 0]], embeddings[triplets[:, 1]])
+        an_distances = F.pairwise_distance(embeddings[triplets[:, 0]], embeddings[triplets[:, 2]])
         losses = F.relu(ap_distances - an_distances + self.margin)
 
         return losses.sum(), len(triplets)
@@ -112,13 +112,14 @@ class HistogramLoss(torch.nn.Module):
         def histogram(inds, size):
             
             s_repeat_ = s_repeat.clone()
-            indsa = (s_repeat_floor - (self.t - self.step) > -self.eps) & (s_repeat_floor - (self.t - self.step) < self.eps) & inds
+            indsa = (s_repeat_floor - (self.t - self.step) > -self.eps) &  \
+                    (s_repeat_floor - (self.t - self.step) < self.eps) & inds
 
             assert indsa.nonzero().size()[0] == size, 'Another number of bins should be used'
             zeros = torch.zeros((1, indsa.size()[1])).bool()
             zeros = zeros.to(self.device)
             indsb = torch.cat((indsa, zeros))[1:, :]
-            s_repeat_[~(indsb|indsa)] = 0
+            s_repeat_[~(indsb | indsa)] = 0
             # indsa corresponds to the first condition of the second equation of the paper
             s_repeat_[indsa] = (s_repeat_ - self.t + self.step)[indsa] / self.step
             # indsb corresponds to the second condition of the second equation of the paper
@@ -131,7 +132,8 @@ class HistogramLoss(torch.nn.Module):
         classes_eq = (classes.repeat(classes_size, 1)  == classes.view(-1, 1).repeat(1, classes_size)).data
         dists = outer_cosine_similarity(embeddings)
         
-        assert ((dists > 1 + self.eps).sum().item() + (dists < -1 - self.eps).sum().item()) == 0, 'L2 normalization should be used'
+        assert ((dists > 1 + self.eps).sum().item() + (dists < -1 - self.eps).sum().item()) == 0, 'L2 normalization ' \
+                                                                                                  'should be used '
         s_inds = torch.triu(torch.ones(classes_eq.size()), 1).bool()
         s_inds = s_inds.to(self.device)
         pos_inds = classes_eq[s_inds].repeat(self.tsize, 1)

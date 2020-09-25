@@ -12,7 +12,7 @@ from dltranz.experiment import update_model_stats, get_epoch_score_metric
 from dltranz.loss import get_loss
 from dltranz.models import model_by_type
 from dltranz.seq_encoder import LastStepEncoder, MeanStepEncoder
-from dltranz.train import get_optimizer, get_lr_scheduler, fit_model, CheckpointHandler
+from dltranz.train import get_optimizer, get_lr_scheduler, fit_model
 from dltranz.util import init_logger, get_conf
 from metric_learning import prepare_data
 
