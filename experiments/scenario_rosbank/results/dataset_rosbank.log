@@ -1,0 +1,97 @@
+load_transactions      : Loaded 490513 records from "train.csv"
+load_transactions      : Loaded 518376 records from "test.csv"
+load_transactions      : Test extended with "target_flag" column
+load_transactions      : Test extended with "target_sum" column
+trx_to_features        : Found 10217 unique clients
+trx_to_features        : Encoder stat for "amount":
+codes | trx_count
+                 cnt  % of total
+amount                          
+[0.0, 1.7)      3320    0.003291
+[1.7, 3.5)     25017    0.024797
+[3.5, 5.2)    180071    0.178484
+[5.2, 7.0)    424703    0.420961
+[7.0, 8.7)    243887    0.241738
+[8.7, 10.4)    92387    0.091573
+[10.4, 12.2)   36208    0.035889
+[12.2, 13.9)    3215    0.003187
+[13.9, 15.7)      74    0.000073
+[15.7, 17.4)       7    0.000007
+trx_to_features        : Encoder stat for "mcc":
+codes | trx_count
+               cnt  % of total
+mcc                           
+[1, 12)     726038    0.719641
+[12, 24)    110273    0.109301
+[24, 36)     62243    0.061695
+[36, 48)     39736    0.039386
+[48, 59)     20143    0.019966
+[59, 71)     16673    0.016526
+[71, 83)     11573    0.011471
+[83, 95)      7836    0.007767
+[95, 107)     4176    0.004139
+[107, 385)   10198    0.010108
+trx_to_features        : Encoder stat for "channel_type":
+codes | trx_count
+                 cnt  % of total
+channel_type                    
+[1, 2)        619756    0.614296
+[2, 3)        357071    0.353925
+[3, 4)          9668    0.009583
+[4, 5)          9485    0.009401
+[5, 6)          7845    0.007776
+[6, 7)          5064    0.005019
+trx_to_features        : Encoder stat for "currency":
+codes | trx_count
+             cnt    % of total
+currency                      
+[1, 2)    981731  9.730813e-01
+[2, 3)     11573  1.147103e-02
+[3, 4)      3808  3.774449e-03
+[4, 5)      1460  1.447136e-03
+[5, 6)       941  9.327091e-04
+...          ...           ...
+[63, 64)       2  1.982379e-06
+[64, 65)       2  1.982379e-06
+[65, 66)       1  9.911893e-07
+[66, 67)       1  9.911893e-07
+[67, 68)       1  9.911893e-07
+
+[67 rows x 2 columns]
+trx_to_features        : Encoder stat for "trx_category":
+codes | trx_count
+                 cnt  % of total
+trx_category                    
+[1, 2)        858574    0.851009
+[2, 3)         43086    0.042706
+[3, 4)         38414    0.038076
+[4, 5)         20428    0.020248
+[5, 6)         15196    0.015062
+[6, 7)         14117    0.013993
+[7, 8)         11210    0.011111
+[8, 9)          5433    0.005385
+[9, 10)         2358    0.002337
+[10, 11)          73    0.000072
+trx_to_features        : Trx count per clients:
+len(trx_list) | client_count
+             cnt  % of total
+trx_count                   
+[1, 37)     2720    0.266223
+[37, 74)    1902    0.186160
+[74, 111)   1672    0.163649
+[111, 148)  1436    0.140550
+[148, 185)  1021    0.099931
+[185, 222)   689    0.067437
+[222, 259)   367    0.035921
+[259, 295)   185    0.018107
+[295, 332)   120    0.011745
+[332, 785)   105    0.010277
+trx_to_features        : Feature collection in progress ...
+trx_to_features        : Feature names: ['cl_id', 'amount', 'event_time', 'mcc', 'channel_type', 'currency', 'trx_category', 'trx_count']
+trx_to_features        : Prepared features for 10217 clients
+update_with_target     : Target updated for 10217 clients
+split_dataset          : Train size: 9717 clients
+split_dataset          : Test size: 500 clients
+save_features          : Saved to: "/mnt/data/kireev/pycharm_deploy/dltranz/experiments/scenario_rosbank/data/train_trx.parquet"
+save_features          : Saved to: "/mnt/data/kireev/pycharm_deploy/dltranz/experiments/scenario_rosbank/data/test_trx.parquet"
+run                    : Data collected in 41 sec (0:00:41.715559)

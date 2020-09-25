@@ -325,8 +325,9 @@ class TrxDataset(Dataset):
             yield x, self.y_dtype(y)
 
     def __getitem__(self, idx):
-        x = self.data[idx]['feature_arrays']
-        y = self.data[idx].get('target', None)
+        data = self.data[idx]
+        x = data['feature_arrays']
+        y = data.get('target', None)
 
         return x, self.y_dtype(y)
 
