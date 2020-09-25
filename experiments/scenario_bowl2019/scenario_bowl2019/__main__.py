@@ -1,18 +1,13 @@
 import argparse
 import logging
-import numpy as np
-import torch
 
 if __name__ == '__main__':
     import sys
     sys.path.append('../../')
 
-    # reproducibility
-    np.random.seed(42)
-    torch.backends.cudnn.benchmark = False
-    torch.backends.cudnn.deterministic = True
-    torch.manual_seed(42)
-    torch.cuda.manual_seed_all(42)
+    from dltranz.util import switch_reproducibility_on
+    switch_reproducibility_on()
+
 
 from scenario_bowl2019 import fit_target, pseudo_labeling, fit_finetuning
 from scenario_bowl2019 import compare_approaches

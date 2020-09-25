@@ -17,17 +17,12 @@ from dltranz.metric_learn.metric import metric_Recall_top_K
 from dltranz.metric_learn.ml_models import ml_model_by_type, ComplexModel
 from dltranz.metric_learn.sampling_strategies import get_sampling_strategy
 from dltranz.train import get_optimizer, get_lr_scheduler, fit_model, CheckpointHandler
-from dltranz.util import init_logger, get_conf, CustomMetric
+from dltranz.util import init_logger, get_conf, CustomMetric, switch_reproducibility_on
 
 logger = logging.getLogger(__name__)
 
 if __name__ == '__main__':
-    # reproducibility
-    np.random.seed(42)
-    torch.backends.cudnn.benchmark = False
-    torch.backends.cudnn.deterministic = True
-    torch.manual_seed(42)
-    torch.cuda.manual_seed_all(42)
+    switch_reproducibility_on()
 
 
 def create_data_loaders(conf):

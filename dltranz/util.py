@@ -278,3 +278,13 @@ class CustomMetric(Metric):
         if self.denum_value == 0:
             return 0.0
         return self.num_value / self.denum_value
+
+
+def switch_reproducibility_on():
+    import torch
+
+    np.random.seed(42)
+    torch.backends.cudnn.benchmark = False
+    torch.backends.cudnn.deterministic = True
+    torch.manual_seed(42)
+    torch.cuda.manual_seed_all(42)

@@ -1,3 +1,5 @@
+from dltranz.util import switch_reproducibility_on
+
 if __name__ == '__main__':
     import sys
     sys.path.append('../')
@@ -19,12 +21,8 @@ from experiments.scenario_tinkoff import save_result
 logger = logging.getLogger(__name__)
 
 if __name__ == '__main__':
-    # reproducibility
-    np.random.seed(42)
-    torch.backends.cudnn.benchmark = False
-    torch.backends.cudnn.deterministic = True
-    torch.manual_seed(42)
-    torch.cuda.manual_seed_all(42)
+    switch_reproducibility_on()
+
 
 def check_random(config):
     df_log = load_data(config)

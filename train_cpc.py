@@ -12,12 +12,16 @@ from dltranz.seq_encoder import RnnEncoder, LastStepEncoder
 from dltranz.trx_encoder import TrxEncoder
 from dltranz.metric_learn.dataset import create_train_data_loader, create_valid_data_loader
 from dltranz.cpc import CPC_Ecoder, run_experiment
-from dltranz.util import init_logger, get_conf
+from dltranz.util import init_logger, get_conf, switch_reproducibility_on
 from dltranz.data_load import TrxDataset, ConvertingTrxDataset, read_data_gen, SameTimeShuffleDataset, \
     AllTimeShuffleDataset
 from metric_learning import prepare_embeddings
 
 logger = logging.getLogger(__name__)
+
+if __name__ == '__main__':
+    switch_reproducibility_on()
+
 
 def create_ds(train_data, valid_data, conf):
 
