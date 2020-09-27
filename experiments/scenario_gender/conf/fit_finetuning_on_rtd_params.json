@@ -47,7 +47,7 @@
     "norm_scores": false,
     "score_metric": "auroc",
 
-    "pretrained_model_path": "models/rtd_model_transformer.p",
+    "pretrained_model_path": "models/rtd_model.p",
     "use_batch_norm": true
   },
 
