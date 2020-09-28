@@ -355,8 +355,8 @@ class TrxDataset(Dataset):
 
     def __getitem__(self, idx):
         data = self.data[idx]
-        x = data[idx]['feature_arrays']
-        y = data[idx].get('target', None)
+        x = data['feature_arrays']
+        y = data.get('target', None)
 
         return x, self.y_dtype(y)
 
