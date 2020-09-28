@@ -9,6 +9,7 @@ from ignite.handlers import ModelCheckpoint
 from ignite.metrics import RunningAverage
 import numpy as np
 import pandas as pd
+from math import sqrt
 
 warnings.filterwarnings('ignore', module='tensorboard.compat.tensorflow_stub.dtypes')
 from torch.utils.tensorboard import SummaryWriter
@@ -244,14 +245,11 @@ def fit_model(model, train_loader, valid_loader, loss, optimizer, scheduler, par
         model=model,
         device=device,
         prepare_batch=batch_to_device,
-        metrics=valid_metrics
+        metrics= valid_metrics 
     )
 
     pbar = ProgressBar(persist=True, bar_format="")
     pbar.attach(validation_evaluator)
-
-    # valid_metric_name = valid_metric.__class__.__name__
-    # valid_metric.attach(validation_evaluator, valid_metric_name)
 
     trainer.add_event_handler(Events.EPOCH_STARTED, PrepareEpoch(train_loader))
 
@@ -260,7 +258,7 @@ def fit_model(model, train_loader, valid_loader, loss, optimizer, scheduler, par
         validation_evaluator.run(valid_loader)
         metrics = validation_evaluator.state.metrics
         msgs = []
-        for metric in valid_metrics:
+        for metric in metrics.keys():
             msgs.append(f'{metric}: {metrics[metric]:.3f}')
         pbar.log_message(
             f'Epoch: {engine.state.epoch},  {", ".join(msgs)}')
