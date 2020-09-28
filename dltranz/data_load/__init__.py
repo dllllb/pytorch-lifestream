@@ -127,7 +127,7 @@ def read_pyarrow_file(path, use_threads=True):
 
 def read_data_gen(path):
     ext = os.path.splitext(path)[1]
-    if ext == '.p' or ext == '.pickle':
+    if ext == '.p':
         with open(path, 'rb') as f:
             data = pickle.load(f)
             return iter(data)
@@ -354,8 +354,10 @@ class TrxDataset(Dataset):
             yield x, self.y_dtype(y)
 
     def __getitem__(self, idx):
-        x = self.data[idx]['feature_arrays']
-        y = self.data[idx].get('target', None)
+        data = self.data[idx]
+        x = data[idx]['feature_arrays']
+        y = data[idx].get('target', None)
+
         return x, self.y_dtype(y)
 
 
@@ -391,6 +393,7 @@ class ConvertingTrxDataset(Dataset):
         if a.dtype == np.int8:
             return a.astype(np.int16)
         return a
+
 
 def pad_sequence(sequence, alignment, max_len=None, pad_value=0.0):
     def get_pad(x, max_len):
