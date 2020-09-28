@@ -1,0 +1,94 @@
+{
+  "params": {
+    "experiment": {
+      "name": "default"
+    },
+    "device": "cuda",
+    "model_type": "rnn",
+    "trx_encoder": {
+      "norm_embeddings": false,
+      "embeddings_noise": 0.003,
+      "embeddings": {
+        "level_3": {"in": 200, "out": 16},
+        "level_4": {"in": 800, "out": 16},
+        "segment_id": {"in": 120, "out": 16}
+      },
+      "numeric_values": {
+        "trn_sum_from_iss": "identity",
+        "netto": "identity",
+        "regular_points_received": "identity"
+      }
+    },
+    "rnn": {
+      "type": "gru",
+      "hidden_size": 800,
+      "bidir": false,
+      "trainable_starter": "static"
+    },
+    "transf": {
+      "train_starter": true,
+      "shared_layers": false,
+      "input_size": 16,
+      "n_heads": 4,
+      "dim_hidden": 64,
+      "dropout": 0.01,
+      "n_layers": 4,
+      "use_positional_encoding": false,
+      "max_seq_len": 800,
+      "use_after_mask": false,
+      "use_src_key_padding_mask": false
+    },
+    "use_normalization_layer": true,
+    "head": {
+      "pred_all_states": true,
+      "pred_all_states_mean": false,
+      "pred_flatten": true,
+      "explicit_lengths": false,
+      "norm_input": false,
+      "use_batch_norm": false
+    },
+    "lr_scheduler": {
+      "ReduceLROnPlateau": true,
+      "patience": 15
+    },
+    "train": {
+      "num_workers": 8,
+      "batch_size": 256,
+      "trx_dropout": 0.01,
+      "max_seq_len": 800,
+      "replace_token": {
+        "replace_prob": 0.15,
+        "skip_first": 1
+      },
+      "loss": "bce",
+      "lr": 0.002,
+      "weight_decay": 0.0,
+      "all_time_shuffle": true,
+      "n_epoch": 30
+    },
+    "norm_scores": false,
+    "valid": {
+      "batch_size": 256,
+      "num_workers": 16,
+      "max_seq_len": 800
+    },
+    "score_metric": "auroc"
+  },
+
+  "save_model": true,
+  "model_path": {
+    "model": "models/rtd_model.p",
+    "only_encoder": true
+  },
+
+  "output": {
+    "path": "data/rtd_embeddings",
+    "format": "pickle",
+    "columns": ["client_id"]
+  },
+
+  "stats": {
+    "path": "runs/rtd_result.json"
+  }
+
+}

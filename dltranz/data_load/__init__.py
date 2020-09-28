@@ -170,11 +170,12 @@ class DropoutTrxDatasetIpoteka(Dataset):
 
 
 class DropoutTrxDataset(Dataset):
-    def __init__(self, dataset: Dataset, trx_dropout, seq_len):
+    def __init__(self, dataset: Dataset, trx_dropout, seq_len, with_target=True):
         self.core_dataset = dataset
         self.trx_dropout = trx_dropout
         self.max_seq_len = seq_len
         self.style = dataset.style
+        self.with_target = with_target
 
     def __len__(self):
         return len(self.core_dataset)
@@ -191,7 +192,10 @@ class DropoutTrxDataset(Dataset):
             return self._one_item(item)
 
     def _one_item(self, item):
-        x, y = item
+        if self.with_target:
+            x, y = item
+        else:
+            x = item
 
         seq_len = len(next(iter(x.values())))
 
@@ -204,7 +208,10 @@ class DropoutTrxDataset(Dataset):
         idx = idx[-self.max_seq_len:]
         new_x = {k: v[idx] for k, v in x.items()}
 
-        return new_x, y
+        if self.with_target:
+            return new_x, y
+        else:
+            return new_x
 
 
 class AllTimeShuffleDataset(Dataset):

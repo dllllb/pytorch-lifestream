@@ -37,7 +37,12 @@ def create_data_loaders(conf):
     )
 
     train_dataset = ConvertingTrxDataset(TrxDataset(train_data, with_target=False), with_target=False)
-    train_dataset = DropoutTrxDataset(train_dataset, conf['params.train.trx_dropout'], conf['params.train.max_seq_len'])
+    train_dataset = DropoutTrxDataset(
+        train_dataset,
+        conf['params.train.trx_dropout'],
+        conf['params.train.max_seq_len'],
+        with_target=False
+    )
     train_loader = DataLoader(
         dataset=train_dataset,
         shuffle=True,
@@ -47,7 +52,7 @@ def create_data_loaders(conf):
     )
 
     valid_dataset = ConvertingTrxDataset(TrxDataset(valid_data, with_target=False), with_target=False)
-    valid_dataset = DropoutTrxDataset(valid_dataset, 0, conf['params.valid.max_seq_len'])
+    valid_dataset = DropoutTrxDataset(valid_dataset, 0, conf['params.valid.max_seq_len'], with_target=False)
     valid_loader = DataLoader(
         dataset=valid_dataset,
         shuffle=False,
