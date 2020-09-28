@@ -34,7 +34,7 @@
       "loss": "NLLLoss",
       "lr": 0.002,
       "weight_decay": 0.0,
-      "n_epoch": 100
+      "n_epoch": 13
     },
     "lr_scheduler": {
       "step_size": 5,
@@ -54,10 +54,6 @@
 
   "save_model": false,
 
-  "stats": {
-    "path": "runs/age_pred_target_results.json"
-  },
-
   "output": {
     "valid": {
       "path": "data/mles_finetuning_scores/valid",
@@ -68,5 +64,11 @@
       "format": "pickle"
     },
     "columns": ["client_id"]
+  },
+
+  "stats": {
+    "model_name": "nn",
+    "feature_name": "mles_finetuning",
+    "path": "results/mles_finetuning_results.json"
   }
 }
