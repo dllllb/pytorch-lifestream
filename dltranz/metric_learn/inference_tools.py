@@ -7,6 +7,7 @@ import pandas as pd
 
 import torch
 import tqdm
+from sklearn.metrics import roc_auc_score, accuracy_score
 from tqdm.autonotebook import tqdm
 
 from dltranz.metric_learn.read_processing import fit_features, add_ticks, fit_types
@@ -82,7 +83,8 @@ def infer_part_of_data(part_num, part_data, columns, model, conf, lock_obj=None)
     _, pred = score_model(model, valid_loader, conf['params'])
 
     if conf['params.device'] != 'cpu':
-        torch.cuda.empty_cache()
+        with torch.cuda.device(conf['params.device']):
+            torch.cuda.empty_cache()
         logger.info('torch.cuda.empty_cache()')
     if lock_obj:
         lock_obj.release()
@@ -131,7 +133,8 @@ def infer_iterable(part_num, iterable_dataset, columns, model, conf, lock_obj=No
     ids, pred = score_model(model, valid_loader, conf['params'])
 
     if conf['params.device'] != 'cpu':
-        torch.cuda.empty_cache()
+        with torch.cuda.device(conf['params.device']):
+            torch.cuda.empty_cache()
         logger.info('torch.cuda.empty_cache()')
     if lock_obj:
         lock_obj.release()
@@ -234,3 +237,31 @@ def main_single_part(args=None):
 
     valid_data = read_dataset_all(conf, 'valid', partial(consumer_preprocess_gen, conf=conf))
     score_part_of_data(None, valid_data, columns, model, conf)
+
+
+def score_data(conf, y_true, y_predict):
+    metric_name = conf['params.score_metric']
+    if metric_name not in ('auroc', 'accuracy'):
+        raise AttributeError(f'Unknown metric: "{metric_name}"')
+
+    col_id = conf['output.columns'][0]
+
+    model_type = conf['params.model_type']
+    if model_type == 'rnn':
+        cnt_features = conf['params.rnn.hidden_size']
+    else:
+        raise AttributeError(f'Unknown model_type: "{model_type}"')
+
+    y_predict = y_predict.set_index(col_id)
+    y_true = pd.DataFrame([{col_id: rec[col_id], 'target': rec['target']} for rec in y_true])
+    y_true = y_true.set_index(col_id).reindex(index=y_predict.index)
+    df = y_predict.merge(y_true, on=col_id, how='left')
+    if metric_name == 'auroc':
+        score = roc_auc_score(df['target'], df.iloc[:, 0])
+    if metric_name == 'accuracy':
+        score = accuracy_score(df['target'], np.argmax(df.values, axis=1))
+    return {
+        metric_name: score,
+        'cnt_samples': len(y_true),
+        'cnt_features': cnt_features,
+    }

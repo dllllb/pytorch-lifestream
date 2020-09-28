@@ -103,7 +103,7 @@ def read_consumer_data(path, conf):
     data = [rec for rec in data if rec['target'] is not None]
     logger.info(f'Loaded data with target: {len(data)}')
 
-    data = list(prepare_embeddings(data, conf))
+    data = list(prepare_embeddings(data, conf, is_train=False))
     logger.info(f'Fit data to config')
 
     return data

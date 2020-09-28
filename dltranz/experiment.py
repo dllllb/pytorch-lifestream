@@ -113,13 +113,7 @@ def run_experiment(train_ds, valid_ds, conf, model):
 def fit_model_on_data(model, train_ds, valid_ds, params, handlers):
     m = model(params)
 
-    if params['train']['random_neg']:
-        targets = [y for x, y in train_ds]
-        sampler = ZeroDownSampler(targets)
-    else:
-        sampler = None
-
-    train_loader = create_train_loader(train_ds, params['train'], sampler)
+    train_loader = create_train_loader(train_ds, params['train'])
     valid_loader = create_validation_loader(valid_ds, params['valid'])
 
     loss = get_loss(params)

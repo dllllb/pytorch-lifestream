@@ -1,0 +1,7 @@
+[MASTER]
+extension-pkg-whitelist=numpy,torch
+disable=C0114,C0115,C0116
+
+[TYPECHECK]
+ignored-modules=numpy,torch
+ignored-classes=numpy,torch

@@ -4,6 +4,7 @@
       "name": "default"
     },
     "device": "cuda",
+    "model_type": "cpc_model",
     "rnn": {
       "type": "gru",
       "hidden_size": 512,
@@ -46,10 +47,6 @@
     }
   },
 
-  "stats": {
-    "path": "runs/age_pred_cpc_result.json"
-  },
-
   "save_model": true,
   "model_path": {
     "model": "models/cpc_model.p"
@@ -59,5 +56,10 @@
     "path": "data/cpc_embeddings",
     "format": "pickle",
     "columns": ["client_id"]
+  },
+
+  "stats": {
+    "path": "runs/cpc_result.json"
   }
+
 }
