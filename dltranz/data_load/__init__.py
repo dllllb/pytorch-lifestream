@@ -335,9 +335,10 @@ class LastKTrxDataset(Dataset):
 
 
 class TrxDataset(Dataset):
-    def __init__(self, data, y_dtype=np.float32, style='map'):
+    def __init__(self, data, y_dtype=np.float32, style='map', with_target=True):
         self.data = data
         self.y_dtype = y_dtype
+        self.with_target = with_target
 
         if isinstance(data, torch.utils.data.IterableDataset):
             self.style = 'iterable'
@@ -350,14 +351,20 @@ class TrxDataset(Dataset):
     def __iter__(self):
         for rec in iter(self.data):
             x = rec['feature_arrays']
-            y = rec.get('target', None)
-            yield x, self.y_dtype(y)
+            if self.with_target:
+                y = rec.get('target', None)
+                yield x, self.y_dtype(y)
+            else:
+                yield x
 
     def __getitem__(self, idx):
         x = self.data[idx]['feature_arrays']
-        y = self.data[idx].get('target', None)
 
-        return x, self.y_dtype(y)
+        if self.with_target:
+            y = self.data[idx].get('target', None)
+            return x, self.y_dtype(y)
+        else:
+            return x
 
 
 class ConvertingTrxDataset(Dataset):

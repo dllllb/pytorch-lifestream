@@ -36,7 +36,7 @@ def create_data_loaders(conf):
         skip_first=conf['params.train.replace_token.skip_first']
     )
 
-    train_dataset = ConvertingTrxDataset(TrxDataset(train_data, y_dtype=np.int64))
+    train_dataset = ConvertingTrxDataset(TrxDataset(train_data, with_target=False), with_target=False)
     train_dataset = DropoutTrxDataset(train_dataset, conf['params.train.trx_dropout'], conf['params.train.max_seq_len'])
     train_loader = DataLoader(
         dataset=train_dataset,
@@ -46,7 +46,7 @@ def create_data_loaders(conf):
         batch_size=conf['params.train.batch_size'],
     )
 
-    valid_dataset = ConvertingTrxDataset(TrxDataset(valid_data, y_dtype=np.int64))
+    valid_dataset = ConvertingTrxDataset(TrxDataset(valid_data, with_target=False), with_target=False)
     valid_dataset = DropoutTrxDataset(valid_dataset, 0, conf['params.valid.max_seq_len'])
     valid_loader = DataLoader(
         dataset=valid_dataset,
