@@ -19,6 +19,9 @@ class PaddedBatch:
     def seq_lens(self):
         return self._length
 
+    def __len__(self):
+        return len(self._length)
+
     def to(self, device, non_blocking=False):
         length = self._length.to(device=device, non_blocking=non_blocking)
         payload = {
