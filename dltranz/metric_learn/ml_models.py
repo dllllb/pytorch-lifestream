@@ -14,7 +14,8 @@ from dltranz.transf_seq_encoder import TransformerSeqEncoder
 script_dir = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(os.path.join(script_dir, '../..'))
 
-from dltranz.seq_encoder import RnnEncoder, LastStepEncoder, PerTransTransf, FirstStepEncoder, PaddedBatch
+from dltranz.seq_encoder import RnnEncoder, LastStepEncoder, PerTransTransf, FirstStepEncoder, PaddedBatch, \
+    DropoutEncoder
 from dltranz.trx_encoder import TrxEncoder
 
 logger = logging.getLogger(__name__)
@@ -72,6 +73,11 @@ def rnn_model(params):
     if 'projection_head' in params:
         logger.info('projection_head included')
         layers.extend(projection_head(params['rnn.hidden_size'], params['projection_head.output_size']))
+
+    if params.get('embeddings_dropout', 0):
+        layers.append(DropoutEncoder(params['embeddings_dropout']))
+        logger.info('DropoutEncoder included')
+
     if params['use_normalization_layer']:
         layers.append(L2Normalization())
         logger.info('L2Normalization included')
