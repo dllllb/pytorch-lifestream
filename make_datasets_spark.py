@@ -260,16 +260,15 @@ def trx_to_features(df_data, print_dataset_info,
 
 def update_with_target(features, data_path, target_files, col_client_id, col_target):
     df_target = load_source_data(data_path, target_files)
+    col_list = [F.col(col_client_id).alias(col_client_id)]
     if type(col_target) is list:
         for col in col_target:
-            col_list.append(F.col(col)) #.alias(f'target_{col}'))
-        df_target = df_target.withColumn("target", F.array(col_list)) 
-        df_target = df_target.select(col_client_id, "target")
+            col_list.append(F.col(col).alias(f'target_{col}'))
     else:
-        col_list = [F.col(col_client_id).alias(col_client_id)]
-        col_list.append(F.col(col_target).cast('int').alias('target'))    
-        df_target = df_target.select(*col_list)
-        df_target = df_target.repartition(1)
+        col_list.append(F.col(col_target).cast('int').alias('target'))
+
+    df_target = df_target.select(*col_list)
+    df_target = df_target.repartition(1)
 
     features = features.join(df_target, on=col_client_id, how='left')
     features.persist()
