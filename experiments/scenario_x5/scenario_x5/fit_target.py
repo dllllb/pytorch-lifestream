@@ -94,6 +94,7 @@ class ClippingDataset(Dataset):
         self.min_len = min_len
         self.max_len = max_len
         self.rate_for_min = rate_for_min
+        self.style = delegate.style
 
     def __len__(self):
         return len(self.delegate)
@@ -183,6 +184,9 @@ def main(_):
     target_values = [rec['target'] for rec in train_data]
     for i, (i_train, i_valid) in enumerate(skf.split(train_data, target_values)):
         logger.info(f'Train fold: {i}')
+        i_train = set(i_train.tolist())
+        i_valid = set(i_valid.tolist())
+        
         i_train_data = [rec for i, rec in enumerate(train_data) if i in i_train]
         i_valid_data = [rec for i, rec in enumerate(train_data) if i in i_valid]
 

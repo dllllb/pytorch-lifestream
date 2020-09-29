@@ -45,7 +45,7 @@ done
 
 # Compare
 python -m scenario_x5 compare_approaches --output_file "results/scenario_x5__smpl_strategy.csv" \
-    --embedding_file_names --models lgb                      \
+    --models lgb --embedding_file_names                      \
     "mles_embeddings.pickle"                                 \
     "emb__smpl_strategy_HardNegativePair_neg_count_*.pickle" \
     "emb__smpl_strategy_AllPositivePair.pickle"              \

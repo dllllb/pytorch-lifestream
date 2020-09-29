@@ -72,6 +72,9 @@ def main(_):
     target_values = [rec['target'] for rec in train_data]
     for i, (i_train, i_valid) in enumerate(skf.split(train_data, target_values)):
         logger.info(f'Train fold: {i}')
+        i_train = set(i_train.tolist())
+        i_valid = set(i_valid.tolist())
+        
         i_train_data = [rec for i, rec in enumerate(train_data) if i in i_train]
         i_valid_data = [rec for i, rec in enumerate(train_data) if i in i_valid]
 
