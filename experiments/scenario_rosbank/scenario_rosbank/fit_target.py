@@ -19,7 +19,7 @@ from dltranz.train import get_optimizer, get_lr_scheduler, fit_model
 from dltranz.util import init_logger, get_conf
 from dltranz.experiment import get_epoch_score_metric
 from dltranz.metric_learn.inference_tools import infer_part_of_data, save_scores, score_data
-from metric_learning import prepare_embeddings
+from metric_learning import prepare_embeddings, shuffle_client_list_reproducible
 
 logger = logging.getLogger(__name__)
 
@@ -32,6 +32,7 @@ def read_consumer_data(path, conf):
     data = (rec for rec in data if rec['target_target_flag'] is not None)
     data = (rec for rec in data if not np.isnan(int(rec['target_target_flag'])))
     data = prepare_embeddings(data, conf, is_train=False)
+    data = shuffle_client_list_reproducible(conf, data)
     data = list(data)
 
     for rec in data:
