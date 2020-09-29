@@ -19,7 +19,7 @@ do
       --conf "conf/dataset.hocon" "conf/mles_params.json"
 done
 
-for SC_HIDDEN_SIZE in 1600 1200
+for SC_HIDDEN_SIZE in 2400 1600 1200
 do
   export SC_SUFFIX="hidden_size_bs_0064_hs_${SC_HIDDEN_SIZE}"
   python ../../ml_inference.py \
