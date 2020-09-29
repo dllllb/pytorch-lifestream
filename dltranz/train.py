@@ -9,10 +9,12 @@ from ignite.handlers import ModelCheckpoint
 from ignite.metrics import RunningAverage
 import numpy as np
 import pandas as pd
+from math import sqrt
 
 warnings.filterwarnings('ignore', module='tensorboard.compat.tensorflow_stub.dtypes')
 from torch.utils.tensorboard import SummaryWriter
 from dltranz.seq_encoder import PaddedBatch
+from dltranz.swa import SWA
 
 from ignite.engine import Engine, Events, create_supervised_trainer, create_supervised_evaluator
 import ignite
@@ -23,28 +25,25 @@ logger = logging.getLogger(__name__)
 
 def batch_to_device(batch, device, non_blocking):
     x, y = batch
-    if isinstance(x, PaddedBatch):
-        new_x = {k: v.to(device=device, non_blocking=non_blocking) if isinstance(v, torch.Tensor) else v for k, v in x.payload.items()}
-        new_y = y.to(device=device, non_blocking=non_blocking)
-        return PaddedBatch(new_x, x.seq_lens), new_y
 
-    elif isinstance(x, dict):
+    if isinstance(x, dict):
         batches = {}
         for key, sx in x.items():
-            new_x = {k: v.to(device=device, non_blocking=non_blocking) if isinstance(v, torch.Tensor) else v for k, v in
-                     sx.payload.items()}
-            batches[key] = PaddedBatch(new_x, sx.seq_lens)
+            batches[key] = sx.to(device=device, non_blocking=non_blocking)
         new_y = y.to(device=device, non_blocking=non_blocking)
         return batches, new_y
 
     elif isinstance(x, tuple):
         batches = []
         for sx in x:
-            new_x = {k: v.to(device=device, non_blocking=non_blocking) if isinstance(v, torch.Tensor) else v for k, v in
-                     sx.payload.items()}
-            batches.append(PaddedBatch(new_x, sx.seq_lens))
+            batches.append(sx.to(device=device, non_blocking=non_blocking))
         new_y = y.to(device=device, non_blocking=non_blocking)
         return tuple(batches), new_y
+
+    else:
+        new_x = x.to(device=device, non_blocking=non_blocking)
+        new_y = y.to(device=device, non_blocking=non_blocking)
+        return new_x, new_y
 
 
 def get_optimizer(model, params):
@@ -75,23 +74,33 @@ def get_optimizer(model, params):
             )]}
         parameters.append(default_options)
     optimizer = torch.optim.Adam(parameters, lr=params['train.lr'], weight_decay=params['train.weight_decay'])
+
+    if params.get('train.swa', None):
+        optimizer = SWA(optimizer)
+
     return optimizer
 
 
-class SchedulerWrapper:
+class SchedulerWrapper(torch.optim.lr_scheduler._LRScheduler):
     def __init__(self, scheduler):
         self.scheduler = scheduler
 
     def __call__(self, *args, **kwargs):
         self.scheduler.step()
 
+    def step(self, epoch=None):
+        self.scheduler.step(epoch)
 
-class ReduceLROnPlateauWrapper:
+
+class ReduceLROnPlateauWrapper(torch.optim.lr_scheduler.ReduceLROnPlateau):
     def __init__(self, scheduler):
         self.scheduler = scheduler
 
     def __call__(self, metric_value, *args, **kwargs):
         self.scheduler.step(metric_value)
+
+    def step(self, metric, epoch=None):
+        self.scheduler.step(metric, epoch)
 
 
 class MultiGammaScheduler(torch.optim.lr_scheduler.MultiStepLR):
@@ -251,14 +260,11 @@ def fit_model(model, train_loader, valid_loader, loss, optimizer, scheduler, par
         model=model,
         device=device,
         prepare_batch=batch_to_device,
-        metrics=valid_metrics
+        metrics= valid_metrics 
     )
 
     pbar = ProgressBar(persist=True, bar_format="")
     pbar.attach(validation_evaluator)
-
-    # valid_metric_name = valid_metric.__class__.__name__
-    # valid_metric.attach(validation_evaluator, valid_metric_name)
 
     trainer.add_event_handler(Events.EPOCH_STARTED, PrepareEpoch(train_loader))
 
@@ -267,7 +273,7 @@ def fit_model(model, train_loader, valid_loader, loss, optimizer, scheduler, par
         validation_evaluator.run(valid_loader)
         metrics = validation_evaluator.state.metrics
         msgs = []
-        for metric in valid_metrics:
+        for metric in metrics.keys():
             msgs.append(f'{metric}: {metrics[metric]:.3f}')
         pbar.log_message(
             f'Epoch: {engine.state.epoch},  {", ".join(msgs)}')
@@ -295,6 +301,13 @@ def fit_model(model, train_loader, valid_loader, loss, optimizer, scheduler, par
                 best_metric_value = metric_value
                 best_parameters = deepcopy(model.state_dict())
 
+    # Stochastic Weight Averaging
+    if params.get('train.swa', False):
+        @trainer.on(Events.EPOCH_COMPLETED)
+        def update_swa(engine):
+            if engine.state.epoch >= params['train.swa'].get('swa_start'):
+                optimizer.update_swa()
+
     for handler in train_handlers:
         handler(trainer, validation_evaluator, optimizer)
 
@@ -302,6 +315,10 @@ def fit_model(model, train_loader, valid_loader, loss, optimizer, scheduler, par
 
     if params.get('train.use_best_epoch', False):
         model.load_state_dict(best_parameters)
+
+    elif params.get('train.swa', None):
+        optimizer.swap_swa_sgd()
+        optimizer.bn_update(train_loader, model, device, prepare_batch=batch_to_device)
 
     return validation_evaluator.state.metrics
 
