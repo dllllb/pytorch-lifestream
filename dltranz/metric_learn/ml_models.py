@@ -1,19 +1,14 @@
 # coding: utf-8
 import logging
 import os
-import sys
 import torch
 import torch.nn as nn
 
 from torch.autograd import Function
 
 from dltranz.agg_feature_model import AggFeatureModel
-from dltranz.cpc import CPC_Ecoder
+from dltranz.baselines.cpc import CPC_Ecoder
 from dltranz.transf_seq_encoder import TransformerSeqEncoder
-
-script_dir = os.path.dirname(os.path.realpath(__file__))
-sys.path.append(os.path.join(script_dir, '../..'))
-
 from dltranz.seq_encoder import RnnEncoder, LastStepEncoder, PerTransTransf, FirstStepEncoder, PaddedBatch, \
     DropoutEncoder
 from dltranz.trx_encoder import TrxEncoder
@@ -26,19 +21,20 @@ class L2Normalization(nn.Module):
     def __init__(self):
         super(L2Normalization, self).__init__()
 
-    def forward(self, input):
-        return input.div(torch.norm(input, dim=1).view(-1, 1))
+    def forward(self, x):
+        return x.div(torch.norm(x, dim=1).view(-1, 1))
 
 
 class Binarization(Function):
     @staticmethod
     def forward(self, x):
-        q = (x>0).float()
-        return  (2*q - 1)
+        q = (x > 0).float()
+        return 2*q - 1
 
     @staticmethod
-    def backward(self, gradOutput):
-        return gradOutput
+    def backward(self, grad_outputs):
+        return grad_outputs
+
 
 binary = Binarization.apply
 
@@ -46,7 +42,7 @@ binary = Binarization.apply
 class BinarizationLayer(nn.Module):
     def __init__(self, hs_from, hs_to):
         super(BinarizationLayer, self).__init__()
-        self.linear = nn.Linear(hs_from, hs_to, bias = False)
+        self.linear = nn.Linear(hs_from, hs_to, bias=False)
 
     def forward(self, x):
         return binary(self.linear(x))

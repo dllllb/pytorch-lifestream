@@ -1,7 +1,7 @@
 import torch
 from dltranz.seq_encoder import RnnEncoder
 from dltranz.trx_encoder import TrxEncoder
-from dltranz.cpc import CPC_Ecoder, run_experiment
+from dltranz.baselines.cpc import CPC_Ecoder, run_experiment
 from tests.dltranz_tests.test_trx_encoder import gen_trx_data
 from dltranz.data_load import TrxDataset
 from pyhocon import ConfigFactory

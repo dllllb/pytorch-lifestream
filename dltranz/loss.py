@@ -156,8 +156,7 @@ def get_loss(params):
     else:
         raise Exception(f'unknown loss type: {loss_type}')
 
-    if params.get('head', {}).get('pred_all_states'):
+    if params.get('head', {}).get('pred_all_states_loss', False):
         loss = AllStateLoss(loss)
 
     return loss
-
