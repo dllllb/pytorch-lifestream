@@ -83,7 +83,8 @@ def infer_part_of_data(part_num, part_data, columns, model, conf, lock_obj=None)
     _, pred = score_model(model, valid_loader, conf['params'])
 
     if conf['params.device'] != 'cpu':
-        torch.cuda.empty_cache()
+        with torch.cuda.device(conf['params.device']):
+            torch.cuda.empty_cache()
         logger.info('torch.cuda.empty_cache()')
     if lock_obj:
         lock_obj.release()
@@ -132,7 +133,8 @@ def infer_iterable(part_num, iterable_dataset, columns, model, conf, lock_obj=No
     ids, pred = score_model(model, valid_loader, conf['params'])
 
     if conf['params.device'] != 'cpu':
-        torch.cuda.empty_cache()
+        with torch.cuda.device(conf['params.device']):
+            torch.cuda.empty_cache()
         logger.info('torch.cuda.empty_cache()')
     if lock_obj:
         lock_obj.release()
@@ -248,7 +250,7 @@ def score_data(conf, y_true, y_predict):
     if model_type == 'rnn':
         cnt_features = conf['params.rnn.hidden_size']
     else:
-        raise AttributeError(f'Unknown model_type: "{metric_name}"')
+        raise AttributeError(f'Unknown model_type: "{model_type}"')
 
     y_predict = y_predict.set_index(col_id)
     y_true = pd.DataFrame([{col_id: rec[col_id], 'target': rec['target']} for rec in y_true])

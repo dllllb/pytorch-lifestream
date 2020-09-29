@@ -1,14 +1,14 @@
 import torch
 from dltranz.seq_encoder import RnnEncoder
 from dltranz.trx_encoder import TrxEncoder
-from dltranz.cpc import CPC_Ecoder, run_experiment
+from dltranz.baselines.cpc import CPC_Ecoder, run_experiment
 from tests.dltranz_tests.test_trx_encoder import gen_trx_data
 from dltranz.data_load import TrxDataset
 from pyhocon import ConfigFactory
 
-
-def test_rnn_model():
-    config = {
+def tst_params():
+    params = {
+        'model_type': 'rnn',
         'rnn': {
             'trainable_starter': 'empty',
             'hidden_size': 16,
@@ -49,7 +49,11 @@ def test_rnn_model():
         }
     }
 
-    config = ConfigFactory.from_dict(config)
+    params = ConfigFactory.from_dict(params)
+    return params
+
+def test_rnn_model():
+    config = tst_params()
 
     trx_e = TrxEncoder(config['trx_encoder'])
     rnn_e = RnnEncoder(TrxEncoder.output_size(config['trx_encoder']), config['rnn'])

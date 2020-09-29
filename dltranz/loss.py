@@ -54,6 +54,15 @@ class MultiLoss(nn.Module):
 
         return loss
 
+class TransactionSumLoss(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.bce_with_logits = nn.BCEWithLogitsLoss()
+
+    def forward(self, pred, true):
+        loss = self.bce_with_logits(pred[:,1:53], true[:,1:53])
+        return loss
+
 
 class AllStateLoss(nn.Module):
     def __init__(self, point_loss):
@@ -136,6 +145,8 @@ def get_loss(params):
         loss = nn.L1Loss()
     elif loss_type == 'mse':
         loss = MSELoss()
+    elif loss_type == 'transaction_sum':
+        loss = TransactionSumLoss()
     elif loss_type == 'pseudo_labeled':
         loss = PseudoLabeledLoss(
             loss=get_loss(params['labeled']),
@@ -145,8 +156,7 @@ def get_loss(params):
     else:
         raise Exception(f'unknown loss type: {loss_type}')
 
-    if params.get('head', {}).get('pred_all_states'):
+    if params.get('head', {}).get('pred_all_states_loss', False):
         loss = AllStateLoss(loss)
 
     return loss
-

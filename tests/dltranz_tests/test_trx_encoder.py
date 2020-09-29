@@ -4,21 +4,7 @@ import torch
 
 from dltranz.data_load import padded_collate, TrxDataset
 from dltranz.trx_encoder import TrxEncoder, TrxMeanEncoder
-
-
-def gen_trx_data(lengths, target_share=.5):
-    n = len(lengths)
-    targets = (torch.rand(n) >= target_share).long()
-    samples = list()
-    for target, length in zip(targets, lengths):
-        s = dict()
-        s['trans_type'] = (torch.rand(length)*10 + 1).long()
-        s['mcc_code'] = (torch.rand(length) * 20 + 1).long()
-        s['amount'] = (torch.rand(length) * 1000 + 1).long()
-
-        samples.append({'feature_arrays': s, 'target': target})
-
-    return samples
+from .test_data_load import gen_trx_data
 
 
 def test_simple():

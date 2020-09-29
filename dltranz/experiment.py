@@ -7,8 +7,8 @@ from time import strftime
 import torch
 from ignite.contrib.metrics import ROC_AUC
 from ignite.metrics import Accuracy, Metric
+from dltranz.metric_learn.metric import PercentR2Metric, PercentPredictMetric
 from sklearn.metrics import roc_auc_score, cohen_kappa_score
-
 from dltranz.ensemble import ModelEnsemble
 from dltranz.data_load import create_train_loader, create_validation_loader, ZeroDownSampler, \
     LastKTrxDataset
@@ -45,7 +45,9 @@ def get_epoch_score_metric(metric_name):
         'auroc_labeled': ROC_AUC_labeled,
         'accuracy_labeled': Accuracy_labeled,
         'kappa': Kappa,
-        'kappa_labeled': Kappa_labeled
+        'kappa_labeled': Kappa_labeled,
+        'r2':PercentR2Metric,
+        'dissimilarity':PercentPredictMetric
     }.get(metric_name)
     if m is not None:
         return m
@@ -113,13 +115,7 @@ def run_experiment(train_ds, valid_ds, conf, model):
 def fit_model_on_data(model, train_ds, valid_ds, params, handlers):
     m = model(params)
 
-    if params['train']['random_neg']:
-        targets = [y for x, y in train_ds]
-        sampler = ZeroDownSampler(targets)
-    else:
-        sampler = None
-
-    train_loader = create_train_loader(train_ds, params['train'], sampler)
+    train_loader = create_train_loader(train_ds, params['train'])
     valid_loader = create_validation_loader(valid_ds, params['valid'])
 
     loss = get_loss(params)

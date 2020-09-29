@@ -19,6 +19,16 @@ class PaddedBatch:
     def seq_lens(self):
         return self._length
 
+    def __len__(self):
+        return len(self._length)
+
+    def to(self, device, non_blocking=False):
+        length = self._length.to(device=device, non_blocking=non_blocking)
+        payload = {
+            k: v.to(device=device, non_blocking=non_blocking) for k, v in self._payload.items()
+        }
+        return PaddedBatch(payload, length)
+
 
 class NoisyEmbedding(nn.Embedding):
     """
@@ -45,6 +55,10 @@ class NoisyEmbedding(nn.Embedding):
         self.scale = noise_scale
         self.dropout = nn.Dropout(dropout)
 
+        # This is workaround for https://github.com/pytorch/pytorch/issues/44792
+        # Weight are normalized after forward pass
+        _ = super().forward(torch.arange(num_embeddings))
+
     def forward(self, x):
         x = self.dropout(super().forward(x))
         if self.training and self.scale > 0:
@@ -64,6 +78,27 @@ class RBatchNorm(torch.nn.Module):
         x = self.bn(x)
         x = x.view(B, T, 1)
         return x
+
+
+class RBatchNormWithLens(torch.nn.Module):
+    """
+    The same as RBatchNorm, but ...
+    Drop padded symbols (zeros) from batch when batch stat update
+    """
+    def __init__(self):
+        super().__init__()
+
+        self.bn = torch.nn.BatchNorm1d(1)
+
+    def forward(self, v: PaddedBatch):
+        x = v.payload
+        seq_lens = v.seq_lens
+        B, T = x.size()  # B x T
+
+        mask = torch.arange(T).view(1, -1).repeat(B, 1) < seq_lens.view(-1, 1)
+        x_new = x
+        x_new[mask] = self.bn(x[mask].view(-1, 1)).view(-1)
+        return x_new.view(B, T, 1)
 
 
 class IdentityScaler(nn.Module):
@@ -124,9 +159,11 @@ class TrxEncoder(nn.Module):
 
         super().__init__()
         self.scalers = nn.ModuleDict()
+        self.use_batch_norm_with_lens = config.get('use_batch_norm_with_lens', False)
+
         for name, scaler_name in config['numeric_values'].items():
             self.scalers[name] = torch.nn.Sequential(
-                RBatchNorm(),
+                RBatchNormWithLens() if self.use_batch_norm_with_lens else RBatchNorm(),
                 scaler_by_name(scaler_name),
             )
 
@@ -139,7 +176,8 @@ class TrxEncoder(nn.Module):
                 embedding_dim=emb_props['out'],
                 padding_idx=0,
                 max_norm=1 if config['norm_embeddings'] else None,
-                noise_scale=config['embeddings_noise'])
+                noise_scale=config['embeddings_noise'],
+            )
 
         self.pos = nn.ModuleDict()
         for pos_name, pos_params in config.get('positions', {}).items():
@@ -151,7 +189,10 @@ class TrxEncoder(nn.Module):
             processed.append(embed_layer(x.payload[field_name].long()))
 
         for value_name, scaler in self.scalers.items():
-            res = scaler(x.payload[value_name].unsqueeze(-1).float())
+            if self.use_batch_norm_with_lens:
+                res = scaler(PaddedBatch(x.payload[value_name].float(), x.seq_lens))
+            else:
+                res = scaler(x.payload[value_name].unsqueeze(-1).float())
             processed.append(res)
 
         for pos_name, pe in self.pos.items():

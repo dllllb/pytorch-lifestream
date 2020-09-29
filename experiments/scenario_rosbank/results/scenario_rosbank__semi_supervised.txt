@@ -1,0 +1,286 @@
+------------------------------------------------------------------------------------------------------------------------
+Vector testing report
+Params:
+    conf: "conf/embeddings_validation_semi_supervised.hocon"
+
+Collected 90 files with 0 errors
+
+------------------------------------------------------------------------------------------------------------------------
+Metric: "auroc"
+                                scores_train                                                             
+                                        mean  t_pm t_int_l t_int_h   std                           values
+model_name feature_name                                                                                  
+lgbm       baseline_0225               0.833 0.033   0.800   0.867 0.027  [0.802 0.814 0.842 0.838 0.871]
+           baseline_0450               0.912 0.010   0.902   0.922 0.008  [0.909 0.905 0.905 0.920 0.921]
+           baseline_0900               0.946 0.004   0.943   0.950 0.003  [0.950 0.949 0.942 0.945 0.946]
+           baseline_1800               0.956 0.002   0.954   0.957 0.002  [0.958 0.955 0.955 0.954 0.956]
+           baseline_3600               0.942 0.001   0.941   0.944 0.001  [0.942 0.944 0.941 0.941 0.943]
+           cpc_embeddings_0225         0.930 0.007   0.923   0.937 0.006  [0.922 0.926 0.937 0.931 0.934]
+           cpc_embeddings_0450         0.973 0.004   0.969   0.977 0.003  [0.975 0.971 0.978 0.972 0.970]
+           cpc_embeddings_0900         0.991 0.002   0.989   0.993 0.002  [0.990 0.991 0.994 0.989 0.991]
+           cpc_embeddings_1800         0.994 0.001   0.993   0.995 0.001  [0.993 0.994 0.996 0.993 0.994]
+           cpc_embeddings_3600         0.990 0.001   0.989   0.991 0.000  [0.990 0.990 0.990 0.991 0.990]
+           mles_embeddings_0225        0.947 0.011   0.936   0.959 0.009  [0.948 0.933 0.958 0.952 0.946]
+           mles_embeddings_0450        0.983 0.002   0.981   0.985 0.002  [0.983 0.984 0.985 0.982 0.981]
+           mles_embeddings_0900        0.996 0.001   0.995   0.997 0.001  [0.996 0.996 0.996 0.994 0.996]
+           mles_embeddings_1800        0.998 0.001   0.997   0.998 0.001  [0.998 0.998 0.998 0.997 0.998]
+           mles_embeddings_3600        0.996 0.000   0.995   0.996 0.000  [0.996 0.996 0.996 0.996 0.996]
+nn         cpc_finetuning_0225         0.882 0.038   0.844   0.920 0.031  [0.831 0.882 0.888 0.903 0.907]
+           cpc_finetuning_0450         0.876 0.009   0.867   0.885 0.007  [0.870 0.867 0.878 0.883 0.883]
+           cpc_finetuning_0900         0.874 0.017   0.857   0.891 0.013  [0.865 0.874 0.893 0.880 0.858]
+           cpc_finetuning_1800         0.843 0.042   0.801   0.885 0.034  [0.850 0.845 0.786 0.872 0.863]
+           cpc_finetuning_3600         0.849 0.004   0.845   0.853 0.003  [0.843 0.852 0.848 0.850 0.850]
+           mles_finetuning_0225        0.938 0.016   0.922   0.954 0.013  [0.942 0.956 0.932 0.921 0.938]
+           mles_finetuning_0450        0.920 0.011   0.909   0.931 0.009  [0.909 0.924 0.921 0.915 0.933]
+           mles_finetuning_0900        0.920 0.008   0.912   0.928 0.006  [0.914 0.918 0.915 0.921 0.930]
+           mles_finetuning_1800        0.910 0.009   0.901   0.919 0.007  [0.898 0.912 0.911 0.913 0.917]
+           mles_finetuning_3600        0.886 0.008   0.877   0.894 0.007  [0.885 0.890 0.882 0.894 0.878]
+           target_scores_0225          0.841 0.035   0.806   0.875 0.028  [0.793 0.856 0.841 0.858 0.857]
+           target_scores_0450          0.853 0.025   0.828   0.879 0.020  [0.829 0.855 0.842 0.884 0.857]
+           target_scores_0900          0.873 0.012   0.861   0.885 0.009  [0.859 0.876 0.882 0.879 0.868]
+           target_scores_1800          0.880 0.014   0.866   0.894 0.011  [0.882 0.865 0.876 0.880 0.897]
+           target_scores_3600          0.870 0.009   0.862   0.879 0.007  [0.866 0.866 0.878 0.863 0.877]
+                                scores_valid                                                             
+                                        mean  t_pm t_int_l t_int_h   std                           values
+model_name feature_name                                                                                  
+lgbm       baseline_0225               0.732 0.019   0.714   0.751 0.015  [0.733 0.740 0.753 0.714 0.723]
+           baseline_0450               0.756 0.022   0.734   0.778 0.017  [0.760 0.741 0.783 0.755 0.741]
+           baseline_0900               0.777 0.022   0.755   0.799 0.018  [0.792 0.764 0.800 0.770 0.759]
+           baseline_1800               0.794 0.020   0.774   0.814 0.016  [0.807 0.771 0.812 0.796 0.785]
+           baseline_3600               0.807 0.013   0.794   0.820 0.010  [0.817 0.798 0.817 0.807 0.796]
+           cpc_embeddings_0225         0.758 0.028   0.730   0.786 0.023  [0.757 0.752 0.796 0.735 0.750]
+           cpc_embeddings_0450         0.775 0.023   0.752   0.797 0.018  [0.791 0.752 0.795 0.771 0.764]
+           cpc_embeddings_0900         0.790 0.022   0.768   0.812 0.017  [0.804 0.770 0.812 0.783 0.781]
+           cpc_embeddings_1800         0.798 0.021   0.778   0.819 0.017  [0.813 0.786 0.818 0.780 0.793]
+           cpc_embeddings_3600         0.808 0.017   0.791   0.825 0.014  [0.825 0.795 0.820 0.797 0.804]
+           mles_embeddings_0225        0.772 0.014   0.758   0.786 0.011  [0.784 0.768 0.784 0.764 0.760]
+           mles_embeddings_0450        0.786 0.016   0.770   0.802 0.013  [0.792 0.781 0.805 0.774 0.776]
+           mles_embeddings_0900        0.804 0.020   0.784   0.823 0.016  [0.820 0.783 0.817 0.793 0.807]
+           mles_embeddings_1800        0.815 0.019   0.796   0.834 0.015  [0.823 0.792 0.832 0.808 0.820]
+           mles_embeddings_3600        0.823 0.016   0.806   0.839 0.013  [0.832 0.802 0.829 0.817 0.834]
+nn         cpc_finetuning_0225         0.741 0.026   0.715   0.767 0.021  [0.757 0.731 0.760 0.710 0.748]
+           cpc_finetuning_0450         0.756 0.025   0.731   0.781 0.020  [0.753 0.766 0.768 0.722 0.772]
+           cpc_finetuning_0900         0.780 0.017   0.762   0.797 0.014  [0.790 0.780 0.779 0.757 0.793]
+           cpc_finetuning_1800         0.787 0.016   0.771   0.804 0.013  [0.796 0.786 0.783 0.768 0.803]
+           cpc_finetuning_3600         0.798 0.014   0.784   0.812 0.011  [0.805 0.799 0.789 0.783 0.812]
+           mles_finetuning_0225        0.731 0.026   0.705   0.757 0.021  [0.747 0.716 0.761 0.716 0.718]
+           mles_finetuning_0450        0.773 0.014   0.759   0.787 0.011  [0.779 0.780 0.771 0.754 0.781]
+           mles_finetuning_0900        0.797 0.016   0.781   0.813 0.013  [0.809 0.802 0.789 0.779 0.805]
+           mles_finetuning_1800        0.804 0.016   0.787   0.820 0.013  [0.820 0.808 0.792 0.789 0.811]
+           mles_finetuning_3600        0.815 0.013   0.803   0.828 0.010  [0.827 0.817 0.808 0.803 0.823]
+           target_scores_0225          0.708 0.024   0.685   0.732 0.019  [0.694 0.693 0.740 0.705 0.711]
+           target_scores_0450          0.744 0.014   0.730   0.758 0.011  [0.739 0.760 0.749 0.730 0.741]
+           target_scores_0900          0.777 0.014   0.764   0.791 0.011  [0.780 0.780 0.768 0.765 0.792]
+           target_scores_1800          0.791 0.023   0.768   0.814 0.019  [0.802 0.790 0.787 0.763 0.813]
+           target_scores_3600          0.810 0.020   0.790   0.830 0.016  [0.821 0.808 0.792 0.797 0.831]
+                                scores_test                                                             
+                                       mean  t_pm t_int_l t_int_h   std                           values
+model_name feature_name                                                                                 
+lgbm       baseline_0225              0.783 0.017   0.766   0.800 0.014  [0.776 0.796 0.792 0.762 0.789]
+           baseline_0450              0.802 0.016   0.786   0.818 0.013  [0.810 0.784 0.812 0.810 0.792]
+           baseline_0900              0.813 0.008   0.805   0.821 0.007  [0.817 0.802 0.818 0.811 0.816]
+           baseline_1800              0.817 0.013   0.804   0.831 0.011  [0.802 0.831 0.820 0.813 0.821]
+           baseline_3600              0.828 0.004   0.824   0.832 0.003  [0.824 0.833 0.828 0.829 0.828]
+           cpc_embeddings_0225        0.770 0.019   0.751   0.789 0.015  [0.750 0.780 0.774 0.757 0.786]
+           cpc_embeddings_0450        0.776 0.009   0.766   0.785 0.007  [0.774 0.780 0.775 0.784 0.765]
+           cpc_embeddings_0900        0.783 0.010   0.773   0.794 0.008  [0.792 0.776 0.788 0.786 0.773]
+           cpc_embeddings_1800        0.797 0.012   0.784   0.809 0.010  [0.796 0.804 0.784 0.808 0.791]
+           cpc_embeddings_3600        0.801 0.007   0.793   0.808 0.006  [0.797 0.807 0.794 0.807 0.798]
+           mles_embeddings_0225       0.813 0.013   0.800   0.825 0.010  [0.823 0.804 0.821 0.800 0.814]
+           mles_embeddings_0450       0.820 0.015   0.805   0.834 0.012  [0.815 0.821 0.816 0.839 0.808]
+           mles_embeddings_0900       0.830 0.008   0.822   0.839 0.007  [0.826 0.829 0.822 0.837 0.837]
+           mles_embeddings_1800       0.836 0.006   0.831   0.842 0.005  [0.832 0.836 0.833 0.836 0.844]
+           mles_embeddings_3600       0.840 0.004   0.837   0.844 0.003  [0.836 0.844 0.842 0.839 0.842]
+nn         cpc_finetuning_0225        0.771 0.014   0.757   0.785 0.011  [0.781 0.775 0.775 0.752 0.771]
+           cpc_finetuning_0450        0.779 0.018   0.761   0.796 0.014  [0.804 0.770 0.774 0.777 0.769]
+           cpc_finetuning_0900        0.788 0.026   0.762   0.814 0.021  [0.819 0.787 0.775 0.763 0.796]
+           cpc_finetuning_1800        0.805 0.009   0.796   0.814 0.007  [0.809 0.795 0.812 0.800 0.808]
+           cpc_finetuning_3600        0.809 0.008   0.801   0.817 0.006  [0.815 0.801 0.802 0.812 0.814]
+           mles_finetuning_0225       0.768 0.018   0.749   0.786 0.015  [0.781 0.755 0.784 0.767 0.752]
+           mles_finetuning_0450       0.790 0.016   0.774   0.807 0.013  [0.809 0.785 0.781 0.799 0.778]
+           mles_finetuning_0900       0.806 0.014   0.792   0.821 0.012  [0.826 0.795 0.802 0.805 0.803]
+           mles_finetuning_1800       0.814 0.014   0.800   0.827 0.011  [0.833 0.807 0.808 0.814 0.807]
+           mles_finetuning_3600       0.824 0.009   0.815   0.833 0.007  [0.835 0.815 0.824 0.822 0.825]
+           target_scores_0225         0.733 0.042   0.690   0.775 0.034  [0.679 0.731 0.732 0.772 0.748]
+           target_scores_0450         0.769 0.017   0.752   0.787 0.014  [0.768 0.765 0.791 0.769 0.753]
+           target_scores_0900         0.802 0.012   0.790   0.814 0.010  [0.813 0.788 0.805 0.806 0.797]
+           target_scores_1800         0.807 0.014   0.793   0.820 0.011  [0.814 0.803 0.822 0.800 0.794]
+           target_scores_3600         0.818 0.010   0.808   0.828 0.008  [0.821 0.809 0.811 0.827 0.824]
+
+------------------------------------------------------------------------------------------------------------------------
+Metric: "accuracy"
+                                scores_train                                                             
+                                        mean  t_pm t_int_l t_int_h   std                           values
+model_name feature_name                                                                                  
+lgbm       baseline_0225               0.755 0.025   0.729   0.780 0.020  [0.733 0.733 0.760 0.769 0.778]
+           baseline_0450               0.833 0.028   0.804   0.861 0.023  [0.811 0.816 0.824 0.849 0.864]
+           baseline_0900               0.875 0.010   0.865   0.884 0.008  [0.873 0.884 0.863 0.876 0.878]
+           baseline_1800               0.891 0.006   0.885   0.897 0.005  [0.897 0.892 0.884 0.889 0.894]
+           baseline_3600               0.872 0.002   0.870   0.875 0.002  [0.869 0.872 0.873 0.874 0.873]
+           cpc_embeddings_0225         0.864 0.014   0.850   0.878 0.011  [0.849 0.867 0.880 0.862 0.862]
+           cpc_embeddings_0450         0.913 0.002   0.911   0.915 0.002  [0.916 0.913 0.913 0.913 0.911]
+           cpc_embeddings_0900         0.954 0.007   0.947   0.961 0.006  [0.954 0.958 0.958 0.944 0.956]
+           cpc_embeddings_1800         0.962 0.005   0.957   0.968 0.004  [0.963 0.964 0.968 0.959 0.957]
+           cpc_embeddings_3600         0.953 0.003   0.950   0.956 0.002  [0.950 0.956 0.954 0.953 0.951]
+           mles_embeddings_0225        0.873 0.006   0.867   0.879 0.005  [0.867 0.871 0.871 0.880 0.876]
+           mles_embeddings_0450        0.931 0.008   0.923   0.939 0.006  [0.936 0.936 0.922 0.927 0.936]
+           mles_embeddings_0900        0.967 0.007   0.960   0.974 0.005  [0.969 0.972 0.964 0.959 0.971]
+           mles_embeddings_1800        0.973 0.003   0.969   0.976 0.003  [0.972 0.976 0.975 0.969 0.971]
+           mles_embeddings_3600        0.968 0.002   0.966   0.971 0.002  [0.968 0.971 0.966 0.969 0.968]
+nn         cpc_finetuning_0225           nan   nan     nan     nan   nan            [nan nan nan nan nan]
+           cpc_finetuning_0450           nan   nan     nan     nan   nan            [nan nan nan nan nan]
+           cpc_finetuning_0900           nan   nan     nan     nan   nan            [nan nan nan nan nan]
+           cpc_finetuning_1800           nan   nan     nan     nan   nan            [nan nan nan nan nan]
+           cpc_finetuning_3600           nan   nan     nan     nan   nan            [nan nan nan nan nan]
+           mles_finetuning_0225          nan   nan     nan     nan   nan            [nan nan nan nan nan]
+           mles_finetuning_0450          nan   nan     nan     nan   nan            [nan nan nan nan nan]
+           mles_finetuning_0900          nan   nan     nan     nan   nan            [nan nan nan nan nan]
+           mles_finetuning_1800          nan   nan     nan     nan   nan            [nan nan nan nan nan]
+           mles_finetuning_3600          nan   nan     nan     nan   nan            [nan nan nan nan nan]
+           target_scores_0225            nan   nan     nan     nan   nan            [nan nan nan nan nan]
+           target_scores_0450            nan   nan     nan     nan   nan            [nan nan nan nan nan]
+           target_scores_0900            nan   nan     nan     nan   nan            [nan nan nan nan nan]
+           target_scores_1800            nan   nan     nan     nan   nan            [nan nan nan nan nan]
+           target_scores_3600            nan   nan     nan     nan   nan            [nan nan nan nan nan]
+                                scores_valid                                                             
+                                        mean  t_pm t_int_l t_int_h   std                           values
+model_name feature_name                                                                                  
+lgbm       baseline_0225               0.674 0.017   0.658   0.691 0.014  [0.661 0.689 0.688 0.661 0.673]
+           baseline_0450               0.681 0.014   0.667   0.694 0.011  [0.689 0.678 0.691 0.682 0.663]
+           baseline_0900               0.708 0.021   0.687   0.729 0.017  [0.728 0.698 0.717 0.713 0.684]
+           baseline_1800               0.721 0.019   0.701   0.740 0.015  [0.738 0.699 0.731 0.723 0.712]
+           baseline_3600               0.736 0.023   0.713   0.760 0.019  [0.766 0.722 0.744 0.728 0.722]
+           cpc_embeddings_0225         0.693 0.017   0.676   0.711 0.014  [0.679 0.699 0.713 0.694 0.681]
+           cpc_embeddings_0450         0.703 0.023   0.679   0.726 0.019  [0.720 0.682 0.699 0.724 0.688]
+           cpc_embeddings_0900         0.720 0.020   0.700   0.739 0.016  [0.746 0.709 0.722 0.714 0.707]
+           cpc_embeddings_1800         0.726 0.017   0.709   0.744 0.014  [0.738 0.734 0.738 0.710 0.712]
+           cpc_embeddings_3600         0.738 0.013   0.725   0.750 0.010  [0.749 0.732 0.748 0.727 0.732]
+           mles_embeddings_0225        0.698 0.014   0.684   0.711 0.011  [0.700 0.699 0.710 0.700 0.680]
+           mles_embeddings_0450        0.706 0.021   0.684   0.727 0.017  [0.716 0.711 0.726 0.691 0.684]
+           mles_embeddings_0900        0.728 0.020   0.709   0.748 0.016  [0.738 0.710 0.747 0.713 0.734]
+           mles_embeddings_1800        0.739 0.017   0.722   0.756 0.014  [0.733 0.720 0.758 0.743 0.741]
+           mles_embeddings_3600        0.750 0.018   0.732   0.767 0.014  [0.764 0.734 0.741 0.742 0.766]
+nn         cpc_finetuning_0225           nan   nan     nan     nan   nan            [nan nan nan nan nan]
+           cpc_finetuning_0450           nan   nan     nan     nan   nan            [nan nan nan nan nan]
+           cpc_finetuning_0900           nan   nan     nan     nan   nan            [nan nan nan nan nan]
+           cpc_finetuning_1800           nan   nan     nan     nan   nan            [nan nan nan nan nan]
+           cpc_finetuning_3600           nan   nan     nan     nan   nan            [nan nan nan nan nan]
+           mles_finetuning_0225          nan   nan     nan     nan   nan            [nan nan nan nan nan]
+           mles_finetuning_0450          nan   nan     nan     nan   nan            [nan nan nan nan nan]
+           mles_finetuning_0900          nan   nan     nan     nan   nan            [nan nan nan nan nan]
+           mles_finetuning_1800          nan   nan     nan     nan   nan            [nan nan nan nan nan]
+           mles_finetuning_3600          nan   nan     nan     nan   nan            [nan nan nan nan nan]
+           target_scores_0225            nan   nan     nan     nan   nan            [nan nan nan nan nan]
+           target_scores_0450            nan   nan     nan     nan   nan            [nan nan nan nan nan]
+           target_scores_0900            nan   nan     nan     nan   nan            [nan nan nan nan nan]
+           target_scores_1800            nan   nan     nan     nan   nan            [nan nan nan nan nan]
+           target_scores_3600            nan   nan     nan     nan   nan            [nan nan nan nan nan]
+                                scores_test                                                             
+                                       mean  t_pm t_int_l t_int_h   std                           values
+model_name feature_name                                                                                 
+lgbm       baseline_0225              0.707 0.012   0.694   0.719 0.010  [0.692 0.716 0.716 0.704 0.706]
+           baseline_0450              0.725 0.017   0.708   0.742 0.014  [0.714 0.708 0.726 0.740 0.736]
+           baseline_0900              0.745 0.014   0.730   0.759 0.012  [0.740 0.728 0.746 0.752 0.758]
+           baseline_1800              0.745 0.015   0.730   0.760 0.012  [0.734 0.756 0.738 0.736 0.760]
+           baseline_3600              0.749 0.006   0.743   0.756 0.005  [0.752 0.750 0.756 0.744 0.744]
+           cpc_embeddings_0225        0.692 0.016   0.676   0.708 0.013  [0.678 0.706 0.694 0.680 0.702]
+           cpc_embeddings_0450        0.710 0.018   0.693   0.728 0.014  [0.708 0.728 0.700 0.722 0.694]
+           cpc_embeddings_0900        0.712 0.026   0.685   0.738 0.021  [0.716 0.716 0.698 0.742 0.686]
+           cpc_embeddings_1800        0.722 0.022   0.700   0.744 0.018  [0.716 0.732 0.694 0.740 0.726]
+           cpc_embeddings_3600        0.722 0.006   0.716   0.727 0.005  [0.720 0.716 0.720 0.728 0.724]
+           mles_embeddings_0225       0.729 0.011   0.718   0.740 0.009  [0.732 0.718 0.742 0.726 0.728]
+           mles_embeddings_0450       0.744 0.027   0.717   0.772 0.022  [0.728 0.742 0.740 0.782 0.730]
+           mles_embeddings_0900       0.748 0.010   0.738   0.758 0.008  [0.748 0.748 0.738 0.760 0.746]
+           mles_embeddings_1800       0.754 0.014   0.740   0.767 0.011  [0.758 0.752 0.744 0.744 0.770]
+           mles_embeddings_3600       0.756 0.012   0.744   0.767 0.010  [0.750 0.766 0.742 0.760 0.760]
+nn         cpc_finetuning_0225          nan   nan     nan     nan   nan            [nan nan nan nan nan]
+           cpc_finetuning_0450          nan   nan     nan     nan   nan            [nan nan nan nan nan]
+           cpc_finetuning_0900          nan   nan     nan     nan   nan            [nan nan nan nan nan]
+           cpc_finetuning_1800          nan   nan     nan     nan   nan            [nan nan nan nan nan]
+           cpc_finetuning_3600          nan   nan     nan     nan   nan            [nan nan nan nan nan]
+           mles_finetuning_0225         nan   nan     nan     nan   nan            [nan nan nan nan nan]
+           mles_finetuning_0450         nan   nan     nan     nan   nan            [nan nan nan nan nan]
+           mles_finetuning_0900         nan   nan     nan     nan   nan            [nan nan nan nan nan]
+           mles_finetuning_1800         nan   nan     nan     nan   nan            [nan nan nan nan nan]
+           mles_finetuning_3600         nan   nan     nan     nan   nan            [nan nan nan nan nan]
+           target_scores_0225           nan   nan     nan     nan   nan            [nan nan nan nan nan]
+           target_scores_0450           nan   nan     nan     nan   nan            [nan nan nan nan nan]
+           target_scores_0900           nan   nan     nan     nan   nan            [nan nan nan nan nan]
+           target_scores_1800           nan   nan     nan     nan   nan            [nan nan nan nan nan]
+           target_scores_3600           nan   nan     nan     nan   nan            [nan nan nan nan nan]
+
+------------------------------------------------------------------------------------------------------------------------
+Metric: "cnt_features"
+                                scores_train scores_valid scores_test
+                                        mean         mean        mean
+model_name feature_name                                              
+lgbm       baseline_0225                 362          362         362
+           baseline_0450                 362          362         362
+           baseline_0900                 362          362         362
+           baseline_1800                 362          362         362
+           baseline_3600                 362          362         362
+           cpc_embeddings_0225           512          512         512
+           cpc_embeddings_0450           512          512         512
+           cpc_embeddings_0900           512          512         512
+           cpc_embeddings_1800           512          512         512
+           cpc_embeddings_3600           512          512         512
+           mles_embeddings_0225         1024         1024        1024
+           mles_embeddings_0450         1024         1024        1024
+           mles_embeddings_0900         1024         1024        1024
+           mles_embeddings_1800         1024         1024        1024
+           mles_embeddings_3600         1024         1024        1024
+nn         cpc_finetuning_0225           512          512         512
+           cpc_finetuning_0450           512          512         512
+           cpc_finetuning_0900           512          512         512
+           cpc_finetuning_1800           512          512         512
+           cpc_finetuning_3600           512          512         512
+           mles_finetuning_0225          512          512         512
+           mles_finetuning_0450          512          512         512
+           mles_finetuning_0900          512          512         512
+           mles_finetuning_1800          512          512         512
+           mles_finetuning_3600          512          512         512
+           target_scores_0225             48           48          48
+           target_scores_0450             48           48          48
+           target_scores_0900             48           48          48
+           target_scores_1800             48           48          48
+           target_scores_3600             48           48          48
+
+------------------------------------------------------------------------------------------------------------------------
+Metric: "cnt_samples"
+                                scores_train scores_valid scores_test
+                                        mean         mean        mean
+model_name feature_name                                              
+lgbm       baseline_0225                 225          900         500
+           baseline_0450                 450          900         500
+           baseline_0900                 900          900         500
+           baseline_1800               1,800          900         500
+           baseline_3600               3,600          900         500
+           cpc_embeddings_0225           225          900         500
+           cpc_embeddings_0450           450          900         500
+           cpc_embeddings_0900           900          900         500
+           cpc_embeddings_1800         1,800          900         500
+           cpc_embeddings_3600         3,600          900         500
+           mles_embeddings_0225          225          900         500
+           mles_embeddings_0450          450          900         500
+           mles_embeddings_0900          900          900         500
+           mles_embeddings_1800        1,800          900         500
+           mles_embeddings_3600        3,600          900         500
+nn         cpc_finetuning_0225           225          900         500
+           cpc_finetuning_0450           450          900         500
+           cpc_finetuning_0900           900          900         500
+           cpc_finetuning_1800         1,800          900         500
+           cpc_finetuning_3600         3,600          900         500
+           mles_finetuning_0225          225          900         500
+           mles_finetuning_0450          450          900         500
+           mles_finetuning_0900          900          900         500
+           mles_finetuning_1800        1,800          900         500
+           mles_finetuning_3600        3,600          900         500
+           target_scores_0225            225          900         500
+           target_scores_0450            450          900         500
+           target_scores_0900            900          900         500
+           target_scores_1800          1,800          900         500
+           target_scores_3600          3,600          900         500
+
+------------------------------------------------------------------------------------------------------------------------
+End of report.     Current time: 2020-09-23 10:51:00
+------------------------------------------------------------------------------------------------------------------------

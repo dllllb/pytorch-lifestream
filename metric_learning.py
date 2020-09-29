@@ -65,7 +65,7 @@ def shuffle_client_list_reproducible(conf, data):
     return data
 
 
-def create_data_loaders(conf):
+def prepare_data(conf):
     data = read_data_gen(conf['dataset.train_path'])
     data = tqdm(data)
     if 'max_rows' in conf['dataset']:
@@ -85,6 +85,12 @@ def create_data_loaders(conf):
     valid_data = [rec for i, rec in enumerate(data) if i in valid_ix]
 
     logger.info(f'Train data len: {len(train_data)}, Valid data len: {len(valid_data)}')
+
+    return train_data, valid_data
+
+
+def create_data_loaders(conf):
+    train_data, valid_data = prepare_data(conf)
 
     train_dataset = SplittingDataset(
         train_data,

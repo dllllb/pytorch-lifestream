@@ -1,0 +1,80 @@
+{
+  "params": {
+    "experiment": {
+      "name": "default"
+    },
+    "device": "cuda",
+    "model_type": "rnn",
+    "trx_encoder": {
+      "norm_embeddings": false,
+      "embeddings_noise": 0.003,
+      "embeddings": {
+        "event_id": {"in": 500, "out": 16},
+        "event_code": {"in": 50, "out": 8},
+        "event_type": {"in": 6, "out": 8},
+        "title": {"in": 50, "out": 8},
+        "world": {"in": 6, "out": 8},
+        "correct": {"in": 4, "out": 2}
+      },
+      "numeric_values": {
+      }
+    },
+    "rnn": {
+      "type": "gru",
+      "hidden_size": 100,
+      "bidir": false,
+      "trainable_starter": "static"
+    },
+    "use_normalization_layer" : true,
+    "head": {
+      "pred_all_states": true,
+      "pred_all_states_mean": false,
+      "pred_flatten": true,
+      "explicit_lengths": false,
+      "norm_input": false,
+      "use_batch_norm": false
+    },
+    "lr_scheduler": {
+      "ReduceLROnPlateau": true,
+      "patience": 15
+    },
+    "train": {
+      "num_workers": 16,
+      "batch_size": 256,
+      "trx_dropout": 0.15,
+      "max_seq_len": 2500,
+      "replace_token": {
+        "replace_prob": 0.15,
+        "skip_first": 1
+      },
+      "loss": "bce",
+      "margin": 0.5,
+      "lr": 0.001,
+      "weight_decay": 0.0,
+      "n_epoch": 100
+    },
+    "norm_scores": false,
+    "valid": {
+      "batch_size": 256,
+      "num_workers": 16,
+      "max_seq_len": 2500
+    },
+    "score_metric": "auroc"
+  },
+
+  "stats": {
+    "path": "runs/bowl_ml_result.json"
+  },
+
+  "save_model": true,
+  "model_path": {
+    "model": "models/rtd_model.p",
+    "only_encoder": false
+  },
+
+  "output": {
+    "path": "data/rtd_embeddings",
+    "format": "pickle",
+    "columns": ["game_session"]
+  }
+}
