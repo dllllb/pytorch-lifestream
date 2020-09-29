@@ -19,17 +19,8 @@ class EmbTranslation(torch.nn.Module):
     def forward(self, x):
         return x.payload['embedding']
 
+
 def load_model(conf):
-    if False:
-      pretraineid_model_path = conf['pretrained_model_path']
-    
-      pre_model = torch.load(pretrained_model_path)
-      if not isinstance(pre_model[0], TrxEncoder):
-        pre_model = pre_model[0]
-      trx_encoder = pre_model[0]
-      rnn_encoder = pre_model[1]
-      step_select_encoder = pre_model[2]
- 
     model_type = conf['model_type']
     if model_type == 'rnn':
         input_size = conf['rnn.hidden_size']
@@ -64,10 +55,9 @@ def load_model(conf):
     model = torch.nn.Sequential(*layers)
     return model
 
-
+#is necessary for __main__
 def prepare_parser(parser):
     pass
-
 
 def main(_):
     init_logger(__name__)
@@ -82,6 +72,7 @@ def main(_):
      test_data = read_embedding_data(conf['params']['embeddings_path'], conf['dataset.test_path'] , conf)
     else:
      print('Set embeddings_path in config file!!!')
+     #throw an exception here
     
     # train
     results = []
