@@ -95,7 +95,7 @@ class RBatchNormWithLens(torch.nn.Module):
         seq_lens = v.seq_lens
         B, T = x.size()  # B x T
 
-        mask = torch.arange(T).view(1, -1).repeat(B, 1) < seq_lens.view(-1, 1)
+        mask = torch.arange(T, device=seq_lens.device).view(1, -1).repeat(B, 1) < seq_lens.view(-1, 1)
         x_new = x
         x_new[mask] = self.bn(x[mask].view(-1, 1)).view(-1)
         return x_new.view(B, T, 1)
