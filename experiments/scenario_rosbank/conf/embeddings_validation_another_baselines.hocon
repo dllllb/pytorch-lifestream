@@ -52,8 +52,8 @@
     }
 
     external_scores: {
-        0: "../results/nsp_finetuning_results.json"
-        1: "../results/rtd_finetuning_results.json"
+        nsp_finetuning: "../results/nsp_finetuning_results.json"
+        rtd_finetuning: "../results/rtd_finetuning_results.json"
     }
 
     models: {

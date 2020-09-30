@@ -50,7 +50,7 @@
     }
 
     external_scores: {
-        rtd_fine: "../results/rtd_finetuning_results.json"
+        rtd_finetuning: "../results/rtd_finetuning_results.json"
     }
 
     models: {
