@@ -5,6 +5,10 @@ echo "==== Device ${SC_DEVICE} will be used"
 
 echo ""
 echo "==== Main track"
+# Prepare agg feature encoder and take embedidngs; inference
+python ../../metric_learning.py params.device="$SC_DEVICE" --conf conf/trx_dataset.hocon conf/agg_features_params.json
+python ../../ml_inference.py    params.device="$SC_DEVICE" --conf conf/dataset.hocon conf/agg_features_params.json
+
 # Train a supervised model and save scores to the file
 python -m scenario_bowl2019 fit_target params.device="$SC_DEVICE" --conf conf/dataset.hocon conf/fit_target_params.json
 
