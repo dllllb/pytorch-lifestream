@@ -71,7 +71,7 @@ def main(_):
       train_data = read_embedding_data(conf['params']['embeddings_path'], conf['dataset.train_path'] , conf)
       test_data = read_embedding_data(conf['params']['embeddings_path'], conf['dataset.test_path'] , conf)
     else:
-      raise NotImplementedError(f'NotImplementedError. Set embeddings_path in config file!')
+      raise Exception('Exception. Embeddings_path is not in config file!')
     
     # train
     results = []
