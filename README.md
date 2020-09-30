@@ -24,6 +24,16 @@ git clone
 conda install -c conda-forge pyspark 
 pip install -r requirements.txt
 
+
+# install membeddings_validation tool
+git clone git@github.com:sberbank-ai-lab/embeddings-valid.git
+cd embeddings-valid
+python setup.py install
+
+# run luigi server
+luigid
+
+# check embedding validation progress at `http://localhost:8082/`
 ```
 
 # Run scenario
