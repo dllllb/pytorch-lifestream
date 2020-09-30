@@ -1,44 +1,44 @@
 ------------------------------------------------------------------------------------------------------------------------
 Vector testing report
 Params:
-    conf: "conf/embeddings_validation_short_1600856889.hocon"
+    conf: "conf/embeddings_validation_short_1601448094.hocon"
 
 Collected 20 files with 0 errors
 
 ------------------------------------------------------------------------------------------------------------------------
 Metric: "auroc"
-                                                   scores_valid                                                                                                                 
-                                                           mean  t_pm t_int_l t_int_h   std                           values t_f_stat t_f_alpha t_t_stat t_t_alpha    t_A t_A_pp
-model_name feature_name                                                                                                                                                         
-lgbm       emb_mles__lr_cosine_annealing                  0.816 0.009   0.807   0.825 0.008  [0.826 0.805 0.816 0.815 0.818]    3.224     0.858   -0.959     0.183 -0.020 -2.379
-           emb_mles__lr_reduce_on_plateau                 0.824 0.014   0.810   0.837 0.011  [0.837 0.808 0.828 0.818 0.827]    1.547     0.659    0.136     0.553 -0.013 -1.631
-           emb_mles__lr_reduce_on_plateau_x2epochs        0.822 0.011   0.811   0.833 0.009  [0.830 0.807 0.824 0.822 0.826]    2.306     0.781   -0.110     0.458 -0.014 -1.739
-           mles_embeddings                                0.823 0.017   0.806   0.839 0.014  [0.837 0.803 0.831 0.815 0.827]    1.000     0.500    0.000     0.500 -0.016 -1.939
-                                                   scores_test                                                                                                                 
-                                                          mean  t_pm t_int_l t_int_h   std                           values t_f_stat t_f_alpha t_t_stat t_t_alpha    t_A t_A_pp
-model_name feature_name                                                                                                                                                        
-lgbm       emb_mles__lr_cosine_annealing                 0.842 0.005   0.837   0.847 0.004  [0.837 0.846 0.845 0.838 0.842]    0.451     0.229   -0.798     0.224 -0.006 -0.683
-           emb_mles__lr_reduce_on_plateau                0.839 0.002   0.837   0.841 0.001  [0.838 0.840 0.838 0.839 0.840]    4.498     0.913   -3.366     0.005 -0.007 -0.828
-           emb_mles__lr_reduce_on_plateau_x2epochs       0.843 0.004   0.839   0.847 0.003  [0.842 0.846 0.840 0.841 0.847]    0.736     0.387   -0.185     0.429 -0.004 -0.450
-           mles_embeddings                               0.843 0.003   0.840   0.847 0.003  [0.839 0.844 0.844 0.843 0.847]    1.000     0.500    0.000     0.500 -0.003 -0.377
+                                                   scores_valid                                                                                                                                                                                             
+                                                           mean  t_pm t_int_l t_int_h   std                           values t_f_stat t_f_alpha t_t_stat t_t_alpha t_delta t_delta_pm t_delta_l t_delta_h t_delta_pp t_delta_pm_pp t_delta_l_pp t_delta_h_pp
+model_name feature_name                                                                                                                                                                                                                                     
+lgbm       emb_mles__lr_cosine_annealing                  0.816 0.009   0.807   0.825 0.008  [0.826 0.805 0.816 0.815 0.818]    3.224     0.858   -0.959     0.183  -0.007      0.016    -0.023     0.009     -0.809         1.947       -2.756        1.137
+           emb_mles__lr_reduce_on_plateau                 0.824 0.014   0.810   0.837 0.011  [0.837 0.808 0.828 0.818 0.827]    1.547     0.659    0.136     0.553   0.001      0.018    -0.017     0.019      0.129         2.182       -2.053        2.311
+           emb_mles__lr_reduce_on_plateau_x2epochs        0.822 0.011   0.811   0.833 0.009  [0.830 0.807 0.824 0.822 0.826]    2.306     0.781   -0.110     0.458  -0.001      0.017    -0.018     0.016     -0.097         2.036       -2.133        1.939
+           mles_embeddings                                0.823 0.017   0.806   0.839 0.014  [0.837 0.803 0.831 0.815 0.827]    1.000     0.500    0.000     0.500   0.000      0.020    -0.020     0.020      0.000         2.405       -2.405        2.405
+                                                   scores_test                                                                                                                                                                                             
+                                                          mean  t_pm t_int_l t_int_h   std                           values t_f_stat t_f_alpha t_t_stat t_t_alpha t_delta t_delta_pm t_delta_l t_delta_h t_delta_pp t_delta_pm_pp t_delta_l_pp t_delta_h_pp
+model_name feature_name                                                                                                                                                                                                                                    
+lgbm       emb_mles__lr_cosine_annealing                 0.842 0.005   0.837   0.847 0.004  [0.837 0.846 0.845 0.838 0.842]    0.451     0.229   -0.798     0.224  -0.002      0.005    -0.007     0.003     -0.205         0.593       -0.798        0.388
+           emb_mles__lr_reduce_on_plateau                0.839 0.002   0.837   0.841 0.001  [0.838 0.840 0.838 0.839 0.840]    4.498     0.913   -3.366     0.005  -0.004      0.003    -0.008    -0.001     -0.533         0.365       -0.899       -0.168
+           emb_mles__lr_reduce_on_plateau_x2epochs       0.843 0.004   0.839   0.847 0.003  [0.842 0.846 0.840 0.841 0.847]    0.736     0.387   -0.185     0.429  -0.000      0.004    -0.005     0.004     -0.041         0.508       -0.548        0.467
+           mles_embeddings                               0.843 0.003   0.840   0.847 0.003  [0.839 0.844 0.844 0.843 0.847]    1.000     0.500    0.000     0.500   0.000      0.004    -0.004     0.004      0.000         0.467       -0.467        0.467
 
 ------------------------------------------------------------------------------------------------------------------------
 Metric: "accuracy"
-                                                   scores_valid                                                                                                                 
-                                                           mean  t_pm t_int_l t_int_h   std                           values t_f_stat t_f_alpha t_t_stat t_t_alpha    t_A t_A_pp
-model_name feature_name                                                                                                                                                         
-lgbm       emb_mles__lr_cosine_annealing                  0.745 0.011   0.733   0.756 0.009  [0.758 0.743 0.733 0.748 0.741]    3.947     0.894   -0.050     0.481 -0.017 -2.295
-           emb_mles__lr_reduce_on_plateau                 0.750 0.013   0.737   0.763 0.010  [0.768 0.740 0.746 0.750 0.748]    2.907     0.837    0.551     0.702 -0.012 -1.629
-           emb_mles__lr_reduce_on_plateau_x2epochs        0.748 0.013   0.735   0.761 0.010  [0.756 0.730 0.750 0.753 0.753]    2.904     0.837    0.359     0.636 -0.014 -1.868
-           mles_embeddings                                0.745 0.022   0.723   0.767 0.018  [0.764 0.723 0.749 0.730 0.759]    1.000     0.500    0.000     0.500 -0.021 -2.824
-                                                   scores_test                                                                                                                 
-                                                          mean  t_pm t_int_l t_int_h   std                           values t_f_stat t_f_alpha t_t_stat t_t_alpha    t_A t_A_pp
-model_name feature_name                                                                                                                                                        
-lgbm       emb_mles__lr_cosine_annealing                 0.762 0.008   0.753   0.770 0.007  [0.750 0.764 0.764 0.764 0.766]    2.645     0.815   -0.215     0.418 -0.012 -1.519
-           emb_mles__lr_reduce_on_plateau                0.765 0.006   0.758   0.771 0.005  [0.768 0.764 0.760 0.772 0.760]    4.162     0.902    0.377     0.642 -0.008 -1.030
-           emb_mles__lr_reduce_on_plateau_x2epochs       0.767 0.009   0.758   0.776 0.007  [0.778 0.770 0.758 0.766 0.764]    2.051     0.748    0.758     0.765 -0.006 -0.838
-           mles_embeddings                               0.763 0.013   0.750   0.776 0.011  [0.768 0.754 0.752 0.778 0.762]    1.000     0.500    0.000     0.500 -0.013 -1.640
+                                                   scores_valid                                                                                                                                                                                             
+                                                           mean  t_pm t_int_l t_int_h   std                           values t_f_stat t_f_alpha t_t_stat t_t_alpha t_delta t_delta_pm t_delta_l t_delta_h t_delta_pp t_delta_pm_pp t_delta_l_pp t_delta_h_pp
+model_name feature_name                                                                                                                                                                                                                                     
+lgbm       emb_mles__lr_cosine_annealing                  0.745 0.011   0.733   0.756 0.009  [0.758 0.743 0.733 0.748 0.741]    3.947     0.894   -0.050     0.481  -0.000      0.021    -0.021     0.020     -0.060         2.772       -2.832        2.713
+           emb_mles__lr_reduce_on_plateau                 0.750 0.013   0.737   0.763 0.010  [0.768 0.740 0.746 0.750 0.748]    2.907     0.837    0.551     0.702   0.005      0.021    -0.016     0.027      0.686         2.871       -2.185        3.557
+           emb_mles__lr_reduce_on_plateau_x2epochs        0.748 0.013   0.735   0.761 0.010  [0.756 0.730 0.750 0.753 0.753]    2.904     0.837    0.359     0.636   0.003      0.021    -0.018     0.025      0.447         2.871       -2.424        3.319
+           mles_embeddings                                0.745 0.022   0.723   0.767 0.018  [0.764 0.723 0.749 0.730 0.759]    1.000     0.500    0.000     0.500   0.000      0.026    -0.026     0.026      0.000         3.502       -3.502        3.502
+                                                   scores_test                                                                                                                                                                                             
+                                                          mean  t_pm t_int_l t_int_h   std                           values t_f_stat t_f_alpha t_t_stat t_t_alpha t_delta t_delta_pm t_delta_l t_delta_h t_delta_pp t_delta_pm_pp t_delta_l_pp t_delta_h_pp
+model_name feature_name                                                                                                                                                                                                                                    
+lgbm       emb_mles__lr_cosine_annealing                 0.762 0.008   0.753   0.770 0.007  [0.750 0.764 0.764 0.764 0.766]    2.645     0.815   -0.215     0.418  -0.001      0.013    -0.014     0.012     -0.157         1.689       -1.846        1.531
+           emb_mles__lr_reduce_on_plateau                0.765 0.006   0.758   0.771 0.005  [0.768 0.764 0.760 0.772 0.760]    4.162     0.902    0.377     0.642   0.002      0.012    -0.010     0.014      0.262         1.602       -1.340        1.864
+           emb_mles__lr_reduce_on_plateau_x2epochs       0.767 0.009   0.758   0.776 0.007  [0.778 0.770 0.758 0.766 0.764]    2.051     0.748    0.758     0.765   0.004      0.013    -0.009     0.018      0.577         1.754       -1.178        2.331
+           mles_embeddings                               0.763 0.013   0.750   0.776 0.011  [0.768 0.754 0.752 0.778 0.762]    1.000     0.500    0.000     0.500   0.000      0.016    -0.016     0.016      0.000         2.034       -2.034        2.034
 
 ------------------------------------------------------------------------------------------------------------------------
-End of report.     Current time: 2020-09-23 10:28:12
+End of report.     Current time: 2020-09-30 06:41:37
 ------------------------------------------------------------------------------------------------------------------------

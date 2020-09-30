@@ -1,40 +1,40 @@
 ------------------------------------------------------------------------------------------------------------------------
 Vector testing report
 Params:
-    conf: "conf/embeddings_validation_short_1600856963.hocon"
+    conf: "conf/embeddings_validation_short_1601447961.hocon"
 
 Collected 15 files with 0 errors
 
 ------------------------------------------------------------------------------------------------------------------------
 Metric: "auroc"
-                                         scores_valid                                                                                                                 
-                                                 mean  t_pm t_int_l t_int_h   std                           values t_f_stat t_f_alpha t_t_stat t_t_alpha    t_A t_A_pp
-model_name feature_name                                                                                                                                               
-lgbm       emb_mles__subseq_SampleRandom        0.820 0.014   0.806   0.834 0.011  [0.832 0.804 0.825 0.812 0.825]    1.448     0.636   -0.383     0.356 -0.018 -2.150
-           emb_mles__subseq_SplitRandom         0.819 0.011   0.808   0.829 0.009  [0.828 0.811 0.827 0.810 0.817]    2.524     0.804   -0.533     0.304 -0.017 -2.085
-           mles_embeddings                      0.823 0.017   0.806   0.839 0.014  [0.837 0.803 0.831 0.815 0.827]    1.000     0.500    0.000     0.500 -0.016 -1.939
-                                         scores_test                                                                                                                 
-                                                mean  t_pm t_int_l t_int_h   std                           values t_f_stat t_f_alpha t_t_stat t_t_alpha    t_A t_A_pp
-model_name feature_name                                                                                                                                              
-lgbm       emb_mles__subseq_SampleRandom       0.845 0.004   0.841   0.849 0.003  [0.844 0.850 0.847 0.843 0.841]    0.621     0.328    0.768     0.768 -0.002 -0.253
-           emb_mles__subseq_SplitRandom        0.849 0.004   0.845   0.853 0.003  [0.847 0.854 0.849 0.850 0.845]    0.652     0.344    2.831     0.989  0.002  0.222
-           mles_embeddings                     0.843 0.003   0.840   0.847 0.003  [0.839 0.844 0.844 0.843 0.847]    1.000     0.500    0.000     0.500 -0.003 -0.377
+                                         scores_valid                                                                                                                                                                                             
+                                                 mean  t_pm t_int_l t_int_h   std                           values t_f_stat t_f_alpha t_t_stat t_t_alpha t_delta t_delta_pm t_delta_l t_delta_h t_delta_pp t_delta_pm_pp t_delta_l_pp t_delta_h_pp
+model_name feature_name                                                                                                                                                                                                                           
+lgbm       emb_mles__subseq_SampleRandom        0.820 0.014   0.806   0.834 0.011  [0.832 0.804 0.825 0.812 0.825]    1.448     0.636   -0.383     0.356  -0.003      0.018    -0.021     0.015     -0.367         2.211       -2.578        1.844
+           emb_mles__subseq_SplitRandom         0.819 0.011   0.808   0.829 0.009  [0.828 0.811 0.827 0.810 0.817]    2.524     0.804   -0.533     0.304  -0.004      0.017    -0.020     0.013     -0.465         2.009       -2.474        1.545
+           mles_embeddings                      0.823 0.017   0.806   0.839 0.014  [0.837 0.803 0.831 0.815 0.827]    1.000     0.500    0.000     0.500   0.000      0.020    -0.020     0.020      0.000         2.405       -2.405        2.405
+                                         scores_test                                                                                                                                                                                             
+                                                mean  t_pm t_int_l t_int_h   std                           values t_f_stat t_f_alpha t_t_stat t_t_alpha t_delta t_delta_pm t_delta_l t_delta_h t_delta_pp t_delta_pm_pp t_delta_l_pp t_delta_h_pp
+model_name feature_name                                                                                                                                                                                                                          
+lgbm       emb_mles__subseq_SampleRandom       0.845 0.004   0.841   0.849 0.003  [0.844 0.850 0.847 0.843 0.841]    0.621     0.328    0.768     0.768   0.002      0.005    -0.003     0.006      0.178         0.534       -0.356        0.712
+           emb_mles__subseq_SplitRandom        0.849 0.004   0.845   0.853 0.003  [0.847 0.854 0.849 0.850 0.845]    0.652     0.344    2.831     0.989   0.005      0.004     0.001     0.010      0.646         0.526        0.120        1.172
+           mles_embeddings                     0.843 0.003   0.840   0.847 0.003  [0.839 0.844 0.844 0.843 0.847]    1.000     0.500    0.000     0.500   0.000      0.004    -0.004     0.004      0.000         0.467       -0.467        0.467
 
 ------------------------------------------------------------------------------------------------------------------------
 Metric: "accuracy"
-                                         scores_valid                                                                                                                 
-                                                 mean  t_pm t_int_l t_int_h   std                           values t_f_stat t_f_alpha t_t_stat t_t_alpha    t_A t_A_pp
-model_name feature_name                                                                                                                                               
-lgbm       emb_mles__subseq_SampleRandom        0.747 0.018   0.729   0.766 0.015  [0.760 0.724 0.753 0.741 0.758]    1.475     0.642    0.214     0.582 -0.017 -2.289
-           emb_mles__subseq_SplitRandom         0.745 0.015   0.730   0.759 0.012  [0.753 0.731 0.756 0.733 0.751]    2.340     0.785   -0.023     0.491 -0.018 -2.416
-           mles_embeddings                      0.745 0.022   0.723   0.767 0.018  [0.764 0.723 0.749 0.730 0.759]    1.000     0.500    0.000     0.500 -0.021 -2.824
-                                         scores_test                                                                                                                 
-                                                mean  t_pm t_int_l t_int_h   std                           values t_f_stat t_f_alpha t_t_stat t_t_alpha    t_A t_A_pp
-model_name feature_name                                                                                                                                              
-lgbm       emb_mles__subseq_SampleRandom       0.769 0.009   0.760   0.778 0.007  [0.760 0.778 0.770 0.772 0.764]    2.301     0.780    1.053     0.838 -0.005 -0.603
-           emb_mles__subseq_SplitRandom        0.761 0.005   0.756   0.766 0.004  [0.764 0.760 0.766 0.756 0.760]    7.447     0.961   -0.316     0.380 -0.011 -1.445
-           mles_embeddings                     0.763 0.013   0.750   0.776 0.011  [0.768 0.754 0.752 0.778 0.762]    1.000     0.500    0.000     0.500 -0.013 -1.640
+                                         scores_valid                                                                                                                                                                                             
+                                                 mean  t_pm t_int_l t_int_h   std                           values t_f_stat t_f_alpha t_t_stat t_t_alpha t_delta t_delta_pm t_delta_l t_delta_h t_delta_pp t_delta_pm_pp t_delta_l_pp t_delta_h_pp
+model_name feature_name                                                                                                                                                                                                                           
+lgbm       emb_mles__subseq_SampleRandom        0.747 0.018   0.729   0.766 0.015  [0.760 0.724 0.753 0.741 0.758]    1.475     0.642    0.214     0.582   0.002      0.024    -0.022     0.026      0.298         3.208       -2.910        3.506
+           emb_mles__subseq_SplitRandom         0.745 0.015   0.730   0.759 0.012  [0.753 0.731 0.756 0.733 0.751]    2.340     0.785   -0.023     0.491  -0.000      0.022    -0.022     0.022     -0.030         2.958       -2.988        2.929
+           mles_embeddings                      0.745 0.022   0.723   0.767 0.018  [0.764 0.723 0.749 0.730 0.759]    1.000     0.500    0.000     0.500   0.000      0.026    -0.026     0.026      0.000         3.502       -3.502        3.502
+                                         scores_test                                                                                                                                                                                             
+                                                mean  t_pm t_int_l t_int_h   std                           values t_f_stat t_f_alpha t_t_stat t_t_alpha t_delta t_delta_pm t_delta_l t_delta_h t_delta_pp t_delta_pm_pp t_delta_l_pp t_delta_h_pp
+model_name feature_name                                                                                                                                                                                                                          
+lgbm       emb_mles__subseq_SampleRandom       0.769 0.009   0.760   0.778 0.007  [0.760 0.778 0.770 0.772 0.764]    2.301     0.780    1.053     0.838   0.006      0.013    -0.007     0.019      0.787         1.723       -0.936        2.509
+           emb_mles__subseq_SplitRandom        0.761 0.005   0.756   0.766 0.004  [0.764 0.760 0.766 0.756 0.760]    7.447     0.961   -0.316     0.380  -0.002      0.012    -0.013     0.010     -0.210         1.532       -1.742        1.322
+           mles_embeddings                     0.763 0.013   0.750   0.776 0.011  [0.768 0.754 0.752 0.778 0.762]    1.000     0.500    0.000     0.500   0.000      0.016    -0.016     0.016      0.000         2.034       -2.034        2.034
 
 ------------------------------------------------------------------------------------------------------------------------
-End of report.     Current time: 2020-09-23 10:29:25
+End of report.     Current time: 2020-09-30 06:39:23
 ------------------------------------------------------------------------------------------------------------------------
