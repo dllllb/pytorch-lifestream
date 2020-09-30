@@ -33,10 +33,10 @@ def load_model(conf):
 
     layers = [EmbTranslation()]
 
-    if conf.get('freeze_layers', False):
-        for i,_ in enumerate(layers):
-            for p in layers[i].parameters():
-                p.requires_grad = False
+    #if conf.get('freeze_layers', False):
+    #    for i,_ in enumerate(layers):
+    #       for p in layers[i].parameters():
+    #            p.requires_grad = False
 
     if conf['use_batch_norm']:
         layers.append(torch.nn.BatchNorm1d(input_size))
@@ -68,11 +68,10 @@ def main(_):
 
     model_f = load_model
     if conf['params'].get('embeddings_path', False):
-     train_data = read_embedding_data(conf['params']['embeddings_path'], conf['dataset.train_path'] , conf)
-     test_data = read_embedding_data(conf['params']['embeddings_path'], conf['dataset.test_path'] , conf)
+      train_data = read_embedding_data(conf['params']['embeddings_path'], conf['dataset.train_path'] , conf)
+      test_data = read_embedding_data(conf['params']['embeddings_path'], conf['dataset.test_path'] , conf)
     else:
-     print('Set embeddings_path in config file!!!')
-     #throw an exception here
+      raise NotImplementedError(f'NotImplementedError. Set embeddings_path in config file!')
     
     # train
     results = []
