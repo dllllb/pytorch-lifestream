@@ -2,7 +2,7 @@
     environment: {
         work_dir: "embeddings_validation.work"
     }
-    report_file: "../results/scenario_gender_another_baselines.txt"
+    report_file: "../results/scenario_gender_baselines.txt"
 
     target: {
         file_name: "../data/gender_train.csv"

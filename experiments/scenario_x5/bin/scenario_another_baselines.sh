@@ -15,15 +15,6 @@ python ../../train_rtd.py params.device="$SC_DEVICE" --conf conf/dataset.hocon c
 # Fine tune the RTD model in supervised mode and save scores to the file
 python -m scenario_x5 fit_finetuning params.device="$SC_DEVICE" --conf conf/dataset.hocon conf/fit_finetuning_on_rtd_params.json
 
-# Run estimation
-python -m scenario_x5 compare_approaches --n_workers 1 --models lgb \
-    --output_file results/scenario_x5_baselines.csv \
-    --embedding_file_names \
-        "sop_embeddings.pickle" \
-        "nsp_embeddings.pickle" \
-        "rtd_embeddings.pickle" \
-    --score_file_names  "rtd_finetuning_scores"
-
 # Compare
 rm results/scenario_x5_baselines.txt
 # rm -r conf/embeddings_validation.work/
