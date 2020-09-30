@@ -247,7 +247,7 @@ def score_data(conf, y_true, y_predict):
     col_id = conf['output.columns'][0]
 
     model_type = conf['params.model_type']
-    if model_type == 'rnn':
+    if model_type in ('rnn', 'cpc_model'):
         cnt_features = conf['params.rnn.hidden_size']
     else:
         raise AttributeError(f'Unknown model_type: "{model_type}"')

@@ -126,8 +126,6 @@
             train_fit_transform_time: {float_format: "{:,.1f}"}
             feature_transform_time: {float_format: "{:,.1f}"}
             train_time: {float_format: "{:,.1f}"}
-            auroc_score_time {float_format: "{:,.1f}"}
-            accuracy_score_time: {float_format: "{:,.1f}"}
 
             feature_fit_info: {keep_columns: ["first"]}
         }
