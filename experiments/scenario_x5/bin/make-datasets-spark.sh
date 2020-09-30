@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+python bin/make_target_file.py
+
+
 spark-submit \
     --master local[16] \
     --name "X5 Make Dataset" \
