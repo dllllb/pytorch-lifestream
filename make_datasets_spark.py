@@ -242,15 +242,17 @@ class DatasetConverter:
         return features
 
     def update_with_target(self, features, df_target, col_client_id, col_target):
-        col_list = [F.col(col_client_id).alias(col_client_id)]
         if type(col_target) is list:
+            col_list = []
             for col in col_target:
-                col_list.append(F.col(col).alias(f'target_{col}'))
+                col_list.append(F.col(col))
+            df_target = df_target.withColumn("target", F.array(col_list)) 
+            df_target = df_target.select(col_client_id, "target")
         else:
+            col_list = [F.col(col_client_id).alias(col_client_id)]
             col_list.append(F.col(col_target).cast('int').alias('target'))
-
-        df_target = df_target.select(*col_list)
-        df_target = df_target.repartition(1)
+            df_target = df_target.select(*col_list)
+            df_target = df_target.repartition(1)
 
         features = features.join(df_target, on=col_client_id, how='left')
         features.persist()
