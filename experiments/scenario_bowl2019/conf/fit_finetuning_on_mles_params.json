@@ -53,7 +53,7 @@
     "norm_scores": false,
     "score_metric": "accuracy",
 
-    "pretrained_model_path": "models/mles_model.p",
+    "pretrained_model_path": "models/mles_model_ft.p",
     "use_batch_norm": true
   },
 

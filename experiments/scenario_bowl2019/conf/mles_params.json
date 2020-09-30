@@ -6,7 +6,7 @@
     "device": "cuda",
     "model_type": "rnn",
     "rnn": {
-      "type": "gru",
+      "type": "lstm",
       "hidden_size": 100,
       "bidir": false,
       "trainable_starter": "static"

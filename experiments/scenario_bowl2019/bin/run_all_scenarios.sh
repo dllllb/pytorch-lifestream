@@ -17,6 +17,11 @@ python ../../metric_learning.py params.device="$SC_DEVICE" --conf conf/trx_datas
 python ../../ml_inference.py    params.device="$SC_DEVICE" --conf conf/dataset.hocon conf/mles_params.json
 
 # Fine tune the MeLES model in supervised mode and save scores to the file
+python ../../metric_learning.py \
+  params.device="$SC_DEVICE" \
+  params.rnn.type="gru" \
+  model_path.model="models/mles_model_ft.p" \
+  --conf conf/trx_dataset.hocon conf/mles_params.json
 python -m scenario_bowl2019 fit_finetuning params.device="$SC_DEVICE" --conf conf/dataset.hocon conf/fit_finetuning_on_mles_params.json
 
 # Train the Contrastive Predictive Coding (CPC) model; inference
