@@ -1,0 +1,195 @@
+{
+    environment: {
+        work_dir: "embeddings_validation_semi_supervised.work"
+    }
+    report_file: "../results/scenario_bowl2019__semi_supervised.txt"
+
+    target: {
+        file_name: "../data/train_labels.csv"
+        cols_id: [game_session]
+        cols_id_type: [str]
+        col_target: accuracy_group
+    }
+
+    split: {
+        fit_ids: true
+
+        train_id: {
+            file_name: "../data/train_labels.csv"
+        }
+        test_id: {
+            file_name: "../data/test_ids.csv"
+        }
+
+        cv_split_count: 5
+        is_stratify: true
+        random_state: 42
+    }
+
+    features: {
+        baseline_00496: {
+            enabled: true
+            read_params: {file_name: ../data/agg_feat_embed.pickle}
+            target_options: {labeled_amount: 496, random_state: 42}
+        }
+        baseline_00994: {
+            enabled: true
+            read_params: {file_name: ../data/agg_feat_embed.pickle}
+            target_options: {labeled_amount: 994, random_state: 42}
+        }
+        baseline_01986: {
+            enabled: true
+            read_params: {file_name: ../data/agg_feat_embed.pickle}
+            target_options: {labeled_amount: 1986, random_state: 42}
+        }
+        baseline_03971: {
+            enabled: true
+            read_params: {file_name: ../data/agg_feat_embed.pickle}
+            target_options: {labeled_amount: 3971, random_state: 42}
+        }
+        baseline_07943: {
+            enabled: true
+            read_params: {file_name: ../data/agg_feat_embed.pickle}
+            target_options: {labeled_amount: 7943, random_state: 42}
+        }
+        baseline_15887: {
+            enabled: true
+            read_params: {file_name: ../data/agg_feat_embed.pickle}
+            target_options: {labeled_amount: 15887, random_state: 42}
+        }
+
+        mles_embeddings_00496: {
+            enabled: true
+            read_params: {file_name: ../data/mles_embeddings.pickle}
+            target_options: {labeled_amount: 496, random_state: 42}
+        }
+        mles_embeddings_00994: {
+            enabled: true
+            read_params: {file_name: ../data/mles_embeddings.pickle}
+            target_options: {labeled_amount: 994, random_state: 42}
+        }
+        mles_embeddings_01986: {
+            enabled: true
+            read_params: {file_name: ../data/mles_embeddings.pickle}
+            target_options: {labeled_amount: 1986, random_state: 42}
+        }
+        mles_embeddings_03971: {
+            enabled: true
+            read_params: {file_name: ../data/mles_embeddings.pickle}
+            target_options: {labeled_amount: 3971, random_state: 42}
+        }
+        mles_embeddings_07943: {
+            enabled: true
+            read_params: {file_name: ../data/mles_embeddings.pickle}
+            target_options: {labeled_amount: 7943, random_state: 42}
+        }
+        mles_embeddings_15887: {
+            enabled: true
+            read_params: {file_name: ../data/mles_embeddings.pickle}
+            target_options: {labeled_amount: 15887, random_state: 42}
+        }
+
+        cpc_embeddings_00496: {
+            enabled: true
+            read_params: {file_name: ../data/cpc_embeddings.pickle}
+            target_options: {labeled_amount: 496, random_state: 42}
+        }
+        cpc_embeddings_00994: {
+            enabled: true
+            read_params: {file_name: ../data/cpc_embeddings.pickle}
+            target_options: {labeled_amount: 994, random_state: 42}
+        }
+        cpc_embeddings_01986: {
+            enabled: true
+            read_params: {file_name: ../data/cpc_embeddings.pickle}
+            target_options: {labeled_amount: 1986, random_state: 42}
+        }
+        cpc_embeddings_03971: {
+            enabled: true
+            read_params: {file_name: ../data/cpc_embeddings.pickle}
+            target_options: {labeled_amount: 3971, random_state: 42}
+        }
+        cpc_embeddings_07943: {
+            enabled: true
+            read_params: {file_name: ../data/cpc_embeddings.pickle}
+            target_options: {labeled_amount: 7943, random_state: 42}
+        }
+        cpc_embeddings_15887: {
+            enabled: true
+            read_params: {file_name: ../data/cpc_embeddings.pickle}
+            target_options: {labeled_amount: 15887, random_state: 42}
+        }
+    }
+
+    external_scores: {
+        t_00496: "../results/fit_target_00496_results.json"
+        m_00496: "../results/mles_finetuning_00496_results.json"
+        c_00496: "../results/cpc_finetuning_00496_results.json"
+
+        t_00994: "../results/fit_target_00994_results.json"
+        m_00994: "../results/mles_finetuning_00994_results.json"
+        c_00994: "../results/cpc_finetuning_00994_results.json"
+
+        t_01986: "../results/fit_target_01986_results.json"
+        m_01986: "../results/mles_finetuning_01986_results.json"
+        c_01986: "../results/cpc_finetuning_01986_results.json"
+
+        t_03971: "../results/fit_target_03971_results.json"
+        m_03971: "../results/mles_finetuning_03971_results.json"
+        c_03971: "../results/cpc_finetuning_03971_results.json"
+
+        t_07943: "../results/fit_target_07943_results.json"
+        m_07943: "../results/mles_finetuning_07943_results.json"
+        c_07943: "../results/cpc_finetuning_07943_results.json"
+
+        t_15887: "../results/fit_target_15887_results.json"
+        m_15887: "../results/mles_finetuning_15887_results.json"
+        c_15887: "../results/cpc_finetuning_15887_results.json"
+    }
+
+    models: {
+        lgbm: {
+            enabled: true
+            cls_name: lightgbm.LGBMClassifier,
+            params: {
+                n_estimators=1000,
+                boosting_type="gbdt",
+                objective="multiclass",
+                metric="multi_error",
+                learning_rate=0.01,
+                subsample=0.75,
+                subsample_freq=1,
+                colsample_bytree=0.75,
+                max_depth=12,
+                reg_lambda=1,
+                reg_alpha=1,
+                min_child_samples=50,
+                num_leaves=21,
+                random_state=42,
+                n_jobs=4,
+            },
+            cpu_count: 4
+            preprocessing: [
+                [sklearn.preprocessing.MaxAbsScaler, {}]
+            ]
+        }
+    }
+
+    metrics: {
+        accuracy: {
+            enabled: true
+            score_func: sklearn.metrics.accuracy_score
+            scorer_params: {needs_proba: false}
+        }
+    }
+
+    report: {
+        is_check_train: true
+        error_handling: fail
+        print_all_metrics: false
+
+        metrics: {
+            accuracy: {float_format: "{:.3f}", split_columns: true}
+        }
+    }
+}

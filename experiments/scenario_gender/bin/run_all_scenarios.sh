@@ -55,7 +55,7 @@ sh bin/scenario_ml_loss.sh
 sh bin/scenario_sampling_strategy.sh
 sh bin/scenario_sub_seq_sampling_strategy.sh
 
-sh bin/scenario_semi_supervised_with_embedd_validation.sh
+sh bin/scenario_semi_supervised.sh
 
 echo ""
 echo "==== Other scenarios"

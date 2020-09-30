@@ -8,7 +8,7 @@
 # python ../../train_cpc.py    params.device="$SC_DEVICE" \
 #   --conf conf/dataset.hocon conf/cpc_params.json
 
-for SC_AMOUNT in 290000 200000 100000 50000 25000 12000 6000 3000 1000 500
+for SC_AMOUNT in 290000 200000 100000 050000 025000 012000 006000 003000 001000 000500
 do
 	python -m scenario_x5 fit_target \
         params.device="$SC_DEVICE" \
@@ -48,4 +48,7 @@ do
         --output_file results/semi_scenario_x5_$SC_AMOUNT.csv
 done
 
-
+rm results/scenario_x5__semi_supervised.txt
+# rm -r conf/embeddings_validation_semi_supervised.work/
+LUIGI_CONFIG_PATH=conf/luigi.cfg python -m embeddings_validation \
+    --conf conf/embeddings_validation_semi_supervised.hocon --workers 10 --total_cpu_count 20

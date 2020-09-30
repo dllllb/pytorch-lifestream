@@ -2,7 +2,7 @@
     environment: {
         work_dir: "embeddings_validation_semi_supervised.work"
     }
-    report_file: "../results/embeddings_validation_semi_supervised.txt"
+    report_file: "../results/scenario_gender__semi_supervised.txt"
 
     target: {
         file_name: "../data/gender_train.csv"
