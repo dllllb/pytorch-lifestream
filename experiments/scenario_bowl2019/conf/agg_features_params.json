@@ -14,8 +14,9 @@
         "world": {"in": 6}
       },
       "numeric_values": {
+        "#ones": "identity"
       },
-      "was_logified": true,
+      "was_logified": false,
       "log_scale_factor": 1
     },
     "use_normalization_layer": true,
