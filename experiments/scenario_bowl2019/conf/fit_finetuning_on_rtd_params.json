@@ -73,5 +73,11 @@
       "format": "pickle"
     },
     "columns": ["game_session"]
+  },
+
+  "stats": {
+    "model_name": "nn",
+    "feature_name": "rtd_finetuning",
+    "path": "results/rtd_finetuning_results.json"
   }
 }

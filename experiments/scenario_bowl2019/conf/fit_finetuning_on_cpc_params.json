@@ -73,5 +73,11 @@
       "format": "pickle"
     },
     "columns": ["game_session"]
+  },
+
+  "stats": {
+    "model_name": "nn",
+    "feature_name": "cpc_finetuning",
+    "path": "results/cpc_finetuning_results.json"
   }
 }
