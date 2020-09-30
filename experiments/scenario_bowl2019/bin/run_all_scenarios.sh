@@ -31,10 +31,10 @@ python -m scenario_bowl2019 fit_finetuning params.device="$SC_DEVICE" --conf con
 
 # Run estimation for different approaches
 # Check some options with `--help` argument
-python -m scenario_bowl2019 compare_approaches --n_workers 5 --models lgb \
-    --add_baselines --add_emb_baselines \
-    --embedding_file_names "mles_embeddings.pickle" "cpc_embeddings.pickle" \
-    --score_file_names "target_scores" "mles_finetuning_scores" "cpc_finetuning_scores"
+rm results/scenario_bowl2019.txt
+# rm -r conf/embeddings_validation.work/
+LUIGI_CONFIG_PATH=conf/luigi.cfg python -m embeddings_validation \
+    --conf conf/embeddings_validation.hocon --workers 10 --total_cpu_count 20
 
 
 echo ""

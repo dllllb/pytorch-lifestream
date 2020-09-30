@@ -1,0 +1,139 @@
+{
+    environment: {
+        work_dir: "embeddings_validation.work"
+    }
+    report_file: "../results/scenario_bowl2019.txt"
+
+    target: {
+        file_name: "../data/train_labels.csv"
+        cols_id: [game_session]
+        cols_id_type: [int]
+        col_target: accuracy_group
+    }
+
+    split: {
+        fit_ids: true
+
+        train_id: {
+            file_name: "../data/train_target.csv"
+        }
+        test_id: {
+            file_name: "../data/test_ids.csv"
+        }
+
+        cv_split_count: 5
+        is_stratify: true
+        random_state: 42
+    }
+
+    features: {
+        baseline: {
+            enabled: true
+            read_params: {file_name: ../data/agg_feat_embed.pickle}
+            target_options: {}
+        }
+        cpc_embeddings: {
+            enabled: true
+            read_params: {file_name: ../data/cpc_embeddings.pickle}
+            target_options: {}
+        }
+        mles_embeddings: {
+            enabled: true
+            read_params: {file_name: ../data/mles_embeddings.pickle}
+            target_options: {}
+        }
+    }
+
+    external_scores: {
+        0: "../results/fit_target_results.json"
+        1: "../results/mles_finetuning_results.json"
+        2: "../results/cpc_finetuning_results.json"
+    }
+
+    models: {
+        linear: {
+            enabled: false
+            cls_name: sklearn.linear_model.LogisticRegression
+            params: {},
+            cpu_count: 1
+            preprocessing: [
+                [sklearn.preprocessing.MaxAbsScaler, {}]
+            ]
+        }
+        lgbm: {
+            enabled: true
+            cls_name: lightgbm.LGBMClassifier,
+            params: {
+                n_estimators=1000,
+                boosting_type="gbdt",
+                objective="multiclass",
+                metric="multi_error",
+                learning_rate=0.01,
+                subsample=0.75,
+                subsample_freq=1,
+                colsample_bytree=0.75,
+                max_depth=12,
+                reg_lambda=1,
+                reg_alpha=1,
+                min_child_samples=50,
+                num_leaves=21,
+                random_state=42,
+                n_jobs=4,
+            },
+            cpu_count: 4
+            preprocessing: [
+                [sklearn.preprocessing.MaxAbsScaler, {}]
+            ]
+        }
+        xgb: {
+            enabled: false
+            cls_name: xgboost.XGBClassifier
+            params: {
+                objective="multi:softprob",
+                n_jobs=4,
+                seed=42,
+                n_estimators=600,
+                learning_rate=0.01,
+                max_depth=6,
+                subsample=0.75,
+                colsample_bytree=0.9,
+                min_child_weight=3,
+                gamma=0.25,
+                alpha=1,
+            },
+            cpu_count: 4
+            preprocessing: [
+                [sklearn.preprocessing.MaxAbsScaler, {}]
+            ]
+        }
+    }
+
+    metrics: {
+        accuracy: {
+            enabled: true
+            score_func: sklearn.metrics.accuracy_score
+            scorer_params: {needs_proba: false}
+        }
+    }
+
+    report: {
+        is_check_train: false
+        error_handling: fail
+        print_all_metrics: true
+
+        metrics: {
+            accuracy: {float_format: "{:.3f}", baseline_key=["lgbm", "baseline"], split_columns: true}
+
+            cnt_features: {float_format: "{:.0f}", keep_columns: ["mean"]}
+            cnt_samples: {float_format: "{:9,.0f}", keep_columns: ["mean"]}
+
+            feature_load_time: {float_format: "{:,.1f}"}
+            train_fit_transform_time: {float_format: "{:,.1f}"}
+            feature_transform_time: {float_format: "{:,.1f}"}
+            train_time: {float_format: "{:,.1f}"}
+            accuracy_score_time: {float_format: "{:,.1f}"}
+
+            feature_fit_info: {keep_columns: ["first"]}
+        }
+    }
+}
