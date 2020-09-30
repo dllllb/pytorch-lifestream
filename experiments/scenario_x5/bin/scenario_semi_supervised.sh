@@ -36,16 +36,6 @@ do
         stats.feature_name="cpc_finetuning_${SC_AMOUNT}" \
         stats.path="results/cpc_finetuning_${SC_AMOUNT}_results.json" \
         --conf "conf/dataset.hocon" conf/fit_finetuning_on_cpc_params.json
-
-    # Compare
-    python -m scenario_x5 compare_approaches \
-        --baseline_name "agg_feat_embed.pickle" --models "lgb" \
-        --score_file_names \
-            target_scores_$SC_AMOUNT \
-            mles_finetuning_scores_$SC_AMOUNT \
-            cpc_finetuning_scores_$SC_AMOUNT \
-        --labeled_amount $SC_AMOUNT \
-        --output_file results/semi_scenario_x5_$SC_AMOUNT.csv
 done
 
 rm results/scenario_x5__semi_supervised.txt
