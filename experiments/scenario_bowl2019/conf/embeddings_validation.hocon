@@ -7,7 +7,7 @@
     target: {
         file_name: "../data/train_labels.csv"
         cols_id: [game_session]
-        cols_id_type: [int]
+        cols_id_type: [str]
         col_target: accuracy_group
     }
 
@@ -15,7 +15,7 @@
         fit_ids: true
 
         train_id: {
-            file_name: "../data/train_target.csv"
+            file_name: "../data/train_labels.csv"
         }
         test_id: {
             file_name: "../data/test_ids.csv"
