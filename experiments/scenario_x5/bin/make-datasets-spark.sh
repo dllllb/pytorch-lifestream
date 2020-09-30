@@ -4,9 +4,9 @@ python bin/make_target_file.py
 
 
 spark-submit \
-    --master local[16] \
+    --master local[8] \
     --name "X5 Make Dataset" \
-    --driver-memory 200G \
+    --driver-memory 16G \
     --conf spark.sql.shuffle.partitions=100 \
     --conf spark.sql.parquet.compression.codec="snappy" \
     --conf spark.ui.port=4041 \

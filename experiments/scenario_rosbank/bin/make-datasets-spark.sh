@@ -2,9 +2,9 @@
 
 export PYTHONPATH="../../"
 spark-submit \
-    --master local[16] \
+    --master local[8] \
     --name "Rosbank Make Dataset" \
-    --driver-memory 200G \
+    --driver-memory 16G \
     --conf spark.sql.shuffle.partitions=60 \
     --conf spark.sql.parquet.compression.codec="snappy" \
     --conf spark.ui.port=4041 \

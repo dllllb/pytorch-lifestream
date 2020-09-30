@@ -7,7 +7,7 @@ cd experiments/scenario_x5
 bin/get-data.sh
 
 # convert datasets from transaction list to features for metric learning
-bin/make-datasets.sh
+bin/make-datasets-spark.sh
 ```
 
 # Main scenario, best params
