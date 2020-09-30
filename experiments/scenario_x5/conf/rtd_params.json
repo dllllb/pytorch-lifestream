@@ -49,7 +49,7 @@
     },
     "lr_scheduler": {
       "ReduceLROnPlateau": true,
-      "patience": 15
+      "patience": 3
     },
     "train": {
       "num_workers": 8,
