@@ -15,6 +15,8 @@ do
         params.labeled_amount=$SC_AMOUNT \
         output.test.path="data/target_scores_$SC_AMOUNT"/test \
         output.valid.path="data/target_scores_$SC_AMOUNT"/valid \
+        stats.feature_name="target_scores_${SC_AMOUNT}" \
+        stats.path="results/fit_target_${SC_AMOUNT}_results.json" \
         --conf "conf/dataset.hocon" conf/fit_target_params_rnn.json
 
     python -m scenario_x5 fit_finetuning \
@@ -22,6 +24,8 @@ do
         params.labeled_amount=$SC_AMOUNT \
         output.test.path="data/mles_finetuning_scores_$SC_AMOUNT"/test \
         output.valid.path="data/mles_finetuning_scores_$SC_AMOUNT"/valid \
+        stats.feature_name="mles_finetuning_${SC_AMOUNT}" \
+        stats.path="results/mles_finetuning_${SC_AMOUNT}_results.json" \
         --conf "conf/dataset.hocon" conf/fit_finetuning_on_mles_params.json
 
     python -m scenario_x5 fit_finetuning \
@@ -29,6 +33,8 @@ do
         params.labeled_amount=$SC_AMOUNT \
         output.test.path="data/cpc_finetuning_scores_$SC_AMOUNT"/test \
         output.valid.path="data/cpc_finetuning_scores_$SC_AMOUNT"/valid \
+        stats.feature_name="cpc_finetuning_${SC_AMOUNT}" \
+        stats.path="results/cpc_finetuning_${SC_AMOUNT}_results.json" \
         --conf "conf/dataset.hocon" conf/fit_finetuning_on_cpc_params.json
 
     # Compare
