@@ -47,7 +47,7 @@ class AggFeatureModel(torch.nn.Module):
 
         for col_num, options_num in self.numeric_values.items():
             # take array with numerical feature and convert it to original scale
-            if col_num == '#ones':
+            if col_num.strip('"') == '#ones':
                 val_orig = torch.ones(B, T, device=device)
             else:
                 val_orig = feature_arrays[col_num].float()
