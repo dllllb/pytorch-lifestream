@@ -7,7 +7,7 @@
     target: {
         file_name: "../data/clients_target.csv"
         cols_id: [client_id]
-        cols_id_type: [int]
+        cols_id_type: [str]
         col_target: age
     }
 
@@ -236,11 +236,11 @@
                 subsample=0.5,
                 subsample_freq=1,
                 learning_rate=0.05,
-                feature_fraction=0.75,
+                feature_fraction=0.75, colsample_bytree=null,
                 max_depth=6,
-                lambda_l1=1,
-                lambda_l2=1,
-                min_data_in_leaf=50,
+                lambda_l1=1, reg_alpha=null,
+                lambda_l2=1, reg_lambda=null,
+                min_data_in_leaf=50, min_child_samples=null,
                 num_leaves=50,
                 random_state=42,
                 n_jobs=6,
