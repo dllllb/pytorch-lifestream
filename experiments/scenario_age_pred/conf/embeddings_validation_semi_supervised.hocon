@@ -68,7 +68,7 @@
             read_params: {file_name: ../data/mles_embeddings.pickle}
             target_options: {labeled_amount: 337, random_state: 42}
         }
-        mles_embeddings_675: {
+        mles_embeddings_00675: {
             enabled: true
             read_params: {file_name: ../data/mles_embeddings.pickle}
             target_options: {labeled_amount: 675, random_state: 42}
