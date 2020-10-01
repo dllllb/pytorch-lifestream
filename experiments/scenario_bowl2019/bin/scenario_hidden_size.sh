@@ -47,6 +47,18 @@ python ../../ml_inference.py \
     output.path="data/emb__$SC_SUFFIX" \
     --conf "conf/dataset.hocon" "conf/mles_params.json"
 
+export SC_SUFFIX="hidden_size_0400"
+python ../../metric_learning.py \
+    params.device="$SC_DEVICE" \
+    params.rnn.hidden_size=400 \
+    model_path.model="models/bowl2019_mlm__$SC_SUFFIX.p" \
+    --conf "conf/trx_dataset.hocon" "conf/mles_params.json"
+python ../../ml_inference.py \
+    params.device="$SC_DEVICE" \
+    model_path.model="models/bowl2019_mlm__$SC_SUFFIX.p" \
+    output.path="data/emb__$SC_SUFFIX" \
+    --conf "conf/dataset.hocon" "conf/mles_params.json"
+
 # Compare
 rm results/scenario_bowl2019__hidden_size.txt
 # rm -r conf/embeddings_validation.work/
