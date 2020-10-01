@@ -17,6 +17,9 @@ export SC_SUFFIX="SplitRandom"
 export SC_STRATEGY="SplitRandom"
 python ../../metric_learning.py \
     params.device="$SC_DEVICE" \
+    params.train.max_seq_len=300 \
+    params.valid.max_seq_len=300 \
+    params.valid.batch_size=512 \
     params.train.split_strategy.split_strategy=$SC_STRATEGY \
     params.valid.split_strategy.split_strategy=$SC_STRATEGY \
     model_path.model="models/gender_mlm__$SC_SUFFIX.p" \

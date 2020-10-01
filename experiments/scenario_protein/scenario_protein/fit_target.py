@@ -22,7 +22,7 @@ from dltranz.train import get_optimizer, get_lr_scheduler, fit_model
 from dltranz.util import init_logger, get_conf
 from dltranz.experiment import get_epoch_score_metric, update_model_stats, CustomMetric
 from dltranz.metric_learn.inference_tools import infer_part_of_data, save_scores
-from metric_learning import prepare_embeddings
+from metric_learning import prepare_embeddings, shuffle_client_list_reproducible
 from tqdm.auto import tqdm
 
 from scenario_protein.compare_approaches import top_k_precision
@@ -54,6 +54,7 @@ def read_consumer_data(path, conf, is_train):
 
     data = (rec for rec in data if rec['target'] is not None and not np.isnan(rec['target']))
     data = prepare_embeddings(data, conf, is_train=is_train)
+    data = shuffle_client_list_reproducible(conf, data)
     data = list(data)
 
     logger.info(f'Loaded data with target: {len(data)}')

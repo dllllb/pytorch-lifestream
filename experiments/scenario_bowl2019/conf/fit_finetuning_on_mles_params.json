@@ -53,15 +53,11 @@
     "norm_scores": false,
     "score_metric": "accuracy",
 
-    "pretrained_model_path": "models/mles_model.p",
+    "pretrained_model_path": "models/mles_model_ft.p",
     "use_batch_norm": true
   },
 
   "save_model": false,
-
-  "stats": {
-    "path": "runs/bowl2019_target_results.json"
-  },
 
   "output": {
     "valid": {
@@ -73,5 +69,11 @@
       "format": "pickle"
     },
     "columns": ["game_session"]
+  },
+
+  "stats": {
+    "model_name": "nn",
+    "feature_name": "mles_finetuning",
+    "path": "results/mles_finetuning_results.json"
   }
 }

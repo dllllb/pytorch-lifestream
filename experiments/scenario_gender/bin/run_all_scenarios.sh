@@ -18,7 +18,16 @@ python -m scenario_gender fit_target params.device="$SC_DEVICE" --conf conf/data
 python ../../metric_learning.py params.device="$SC_DEVICE" --conf conf/dataset.hocon conf/mles_params.json
 python ../../ml_inference.py    params.device="$SC_DEVICE" --conf conf/dataset.hocon conf/mles_params.json
 # Fine tune the MeLES model in supervised mode and save scores to the file
-python -m scenario_gender fit_finetuning params.device="$SC_DEVICE" --conf conf/dataset.hocon conf/fit_finetuning_on_mles_params.json
+
+python ../../metric_learning.py \
+  params.device="$SC_DEVICE" \
+  params.rnn.hidden_size=256 \
+  params.train.loss="MarginLoss" params.train.margin=0.2 params.train.beta=0.4 \
+  model_path.model="models/mles_model_for_finetuning.p" \
+  --conf conf/dataset.hocon conf/mles_params.json
+python -m scenario_gender fit_finetuning \
+  params.device="$SC_DEVICE" \
+  --conf conf/dataset.hocon conf/fit_finetuning_on_mles_params.json
 
 
 # Train the Contrastive Predictive Coding (CPC) model; inference
@@ -30,11 +39,10 @@ python -m scenario_gender fit_finetuning params.device="$SC_DEVICE" --conf conf/
 
 # Run estimation for different approaches
 # Check some options with `--help` argument
-python -m scenario_gender compare_approaches --n_workers 5 --models lgb \
-    --output_file results/scenario_gender.csv \
-    --baseline_name "agg_feat_embed.pickle" \
-    --embedding_file_names "mles_embeddings.pickle" "cpc_embeddings.pickle" \
-    --score_file_names "target_scores" "mles_finetuning_scores" "cpc_finetuning_scores"
+rm results/scenario_gender.txt
+# rm -r conf/embeddings_validation.work/
+LUIGI_CONFIG_PATH=conf/luigi.cfg python -m embeddings_validation \
+    --conf conf/embeddings_validation.hocon --workers 10 --total_cpu_count 20
 
 
 echo ""
@@ -47,8 +55,7 @@ sh bin/scenario_ml_loss.sh
 sh bin/scenario_sampling_strategy.sh
 sh bin/scenario_sub_seq_sampling_strategy.sh
 
-sh bin/scenario_semi_supervised_with_embedd_validation.sh
-python -m embeddings_validation --conf conf/embeddings_validation_semi_supervised.hocon --workers 10 --total_cpu_count 18
+sh bin/scenario_semi_supervised.sh
 
 echo ""
 echo "==== Other scenarios"

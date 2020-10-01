@@ -9,13 +9,8 @@ if __name__ == '__main__':
     sys.path.append('../../')
 
     # reproducibility
-    import random
-    random.seed(42)
-    np.random.seed(42)
-    torch.backends.cudnn.benchmark = False
-    torch.backends.cudnn.deterministic = True
-    torch.manual_seed(42)
-    torch.cuda.manual_seed_all(42)
+    from dltranz.util import switch_reproducibility_on
+    switch_reproducibility_on()
 
 from scenario_rosbank import fit_target, fit_finetuning
 

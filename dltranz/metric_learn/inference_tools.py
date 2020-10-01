@@ -247,7 +247,7 @@ def score_data(conf, y_true, y_predict):
     col_id = conf['output.columns'][0]
 
     model_type = conf['params.model_type']
-    if model_type == 'rnn':
+    if model_type in ('rnn', 'cpc_model'):
         cnt_features = conf['params.rnn.hidden_size']
     else:
         raise AttributeError(f'Unknown model_type: "{model_type}"')
@@ -259,7 +259,7 @@ def score_data(conf, y_true, y_predict):
     if metric_name == 'auroc':
         score = roc_auc_score(df['target'], df.iloc[:, 0])
     if metric_name == 'accuracy':
-        score = accuracy_score(df['target'], np.argmax(df.values, axis=1))
+        score = accuracy_score(df['target'], np.argmax(df[y_predict.columns].values, axis=1))
     return {
         metric_name: score,
         'cnt_samples': len(y_true),

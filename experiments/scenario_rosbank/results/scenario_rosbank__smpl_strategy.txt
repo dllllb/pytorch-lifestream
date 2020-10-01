@@ -1,52 +1,52 @@
 ------------------------------------------------------------------------------------------------------------------------
 Vector testing report
 Params:
-    conf: "conf/embeddings_validation_short_1600856911.hocon"
+    conf: "conf/embeddings_validation_short_1601454172.hocon"
 
 Collected 30 files with 0 errors
 
 ------------------------------------------------------------------------------------------------------------------------
 Metric: "auroc"
-                                                                scores_valid                                                                                                                 
-                                                                        mean  t_pm t_int_l t_int_h   std                           values t_f_stat t_f_alpha t_t_stat t_t_alpha    t_A t_A_pp
-model_name feature_name                                                                                                                                                                      
-lgbm       emb_mles__smpl_strategy_AllPositivePair                     0.815 0.013   0.802   0.829 0.011  [0.829 0.804 0.824 0.809 0.810]    1.559     0.661   -0.936     0.188 -0.022 -2.641
-           emb_mles__smpl_strategy_DistanceWeightedPair                0.821 0.014   0.806   0.835 0.012  [0.832 0.805 0.831 0.815 0.820]    1.374     0.617   -0.241     0.408 -0.017 -2.036
-           emb_mles__smpl_strategy_HardNegativePair_neg_count_2        0.821 0.014   0.807   0.834 0.011  [0.831 0.803 0.824 0.819 0.826]    1.551     0.659   -0.252     0.404 -0.016 -1.998
-           emb_mles__smpl_strategy_HardNegativePair_neg_count_5        0.823 0.017   0.806   0.839 0.014  [0.837 0.803 0.831 0.815 0.827]    1.000     0.500    0.000     0.500 -0.016 -1.939
-           emb_mles__smpl_strategy_HardNegativePair_neg_count_9        0.823 0.011   0.813   0.834 0.009  [0.831 0.813 0.829 0.815 0.828]    2.414     0.793    0.117     0.545 -0.013 -1.528
-           mles_embeddings                                             0.823 0.017   0.806   0.839 0.014  [0.837 0.803 0.831 0.815 0.827]    1.000     0.500    0.000     0.500 -0.016 -1.939
-                                                                scores_test                                                                                                                 
-                                                                       mean  t_pm t_int_l t_int_h   std                           values t_f_stat t_f_alpha t_t_stat t_t_alpha    t_A t_A_pp
-model_name feature_name                                                                                                                                                                     
-lgbm       emb_mles__smpl_strategy_AllPositivePair                    0.839 0.007   0.832   0.846 0.006  [0.843 0.844 0.840 0.837 0.830]    0.238     0.096   -1.673     0.066 -0.010 -1.156
-           emb_mles__smpl_strategy_DistanceWeightedPair               0.843 0.006   0.837   0.849 0.005  [0.845 0.844 0.846 0.843 0.834]    0.322     0.149   -0.342     0.371 -0.005 -0.639
-           emb_mles__smpl_strategy_HardNegativePair_neg_count_2       0.843 0.004   0.839   0.847 0.003  [0.842 0.840 0.848 0.842 0.842]    0.746     0.391   -0.435     0.338 -0.004 -0.503
-           emb_mles__smpl_strategy_HardNegativePair_neg_count_5       0.843 0.003   0.840   0.847 0.003  [0.839 0.844 0.844 0.843 0.847]    1.000     0.500    0.000     0.500 -0.003 -0.377
-           emb_mles__smpl_strategy_HardNegativePair_neg_count_9       0.843 0.006   0.837   0.850 0.005  [0.844 0.850 0.845 0.836 0.842]    0.280     0.123   -0.083     0.468 -0.005 -0.595
-           mles_embeddings                                            0.843 0.003   0.840   0.847 0.003  [0.839 0.844 0.844 0.843 0.847]    1.000     0.500    0.000     0.500 -0.003 -0.377
+                                                                scores_valid                                                                                                                                                                                             
+                                                                        mean  t_pm t_int_l t_int_h   std                           values t_f_stat t_f_alpha t_t_stat t_t_alpha t_delta t_delta_pm t_delta_l t_delta_h t_delta_pp t_delta_pm_pp t_delta_l_pp t_delta_h_pp
+model_name feature_name                                                                                                                                                                                                                                                  
+lgbm       emb_mles__smpl_strategy_AllPositivePair                     0.815 0.013   0.802   0.829 0.011  [0.829 0.804 0.824 0.809 0.810]    1.559     0.661   -0.936     0.188  -0.007      0.018    -0.025     0.011     -0.884         2.179       -3.063        1.295
+           emb_mles__smpl_strategy_DistanceWeightedPair                0.821 0.014   0.806   0.835 0.012  [0.832 0.805 0.831 0.815 0.820]    1.374     0.617   -0.241     0.408  -0.002      0.018    -0.020     0.016     -0.234         2.235       -2.469        2.001
+           emb_mles__smpl_strategy_HardNegativePair_neg_count_2        0.821 0.014   0.807   0.834 0.011  [0.831 0.803 0.824 0.819 0.826]    1.551     0.659   -0.252     0.404  -0.002      0.018    -0.020     0.016     -0.239         2.181       -2.420        1.942
+           emb_mles__smpl_strategy_HardNegativePair_neg_count_5        0.823 0.017   0.806   0.839 0.014  [0.837 0.803 0.831 0.815 0.827]    1.000     0.500    0.000     0.500   0.000      0.020    -0.020     0.020      0.000         2.405       -2.405        2.405
+           emb_mles__smpl_strategy_HardNegativePair_neg_count_9        0.823 0.011   0.813   0.834 0.009  [0.831 0.813 0.829 0.815 0.828]    2.414     0.793    0.117     0.545   0.001      0.017    -0.016     0.017      0.103         2.022       -1.920        2.125
+           mles_embeddings                                             0.823 0.017   0.806   0.839 0.014  [0.837 0.803 0.831 0.815 0.827]    1.000     0.500    0.000     0.500   0.000      0.020    -0.020     0.020      0.000         2.405       -2.405        2.405
+                                                                scores_test                                                                                                                                                                                             
+                                                                       mean  t_pm t_int_l t_int_h   std                           values t_f_stat t_f_alpha t_t_stat t_t_alpha t_delta t_delta_pm t_delta_l t_delta_h t_delta_pp t_delta_pm_pp t_delta_l_pp t_delta_h_pp
+model_name feature_name                                                                                                                                                                                                                                                 
+lgbm       emb_mles__smpl_strategy_AllPositivePair                    0.839 0.007   0.832   0.846 0.006  [0.843 0.844 0.840 0.837 0.830]    0.238     0.096   -1.673     0.066  -0.005      0.006    -0.011     0.002     -0.547         0.754       -1.302        0.207
+           emb_mles__smpl_strategy_DistanceWeightedPair               0.843 0.006   0.837   0.849 0.005  [0.845 0.844 0.846 0.843 0.834]    0.322     0.149   -0.342     0.371  -0.001      0.006    -0.006     0.005     -0.099         0.670       -0.769        0.570
+           emb_mles__smpl_strategy_HardNegativePair_neg_count_2       0.843 0.004   0.839   0.847 0.003  [0.842 0.840 0.848 0.842 0.842]    0.746     0.391   -0.435     0.338  -0.001      0.004    -0.005     0.003     -0.095         0.506       -0.601        0.410
+           emb_mles__smpl_strategy_HardNegativePair_neg_count_5       0.843 0.003   0.840   0.847 0.003  [0.839 0.844 0.844 0.843 0.847]    1.000     0.500    0.000     0.500   0.000      0.004    -0.004     0.004      0.000         0.467       -0.467        0.467
+           emb_mles__smpl_strategy_HardNegativePair_neg_count_9       0.843 0.006   0.837   0.850 0.005  [0.844 0.850 0.845 0.836 0.842]    0.280     0.123   -0.083     0.468  -0.000      0.006    -0.006     0.006     -0.025         0.706       -0.732        0.681
+           mles_embeddings                                            0.843 0.003   0.840   0.847 0.003  [0.839 0.844 0.844 0.843 0.847]    1.000     0.500    0.000     0.500   0.000      0.004    -0.004     0.004      0.000         0.467       -0.467        0.467
 
 ------------------------------------------------------------------------------------------------------------------------
 Metric: "accuracy"
-                                                                scores_valid                                                                                                                 
-                                                                        mean  t_pm t_int_l t_int_h   std                           values t_f_stat t_f_alpha t_t_stat t_t_alpha    t_A t_A_pp
-model_name feature_name                                                                                                                                                                      
-lgbm       emb_mles__smpl_strategy_AllPositivePair                     0.744 0.015   0.729   0.759 0.012  [0.763 0.738 0.742 0.731 0.744]    2.201     0.768   -0.138     0.447 -0.019 -2.587
-           emb_mles__smpl_strategy_DistanceWeightedPair                0.745 0.016   0.729   0.761 0.013  [0.764 0.733 0.746 0.733 0.747]    1.961     0.735   -0.045     0.483 -0.019 -2.513
-           emb_mles__smpl_strategy_HardNegativePair_neg_count_2        0.744 0.011   0.732   0.755 0.009  [0.758 0.734 0.737 0.744 0.746]    3.796     0.888   -0.148     0.443 -0.018 -2.424
-           emb_mles__smpl_strategy_HardNegativePair_neg_count_5        0.745 0.022   0.723   0.767 0.018  [0.764 0.723 0.749 0.730 0.759]    1.000     0.500    0.000     0.500 -0.021 -2.824
-           emb_mles__smpl_strategy_HardNegativePair_neg_count_9        0.754 0.011   0.743   0.764 0.009  [0.751 0.740 0.757 0.757 0.763]    4.203     0.903    0.949     0.815 -0.008 -1.089
-           mles_embeddings                                             0.745 0.022   0.723   0.767 0.018  [0.764 0.723 0.749 0.730 0.759]    1.000     0.500    0.000     0.500 -0.021 -2.824
-                                                                scores_test                                                                                                                 
-                                                                       mean  t_pm t_int_l t_int_h   std                           values t_f_stat t_f_alpha t_t_stat t_t_alpha    t_A t_A_pp
-model_name feature_name                                                                                                                                                                     
-lgbm       emb_mles__smpl_strategy_AllPositivePair                    0.764 0.011   0.753   0.775 0.009  [0.762 0.750 0.772 0.770 0.768]    1.437     0.633    0.258     0.599 -0.010 -1.301
-           emb_mles__smpl_strategy_DistanceWeightedPair               0.767 0.015   0.752   0.782 0.012  [0.772 0.756 0.762 0.786 0.760]    0.780     0.408    0.612     0.721 -0.009 -1.176
-           emb_mles__smpl_strategy_HardNegativePair_neg_count_2       0.759 0.006   0.753   0.765 0.005  [0.760 0.764 0.762 0.754 0.754]    5.340     0.933   -0.772     0.231 -0.014 -1.788
-           emb_mles__smpl_strategy_HardNegativePair_neg_count_5       0.763 0.013   0.750   0.776 0.011  [0.768 0.754 0.752 0.778 0.762]    1.000     0.500    0.000     0.500 -0.013 -1.640
-           emb_mles__smpl_strategy_HardNegativePair_neg_count_9       0.766 0.013   0.753   0.778 0.010  [0.780 0.770 0.754 0.758 0.766]    1.080     0.529    0.424     0.659 -0.009 -1.243
-           mles_embeddings                                            0.763 0.013   0.750   0.776 0.011  [0.768 0.754 0.752 0.778 0.762]    1.000     0.500    0.000     0.500 -0.013 -1.640
+                                                                scores_valid                                                                                                                                                                                             
+                                                                        mean  t_pm t_int_l t_int_h   std                           values t_f_stat t_f_alpha t_t_stat t_t_alpha t_delta t_delta_pm t_delta_l t_delta_h t_delta_pp t_delta_pm_pp t_delta_l_pp t_delta_h_pp
+model_name feature_name                                                                                                                                                                                                                                                  
+lgbm       emb_mles__smpl_strategy_AllPositivePair                     0.744 0.015   0.729   0.759 0.012  [0.763 0.738 0.742 0.731 0.744]    2.201     0.768   -0.138     0.447  -0.001      0.022    -0.024     0.021     -0.179         2.986       -3.165        2.807
+           emb_mles__smpl_strategy_DistanceWeightedPair                0.745 0.016   0.729   0.761 0.013  [0.764 0.733 0.746 0.733 0.747]    1.961     0.735   -0.045     0.483  -0.000      0.023    -0.023     0.022     -0.060         3.043       -3.102        2.983
+           emb_mles__smpl_strategy_HardNegativePair_neg_count_2        0.744 0.011   0.732   0.755 0.009  [0.758 0.734 0.737 0.744 0.746]    3.796     0.888   -0.148     0.443  -0.001      0.021    -0.022     0.019     -0.179         2.783       -2.962        2.605
+           emb_mles__smpl_strategy_HardNegativePair_neg_count_5        0.745 0.022   0.723   0.767 0.018  [0.764 0.723 0.749 0.730 0.759]    1.000     0.500    0.000     0.500   0.000      0.026    -0.026     0.026      0.000         3.502       -3.502        3.502
+           emb_mles__smpl_strategy_HardNegativePair_neg_count_9        0.754 0.011   0.743   0.764 0.009  [0.751 0.740 0.757 0.757 0.763]    4.203     0.903    0.949     0.815   0.008      0.021    -0.012     0.029      1.133         2.755       -1.622        3.889
+           mles_embeddings                                             0.745 0.022   0.723   0.767 0.018  [0.764 0.723 0.749 0.730 0.759]    1.000     0.500    0.000     0.500   0.000      0.026    -0.026     0.026      0.000         3.502       -3.502        3.502
+                                                                scores_test                                                                                                                                                                                             
+                                                                       mean  t_pm t_int_l t_int_h   std                           values t_f_stat t_f_alpha t_t_stat t_t_alpha t_delta t_delta_pm t_delta_l t_delta_h t_delta_pp t_delta_pm_pp t_delta_l_pp t_delta_h_pp
+model_name feature_name                                                                                                                                                                                                                                                 
+lgbm       emb_mles__smpl_strategy_AllPositivePair                    0.764 0.011   0.753   0.775 0.009  [0.762 0.750 0.772 0.770 0.768]    1.437     0.633    0.258     0.599   0.002      0.014    -0.013     0.016      0.210         1.873       -1.664        2.083
+           emb_mles__smpl_strategy_DistanceWeightedPair               0.767 0.015   0.752   0.782 0.012  [0.772 0.756 0.762 0.786 0.760]    0.780     0.408    0.612     0.721   0.004      0.017    -0.012     0.021      0.577         2.173       -1.596        2.750
+           emb_mles__smpl_strategy_HardNegativePair_neg_count_2       0.759 0.006   0.753   0.765 0.005  [0.760 0.764 0.762 0.754 0.754]    5.340     0.933   -0.772     0.231  -0.004      0.012    -0.016     0.008     -0.524         1.567       -2.092        1.043
+           emb_mles__smpl_strategy_HardNegativePair_neg_count_5       0.763 0.013   0.750   0.776 0.011  [0.768 0.754 0.752 0.778 0.762]    1.000     0.500    0.000     0.500   0.000      0.016    -0.016     0.016      0.000         2.034       -2.034        2.034
+           emb_mles__smpl_strategy_HardNegativePair_neg_count_9       0.766 0.013   0.753   0.778 0.010  [0.780 0.770 0.754 0.758 0.766]    1.080     0.529    0.424     0.659   0.003      0.015    -0.012     0.018      0.367         1.996       -1.629        2.363
+           mles_embeddings                                            0.763 0.013   0.750   0.776 0.011  [0.768 0.754 0.752 0.778 0.762]    1.000     0.500    0.000     0.500   0.000      0.016    -0.016     0.016      0.000         2.034       -2.034        2.034
 
 ------------------------------------------------------------------------------------------------------------------------
-End of report.     Current time: 2020-09-23 10:28:36
+End of report.     Current time: 2020-09-30 08:24:55
 ------------------------------------------------------------------------------------------------------------------------

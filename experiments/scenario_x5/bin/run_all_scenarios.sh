@@ -33,11 +33,10 @@ python -m scenario_x5 fit_finetuning params.device="$SC_DEVICE" --conf conf/data
 
 # Run estimation for different approaches
 # Check some options with `--help` argument
-python -m scenario_x5 compare_approaches --n_workers 3  --models lgb \
-    --output_file results/scenario_x5.csv \
-    --baseline_name "agg_feat_embed.pickle" \
-    --embedding_file_names "mles_embeddings.pickle" "cpc_embeddings.pickle" \
-    --score_file_names "target_scores_rnn" "mles_finetuning_scores" "cpc_finetuning_scores"
+rm results/scenario_x5.txt
+# rm -r conf/embeddings_validation.work/
+LUIGI_CONFIG_PATH=conf/luigi.cfg python -m embeddings_validation \
+    --conf conf/embeddings_validation.hocon --workers 10 --total_cpu_count 20
 
 
 echo ""

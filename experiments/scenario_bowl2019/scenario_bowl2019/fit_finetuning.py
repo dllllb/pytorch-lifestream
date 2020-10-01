@@ -1,3 +1,4 @@
+import json
 import logging
 import sys
 
@@ -5,7 +6,7 @@ import torch
 from sklearn.model_selection import StratifiedKFold
 
 from dltranz.experiment import update_model_stats
-from dltranz.metric_learn.inference_tools import infer_part_of_data, save_scores
+from dltranz.metric_learn.inference_tools import infer_part_of_data, save_scores, score_data
 from dltranz.trx_encoder import TrxEncoder
 from dltranz.seq_encoder import Squeeze
 from dltranz.util import init_logger, get_conf
@@ -90,19 +91,27 @@ def main(_):
         if nrows > 0: i_train_data = i_train_data[:nrows]
 
         train_ds, valid_ds = create_ds(i_train_data, i_valid_data, conf)
-        model, result = run_experiment(train_ds, valid_ds, conf['params'], model_f)
+        model, _ = run_experiment(train_ds, valid_ds, conf['params'], model_f)
+        result = {
+          "fold_id": i,
+          "model_name": conf.get('stats.model_name', None),
+          "feature_name": conf.get('stats.feature_name', None),
+        }
 
         # inference
         columns = conf['output.columns']
         train_scores = infer_part_of_data(i, i_valid_data, columns, model, conf)
         save_scores(train_scores, i, conf['output.valid'])
+        result['scores_valid'] = score_data(conf, i_valid_data, train_scores)
 
         test_scores = infer_part_of_data(i, test_data, columns, model, conf)
         save_scores(test_scores, i, conf['output.test'])
+        result['scores_test'] = score_data(conf, test_data, test_scores)
 
         results.append(result)
 
     # results
     stats_file = conf.get('stats.path', None)
     if stats_file is not None:
-        update_model_stats(stats_file, conf, results)
+        with open(stats_file, 'w') as f:
+            json.dump(results, f)

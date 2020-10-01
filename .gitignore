@@ -12,3 +12,4 @@ experiments/*/models
 *.egg-info
 .DS_Store
 lightning_logs
+experiments/*/conf/embeddings_validation*.work

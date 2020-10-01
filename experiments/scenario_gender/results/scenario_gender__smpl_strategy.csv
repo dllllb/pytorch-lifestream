@@ -1,6 +1,9 @@
-                                                           oof_rocauc_score                                                         test_rocauc_score                                                        
-                                                                       mean t_int_l t_int_h    std                           values              mean t_int_l t_int_h    std                           values
-name                                                                                                                                                                                                         
-lgb_embeds: emb__smpl_strategy_AllPositivePair.pickle                0.8290  0.8163  0.8418 0.0103  [0.820 0.821 0.828 0.832 0.845]            0.8540  0.8487  0.8592 0.0042  [0.850 0.851 0.852 0.856 0.860]
-lgb_embeds: emb__smpl_strategy_DistanceWeightedPair.pickle           0.8672  0.8590  0.8753 0.0066  [0.862 0.862 0.864 0.870 0.877]            0.8771  0.8733  0.8809 0.0031  [0.873 0.876 0.878 0.879 0.881]
-lgb_embeds: mles_embeddings.pickle                                   0.8702  0.8630  0.8775 0.0058  [0.865 0.866 0.870 0.870 0.880]            0.8716  0.8677  0.8755 0.0032  [0.868 0.870 0.871 0.874 0.875]
+                                                                   oof_rocauc_score                                                         test_rocauc_score                                                        
+                                                                               mean t_int_l t_int_h    std                           values              mean t_int_l t_int_h    std                           values
+name                                                                                                                                                                                                                 
+lgb_embeds: emb__smpl_strategy_AllPositivePair.pickle                        0.8421  0.8275  0.8567 0.0118  [0.825 0.837 0.845 0.846 0.857]            0.8710  0.8696  0.8724 0.0011  [0.869 0.871 0.871 0.872 0.872]
+lgb_embeds: emb__smpl_strategy_DistanceWeightedPair.pickle                   0.8474  0.8322  0.8627 0.0123  [0.834 0.839 0.845 0.854 0.865]            0.8626  0.8584  0.8668 0.0034  [0.859 0.859 0.864 0.865 0.866]
+lgb_embeds: emb__smpl_strategy_HardNegativePair_neg_count_2.pickle           0.8732  0.8619  0.8846 0.0091  [0.862 0.867 0.873 0.881 0.883]            0.8854  0.8830  0.8879 0.0020  [0.883 0.884 0.885 0.887 0.888]
+lgb_embeds: emb__smpl_strategy_HardNegativePair_neg_count_5.pickle           0.8764  0.8689  0.8839 0.0060  [0.869 0.872 0.877 0.881 0.884]            0.8903  0.8868  0.8937 0.0028  [0.887 0.888 0.891 0.892 0.893]
+lgb_embeds: emb__smpl_strategy_HardNegativePair_neg_count_9.pickle           0.8717  0.8601  0.8833 0.0093  [0.861 0.866 0.870 0.879 0.884]            0.8781  0.8753  0.8808 0.0022  [0.876 0.876 0.878 0.878 0.882]
+lgb_embeds: mles_embeddings.pickle                                           0.8764  0.8689  0.8839 0.0060  [0.869 0.872 0.877 0.881 0.884]            0.8903  0.8868  0.8937 0.0028  [0.887 0.888 0.891 0.892 0.893]

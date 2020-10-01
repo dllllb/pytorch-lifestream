@@ -37,7 +37,8 @@ class AggFeatureModel(torch.nn.Module):
         :return:
         """
         feature_arrays = x.payload
-        device = next(iter(feature_arrays.values()))
+        device = next(iter(feature_arrays.values())).device
+        B, T = next(iter(feature_arrays.values())).size()
         seq_lens = x.seq_lens.to(device).float()
         # if (seq_lens == 0).any():
         #     raise Exception('seq_lens == 0')
@@ -46,7 +47,11 @@ class AggFeatureModel(torch.nn.Module):
 
         for col_num, options_num in self.numeric_values.items():
             # take array with numerical feature and convert it to original scale
-            val_orig = feature_arrays[col_num].float()
+            if col_num.strip('"') == '#ones':
+                val_orig = torch.ones(B, T, device=device)
+            else:
+                val_orig = feature_arrays[col_num].float()
+
             if any((
                     type(options_num) is str and self.was_logified,
                     type(options_num) is dict and options_num.get('was_logified', False),

@@ -271,6 +271,7 @@ class DropDayDataset(Dataset):
     def __init__(self, dataset, event_time_name='event_time'):
         self.dataset = dataset
         self.event_time_name = event_time_name
+        self.style = dataset.style
 
     def __len__(self):
         return len(self.dataset)

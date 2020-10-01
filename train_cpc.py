@@ -4,11 +4,15 @@ import torch
 from dltranz.metric_learn.ml_models import ml_model_by_type
 from dltranz.seq_encoder import LastStepEncoder
 from dltranz.baselines.cpc import run_experiment
-from dltranz.util import init_logger, get_conf
+from dltranz.util import init_logger, get_conf, switch_reproducibility_on
 from dltranz.data_load import TrxDataset, ConvertingTrxDataset, SameTimeShuffleDataset, AllTimeShuffleDataset
 from metric_learning import prepare_data
 
 logger = logging.getLogger(__name__)
+
+
+if __name__ == '__main__':
+    switch_reproducibility_on()
 
 
 def create_ds(train_data, valid_data, conf):

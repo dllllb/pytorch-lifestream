@@ -1,11 +1,13 @@
 
-for SC_AMOUNT in 496 994 1986 3971 7943 15887
+for SC_AMOUNT in 00496 00994 01986 03971 07943 15887
 do
 	python -m scenario_bowl2019 fit_target \
         params.device="$SC_DEVICE" \
         params.labeled_amount=$SC_AMOUNT \
         output.test.path="data/target_scores_$SC_AMOUNT"/test \
         output.valid.path="data/target_scores_$SC_AMOUNT"/valid \
+        stats.feature_name="target_scores_${SC_AMOUNT}" \
+        stats.path="results/fit_target_${SC_AMOUNT}_results.json" \
         --conf "conf/dataset.hocon" conf/fit_target_params.json
 
     python -m scenario_bowl2019 fit_finetuning \
@@ -18,6 +20,8 @@ do
         params.train.lr=0.01 \
         output.test.path="data/mles_finetuning_scores_$SC_AMOUNT"/test \
         output.valid.path="data/mles_finetuning_scores_$SC_AMOUNT"/valid \
+        stats.feature_name="mles_finetuning_${SC_AMOUNT}" \
+        stats.path="results/mles_finetuning_${SC_AMOUNT}_results.json" \
         --conf "conf/dataset.hocon" conf/fit_finetuning_on_mles_params.json
 
     python -m scenario_bowl2019 fit_finetuning \
@@ -29,18 +33,12 @@ do
         params.train.lr=0.001 \
         output.test.path="data/cpc_finetuning_scores_$SC_AMOUNT"/test \
         output.valid.path="data/cpc_finetuning_scores_$SC_AMOUNT"/valid \
+        stats.feature_name="cpc_finetuning_${SC_AMOUNT}" \
+        stats.path="results/cpc_finetuning_${SC_AMOUNT}_results.json" \
         --conf "conf/dataset.hocon" conf/fit_finetuning_on_cpc_params.json
-
-    # Compare
-    python -m scenario_bowl2019 compare_approaches \
-        --add_baselines --models "lgb" \
-        --score_file_names \
-            target_scores_$SC_AMOUNT \
-            mles_finetuning_scores_$SC_AMOUNT \
-            cpc_finetuning_scores_$SC_AMOUNT \
-        --labeled_amount $SC_AMOUNT \
-        --output_file results/semi_scenario_bowl2019_$SC_AMOUNT.csv
-
 done
 
-
+rm results/scenario_bowl2019__semi_supervised.txt
+# rm -r conf/embeddings_validation_semi_supervised.work/
+LUIGI_CONFIG_PATH=conf/luigi.cfg python -m embeddings_validation \
+    --conf conf/embeddings_validation_semi_supervised.hocon --workers 10 --total_cpu_count 20

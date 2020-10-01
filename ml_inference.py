@@ -6,7 +6,7 @@ import torch
 from tqdm.auto import tqdm
 
 from dltranz.data_load import read_data_gen
-from dltranz.util import init_logger, get_conf
+from dltranz.util import init_logger, get_conf, switch_reproducibility_on
 from metric_learning import prepare_embeddings
 from dltranz.metric_learn.inference_tools import score_part_of_data
 from dltranz.metric_learn.ml_models import load_encoder_for_inference
@@ -14,12 +14,7 @@ from dltranz.metric_learn.ml_models import load_encoder_for_inference
 logger = logging.getLogger(__name__)
 
 if __name__ == '__main__':
-    # reproducibility
-    np.random.seed(42)
-    torch.backends.cudnn.benchmark = False
-    torch.backends.cudnn.deterministic = True
-    torch.manual_seed(42)
-    torch.cuda.manual_seed_all(42)
+    switch_reproducibility_on()
 
 
 def fill_target(seq):

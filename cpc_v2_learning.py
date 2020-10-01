@@ -9,7 +9,7 @@ from dltranz.metric_learn.losses import get_loss
 from dltranz.metric_learn.metric import BatchRecallTop
 from dltranz.metric_learn.ml_models import ml_model_by_type
 from dltranz.train import get_optimizer, get_lr_scheduler, fit_model
-from dltranz.util import init_logger, get_conf
+from dltranz.util import init_logger, get_conf, switch_reproducibility_on
 
 from dltranz.baselines.cpc import CPCShellV2
 from metric_learning import create_data_loaders
@@ -17,12 +17,7 @@ from metric_learning import create_data_loaders
 logger = logging.getLogger(__name__)
 
 if __name__ == '__main__':
-    # reproducibility
-    np.random.seed(42)
-    torch.backends.cudnn.benchmark = False
-    torch.backends.cudnn.deterministic = True
-    torch.manual_seed(42)
-    torch.cuda.manual_seed_all(42)
+    switch_reproducibility_on()
 
 
 def run_experiment(model, conf):

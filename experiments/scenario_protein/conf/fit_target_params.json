@@ -5,7 +5,7 @@
     "model_type": "rnn",
     "ensemble_size": 1,
     "trx_encoder": {
-      "norm_embeddings": true,
+      "norm_embeddings": false,
       "embeddings_noise": 0.003,
       "embeddings": {
         "amino_acid": {"in": 25, "out": 8}

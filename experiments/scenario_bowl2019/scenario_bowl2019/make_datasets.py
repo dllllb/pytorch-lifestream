@@ -73,7 +73,9 @@ def pd_hist(data, name, bins=10):
 
 def encode_col(col):
     col = col.astype(str)
-    mapping = {k: i + 1 for i, k in enumerate(col.value_counts().index)}
+    mapping = col.value_counts().to_dict()
+    mapping = sorted([(-v, k) for k, v in mapping.items()])
+    mapping = {k: i + 1 for i, k in enumerate([x[1] for x in mapping])}
     return col.map(mapping), mapping
 
 

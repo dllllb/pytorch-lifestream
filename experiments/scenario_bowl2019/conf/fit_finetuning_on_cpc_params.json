@@ -59,10 +59,6 @@
 
   "save_model": false,
 
-  "stats": {
-    "path": "runs/bowl2019_target_results.json"
-  },
-
   "output": {
     "valid": {
       "path": "data/cpc_finetuning_scores/valid",
@@ -73,5 +69,11 @@
       "format": "pickle"
     },
     "columns": ["game_session"]
+  },
+
+  "stats": {
+    "model_name": "nn",
+    "feature_name": "cpc_finetuning",
+    "path": "results/cpc_finetuning_results.json"
   }
 }

@@ -7,9 +7,24 @@ do
       params.rnn.hidden_size=${SC_HIDDEN_SIZE} \
       model_path.model="models/age_pred_mlm__$SC_SUFFIX.p" \
       --conf "conf/dataset.hocon" "conf/mles_params.json"
+done
+
+for SC_HIDDEN_SIZE in 0800 0480 0224 0160 0096 0064 0032
+do
+  export SC_SUFFIX="hidden_size_bs_0064_hs_${SC_HIDDEN_SIZE}"
   python ../../ml_inference.py \
       params.device="$SC_DEVICE" \
-      params.valid.batch_size=512 \
+      model_path.model="models/age_pred_mlm__$SC_SUFFIX.p" \
+      output.path="data/emb__$SC_SUFFIX" \
+      --conf "conf/dataset.hocon" "conf/mles_params.json"
+done
+
+for SC_HIDDEN_SIZE in 2400 1600 1200
+do
+  export SC_SUFFIX="hidden_size_bs_0064_hs_${SC_HIDDEN_SIZE}"
+  python ../../ml_inference.py \
+      params.device="$SC_DEVICE" \
+      params.valid.batch_size=256 \
       model_path.model="models/age_pred_mlm__$SC_SUFFIX.p" \
       output.path="data/emb__$SC_SUFFIX" \
       --conf "conf/dataset.hocon" "conf/mles_params.json"

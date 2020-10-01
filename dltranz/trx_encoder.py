@@ -45,6 +45,10 @@ class NoisyEmbedding(nn.Embedding):
     def __init__(self, num_embeddings, embedding_dim, padding_idx=None, max_norm=None,
                  norm_type=2.0, scale_grad_by_freq=False, sparse=False, _weight=None,
                  noise_scale=0, dropout=0):
+        if max_norm is not None:
+            raise AttributeError("Please don't use embedding normalisation. "
+                                 "https://github.com/pytorch/pytorch/issues/44792")
+
         super().__init__(num_embeddings, embedding_dim, padding_idx, max_norm,
                          norm_type, scale_grad_by_freq, sparse, _weight)
         self.noise = torch.distributions.Normal(0, noise_scale)
@@ -91,7 +95,7 @@ class RBatchNormWithLens(torch.nn.Module):
         seq_lens = v.seq_lens
         B, T = x.size()  # B x T
 
-        mask = torch.arange(T).view(1, -1).repeat(B, 1) < seq_lens.view(-1, 1)
+        mask = torch.arange(T, device=seq_lens.device).view(1, -1).repeat(B, 1) < seq_lens.view(-1, 1)
         x_new = x
         x_new[mask] = self.bn(x[mask].view(-1, 1)).view(-1)
         return x_new.view(B, T, 1)
