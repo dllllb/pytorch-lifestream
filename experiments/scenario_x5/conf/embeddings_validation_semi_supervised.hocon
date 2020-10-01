@@ -30,7 +30,7 @@
         baseline_290000: {
             enabled: true
             read_params: {file_name: ../data/agg_feat_embed.pickle}
-            target_options: {labeled_amount: 290000, random_state: 42}
+            target_options: {labeled_amount: 287000, random_state: 42}
         }
         baseline_200000: {
             enabled: true
@@ -81,7 +81,7 @@
         mles_embeddings_290000: {
             enabled: true
             read_params: {file_name: ../data/mles_embeddings.pickle}
-            target_options: {labeled_amount: 290000, random_state: 42}
+            target_options: {labeled_amount: 287000, random_state: 42}
         }
         mles_embeddings_200000: {
             enabled: true
@@ -132,7 +132,7 @@
         cpc_embeddings_290000: {
             enabled: true
             read_params: {file_name: ../data/cpc_embeddings.pickle}
-            target_options: {labeled_amount: 290000, random_state: 42}
+            target_options: {labeled_amount: 287000, random_state: 42}
         }
         cpc_embeddings_200000: {
             enabled: true
