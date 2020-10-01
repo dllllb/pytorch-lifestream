@@ -29,6 +29,11 @@
     }
 
     features: {
+        baseline: {
+            enabled: true
+            read_params: {file_name: ../data/agg_feat_embed.pickle}
+            target_options: {}
+        }
         mles_embeddings: {
             enabled: true
             read_params: {file_name: ../data/mles_embeddings.pickle}
@@ -92,7 +97,6 @@
             enabled: true
             score_func: sklearn.metrics.roc_auc_score
             scorer_params: {needs_proba: true}
-
         }
         accuracy: {
             enabled: true
@@ -107,8 +111,8 @@
         print_all_metrics: false
 
         metrics: {
-            auroc: {float_format: "{:.3f}", baseline_key=["lgbm", "mles_embeddings"], split_columns: true}
-            accuracy: {float_format: "{:.3f}", baseline_key=["lgbm", "mles_embeddings"], split_columns: true}
+            auroc: {float_format: "{:.3f}", baseline_key=["lgbm", "baseline"], split_columns: true}
+            accuracy: {float_format: "{:.3f}", baseline_key=["lgbm", "baseline"], split_columns: true}
         }
     }
 }
