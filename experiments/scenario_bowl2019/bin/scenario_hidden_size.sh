@@ -48,10 +48,11 @@ python ../../ml_inference.py \
     --conf "conf/dataset.hocon" "conf/mles_params.json"
 
 # Compare
-python -m scenario_bowl2019 compare_approaches --output_file "results/scenario_bowl2019__hidden_size.csv" \
-    --models 'lgb' --embedding_file_names \
-    "emb__hidden_size_0032.pickle" \
-    "emb__hidden_size_0064.pickle" \
-    "emb__hidden_size_0100.pickle" \
-    "emb__hidden_size_0200.pickle"
+rm results/scenario_bowl2019__hidden_size.txt
+# rm -r conf/embeddings_validation.work/
+LUIGI_CONFIG_PATH=conf/luigi.cfg python -m embeddings_validation \
+    --conf conf/embeddings_validation_short.hocon --workers 10 --total_cpu_count 20 \
+    --conf_extra \
+      'report_file: "../results/scenario_bowl2019__hidden_size.txt",
+      auto_features: ["../data/emb__hidden_size_*.pickle"]'
 
