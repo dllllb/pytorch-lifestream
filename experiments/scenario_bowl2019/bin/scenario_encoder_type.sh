@@ -4,7 +4,7 @@ python ../../metric_learning.py \
     params.device="$SC_DEVICE" \
     params.rnn.type="gru" \
     model_path.model="models/bowl2019_mlm__$SC_SUFFIX.p" \
-    --conf "conf/dataset.hocon" "conf/mles_params.json"
+    --conf "conf/trx_dataset.hocon" "conf/mles_params.json"
 python ../../ml_inference.py \
     params.device="$SC_DEVICE" \
     model_path.model="models/bowl2019_mlm__$SC_SUFFIX.p" \
@@ -17,7 +17,7 @@ python ../../metric_learning.py \
     params.device="$SC_DEVICE" \
     params.rnn.type="lstm" \
     model_path.model="models/bowl2019_mlm__$SC_SUFFIX.p" \
-    --conf "conf/dataset.hocon" "conf/mles_params.json"
+    --conf "conf/trx_dataset.hocon" "conf/mles_params.json"
 python ../../ml_inference.py \
     params.device="$SC_DEVICE" \
     model_path.model="models/bowl2019_mlm__$SC_SUFFIX.p" \
