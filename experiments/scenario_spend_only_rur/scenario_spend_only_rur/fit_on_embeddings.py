@@ -19,17 +19,8 @@ class EmbTranslation(torch.nn.Module):
     def forward(self, x):
         return x.payload['embedding']
 
+
 def load_model(conf):
-    if False:
-      pretraineid_model_path = conf['pretrained_model_path']
-    
-      pre_model = torch.load(pretrained_model_path)
-      if not isinstance(pre_model[0], TrxEncoder):
-        pre_model = pre_model[0]
-      trx_encoder = pre_model[0]
-      rnn_encoder = pre_model[1]
-      step_select_encoder = pre_model[2]
- 
     model_type = conf['model_type']
     if model_type == 'rnn':
         input_size = conf['rnn.hidden_size']
@@ -42,10 +33,10 @@ def load_model(conf):
 
     layers = [EmbTranslation()]
 
-    if conf.get('freeze_layers', False):
-        for i,_ in enumerate(layers):
-            for p in layers[i].parameters():
-                p.requires_grad = False
+    #if conf.get('freeze_layers', False):
+    #    for i,_ in enumerate(layers):
+    #       for p in layers[i].parameters():
+    #            p.requires_grad = False
 
     if conf['use_batch_norm']:
         layers.append(torch.nn.BatchNorm1d(input_size))
@@ -64,10 +55,9 @@ def load_model(conf):
     model = torch.nn.Sequential(*layers)
     return model
 
-
+#is necessary for __main__
 def prepare_parser(parser):
     pass
-
 
 def main(_):
     init_logger(__name__)
@@ -78,10 +68,10 @@ def main(_):
 
     model_f = load_model
     if conf['params'].get('embeddings_path', False):
-     train_data = read_embedding_data(conf['params']['embeddings_path'], conf['dataset.train_path'] , conf)
-     test_data = read_embedding_data(conf['params']['embeddings_path'], conf['dataset.test_path'] , conf)
+      train_data = read_embedding_data(conf['params']['embeddings_path'], conf['dataset.train_path'] , conf)
+      test_data = read_embedding_data(conf['params']['embeddings_path'], conf['dataset.test_path'] , conf)
     else:
-     print('Set embeddings_path in config file!!!')
+      raise Exception('Exception. Embeddings_path is not in config file!')
     
     # train
     results = []

@@ -21,7 +21,7 @@ python ../../metric_learning.py params.device="$SC_DEVICE" --conf conf/dataset.h
 python ../../ml_inference.py    params.device="$SC_DEVICE" --conf conf/dataset.hocon conf/mles_params.json
 
 # train a network to predict transaction shares from client embeddings
-python -m scenario_spend_only_rur fit_finetuning params.device="$SC_DEVICE" --conf conf/dataset.hocon conf/fit_finetuning_on_mles_params.json
+python -m scenario_spend_only_rur fit_on_embeddings params.device="$SC_DEVICE" --conf conf/dataset.hocon conf/fit_finetuning_on_mles_params.json
 
 python -m scenario_spend_only_rur compare_approaches --n_workers 1 --score_file_names "mles_finetuning_scores" 
 
