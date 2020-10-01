@@ -143,7 +143,7 @@ def run_experiment(train_ds, valid_ds, params, model_f):
     if isinstance(metric_names, list):
       metric_dict = dict()
       for metric_name in metric_names:
-        metric = get_epoch_score_metric(metric_name)()
+        metric = get_epoch_score_metric(metric_name)(params['variable_predicted'])
         metric_dict.update({metric_name:metric})
     else:
         metric_dict = {metric_names:get_epoch_score_metric(metric_names)}  
