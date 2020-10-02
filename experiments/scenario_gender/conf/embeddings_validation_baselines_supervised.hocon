@@ -1,0 +1,25 @@
+{
+    include "embeddings_validation.hocon"
+
+    report_file: "../results/scenario_gender_baselines_supervised.txt"
+
+    features: {
+    }
+
+    external_scores: {
+        fit_target: "../results/fit_target_results.json"
+        mles_finetuning: "../results/mles_finetuning_results.json"
+        cpc_finetuning: "../results/cpc_finetuning_results.json"
+        rtd_finetuning: "../results/rtd_finetuning_results.json"
+    }
+
+    report: {
+        is_check_train: false
+        error_handling: fail
+        print_all_metrics: false
+
+        metrics: {
+            auroc: {float_format: "{:.3f}", baseline_key=["nn", "target_scores"], split_columns: true}
+        }
+    }
+}
