@@ -2,7 +2,6 @@
     environment: {
         work_dir: "embeddings_validation.work"
     }
-    report_file: "../results/scenario_x5.txt"
 
     target: {
         file_name: "../data/clients_target.csv"
@@ -24,30 +23,6 @@
         cv_split_count: 5
         is_stratify: true
         random_state: 42
-    }
-
-    features: {
-        baseline: {
-            enabled: true
-            read_params: {file_name: ../data/agg_feat_embed.pickle}
-            target_options: {}
-        }
-        cpc_embeddings: {
-            enabled: true
-            read_params: {file_name: ../data/cpc_embeddings.pickle}
-            target_options: {}
-        }
-        mles_embeddings: {
-            enabled: true
-            read_params: {file_name: ../data/mles_embeddings.pickle}
-            target_options: {}
-        }
-    }
-
-    external_scores: {
-        0: "../results/fit_target_results.json"
-        1: "../results/mles_finetuning_results.json"
-        2: "../results/cpc_finetuning_results.json"
     }
 
     models: {
@@ -108,26 +83,6 @@
             enabled: true
             score_func: sklearn.metrics.accuracy_score
             scorer_params: {needs_proba: false}
-        }
-    }
-
-    report: {
-        is_check_train: false
-        error_handling: fail
-        print_all_metrics: true
-
-        metrics: {
-            accuracy: {float_format: "{:.3f}", baseline_key=["lgbm", "baseline"], split_columns: true}
-
-            cnt_features: {float_format: "{:.0f}", keep_columns: ["mean"]}
-            cnt_samples: {float_format: "{:9,.0f}", keep_columns: ["mean"]}
-
-            feature_load_time: {float_format: "{:,.1f}"}
-            train_fit_transform_time: {float_format: "{:,.1f}"}
-            feature_transform_time: {float_format: "{:,.1f}"}
-            train_time: {float_format: "{:,.1f}"}
-
-            feature_fit_info: {keep_columns: ["first"]}
         }
     }
 }
