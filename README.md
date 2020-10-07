@@ -1,4 +1,4 @@
-# Setup
+# Setup using conda
 
 ```sh
 # download Miniconda from https://conda.io/
@@ -23,8 +23,26 @@ git clone
 # install dependencies
 conda install -c conda-forge pyspark 
 pip install -r requirements.txt
+```
 
+# Setup and test using pipenv
 
+```sh
+# Ubuntu 18.04
+
+sudo apt install python3.8 python3-venv
+pip3 innstall pipenv
+
+pipenv install --dev
+
+pipenv shell
+
+pytest
+```
+
+# Embeddings validation
+
+```
 # install membeddings_validation tool
 git clone git@github.com:sberbank-ai-lab/embeddings-valid.git
 cd embeddings-valid
