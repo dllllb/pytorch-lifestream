@@ -114,8 +114,6 @@ class RnnEncoder(nn.Module):
 
 class SkipStepEncoder(nn.Module):
     def __init__(self, step_size):
-        raise NotImplementedError('Must be fixed after removing the initial starter')
-
         super().__init__()
         self.step_size = step_size
 
@@ -151,8 +149,6 @@ class ConcatLenEncoder(nn.Module):
 
 class TimeStepShuffle(nn.Module):
     def forward(self, x: PaddedBatch):
-        raise NotImplementedError('Must be fixed after removing the initial starter')
-
         shuffled = []
         for seq, slen in zip(x.payload, x.seq_lens):
             idx = torch.randperm(slen) + 1
