@@ -5,7 +5,7 @@ on: [push]
 jobs:
   build:
     runs-on: ubuntu-latest
-    container: ubuntu:18.04
+    #container: ubuntu:18.04
     steps:
     - uses: actions/checkout@v2
     - name: Set up Python
