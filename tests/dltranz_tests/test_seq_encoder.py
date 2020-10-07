@@ -338,6 +338,8 @@ def test_transf_seq_encoder():
             'sum_output': True,
             'input_size': 32,
             'shared_layers': False,
+            'use_src_key_padding_mask': False,
+            'train_starter': False
         },
         'head': {
             'explicit_lengths': False,
