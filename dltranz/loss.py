@@ -55,12 +55,15 @@ class MultiLoss(nn.Module):
         return loss
 
 class TransactionSumLoss(nn.Module):
-    def __init__(self):
+    def __init__(self, n_variables_to_predict):
         super().__init__()
         self.bce_with_logits = nn.BCEWithLogitsLoss()
+        self.n_variables_to_predict = n_variables_to_predict
 
     def forward(self, pred, true):
-        loss = self.bce_with_logits(pred[:,1:53], true[:,1:53])
+        #the 0th element is not used, because it is reserved for the total sum of transactions
+        #which is not predicted now
+        loss = self.bce_with_logits(pred[:,1:self.n_variables_to_predict], true[:,1:self.n_variables_to_predict])
         return loss
 
 
@@ -132,6 +135,7 @@ class PseudoLabeledLoss(nn.Module):
 
 def get_loss(params):
     loss_type = params['train.loss']
+    n_variables_to_predict = params['variable_predicted']
 
     if loss_type == 'bce':
         loss = BCELoss()
@@ -146,7 +150,7 @@ def get_loss(params):
     elif loss_type == 'mse':
         loss = MSELoss()
     elif loss_type == 'transaction_sum':
-        loss = TransactionSumLoss()
+        loss = TransactionSumLoss(n_variables_to_predict)
     elif loss_type == 'pseudo_labeled':
         loss = PseudoLabeledLoss(
             loss=get_loss(params['labeled']),
