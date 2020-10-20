@@ -135,7 +135,6 @@ class PseudoLabeledLoss(nn.Module):
 
 def get_loss(params):
     loss_type = params['train.loss']
-    n_variables_to_predict = params['variable_predicted']
 
     if loss_type == 'bce':
         loss = BCELoss()
@@ -150,6 +149,7 @@ def get_loss(params):
     elif loss_type == 'mse':
         loss = MSELoss()
     elif loss_type == 'transaction_sum':
+        n_variables_to_predict = params['variable_predicted']
         loss = TransactionSumLoss(n_variables_to_predict)
     elif loss_type == 'pseudo_labeled':
         loss = PseudoLabeledLoss(
