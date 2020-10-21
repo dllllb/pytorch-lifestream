@@ -91,6 +91,11 @@ class SchedulerWrapper(torch.optim.lr_scheduler._LRScheduler):
     def step(self, epoch=None):
         self.scheduler.step(epoch)
 
+    @property
+    def optimizer(self):
+        return self.scheduler.optimizer
+    
+
 
 class ReduceLROnPlateauWrapper(torch.optim.lr_scheduler.ReduceLROnPlateau):
     def __init__(self, scheduler):
@@ -101,6 +106,10 @@ class ReduceLROnPlateauWrapper(torch.optim.lr_scheduler.ReduceLROnPlateau):
 
     def step(self, metric, epoch=None):
         self.scheduler.step(metric, epoch)
+
+    @property
+    def optimizer(self):
+        return self.scheduler.optimizer
 
 
 class MultiGammaScheduler(torch.optim.lr_scheduler.MultiStepLR):
