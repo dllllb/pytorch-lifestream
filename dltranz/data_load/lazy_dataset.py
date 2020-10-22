@@ -4,89 +4,33 @@ from itertools import chain
 import torch
 import logging
 
-import numpy as np
-
 logger = logging.getLogger(__name__)
 
 
 class DataFiles:
     """
-    Collect list of files based on `path_wc` and split it on train and valid (if possible)
-    Returns list of file names for train and valid
+    Collect list of files based on `path_wc`
+    Returns list of file names for future usage
     """
-    def __init__(self, path_wc, valid_size=0.5, is_sort=True, seed=None):
+    def __init__(self, path_wc):
         self.path_wc = path_wc
-        self.valid_size = valid_size
-        self.is_sort = is_sort
-        self.seed = seed
 
         self._files = None
         self._n = None
-        self._train_files = None
-        self._valid_files = None
 
         self.load()
-        self.split()
-        self.sort()
 
     @property
-    def train(self):
-        return self._train_files
-
-    @property
-    def valid(self):
-        return self._valid_files
+    def files(self):
+        return self._files
 
     def load(self):
-        self._files = glob(self.path_wc)
+        self._files = sorted(glob(self.path_wc))
         self._n = len(self._files)
         _msg = f'Found {self._n} files in "{self.path_wc}"'
         if self._n == 0:
             raise AttributeError(_msg)
         logger.info(_msg)
-
-    def size_select(self):
-        if self.valid_size == 0.0:
-            return self._n, 0
-
-        _valid = self._n * self.valid_size
-        if _valid < 1.0:
-            _valid = 1
-        else:
-            _valid = int(round(_valid))
-
-        _train = self._n - _valid
-        if _train == 0:
-            raise AttributeError(', '.join([
-                'Incorrect train size',
-                f'N: {self._n}',
-                f'train: {_train}',
-                f'valid: {_valid}',
-                f'rate: {self.valid_size:.3f}',
-            ]))
-        return _train, _valid
-
-    def split(self):
-        train_size, valid_size = self.size_select()
-
-        if valid_size == 0:
-            self._train_files = self._files
-            self._valid_files = None
-        else:
-            valid_ix = np.arange(self._n)
-            rs = np.random.RandomState(self.seed)
-            valid_ix = rs.choice(valid_ix, size=valid_size, replace=False)
-
-            self._train_files = [rec for i, rec in enumerate(self._files) if i not in valid_ix]
-            self._valid_files = [rec for i, rec in enumerate(self._files) if i in valid_ix]
-
-    def sort(self):
-        if not self.is_sort:
-            return
-        if self._train_files is not None:
-            self._train_files = sorted(self._train_files)
-        if self._valid_files is not None:
-            self._valid_files = sorted(self._valid_files)
 
 
 class LazyDataset(torch.utils.data.IterableDataset):

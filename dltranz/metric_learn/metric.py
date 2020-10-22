@@ -1,11 +1,14 @@
+import logging
+
 import torch
 import numpy as np
-from math import sqrt
 
 from functools import partial
 from ignite.metrics import EpochMetric, Metric
 import ignite.metrics
-from scipy.special import softmax
+
+
+logger = logging.getLogger(__name__)
 
 
 def outer_pairwise_distance(A, B=None):

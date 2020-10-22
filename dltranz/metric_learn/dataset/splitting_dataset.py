@@ -1,7 +1,9 @@
 # coding: utf-8
 import logging
 
-from torch.utils.data import Dataset
+from torch.utils.data import Dataset, IterableDataset
+
+import numpy as np
 
 logger = logging.getLogger(__name__)
 
@@ -25,6 +27,22 @@ class SplittingDataset(Dataset):
         return data
 
 
+class IterableSplittingDataset(IterableDataset):
+    style = 'iterable'
+
+    def __init__(self, base_dataset, splitter):
+        self.base_dataset = base_dataset
+        self.splitter = splitter
+
+    def __iter__(self):
+        for row, uid in self.base_dataset:
+            # TODO: get local_date from data
+            local_date = np.arange(len(next(iter(row.values()))))
+
+            for ix in self.splitter.split(local_date):
+                yield {k: v[ix] for k, v in row.items()}, uid
+
+
 class SeveralSplittingsDataset(Dataset):
     def __init__(self, base_dataset, splitters):
         self.base_dataset = base_dataset
@@ -44,3 +62,4 @@ class SeveralSplittingsDataset(Dataset):
             indexes = splitter.split(local_date)
             data += [{k: v[ix] for k, v in feature_arrays.items()} for ix in indexes]
         return data
+
