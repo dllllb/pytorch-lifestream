@@ -7,6 +7,7 @@ verify_ssl = true
 pytest = "*"
 pylint = "*"
 jupyter = "*"
+coverage = "*"
 
 [packages]
 lightgbm = ">=2.3.1"
@@ -23,7 +24,7 @@ tensorboard = ">=2.1.0"
 xgboost = ">=0.90"
 fastai = {version = ">=1.0.6", sys_platform = "!= 'darwin'"}
 pyarrow = ">=1"
-pytorch-lightning = ">=0.9"
+pytorch-lightning = ">=1.0.3"
 
 [requires]
 python_version = "3.8"

@@ -25,10 +25,10 @@ class SequenceMetricLearning(pl.LightningModule):
         x, y = batch
         y_h = self(x)
         loss = self.loss(y_h, y)
-        return pl.TrainResult(minimize=loss)
+        return loss
 
     def configure_optimizers(self):
         params = ConfigFactory.from_dict(self.hparams)
         optimizer = get_optimizer(self, params)
         scheduler = get_lr_scheduler(optimizer, params)
-        return {'optimizer': optimizer, 'lr_scheduler': scheduler}
+        return [optimizer], [scheduler]

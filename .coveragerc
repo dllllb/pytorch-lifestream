@@ -1,0 +1,3 @@
+[run]
+command_line = -m pytest
+source = dltranz
