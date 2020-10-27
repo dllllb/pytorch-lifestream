@@ -4,6 +4,7 @@ from dltranz.trx_encoder import TrxEncoder
 from dltranz.baselines.cpc import CPC_Ecoder, run_experiment
 from tests.dltranz_tests.test_trx_encoder import gen_trx_data
 from dltranz.data_load import TrxDataset
+from dltranz.data_load import create_train_loader, create_validation_loader
 from pyhocon import ConfigFactory
 
 def tst_params():
@@ -64,4 +65,7 @@ def test_rnn_model():
     test_data = gen_trx_data((torch.rand(100)*60+1).long())
     valid_ds = TrxDataset(test_data)
 
-    run_experiment(train_ds, valid_ds, cpc_e, {'params': config})
+    train_loader = create_train_loader(train_ds, config['train'])
+    valid_loader = create_validation_loader(valid_ds, config['valid'])
+
+    run_experiment(train_loader, valid_loader, cpc_e, {'params': config})

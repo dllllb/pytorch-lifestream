@@ -20,14 +20,12 @@ if __name__ == '__main__':
     switch_reproducibility_on()
 
 
-def run_experiment(model, conf):
+def run_experiment(model, conf, train_loader, valid_loader):
     import time
     start = time.time()
 
     stats_file = conf['stats.path']
     params = conf['params']
-
-    train_loader, valid_loader = create_data_loaders(conf)
 
     loss = get_loss(params, sampling_strategy=None, kw_params={'linear_predictor': model.linear_predictor})
 
@@ -63,8 +61,9 @@ def main(args=None):
     model = model_f(conf['params'])
 
     model = CPCShellV2(model, conf['params.cpc.embedding_size'], conf['params.cpc.k_pos_samples'])
+    train_loader, valid_loader = create_data_loaders(conf)
 
-    return run_experiment(model, conf)
+    return run_experiment(model, conf, train_loader, valid_loader)
 
 
 if __name__ == '__main__':
