@@ -43,6 +43,7 @@ class DatasetConverter:
         parser.add_argument('--output_train_path', type=os.path.abspath)
         parser.add_argument('--output_test_path', type=os.path.abspath)
         parser.add_argument('--output_test_ids_path', type=os.path.abspath)
+        parser.add_argument('--save_partitioned_data', action='store_true')
         parser.add_argument('--log_file', type=os.path.abspath)
 
         args = parser.parse_args(args)
@@ -180,6 +181,11 @@ class DatasetConverter:
 
     def collect_lists(self, df, col_id):
         col_list = [col for col in df.columns if col != col_id]
+
+        if self.config.save_partitioned_data:
+            df = df.withColumn('mon_id', (F.col('event_time') / 30).cast('int'))
+            col_id = [col_id, 'mon_id']
+
         df = df \
             .withColumn('trx_count', F.count(F.lit(1)).over(Window.partitionBy(col_id))) \
             .withColumn('_rn', F.row_number().over(Window.partitionBy(col_id).orderBy('event_time')))
@@ -312,8 +318,14 @@ class DatasetConverter:
         return train, test
 
     def save_features(self, df_data, save_path):
-        df_data.write.parquet(save_path, mode='overwrite')
-        logger.info(f'Saved to: "{save_path}"')
+        if not self.config.save_partitioned_data:
+            df_data.write.parquet(save_path, mode='overwrite')
+            logger.info(f'Saved to: "{save_path}"')
+        else:
+            df_data = df_data.withColumn('hash_id', F.crc32(F.col(self.config.col_client_id)) % 100)
+            df_data.write.parquet(save_path, mode='overwrite', partitionBy=['mon_id', 'hash_id'])
+            logger.info(f'Saved partitions to: "{save_path}"')
+
 
     def run(self):
         _start = datetime.datetime.now()
