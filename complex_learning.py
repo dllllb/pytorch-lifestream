@@ -99,14 +99,12 @@ def create_data_loaders(conf):
     return train_loader, valid_loader
 
 
-def run_experiment(model, conf):
+def run_experiment(model, conf, train_loader, valid_loader):
     import time
     start = time.time()
 
     stats_file = conf['stats.path']
     params = conf['params']
-
-    train_loader, valid_loader = create_data_loaders(conf)
 
     sampling_strategy = get_sampling_strategy(params)
     ml_loss = get_loss(params, sampling_strategy)
@@ -162,8 +160,9 @@ def main(args=None):
     model_f = ml_model_by_type(conf['params.model_type'])
     ml_model = model_f(conf['params'])
     model = ComplexModel(ml_model, conf['params'])
+    train_loader, valid_loader = create_data_loaders(conf)
 
-    return run_experiment(model, conf)
+    return run_experiment(model, conf, train_loader, valid_loader)
 
 
 if __name__ == '__main__':

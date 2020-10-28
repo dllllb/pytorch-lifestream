@@ -8,7 +8,6 @@ from torch.nn import functional as F
 from dltranz.trx_encoder import PaddedBatch
 from dltranz.experiment import update_model_stats, CustomMetric
 from dltranz.train import get_optimizer, get_lr_scheduler, fit_model, CheckpointHandler
-from dltranz.data_load import create_train_loader, create_validation_loader
 
 logger = logging.getLogger(__name__)
 
@@ -106,7 +105,7 @@ class CPC_Loss(nn.Module):
         return accurate / total
 
 
-def run_experiment(train_ds, valid_ds, model, conf):
+def run_experiment(train_loader, valid_loader, model, conf):
     import time
     start = time.time()
 
@@ -121,9 +120,6 @@ def run_experiment(train_ds, valid_ds, model, conf):
 
     optimizer = get_optimizer(model, params)
     scheduler = get_lr_scheduler(optimizer, params)
-
-    train_loader = create_train_loader(train_ds, params['train'])
-    valid_loader = create_validation_loader(valid_ds, params['valid'])
 
     train_handlers = []
     if 'checkpoints' in params['train']:
