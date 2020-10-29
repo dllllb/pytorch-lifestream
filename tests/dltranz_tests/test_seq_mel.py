@@ -1,20 +1,7 @@
 import pytorch_lightning as pl
-import torch
 from dltranz.seq_mel import SequenceMetricLearning
-from dltranz.data_load import create_train_loader, create_validation_loader, TrxDataset
-from .test_data_load import gen_trx_data
+from .test_data_load import RandomEventData
 from pyhocon import ConfigFactory
-
-class SequenceMetricLearningTesting(SequenceMetricLearning):
-    def train_dataloader(self):
-        test_data = TrxDataset(gen_trx_data((torch.rand(1000)*60+1).long()))
-        train_loader = create_train_loader(test_data, self.hparams['train'])
-        return train_loader
-
-    def valid_dataloader(self):
-        test_data = TrxDataset(gen_trx_data((torch.rand(100)*60+1).long()))
-        train_loader = create_validation_loader(test_data, self.hparams['valid'])
-        return train_loader
 
 def tst_params():
     params = {
@@ -78,6 +65,7 @@ def tst_params():
 def test_train_loop():
     params = tst_params()
 
-    model = SequenceMetricLearningTesting(params)
+    model = SequenceMetricLearning(params)
+    dl = RandomEventData(params)
     trainer = pl.Trainer(max_epochs=1)
-    trainer.fit(model)
+    trainer.fit(model, dl)
