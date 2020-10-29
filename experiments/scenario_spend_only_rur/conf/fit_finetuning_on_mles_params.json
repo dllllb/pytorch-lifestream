@@ -1,9 +1,9 @@
 {
   "params": {
     "device": "cuda",
-
     "model_type": "rnn",
     "ensemble_size": 1,
+    "variable_predicted": 53,
     "big_extension": true,
     "trx_encoder": {
       "embeddings": {

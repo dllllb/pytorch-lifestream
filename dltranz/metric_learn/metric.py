@@ -187,10 +187,11 @@ class SpendPredictMetric(ignite.metrics.Metric):
 #sum(y_pred)=1 sum(y)=1
 from ignite.metrics.metric import sync_all_reduce, reinit__is_reduced
 class PercentPredictMetric(ignite.metrics.Metric):
-   def __init__(self, ignored_class=None, output_transform=lambda x: x):
+   def __init__(self, n_variables_to_predict, ignored_class=None, output_transform=lambda x: x):
        self._relative_error = None
        self.softmax = torch.nn.Softmax(dim=1)
        super(PercentPredictMetric, self).__init__(output_transform=output_transform)
+       self.n_variables_to_predict = n_variables_to_predict
 
    @reinit__is_reduced
    def reset(self):
@@ -200,8 +201,8 @@ class PercentPredictMetric(ignite.metrics.Metric):
 
    def update(self, output):
        y_pred, y = output
-       soft_pred = self.softmax(y_pred[:,1:53])
-       delta=torch.nn.functional.cosine_similarity(soft_pred, y[:,1:53], dim=1)
+       soft_pred = self.softmax(y_pred[:,1:self.n_variables_to_predict ])
+       delta=torch.nn.functional.cosine_similarity(soft_pred, y[:,1:self.n_variables_to_predict ], dim=1)
        rel_delta = -torch.mean(delta)+1 #from 0 to 1, low is better
        self._relative_error += [rel_delta.item()]
 
@@ -216,10 +217,11 @@ class PercentPredictMetric(ignite.metrics.Metric):
 from ignite.metrics.metric import sync_all_reduce, reinit__is_reduced
 class PercentR2Metric(ignite.metrics.Metric):
 
-    def __init__(self, ignored_class=None, output_transform=lambda x: x):
+    def __init__(self, n_variables_to_predict, ignored_class=None, output_transform=lambda x: x):
        self._relative_error = None
        self.softmax = torch.nn.Softmax(dim=1)
        super(PercentR2Metric, self).__init__(output_transform=output_transform)
+       self.n_variables_to_predict = n_variables_to_predict
 
     @reinit__is_reduced
     def reset(self):
@@ -229,9 +231,9 @@ class PercentR2Metric(ignite.metrics.Metric):
     @reinit__is_reduced
     def update(self, output):
          y_pred, y = output
-         soft_pred = self.softmax(y_pred[:,1:53])
-         rss = torch.norm(soft_pred - y[:,1:53], p=1, dim=1)**2
-         apriori_mean = y[:,1:53].mean(dim=0)
+         soft_pred = self.softmax(y_pred[:,1:self.n_variables_to_predict ])
+         rss = torch.norm(soft_pred - y[:,1:self.n_variables_to_predict ], p=1, dim=1)**2
+         apriori_mean = y[:,1:self.n_variables_to_predict ].mean(dim=0)
          apriori_mean = apriori_mean.repeat(y_pred.shape[0], 1)
          tss = torch.norm(soft_pred - apriori_mean, p=1, dim=1)**2
          r2 = 1 - rss/tss

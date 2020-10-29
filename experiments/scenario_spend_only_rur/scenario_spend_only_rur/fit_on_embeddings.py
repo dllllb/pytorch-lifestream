@@ -29,7 +29,7 @@ def load_model(conf):
     else:
         raise NotImplementedError(f'NotImplementedError for model_type="{model_type}"')
 
-    head_output_size = 53
+    head_output_size = conf['variable_predicted']# 53
 
     layers = [EmbTranslation()]
 
