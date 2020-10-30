@@ -24,16 +24,6 @@ class SeqLenFilter(IterableDataset):
         self._src = src
         return self
 
-    def target_call(self, rec):
-        if self._target_col is None:
-            self._target_col = next(k for k, v in rec.items() if type(v) in (list, np.ndarray, torch.tensor))
-        return self._target_col
-
-    def get_len(self, rec):
-        if self._seq_len_col is not None:
-            return rec[self._seq_len_col]
-        return len(rec[self.target_call(rec)])
-
     def __iter__(self):
         for rec in self._src:
             features = rec[0] if type(rec) is tuple else rec
@@ -43,3 +33,13 @@ class SeqLenFilter(IterableDataset):
             if self._max_seq_len is not None and seq_len > self._max_seq_len:
                 continue
             yield rec
+
+    def target_call(self, rec):
+        if self._target_col is None:
+            self._target_col = next(k for k, v in rec.items() if type(v) in (list, np.ndarray, torch.tensor))
+        return self._target_col
+
+    def get_len(self, rec):
+        if self._seq_len_col is not None:
+            return rec[self._seq_len_col]
+        return len(rec[self.target_call(rec)])
