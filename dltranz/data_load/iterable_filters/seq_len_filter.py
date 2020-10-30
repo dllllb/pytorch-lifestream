@@ -4,7 +4,7 @@ import torch
 
 
 class SeqLenFilter(IterableDataset):
-    def __init__(self, min_seq_len=None, max_seq_len=None, target_col=None):
+    def __init__(self, min_seq_len=None, max_seq_len=None, target_col=None, seq_len_col=None):
         """
 
         Args:
@@ -15,6 +15,7 @@ class SeqLenFilter(IterableDataset):
         self._min_seq_len = min_seq_len
         self._max_seq_len = max_seq_len
         self._target_col = target_col
+        self._seq_len_col = seq_len_col
 
         self._src = None
 
@@ -27,9 +28,15 @@ class SeqLenFilter(IterableDataset):
             self._target_col = next(k for k, v in rec.items() if type(v) in (list, np.ndarray, torch.tensor))
         return self._target_col
 
+    def get_len(self, rec):
+        if self._seq_len_col is not None:
+            return rec[self._seq_len_col]
+        return len(rec[self.target_call(rec)])
+
     def __iter__(self):
         for rec in self._src:
-            seq_len = len(rec[self.target_call(rec)])
+            features = rec[0] if type(rec) is tuple else rec
+            seq_len = self.get_len(features)
             if self._min_seq_len is not None and seq_len < self._min_seq_len:
                 continue
             if self._max_seq_len is not None and seq_len > self._max_seq_len:
