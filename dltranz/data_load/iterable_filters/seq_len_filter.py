@@ -4,18 +4,18 @@ import torch
 
 
 class SeqLenFilter(IterableDataset):
-    def __init__(self, min_seq_len=None, max_seq_len=None, seq_len_col=None, target_col=None):
+    def __init__(self, min_seq_len=None, max_seq_len=None, seq_len_col=None, sequence_col=None):
         """
 
         Args:
             min_seq_len: if set than drop sequences shorter than `min_seq_len`
             max_seq_len: if set than drop sequences longer than `max_seq_len`
             seq_len_col: field where sequence length stored, if None, `target_col` used
-            target_col: field for sequence length detection, if None, any iterable field will be used
+            sequence_col: field for sequence length detection, if None, any iterable field will be used
         """
         self._min_seq_len = min_seq_len
         self._max_seq_len = max_seq_len
-        self._target_col = target_col
+        self._sequence_col = sequence_col
         self._seq_len_col = seq_len_col
 
         self._src = None
@@ -35,9 +35,9 @@ class SeqLenFilter(IterableDataset):
             yield rec
 
     def target_call(self, rec):
-        if self._target_col is None:
-            self._target_col = next(k for k, v in rec.items() if type(v) in (list, np.ndarray, torch.tensor))
-        return self._target_col
+        if self._sequence_col is None:
+            self._sequence_col = next(k for k, v in rec.items() if type(v) in (list, np.ndarray, torch.tensor))
+        return self._sequence_col
 
     def get_len(self, rec):
         if self._seq_len_col is not None:

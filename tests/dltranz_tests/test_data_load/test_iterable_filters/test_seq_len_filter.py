@@ -40,21 +40,21 @@ def get_data_with_target():
 
 
 def test_no_action():
-    i_filter = SeqLenFilter(target_col='mcc_code')
+    i_filter = SeqLenFilter(sequence_col='mcc_code')
     data = i_filter(get_data())
     data = [rec['uid'] for rec in data]
     assert data == [1, 2, 3]
 
 
 def test_min_len():
-    i_filter = SeqLenFilter(target_col='mcc_code', min_seq_len=5)
+    i_filter = SeqLenFilter(sequence_col='mcc_code', min_seq_len=5)
     data = i_filter(get_data())
     data = [rec['uid'] for rec in data]
     assert data == [2, 3]
 
 
 def test_max_len():
-    i_filter = SeqLenFilter(target_col='mcc_code', max_seq_len=8)
+    i_filter = SeqLenFilter(sequence_col='mcc_code', max_seq_len=8)
     data = i_filter(get_data())
     data = [rec['uid'] for rec in data]
     assert data == [1, 2]
