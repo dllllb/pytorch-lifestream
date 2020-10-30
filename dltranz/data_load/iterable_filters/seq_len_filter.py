@@ -4,12 +4,13 @@ import torch
 
 
 class SeqLenFilter(IterableDataset):
-    def __init__(self, min_seq_len=None, max_seq_len=None, target_col=None, seq_len_col=None):
+    def __init__(self, min_seq_len=None, max_seq_len=None, seq_len_col=None, target_col=None):
         """
 
         Args:
             min_seq_len: if set than drop sequences shorter than `min_seq_len`
             max_seq_len: if set than drop sequences longer than `max_seq_len`
+            seq_len_col: field where sequence length stored, if None, `target_col` used
             target_col: field for sequence length detection, if None, any iterable field will be used
         """
         self._min_seq_len = min_seq_len
