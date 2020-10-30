@@ -60,14 +60,13 @@ def create_data_loaders(conf):
     return train_loader, valid_loader
 
 
-def run_experiment(model, conf):
+def run_experiment(model, conf, train_loader, valid_loader):
     import time
     start = time.time()
 
     stats_file = conf['stats.path']
     params = conf['params']
 
-    train_loader, valid_loader = create_data_loaders(conf)
     loss = get_loss(params)
 
     metric_name = params['score_metric']
@@ -108,8 +107,9 @@ def main(args=None):
 
     model_f = model_by_type(conf['params.model_type'])
     model = model_f(conf['params'])
+    train_loader, valid_loader = create_data_loaders(conf)
 
-    return run_experiment(model, conf)
+    return run_experiment(model, conf, train_loader, valid_loader)
 
 
 if __name__ == '__main__':

@@ -6,6 +6,7 @@ from dltranz.seq_encoder import LastStepEncoder
 from dltranz.baselines.cpc import run_experiment
 from dltranz.util import init_logger, get_conf, switch_reproducibility_on
 from dltranz.data_load import TrxDataset, ConvertingTrxDataset, SameTimeShuffleDataset, AllTimeShuffleDataset
+from dltranz.data_load import create_train_loader, create_validation_loader
 from metric_learning import prepare_data
 
 logger = logging.getLogger(__name__)
@@ -38,7 +39,9 @@ def main(args=None):
 
     cpc_e = ml_model_by_type(conf['params.model_type'])(conf['params'])
 
-    run_experiment(train_ds, valid_ds, cpc_e, conf)
+    train_loader = create_train_loader(train_ds, conf['params.train'])
+    valid_loader = create_validation_loader(valid_ds, conf['params.valid'])
+    run_experiment(train_loader, valid_loader, cpc_e, conf)
 
     if conf.get('save_model', False):
         trx_e, rnn_e = cpc_e.trx_encoder, cpc_e.seq_encoder
