@@ -3,6 +3,12 @@ from torch.utils.data.dataset import IterableDataset
 
 class IdFilter(IterableDataset):
     def __init__(self, id_col, relevant_ids):
+        """Remove records which are not in `relevant_ids`
+        
+        Args:
+            id_col: field where id is stored
+            relevant_ids: list of ids which should be kept
+        """
         self._id_col = id_col
         self._relevant_ids = set(relevant_ids)
         one_element = next(iter(self._relevant_ids))
