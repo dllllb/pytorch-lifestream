@@ -94,7 +94,6 @@ class SchedulerWrapper(torch.optim.lr_scheduler._LRScheduler):
     @property
     def optimizer(self):
         return self.scheduler.optimizer
-    
 
 
 class ReduceLROnPlateauWrapper(torch.optim.lr_scheduler.ReduceLROnPlateau):
@@ -245,6 +244,22 @@ class PrepareEpoch:
             self.train_loader.prepare_epoch()
 
 
+def output_transform(x, y, y_pred, loss):
+    if isinstance(x, PaddedBatch):
+        seq_lens_mean = x.seq_lens.float().mean()
+
+    elif isinstance(x, dict) and isinstance(x[next(iter(x.keys()))], PaddedBatch):
+        seq_lens_mean = x[next(iter(x.keys()))].seq_lens.float().mean()
+
+    elif (isinstance(x, tuple) or isinstance(x, list)) and isinstance(x[0], PaddedBatch):
+        seq_lens_mean = x[0].seq_lens.seq_lens.float().mean()
+
+    else:
+        seq_lens_mean = 0
+
+    return loss.item(), seq_lens_mean
+
+
 def fit_model(model, train_loader, valid_loader, loss, optimizer, scheduler, params, valid_metrics, train_handlers):
     device = torch.device(params.get('device', 'cpu'))
     model.to(device)
@@ -255,13 +270,11 @@ def fit_model(model, train_loader, valid_loader, loss, optimizer, scheduler, par
         loss_fn=loss,
         device=device,
         prepare_batch=batch_to_device,
-        output_transform=lambda x, y, y_pred, loss: \
-                (loss.item(), x.seq_lens if isinstance(x, PaddedBatch) else \
-                    x[next(iter(x.keys()))].seq_lens if isinstance(x, dict) else x[0].seq_lens),
+        output_transform=output_transform,
     )
 
     RunningAverage(output_transform=lambda x: x[0]).attach(trainer, 'loss')
-    RunningAverage(output_transform=lambda x: x[1].float().mean()).attach(trainer, 'seq_len')
+    RunningAverage(output_transform=lambda x: x[1]).attach(trainer, 'seq_len')
     pbar = ProgressBar(persist=True, bar_format="")
     pbar.attach(trainer, ['loss', 'seq_len'])
 
@@ -269,7 +282,7 @@ def fit_model(model, train_loader, valid_loader, loss, optimizer, scheduler, par
         model=model,
         device=device,
         prepare_batch=batch_to_device,
-        metrics= valid_metrics 
+        metrics=valid_metrics
     )
 
     pbar = ProgressBar(persist=True, bar_format="")

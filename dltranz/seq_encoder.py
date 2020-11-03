@@ -1,9 +1,9 @@
-from typing import Tuple
 import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as tf
 
+from dltranz.custom_layers import Squeeze
 from dltranz.trx_encoder import PaddedBatch
 from dltranz.neural_automl import neural_automl_models as node
 
@@ -228,11 +228,6 @@ def skip_rnn_encoder(input_size, params):
     return nn.Sequential(rnn0, sse, rnn1)
 
 
-class Squeeze(nn.Module):
-    def forward(self, x: torch.Tensor):
-        return x.squeeze()
-
-
 def scoring_head(input_size, params):
     if params['pred_all_states'] and params['explicit_lengths']:
         raise AttributeError('Can not use `pred_all_states` and `explicit_lengths` together for now')
@@ -296,13 +291,3 @@ def scoring_head(input_size, params):
     return nn.Sequential(*layers)
 
 
-class DropoutEncoder(nn.Module):
-    def __init__(self, p):
-        super(DropoutEncoder, self).__init__()
-        self.p = p
-
-    def forward(self, x):
-        if self.training:
-            mask = torch.FloatTensor(x.shape[1]).uniform_(0, 1) <= self.p
-            x = x.masked_fill(mask.to(x.device), 0)
-        return x
