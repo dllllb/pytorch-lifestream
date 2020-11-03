@@ -252,7 +252,7 @@ def output_transform(x, y, y_pred, loss):
         seq_lens_mean = x[next(iter(x.keys()))].seq_lens.float().mean()
 
     elif (isinstance(x, tuple) or isinstance(x, list)) and isinstance(x[0], PaddedBatch):
-        seq_lens_mean = x[0].seq_lens.seq_lens.float().mean()
+        seq_lens_mean = x[0].seq_lens.float().mean()
 
     else:
         seq_lens_mean = 0
