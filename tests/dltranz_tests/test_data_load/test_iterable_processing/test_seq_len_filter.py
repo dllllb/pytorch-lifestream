@@ -1,4 +1,4 @@
-from dltranz.data_load.iterable_filters.seq_len_filter import SeqLenFilter
+from dltranz.data_load.iterable_processing.seq_len_filter import SeqLenFilter
 
 
 def get_data(id_type=int, array_type=list):

@@ -1,4 +1,4 @@
-from dltranz.data_load.iterable_filters.target_extractor import TargetExtractor
+from dltranz.data_load.iterable_processing.target_extractor import TargetExtractor
 
 
 def get_features_only():

@@ -1,7 +1,7 @@
 import pytest
 import numpy as np
 
-from dltranz.data_load.iterable_filters.id_filter import IdFilter
+from dltranz.data_load.iterable_processing.id_filter import IdFilter
 
 
 def get_data(id_type):

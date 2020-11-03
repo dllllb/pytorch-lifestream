@@ -1,6 +1,6 @@
 import numpy as np
 
-from dltranz.data_load.iterable_filters.target_empty_filter import TargetEmptyFilter
+from dltranz.data_load.iterable_processing.target_empty_filter import TargetEmptyFilter
 
 
 def get_data():
