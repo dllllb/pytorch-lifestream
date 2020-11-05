@@ -31,7 +31,7 @@ pip install -r requirements.txt
 # Ubuntu 18.04
 
 sudo apt install python3.8 python3-venv
-pip3 innstall pipenv
+pip3 install pipenv
 
 pipenv install --dev
 
