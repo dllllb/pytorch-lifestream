@@ -9,8 +9,8 @@ from torch.autograd import Function
 from dltranz.agg_feature_model import AggFeatureModel
 from dltranz.baselines.cpc import CPC_Ecoder
 from dltranz.transf_seq_encoder import TransformerSeqEncoder
-from dltranz.seq_encoder import RnnEncoder, LastStepEncoder, PerTransTransf, FirstStepEncoder, PaddedBatch, \
-    DropoutEncoder
+from dltranz.seq_encoder import RnnEncoder, LastStepEncoder, PerTransTransf, FirstStepEncoder, PaddedBatch
+from dltranz.custom_layers import DropoutEncoder
 from dltranz.trx_encoder import TrxEncoder
 
 logger = logging.getLogger(__name__)

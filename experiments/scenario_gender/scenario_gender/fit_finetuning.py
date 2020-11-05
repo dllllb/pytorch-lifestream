@@ -7,7 +7,8 @@ from sklearn.model_selection import StratifiedKFold
 
 from dltranz.experiment import update_model_stats
 from dltranz.metric_learn.inference_tools import infer_part_of_data, save_scores
-from dltranz.seq_encoder import Squeeze, LastStepEncoder
+from dltranz.seq_encoder import LastStepEncoder
+from dltranz.custom_layers import Squeeze
 from dltranz.trx_encoder import TrxEncoder
 from dltranz.util import init_logger, get_conf
 from scenario_gender.fit_target import create_ds, run_experiment, read_consumer_data, score_data
