@@ -12,6 +12,7 @@ import torch
 from torch.utils.data import WeightedRandomSampler, Sampler, Dataset
 from torch.utils.data.dataloader import DataLoader
 
+from dltranz.data_load.augmentations.all_time_shuffle import AllTimeShuffle
 from dltranz.data_load.lazy_dataset import LazyDataset
 from dltranz.seq_encoder import PaddedBatch
 
@@ -188,21 +189,15 @@ class AllTimeShuffleDataset(Dataset):
     """
     def __init__(self, dataset, event_time_name='event_time'):
         self.dataset = dataset
-        self.event_time_name = event_time_name
+        self.shuffler = AllTimeShuffle(event_time_name)
         self.style = dataset.style
 
     def __len__(self):
         return len(self.dataset)
 
-    @staticmethod
-    def get_perm_ix(event_time):
-        n = len(event_time)
-        return torch.randperm(n)
-
     def __getitem__(self, item):
         x, y = self.dataset[item]
-        ix = self.get_perm_ix(x[self.event_time_name])
-        new_x = {k: v[ix] for k, v in x.items()}
+        new_x = self.shuffler(x)
         return new_x, y
 
 
@@ -211,16 +206,11 @@ class AllTimeShuffleMLDataset(Dataset):
     """
     def __init__(self, dataset, event_time_name='event_time'):
         self.core_dataset = dataset
-        self.event_time_name = event_time_name
+        self.shuffler = AllTimeShuffle(event_time_name)
         self.style = dataset.style
 
     def __len__(self):
         return len(self.core_dataset)
-
-    @staticmethod
-    def get_perm_ix(event_time):
-        n = len(event_time)
-        return torch.randperm(n)
 
     def __getitem__(self, idx):
         item = self.core_dataset[idx]
@@ -231,8 +221,7 @@ class AllTimeShuffleMLDataset(Dataset):
 
     def _one_item(self, item):
         x, y = item
-        ix = self.get_perm_ix(x[self.event_time_name])
-        new_x = {k: v[ix] for k, v in x.items()}
+        new_x = self.shuffler(x)
         return new_x, y
 
 
