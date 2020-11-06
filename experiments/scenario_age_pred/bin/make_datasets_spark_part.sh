@@ -16,12 +16,13 @@ spark-submit \
     --cols_category "trans_date" "small_group" \
     --cols_log_norm "amount_rur" \
     --target_files train_target.csv \
+    --save_partitioned_data \
     --col_target bins \
     --test_size 0.1 \
-    --output_train_path "data/train_trx.parquet" \
-    --output_test_path "data/test_trx.parquet" \
-    --output_test_ids_path "data/test_ids.csv" \
-    --log_file "results/dataset_age_pred.log"
+    --output_train_path "data/train_trx_part.parquet" \
+    --output_test_path "data/test_trx_part.parquet" \
+    --output_test_ids_path "data/test_ids_part.csv" \
+    --log_file "results/dataset_age_pred_part.log"
 
 # 654 sec with    --print_dataset_info
 # 144 sec without --print_dataset_info

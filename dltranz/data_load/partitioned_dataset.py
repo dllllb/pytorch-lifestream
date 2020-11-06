@@ -1,4 +1,3 @@
-import datetime
 import logging
 import os
 from collections import defaultdict, Counter
@@ -8,7 +7,7 @@ import numpy as np
 import torch
 from torch.utils.data import DataLoader
 
-from dltranz.data_load import read_pyarrow_file, padded_collate
+from dltranz.data_load import read_pyarrow_file
 
 logger = logging.getLogger(__name__)
 
@@ -48,10 +47,11 @@ class PartitionedDataFiles:
     we should calculate `hash_id = H` and get data from all month from `hash_id=H` subpartitions.
     """
 
-    def __init__(self, data_path, dt_start=None, dt_end=None):
+    def __init__(self, data_path, dt_start=None, dt_end=None, dt_dtype='datetime64[D]'):
         self._data_path = data_path
-        self.dt_start = np.datetime64(dt_start).astype('datetime64[D]') if dt_start else None
-        self.dt_end = np.datetime64(dt_end).astype('datetime64[D]') if dt_end else None
+        self.to_dtype = np.dtype(dt_dtype)
+        self.dt_start = self.to_dtype(dt_start) if dt_start else None
+        self.dt_end = self.to_dtype(dt_end) if dt_end else None
 
         self._dt_parts = None
         self._hash_parts = None
@@ -71,18 +71,24 @@ class PartitionedDataFiles:
         return self._hash_parts
 
     def _index_files(self):
-        dt_parts = sorted(os.listdir(self._data_path))
-        dt_dates = np.array([x.split('=')[1] for x in dt_parts]).astype('datetime64[D]')
+        dt_parts = os.listdir(self._data_path)
+        dt_parts = [x for x in dt_parts if x.find('=') > 1]
+        dt_dates = np.array([x.split('=')[1] for x in dt_parts]).astype(self.to_dtype)
 
-        ix = np.ones_like(dt_dates, dtype=np.bool)
+        dt_dates_sort_ix = np.argsort(dt_dates)
+        dt_parts = [dt_parts[i] for i in dt_dates_sort_ix]
+        dt_dates = dt_dates[dt_dates_sort_ix]
+
+        mask = np.ones_like(dt_dates, dtype=np.bool)
         if self.dt_start is not None:
-            ix &= dt_dates >= self.dt_start
+            mask &= dt_dates >= self.dt_start
         if self.dt_end is not None:
-            ix &= dt_dates <= self.dt_end
-        self._dt_parts = [x for x, f in zip(dt_parts, ix) if f]
+            mask &= dt_dates <= self.dt_end
+        self._dt_parts = [x for x, f in zip(dt_parts, mask) if f]
 
         if len(self._dt_parts) == 0:
-            raise AttributeError(f'Empty file list for "{self._data_path}" in interval [{self.dt_start}, {self.dt_end}]')
+            raise AttributeError(f'Empty file list for "{self._data_path}" '
+                                 f'in interval [{self.dt_start}, {self.dt_end}]')
 
         hash_parts = sorted(os.listdir(os.path.join(self._data_path, self._dt_parts[0])))
         for dt_part in self._dt_parts[1:]:
@@ -127,14 +133,14 @@ class PartitionedDataset(torch.utils.data.IterableDataset):
     we should calculate `hash_id = H` and get data from all month from `hash_id=H` subpartitions.
     """
     def __init__(self, data_path, dt_parts, hash_parts,
-                 col_id, pre_transform_gen=None, post_transform_gen=None,
+                 col_id, file_level_processing=None, post_processing=None,
                  shuffle_files=False, cache_schema=True, shuffle_seed=42):
         self.data_path = data_path
         self.dt_parts = dt_parts
         self.hash_parts = hash_parts
         self.col_id = col_id
-        self.pre_transform_gen = pre_transform_gen
-        self.post_transform_gen = post_transform_gen
+        self.file_level_processing = file_level_processing
+        self.post_processing = post_processing
         self.shuffle_files = shuffle_files
         self.cache_schema = cache_schema
         self.shuffle_seed = shuffle_seed
@@ -161,6 +167,7 @@ class PartitionedDataset(torch.utils.data.IterableDataset):
             self._worker_id = worker_info.id
             self._num_workers = worker_info.num_workers
             self._shuffle_seed = worker_info.seed
+        logger.debug(f'Started [{self._worker_id:02d}/{self._num_workers:02d}]')
 
     def __iter__(self):
         self._init_worker()
@@ -170,9 +177,10 @@ class PartitionedDataset(torch.utils.data.IterableDataset):
             rs = np.random.RandomState(self._shuffle_seed % 2**32)
             rs.shuffle(my_hashes)
 
+        logger.debug(f'Iter [{self._worker_id:02d}/{self._num_workers:02d}]: {my_hashes}')
         gen = chain(*[self.iter_hash(name) for name in my_hashes])
-        if self.post_transform_gen is not None:
-            gen = self.post_transform_gen(gen)
+        if self.post_processing is not None:
+            gen = self.post_processing(gen)
         return gen
 
     def iter_hash(self, hash_part_name):
@@ -181,19 +189,20 @@ class PartitionedDataset(torch.utils.data.IterableDataset):
         :param hash_part_name:
         :return:
         """
-        logger.info(f'[{self._worker_id:2d}/{self._num_workers}] Start iter hash {hash_part_name}')
+        logger.debug(f'[{self._worker_id:2d}/{self._num_workers}] Start iter hash {hash_part_name}')
         client_partitioned_data = defaultdict(list)
         for dt_part in self.dt_parts:
             path = os.path.join(self.data_path, dt_part, hash_part_name)
             gen = self.iter_file(path)
-            if self.pre_transform_gen is not None:
-                gen = self.pre_transform_gen(gen)
-            for features, cli_id in gen:
-                cl_feature_list = client_partitioned_data[cli_id]
+            if self.file_level_processing is not None:
+                gen = self.file_level_processing(gen)
+            for features in gen:
+                _id = features[self.col_id]
+                cl_feature_list = client_partitioned_data[_id]
                 cl_feature_list.append(features)
 
         for cli_id, features in client_partitioned_data.items():
-            yield self.join_features(features), cli_id
+            yield self.join_features(features)
 
     def iter_file(self, file_name):
         """
@@ -204,7 +213,7 @@ class PartitionedDataset(torch.utils.data.IterableDataset):
         logger.debug(f'[{self._worker_id}/{self._num_workers}] Iter file "{file_name}"')
         for rec in read_pyarrow_file(file_name, use_threads=True):
             try:
-                yield rec, rec[self.col_id]
+                yield rec
             except KeyError:
                 logging.error(f'KeyError during "{file_name}" iteration. Available keys: {rec.keys()}')
                 raise
@@ -213,7 +222,7 @@ class PartitionedDataset(torch.utils.data.IterableDataset):
         schema = self.get_schema(features)
 
         joined_record = {k: self.join_key(k, dtype, [v[k] for v in features])
-                         for k, dtype in schema.items() if dtype is np.ndarray}
+                         for k, dtype in schema.items() if dtype is np.ndarray or k == self.col_id}
         return joined_record
 
     def get_schema(self, rows):

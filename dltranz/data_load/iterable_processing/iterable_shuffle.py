@@ -1,30 +1,33 @@
+import logging
 from itertools import islice
 import numpy as np
-from torch.utils.data.dataset import IterableDataset
+from dltranz.data_load.iterable_processing_dataset import IterableProcessingDataset
 
 
-class IterableShuffle(IterableDataset):
+logger = logging.getLogger(__name__)
+
+
+class IterableShuffle(IterableProcessingDataset):
     def __init__(self, buffer_size):
         """Remove records which are not in `relevant_ids`
 
         Args:
             buffer_size: buffer size in records
         """
+        super().__init__()
+
         assert buffer_size > 1  # we will split buffer into two parts
         self._buffer_size = buffer_size
-
-        self._src = None
-
-    def __call__(self, src):
-        self._src = src
-        return self
 
     def __iter__(self):
         source = iter(self._src)
         buffer = np.array([])
         while True:
             new_buffer_size = self._buffer_size - len(buffer)
-            new_buffer = np.array(list(islice(source, new_buffer_size)))
+            new_buffer_list = list(islice(source, new_buffer_size))
+            new_buffer = np.empty(len(new_buffer_list), dtype=object)
+            new_buffer[:] = new_buffer_list
+            # print(f'Buffer shape: {buffer.shape}, {new_buffer.shape}')
             buffer = np.concatenate([buffer, new_buffer])
             if len(buffer) == 0:
                 break

@@ -13,6 +13,7 @@ from torch.utils.data import WeightedRandomSampler, Sampler, Dataset
 from torch.utils.data.dataloader import DataLoader
 
 from dltranz.data_load.augmentations.all_time_shuffle import AllTimeShuffle
+from dltranz.data_load.iterable_processing_dataset import IterableProcessingDataset
 from dltranz.data_load.lazy_dataset import LazyDataset
 from dltranz.seq_encoder import PaddedBatch
 
@@ -521,3 +522,28 @@ def create_validation_loader(dataset, params):
         collate_fn=padded_collate)
 
     return valid_loader
+
+
+class IterableAugmentations(IterableProcessingDataset):
+    def __init__(self, *i_filters):
+        super().__init__()
+
+        self.i_filters = i_filters
+
+    def __iter__(self):
+        for x, *targets in self._src:
+            for f in self.i_filters:
+                x = f(x)
+            yield x, *targets
+
+
+class IterableChain:
+    def __init__(self, *i_filters):
+        self.i_filters = i_filters
+
+    def __call__(self, seq):
+        for f in self.i_filters:
+            logger.debug(f'Applied {f} to {seq}')
+            seq = f(seq)
+        logger.debug(f'Returned {seq}')
+        return seq

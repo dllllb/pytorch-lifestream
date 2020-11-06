@@ -1,8 +1,9 @@
-from torch.utils.data.dataset import IterableDataset
 import numpy as np
 
+from dltranz.data_load.iterable_processing_dataset import IterableProcessingDataset
 
-class CategorySizeClip(IterableDataset):
+
+class CategorySizeClip(IterableProcessingDataset):
     def __init__(self, category_max_size, replace_value='max'):
         """
 
@@ -10,14 +11,10 @@ class CategorySizeClip(IterableDataset):
             category_max_size: {field_name, max_size}
             replace_value: value for infrequent categories, int for specific value, 'max' for `category_max_size - 1`
         """
+        super().__init__()
+
         self._category_max_size = category_max_size
         self._replace_value = replace_value
-
-        self._src = None
-
-    def __call__(self, src):
-        self._src = src
-        return self
 
     def __iter__(self):
         for rec in self._src:

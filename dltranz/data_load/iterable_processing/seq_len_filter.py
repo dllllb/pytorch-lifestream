@@ -1,9 +1,13 @@
-from torch.utils.data.dataset import IterableDataset
 import numpy as np
 import torch
+import logging
+
+from dltranz.data_load import IterableProcessingDataset
+
+logger = logging.getLogger(__name__)
 
 
-class SeqLenFilter(IterableDataset):
+class SeqLenFilter(IterableProcessingDataset):
     def __init__(self, min_seq_len=None, max_seq_len=None, seq_len_col=None, sequence_col=None):
         """
 
@@ -13,16 +17,12 @@ class SeqLenFilter(IterableDataset):
             seq_len_col: field where sequence length stored, if None, `target_col` used
             sequence_col: field for sequence length detection, if None, any iterable field will be used
         """
+        super().__init__()
+
         self._min_seq_len = min_seq_len
         self._max_seq_len = max_seq_len
         self._sequence_col = sequence_col
         self._seq_len_col = seq_len_col
-
-        self._src = None
-
-    def __call__(self, src):
-        self._src = src
-        return self
 
     def __iter__(self):
         for rec in self._src:
@@ -34,12 +34,15 @@ class SeqLenFilter(IterableDataset):
                 continue
             yield rec
 
-    def target_call(self, rec):
+    def get_sequence_col(self, rec):
         if self._sequence_col is None:
-            self._sequence_col = next(k for k, v in rec.items() if type(v) in (list, np.ndarray, torch.tensor))
+            arrays = [k for k, v in rec.items() if type(v) in (list, np.ndarray, torch.Tensor)]
+            if len(arrays) == 0:
+                raise ValueError(f'Can not find field with sequence from record: {rec}')
+            self._sequence_col = arrays[0]
         return self._sequence_col
 
     def get_len(self, rec):
         if self._seq_len_col is not None:
             return rec[self._seq_len_col]
-        return len(rec[self.target_call(rec)])
+        return len(rec[self.get_sequence_col(rec)])

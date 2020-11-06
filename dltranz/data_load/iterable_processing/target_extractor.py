@@ -1,8 +1,8 @@
-from torch.utils.data.dataset import IterableDataset
+from dltranz.data_load.iterable_processing_dataset import IterableProcessingDataset
 
 
-class TargetExtractor(IterableDataset):
-    def __init__(self, target_col):
+class TargetExtractor(IterableProcessingDataset):
+    def __init__(self, target_col, drop_from_features=True):
         """Extract value from `target_col` and mention it as `y`
 
         for x, * in seq:
@@ -13,16 +13,15 @@ class TargetExtractor(IterableDataset):
             target_col: field where `y` is stored
 
         """
+        super().__init__()
+
         self._target_col = target_col
-
-        self._src = None
-
-    def __call__(self, src):
-        self._src = src
-        return self
+        self._drop_from_features = drop_from_features
 
     def __iter__(self):
         for rec in self._src:
             features = rec[0] if type(rec) is tuple else rec
-            y = features[self._target_col]
-            yield rec, y
+            y = int(features[self._target_col])
+            if self._drop_from_features:
+                features = {k: v for k, v in features.items() if k != self._target_col}
+            yield features, y

@@ -1,21 +1,18 @@
-from torch.utils.data.dataset import IterableDataset
 import numpy as np
 
+from dltranz.data_load.iterable_processing_dataset import IterableProcessingDataset
 
-class TargetEmptyFilter(IterableDataset):
+
+class TargetEmptyFilter(IterableProcessingDataset):
     def __init__(self, target_col):
         """Drop records where value in `target_col` is undefined
 
         Args:
             target_col: field where `y` is stored
         """
+        super().__init__()
+
         self._target_col = target_col
-
-        self._src = None
-
-    def __call__(self, src):
-        self._src = src
-        return self
 
     def __iter__(self):
         for rec in self._src:

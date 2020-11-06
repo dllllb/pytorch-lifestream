@@ -1,24 +1,20 @@
-from torch.utils.data.dataset import IterableDataset
+from dltranz.data_load.iterable_processing_dataset import IterableProcessingDataset
 
 
-class IdFilter(IterableDataset):
+class IdFilter(IterableProcessingDataset):
     def __init__(self, id_col, relevant_ids):
         """Remove records which are not in `relevant_ids`
-        
+
         Args:
             id_col: field where id is stored
             relevant_ids: list of ids which should be kept
         """
+        super().__init__()
+
         self._id_col = id_col
         self._relevant_ids = set(relevant_ids)
         one_element = next(iter(self._relevant_ids))
         self._id_type = type(one_element)
-
-        self._src = None
-
-    def __call__(self, src):
-        self._src = src
-        return self
 
     def __iter__(self):
         for rec in self._src:

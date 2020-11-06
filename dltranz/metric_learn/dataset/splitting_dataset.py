@@ -3,7 +3,7 @@ import logging
 
 from torch.utils.data import Dataset, IterableDataset
 
-import numpy as np
+from dltranz.data_load import IterableProcessingDataset
 
 logger = logging.getLogger(__name__)
 
@@ -27,17 +27,15 @@ class SplittingDataset(Dataset):
         return data
 
 
-class IterableSplittingDataset(IterableDataset):
-    style = 'iterable'
+class IterableSplittingDataset(IterableProcessingDataset):
+    def __init__(self, splitter):
+        super().__init__()
 
-    def __init__(self, base_dataset, splitter):
-        self.base_dataset = base_dataset
         self.splitter = splitter
 
     def __iter__(self):
-        for row, uid in self.base_dataset:
-            # TODO: get local_date from data
-            local_date = np.arange(len(next(iter(row.values()))))
+        for row, uid in self._src:
+            local_date = row['event_time']
 
             for ix in self.splitter.split(local_date):
                 yield {k: v[ix] for k, v in row.items()}, uid

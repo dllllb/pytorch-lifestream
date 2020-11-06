@@ -106,6 +106,7 @@ class DatasetConverter:
         df_encoder = df.groupby(col_orig).agg(F.count(F.lit(1)).alias('_cnt'))
         df_encoder = df_encoder.withColumn(col_name,
                                            F.row_number().over(Window.partitionBy().orderBy(F.col('_cnt').desc())))
+        df_encoder = df_encoder.withColumn(col_name, F.col(col_name) + F.lit(1))
         df_encoder = df_encoder.withColumn(col_name, F.col(col_name))
         df_encoder = df_encoder.drop('_cnt')
 
