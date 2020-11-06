@@ -3,11 +3,10 @@
     type: iterable
     setup: {
       col_id: client_id
-      dataset_parts: {
-        data_path: "data/train_trx_part.parquet"
-        dt_dtype: "int"
+      dataset_files: {
+        data_path: "data/train_trx_file.parquet"
       }
-      split_by: hash_id
+      split_by: files
       valid_size: 0.1
       valid_split_seed: 42
     }

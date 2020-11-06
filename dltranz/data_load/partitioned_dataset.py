@@ -212,17 +212,12 @@ class PartitionedDataset(torch.utils.data.IterableDataset):
         """
         logger.debug(f'[{self._worker_id}/{self._num_workers}] Iter file "{file_name}"')
         for rec in read_pyarrow_file(file_name, use_threads=True):
-            try:
-                yield rec
-            except KeyError:
-                logging.error(f'KeyError during "{file_name}" iteration. Available keys: {rec.keys()}')
-                raise
+            yield rec
 
     def join_features(self, features):
         schema = self.get_schema(features)
 
-        joined_record = {k: self.join_key(k, dtype, [v[k] for v in features])
-                         for k, dtype in schema.items() if dtype is np.ndarray or k == self.col_id}
+        joined_record = {k: self.join_key(k, dtype, [v[k] for v in features]) for k, dtype in schema.items()}
         return joined_record
 
     def get_schema(self, rows):
