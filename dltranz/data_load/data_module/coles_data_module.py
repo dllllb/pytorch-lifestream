@@ -19,8 +19,9 @@ import pytorch_lightning as pl
 from glob import glob
 from torch.utils.data import DataLoader
 import os
+from tqdm.auto import tqdm
 
-from dltranz.data_load import padded_collate, IterableAugmentations, IterableChain
+from dltranz.data_load import padded_collate, IterableAugmentations, IterableChain, augmentation_chain
 from dltranz.data_load.augmentations.dropout_trx import DropoutTrx
 from dltranz.data_load.iterable_processing.feature_filter import FeatureFilter
 from dltranz.data_load.iterable_processing.iterable_shuffle import IterableShuffle
@@ -29,15 +30,19 @@ from dltranz.data_load.iterable_processing.target_extractor import TargetExtract
 from dltranz.data_load.list_splitter import ListSplitter
 from dltranz.data_load.parquet_dataset import ParquetDataset
 from dltranz.data_load.partitioned_dataset import PartitionedDataset, PartitionedDataFiles
-from dltranz.metric_learn.dataset import split_strategy
-from dltranz.metric_learn.dataset.splitting_dataset import IterableSplittingDataset
+from dltranz.metric_learn.dataset import split_strategy, collate_splitted_rows
+from dltranz.metric_learn.dataset.splitting_dataset import IterableSplittingDataset, MapSplittingDataset
 
 logger = logging.getLogger(__name__)
 
 
-class ColesDataModuleIterableTrain(pl.LightningDataModule):
+class ColesDataModuleTrain(pl.LightningDataModule):
     def __init__(self, conf):
         super().__init__()
+
+        self._type = conf['type']
+        assert self._type in ('map', 'iterable')
+
         self.setup_conf = conf['setup']
         self.train_conf = conf['train']
         self.valid_conf = conf['valid']
@@ -48,40 +53,17 @@ class ColesDataModuleIterableTrain(pl.LightningDataModule):
         self.valid_dataset = None
 
     def setup(self, stage=None):
-        if 'dataset_parts' in self.setup_conf:
-            self.setup_parts()
-        elif 'dataset_files' in self.setup_conf:
-            self.setup_files()
+        if 'dataset_files' in self.setup_conf:
+            self.setup_iterable_files()
+        elif 'dataset_parts' in self.setup_conf:
+            self.setup_iterable_parts()
         else:
             raise AttributeError(f'Missing dataset definition. One of `dataset_parts` or `dataset_files` expected')
 
-    def setup_parts(self):
-        data_files = PartitionedDataFiles(**self.setup_conf['dataset_parts'])
+        if self._type == 'map':
+            self.setup_map()
 
-        if self.setup_conf['split_by'] == 'hash_id':
-            splitter = ListSplitter(
-                data_files.hash_parts,
-                valid_size=self.setup_conf['valid_size'],
-                seed=self.setup_conf['valid_split_seed'],
-            )
-            logger.info(f'Prepared splits: '
-                        f'{len(data_files.dt_parts)} parts in dt_train, {len(data_files.dt_parts)} parts in dt_valid, '
-                        f'{len(splitter.train)} parts in hash_train, {len(splitter.valid)} parts in hash_valid')
-
-            self.train_dataset = PartitionedDataset(
-                data_files.data_path, data_files.dt_parts, splitter.train, col_id=self.col_id,
-                post_processing=self.train_post_processing,
-                shuffle_files=True,
-            )
-            self.valid_dataset = PartitionedDataset(
-                data_files.data_path, data_files.dt_parts, splitter.valid, col_id=self.col_id,
-                post_processing=self.valid_post_processing,
-                shuffle_files=False,
-            )
-        else:
-            raise AttributeError(f'Unknown split strategy: {self.setup_conf.split_by}')
-
-    def setup_files(self):
+    def setup_iterable_files(self):
         if self.setup_conf['split_by'] == 'files':
             file_path = self.setup_conf['dataset_files.data_path']
             if os.path.splitext(file_path)[1] == '.parquet':
@@ -98,42 +80,89 @@ class ColesDataModuleIterableTrain(pl.LightningDataModule):
 
             self.train_dataset = ParquetDataset(
                 splitter.train,
-                post_processing=self.train_post_processing,
-                shuffle_files=True,
+                post_processing=IterableChain(*self.build_iterable_processing('train')),
+                shuffle_files=True if self._type == 'iterable' else False,
             )
             self.valid_dataset = ParquetDataset(
                 splitter.valid,
-                post_processing=self.valid_post_processing,
+                post_processing=IterableChain(*self.build_iterable_processing('valid')),
                 shuffle_files=False,
             )
         else:
             raise AttributeError(f'Unknown split strategy: {self.setup_conf.split_by}')
 
-    @property
-    def train_post_processing(self):
-        return IterableChain(
-            SeqLenFilter(min_seq_len=self.train_conf['min_seq_len']),
-            TargetExtractor(target_col=self.col_id),
-            FeatureFilter(drop_non_iterable=True),
-            IterableShuffle(self.train_conf['buffer_size']),
-            IterableSplittingDataset(split_strategy.create(**self.train_conf['split_strategy'])),
-            IterableAugmentations(
-                DropoutTrx(self.train_conf['trx_dropout']),
-            ),
-        )
+    def setup_iterable_parts(self):
+        data_files = PartitionedDataFiles(**self.setup_conf['dataset_parts'])
 
-    @property
-    def valid_post_processing(self):
-        return IterableChain(
-            TargetExtractor(target_col=self.col_id),
-            FeatureFilter(drop_non_iterable=True),
-            IterableSplittingDataset(split_strategy.create(**self.valid_conf['split_strategy'])),
+        if self.setup_conf['split_by'] == 'hash_id':
+            splitter = ListSplitter(
+                data_files.hash_parts,
+                valid_size=self.setup_conf['valid_size'],
+                seed=self.setup_conf['valid_split_seed'],
+            )
+            logger.info(f'Prepared splits: '
+                        f'{len(data_files.dt_parts)} parts in dt_train, {len(data_files.dt_parts)} parts in dt_valid, '
+                        f'{len(splitter.train)} parts in hash_train, {len(splitter.valid)} parts in hash_valid')
+
+            self.train_dataset = PartitionedDataset(
+                data_files.data_path, data_files.dt_parts, splitter.train, col_id=self.col_id,
+                post_processing=IterableChain(*self.build_iterable_processing('train')),
+                shuffle_files=True if self._type == 'iterable' else False,
+            )
+            self.valid_dataset = PartitionedDataset(
+                data_files.data_path, data_files.dt_parts, splitter.valid, col_id=self.col_id,
+                post_processing=IterableChain(*self.build_iterable_processing('valid')),
+                shuffle_files=False,
+            )
+        else:
+            raise AttributeError(f'Unknown split strategy: {self.setup_conf.split_by}')
+
+    def build_iterable_processing(self, part):
+        if part == 'train':
+            yield SeqLenFilter(min_seq_len=self.train_conf['min_seq_len'])
+
+        yield TargetExtractor(target_col=self.col_id)
+        yield FeatureFilter(drop_non_iterable=True)
+
+        if self._type == 'iterable':
+            # all processing in single chain
+            if part == 'train':
+                yield IterableShuffle(self.train_conf['buffer_size'])
+
+            if part == 'train':
+                split_strategy_conf = self.train_conf['split_strategy']
+            else:
+                split_strategy_conf = self.valid_conf['split_strategy']
+            yield IterableSplittingDataset(split_strategy.create(**split_strategy_conf))
+
+            yield IterableAugmentations(*self.build_augmentations(part))
+
+    def build_augmentations(self, part):
+        if part == 'train':
+            yield DropoutTrx(self.train_conf['trx_dropout'])
+
+    def setup_map(self):
+        self.train_dataset = list(tqdm(iter(self.train_dataset)))
+        logger.info(f'Loaded {len(self.train_dataset)} for train')
+        self.valid_dataset = list(tqdm(iter(self.valid_dataset)))
+        logger.info(f'Loaded {len(self.valid_dataset)} for valid')
+
+        self.train_dataset = MapSplittingDataset(
+            base_dataset=self.train_dataset,
+            splitter=split_strategy.create(**self.train_conf['split_strategy']),
+            a_chain=augmentation_chain(*self.build_augmentations('train')),
+        )
+        self.valid_dataset = MapSplittingDataset(
+            base_dataset=self.valid_dataset,
+            splitter=split_strategy.create(**self.valid_conf['split_strategy']),
+            a_chain=augmentation_chain(*self.build_augmentations('valid')),
         )
 
     def train_dataloader(self):
         return DataLoader(
             dataset=self.train_dataset,
-            collate_fn=padded_collate,
+            collate_fn=padded_collate if self._type == 'iterable' else collate_splitted_rows,
+            shuffle=False if self._type == 'iterable' else True,
             num_workers=self.train_conf['num_workers'],
             batch_size=self.train_conf['batch_size'],
         )
@@ -141,7 +170,7 @@ class ColesDataModuleIterableTrain(pl.LightningDataModule):
     def val_dataloader(self):
         return DataLoader(
             dataset=self.valid_dataset,
-            collate_fn=padded_collate,
+            collate_fn=padded_collate if self._type == 'iterable' else collate_splitted_rows,
             num_workers=self.valid_conf['num_workers'],
             batch_size=self.valid_conf['batch_size'],
         )

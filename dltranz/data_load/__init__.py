@@ -524,16 +524,23 @@ def create_validation_loader(dataset, params):
     return valid_loader
 
 
+def augmentation_chain(*i_filters):
+    def _func(x):
+        for f in i_filters:
+            x = f(x)
+        return x
+    return _func
+
+
 class IterableAugmentations(IterableProcessingDataset):
     def __init__(self, *i_filters):
         super().__init__()
 
-        self.i_filters = i_filters
+        self.a_chain = augmentation_chain(*i_filters)
 
     def __iter__(self):
         for x, *targets in self._src:
-            for f in self.i_filters:
-                x = f(x)
+            x = self.a_chain(x)
             yield x, *targets
 
 
