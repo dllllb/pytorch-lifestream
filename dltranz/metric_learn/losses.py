@@ -41,7 +41,7 @@ class BinomialDevianceLoss(nn.Module):
     https://arxiv.org/abs/1407.4979
     """
 
-    def __init__(self, pair_selector, alpha = 1, beta = 1, C = 1):
+    def __init__(self, pair_selector, alpha=1, beta=1, C=1):
         super(BinomialDevianceLoss, self).__init__()
         self.alpha = alpha
         self.beta = beta
@@ -99,7 +99,7 @@ class HistogramLoss(torch.nn.Module):
     code based on https://github.com/valerystrizh/pytorch-histogram-loss
     """
     
-    def __init__(self, num_steps = 100, device='cuda'):
+    def __init__(self, num_steps=100, device='cuda'):
         super(HistogramLoss, self).__init__()
         self.step = 2 / (num_steps - 1)
         self.eps = 1 / num_steps
