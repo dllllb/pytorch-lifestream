@@ -9,6 +9,7 @@ from torch.utils.data import DataLoader
 
 from tqdm.auto import tqdm
 from dltranz.data_load import ConvertingTrxDataset, DropoutTrxDataset, read_data_gen, AllTimeShuffleMLDataset
+from dltranz.data_load.data_module.coles_data_module import ColesDataModuleTrain
 from dltranz.experiment import update_model_stats
 from dltranz.metric_learn.dataset import SplittingDataset, split_strategy
 from dltranz.metric_learn.dataset import TargetEnumeratorDataset, collate_splitted_rows
@@ -142,7 +143,12 @@ def run_experiment(model, conf, train_loader, valid_loader):
     sampling_strategy = get_sampling_strategy(params)
     loss = get_loss(params, sampling_strategy)
 
-    valid_metric = {'BatchRecallTop': BatchRecallTop(k=params['valid.split_strategy.split_count'] - 1)}
+    try:
+        split_count = params['valid.split_strategy.split_count']
+    except:
+        split_count = conf['data_module.valid.split_strategy.split_count']
+
+    valid_metric = {'BatchRecallTop': BatchRecallTop(k=split_count - 1)}
     optimizer = get_optimizer(model, params)
     scheduler = get_lr_scheduler(optimizer, params)
 
@@ -182,7 +188,12 @@ def main(args=None):
 
     model_f = ml_model_by_type(conf['params.model_type'])
     model = model_f(conf['params'])
-    train_loader, valid_loader = create_data_loaders(conf)
+    if 'data_module' in conf:
+        dm = ColesDataModuleTrain(conf['data_module'])
+        dm.setup()
+        train_loader, valid_loader = dm.train_dataloader(), dm.train_dataloader()
+    else:
+        train_loader, valid_loader = create_data_loaders(conf)
 
     return run_experiment(model, conf, train_loader, valid_loader)
 

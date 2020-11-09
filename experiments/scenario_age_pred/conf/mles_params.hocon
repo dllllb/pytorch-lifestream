@@ -1,5 +1,5 @@
 {
-  include "dataset_map_part.hocon"
+  include "dataset_iterable_part.hocon"
 
   params: {
     device: cuda,
