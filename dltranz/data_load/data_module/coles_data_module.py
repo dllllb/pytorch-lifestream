@@ -65,7 +65,7 @@ class ColesDataModuleTrain(pl.LightningDataModule):
 
     def setup_iterable_files(self):
         if self.setup_conf['split_by'] == 'files':
-            data_files = ParquetFiles(self.setup_conf['dataset_files.data_path'])
+            data_files = ParquetFiles(self.setup_conf['dataset_files.data_path']).data_files
 
             splitter = ListSplitter(
                 data_files,

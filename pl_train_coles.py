@@ -7,12 +7,12 @@ from dltranz.util import get_conf
 
 logger = logging.getLogger(__name__)
 
-# if __name__ == '__main__':
-#     switch_reproducibility_on()
-
 
 def main(args=None):
     conf = get_conf(args)
+
+    if 'seed_everything' in conf:
+        pl.seed_everything(conf['seed_everything'])
 
     model = SequenceMetricLearning(conf['params'])
     dm = ColesDataModuleTrain(conf['data_module'])
