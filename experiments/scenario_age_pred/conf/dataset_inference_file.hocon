@@ -1,0 +1,14 @@
+{
+  inference_dataloader: {
+    col_id: client_id
+    dataset_files: [
+      "data/train_trx_file.parquet"
+      "data/test_trx_file.parquet"
+    ]
+    SeqLenLimit: {max_seq_len: 1600}
+    loader: {
+      num_workers: 4
+      batch_size: 1000
+    }
+  }
+}

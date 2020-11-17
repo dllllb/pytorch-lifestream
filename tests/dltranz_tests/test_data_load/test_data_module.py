@@ -35,7 +35,6 @@ from itertools import chain
 import torch
 from pyhocon.config_parser import ConfigFactory
 
-from dltranz.data_load.data_module import create_train_loader
 from tests.dltranz_tests.test_data_load import gen_trx_data
 
 

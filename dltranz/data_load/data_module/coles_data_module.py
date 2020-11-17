@@ -28,7 +28,7 @@ from dltranz.data_load.iterable_processing.iterable_shuffle import IterableShuff
 from dltranz.data_load.iterable_processing.seq_len_filter import SeqLenFilter
 from dltranz.data_load.iterable_processing.target_extractor import TargetExtractor
 from dltranz.data_load.list_splitter import ListSplitter
-from dltranz.data_load.parquet_dataset import ParquetDataset
+from dltranz.data_load.parquet_dataset import ParquetDataset, ParquetFiles
 from dltranz.data_load.partitioned_dataset import PartitionedDataset, PartitionedDataFiles
 from dltranz.metric_learn.dataset import split_strategy, collate_splitted_rows
 from dltranz.metric_learn.dataset.splitting_dataset import IterableSplittingDataset, MapSplittingDataset
@@ -65,10 +65,7 @@ class ColesDataModuleTrain(pl.LightningDataModule):
 
     def setup_iterable_files(self):
         if self.setup_conf['split_by'] == 'files':
-            file_path = self.setup_conf['dataset_files.data_path']
-            if os.path.splitext(file_path)[1] == '.parquet':
-                file_path = os.path.join(file_path, '*.parquet')
-            data_files = glob(file_path)
+            data_files = ParquetFiles(self.setup_conf['dataset_files.data_path'])
 
             splitter = ListSplitter(
                 data_files,

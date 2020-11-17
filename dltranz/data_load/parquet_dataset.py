@@ -1,5 +1,7 @@
 from itertools import chain
+import os
 
+from glob import glob
 import torch
 import logging
 
@@ -8,6 +10,17 @@ import numpy as np
 from dltranz.data_load import read_pyarrow_file
 
 logger = logging.getLogger(__name__)
+
+
+class ParquetFiles:
+    def __init__(self, file_path):
+        if os.path.splitext(file_path)[1] == '.parquet':
+            file_path = os.path.join(file_path, '*.parquet')
+        self._data_files = glob(file_path)
+
+    @property
+    def data_files(self):
+        return self._data_files
 
 
 class ParquetDataset(torch.utils.data.IterableDataset):

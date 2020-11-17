@@ -3,8 +3,13 @@ from dltranz.seq_mel import SequenceMetricLearning
 from .test_data_load import RandomEventData
 from pyhocon import ConfigFactory
 
+
 def tst_params():
     params = {
+        "validation_metric_params": {
+            "K": 2,
+            "metric": "cosine"
+        },
         "model_type": "rnn",
         "train": {
             "num_workers": 1,

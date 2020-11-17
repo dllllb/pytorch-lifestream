@@ -1,8 +1,24 @@
 {
-  include "dataset_iterable_part.hocon"
+  include "dataset_iterable_file.hocon"
+
+  include "dataset_inference_file.hocon"
+
+  trainer: {
+    gpus: [0]
+    auto_select_gpus: false
+
+    max_epochs: 150
+
+    checkpoint_callback: false
+  }
+
 
   params: {
-    device: cuda,
+    validation_metric_params: {
+        K: 4
+        metric: cosine
+    }
+
     model_type: rnn,
     rnn: {
       type: gru,
@@ -32,33 +48,15 @@
       loss: ContrastiveLoss,
       margin: 0.5,
       lr: 0.001,
-      weight_decay: 0.0,
-      n_epoch: 150,
-      _checkpoints: {
-        save_interval: 10,
-        n_saved: 1000,
-        dirname: models/mles_checkpoints/,
-        filename_prefix: mles,
-        create_dir: true
-      }
+      weight_decay: 0.0
     },
     norm_scores: false,
   },
 
-  save_model: true,
-  model_path: {
-    model: models/mles_model.p,
-    only_encoder: false
-  },
+  model_path: "models/mles_model.p"
 
   output: {
     path: data/mles_embeddings,
-    format: pickle,
-    columns: [client_id]
-  },
-
-  stats: {
-    path: runs/mles_result.json
+    format: pickle
   }
-
 }
