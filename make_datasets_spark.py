@@ -154,7 +154,7 @@ class DatasetConverter:
         '1 12:00:00' -> 1.5
         '1 01:00:00' -> 1 + 1 / 24
         '2 23:59:59' -> 1.99
-        '432 12:00:00' -> 432.5
+        '432 12:00:00' -> 432.5   '000432 12:00:00'
 
         :param df:
         :param col_event_time:
@@ -162,7 +162,7 @@ class DatasetConverter:
         """
         df = df.withColumn('_et_day', F.substring(F.lpad(F.col(col_event_time), 15, '0'), 1, 6).cast('float'))
 
-        df = df.withColumn('_et_time', F.substring(F.lpad(F.col(col_event_time), 15, '0'), 7, 9))
+        df = df.withColumn('_et_time', F.substring(F.lpad(F.col(col_event_time), 15, '0'), 8, 8))
         df = df.withColumn('_et_time', F.regexp_replace('_et_time', r'\:60$', ':59'))
         df = df.withColumn('_et_time', F.unix_timestamp('_et_time', 'HH:mm:ss') / (24 * 60 * 60))
 
@@ -406,7 +406,7 @@ class DatasetConverter:
             )
 
         if save_test_id:
-            test_ids = test.select(self.config.col_client_id).toPandas()
+            test_ids = test.select(self.config.col_client_id).distinct().toPandas()
             test_ids.to_csv(self.config.output_test_ids_path, index=False)
 
         _duration = datetime.datetime.now() - _start

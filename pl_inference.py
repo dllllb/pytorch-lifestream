@@ -4,6 +4,8 @@ import pandas as pd
 from torch.utils.data import ChainDataset
 from torch.utils.data.dataloader import DataLoader
 
+import pytorch_lightning as pl
+
 from dltranz.data_load import IterableChain, padded_collate, IterableAugmentations
 from dltranz.data_load.augmentations.seq_len_limit import SeqLenLimit
 from dltranz.data_load.iterable_processing.feature_filter import FeatureFilter
@@ -45,6 +47,8 @@ def create_inference_dataloader(conf):
 
 def main(args=None):
     conf = get_conf(args)
+
+    pl.seed_everything(42)
 
     model = SequenceMetricLearning(conf['params'])
     model.load_from_checkpoint(conf['model_path'])
