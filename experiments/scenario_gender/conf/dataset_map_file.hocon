@@ -6,7 +6,7 @@
       dataset_files: {
         data_path: "data/train_trx.parquet"
       }
-      split_by: rows
+      split_by: files
       valid_size: 0.05
       valid_split_seed: 42
     }

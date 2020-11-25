@@ -6,8 +6,8 @@ from itertools import islice
 import numpy as np
 import torch
 from torch.utils.data import DataLoader
-
 from tqdm.auto import tqdm
+
 from dltranz.data_load import ConvertingTrxDataset, DropoutTrxDataset, read_data_gen, AllTimeShuffleMLDataset
 from dltranz.data_load.data_module.coles_data_module import ColesDataModuleTrain
 from dltranz.experiment import update_model_stats
@@ -44,9 +44,6 @@ def prepare_embeddings(seq, conf, is_train):
             feature_arrays = {k: v for k, v in rec.items() if k in feature_keys}
 
         # TODO: datetime processing. Take date-time features
-
-        # shift embeddings to 1, 0 is padding value
-        feature_arrays = {k: v + (1 if k in embeddings else 0) for k, v in feature_arrays.items()}
 
         # clip embeddings dictionary by max value
         for e_name, e_params in conf['params.trx_encoder.embeddings'].items():
@@ -189,10 +186,12 @@ def main(args=None):
     model_f = ml_model_by_type(conf['params.model_type'])
     model = model_f(conf['params'])
     if 'data_module' in conf:
+        logger.info('ColesDataModuleTrain used')
         dm = ColesDataModuleTrain(conf['data_module'])
         dm.setup()
-        train_loader, valid_loader = dm.train_dataloader(), dm.train_dataloader()
+        train_loader, valid_loader = dm.train_dataloader(), dm.val_dataloader()
     else:
+        logger.info('create_data_loaders used')
         train_loader, valid_loader = create_data_loaders(conf)
 
     return run_experiment(model, conf, train_loader, valid_loader)
