@@ -279,7 +279,7 @@ def fit_model(model, train_loader, valid_loader, loss, optimizer, scheduler, par
 
     @trainer.on(Events.EPOCH_COMPLETED)
     def log_training_results(engine):
-        if valid_loader:
+        if valid_loader is not None:
             validation_evaluator.run(valid_loader)
             metrics = validation_evaluator.state.metrics
             msgs = []
