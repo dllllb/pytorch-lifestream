@@ -4,6 +4,7 @@ from operator import iadd
 
 import numpy as np
 import pandas as pd
+import torch
 from sklearn.metrics import make_scorer, accuracy_score
 
 import dltranz.scenario_cls_tools as sct
@@ -104,6 +105,28 @@ def main(conf):
                 random_state=conf['model_seed'],
                 n_jobs=4,
             ),
+            'tabnet': dict(
+                model_params=dict(
+                    n_d=8,
+                    n_a=8,
+                    n_steps=5,
+                    gamma=1.8,
+                    n_independent=1,
+                    n_shared=2,
+                    lambda_sparse=0.0015,
+                    optimizer_fn=torch.optim.Adam,
+                    optimizer_params=dict(lr=2e-2),
+                    scheduler_params={"step_size": 100, "gamma": 0.1},
+                    scheduler_fn=torch.optim.lr_scheduler.StepLR,
+                    verbose=1,
+                    seed=conf['model_seed']
+                ),
+                fit_params=dict(
+                    batch_size=1024,
+                    patience=30,
+                    max_epochs=100,
+                ),
+            )
         }
 
         # train and score models

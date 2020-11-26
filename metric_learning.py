@@ -65,11 +65,18 @@ def shuffle_client_list_reproducible(conf, data):
     return data
 
 
+def fill_target(seq):
+    for rec in seq:
+        rec['target'] = -1
+        yield rec
+
+
 def prepare_data(conf):
     data = read_data_gen(conf['dataset.train_path'])
     data = tqdm(data)
     if 'max_rows' in conf['dataset']:
         data = islice(data, conf['dataset.max_rows'])
+    data = fill_target(data)
     data = prepare_embeddings(data, conf, is_train=True)
     data = shuffle_client_list_reproducible(conf, data)
     data = list(data)
