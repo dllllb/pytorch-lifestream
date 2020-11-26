@@ -33,4 +33,6 @@ class RandomSlice:
     def get_min_max(self, seq_len):
         max_len = int(min(self.max_len, seq_len))
         min_len = int(min(self.min_len, seq_len * self.rate_for_min))
+        if min_len < 1:
+            min_len = 1
         return min_len, max_len
