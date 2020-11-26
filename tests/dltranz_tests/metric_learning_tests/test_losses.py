@@ -91,11 +91,24 @@ def test_histogram_loss2():
 
 
 def test_complex_loss():
-    x, y = get_data()
+    B, C, H = 2, 2, 2  # Batch, num Classes, Hidden size
+    x_ml = torch.randn(B * C, H)
+    x_ml = x_ml.div(x_ml.pow(2).sum(dim=1, keepdim=True).pow(0.5))
+    y_ml = torch.arange(C).view(-1, 1).expand(C, B).reshape(-1, 1)
+
     sampling_strategy = AllPositivePairSelector()
     ml_loss_fn = MarginLoss(sampling_strategy)
+
+    def ml_loss(*args, **kwargs):
+        return ml_loss_fn(*args, **kwargs)[0]
+
+    x_aug = torch.randn(B * C, C)
+    x_aug = x_aug.div(x_aug.sum(dim=1, keepdim=True))
+    y_aug = torch.arange(B).view(1, -1).expand(C, B).reshape(-1, 1)
     aug_loss_fn = torch.nn.NLLLoss()
 
-    loss = ComplexLoss(ml_loss_fn, aug_loss_fn, 0.5)
+    y = torch.cat([y_ml, y_aug], axis=1)
+    loss_fn = ComplexLoss(ml_loss, aug_loss_fn, 0.5)
+    loss = loss_fn((x_aug, x_ml), y)
     print(loss)
     assert 1 == 1
