@@ -1,6 +1,7 @@
 import torch
 
-from dltranz.metric_learn.losses import ContrastiveLoss, HistogramLoss, BinomialDevianceLoss, TripletLoss, MarginLoss
+from dltranz.metric_learn.losses import ContrastiveLoss, HistogramLoss, BinomialDevianceLoss, TripletLoss, MarginLoss, \
+    ComplexLoss
 from dltranz.metric_learn.sampling_strategies import AllPositivePairSelector
 from dltranz.metric_learn.sampling_strategies import AllTripletSelector
 
@@ -88,3 +89,13 @@ def test_histogram_loss2():
     print(loss)
     assert 1 == 1
 
+
+def test_complex_loss():
+    x, y = get_data()
+    sampling_strategy = AllPositivePairSelector()
+    ml_loss_fn = MarginLoss(sampling_strategy)
+    aug_loss_fn = torch.nn.NLLLoss()
+
+    loss = ComplexLoss(ml_loss_fn, aug_loss_fn, 0.5)
+    print(loss)
+    assert 1 == 1
