@@ -95,7 +95,7 @@ class DistanceWeightedPairSelector(PairSelector):
         number of images per class
 
     Inputs:
-        data: input tensor with shapeee (batch_size, edbed_dim)
+        data: input tensor with shape (batch_size, embed_dim)
             Here we assume the consecutive batch_k examples are of the same class.
             For example, if batch_k = 5, the first 5 examples belong to the same class,
             6th-10th examples belong to another class, etc.
@@ -188,10 +188,10 @@ class AllTripletSelector(TripletSelector):
         super(AllTripletSelector, self).__init__()
 
     def get_triplets(self, embeddings, labels):
-        labels = labels.cpu().data.numpy()
+        np_labels = labels.cpu().data.numpy()
         triplets = []
-        for label in set(labels):
-            label_mask = (labels == label)
+        for label in set(np_labels):
+            label_mask = (np_labels == label)
             label_indices = np.where(label_mask)[0]
             if len(label_indices) < 2:
                 continue
@@ -203,7 +203,7 @@ class AllTripletSelector(TripletSelector):
                              for neg_ind in negative_indices]
             triplets += temp_triplets
 
-            return torch.LongTensor(np.array(triplets)).to(labels.device())
+        return torch.LongTensor(np.array(triplets)).to(labels.device)
 
 
 class RandomNegativeTripletSelector(TripletSelector):
@@ -224,10 +224,10 @@ class RandomNegativeTripletSelector(TripletSelector):
         positive_pairs = torch.triu((x == 0).int(), diagonal=1).nonzero(as_tuple=False)
 
         m = positive_pairs.size(0)
-        acnhor_labels = labels[positive_pairs[:, 0]]
+        anchor_labels = labels[positive_pairs[:, 0]]
 
-        # construct matrix x (size m x n), such as x_ij == 1 <==> acnhor_labels[i] == labels[j]
-        x = (labels.expand(m, n) == acnhor_labels.expand(n, m).t())
+        # construct matrix x (size m x n), such as x_ij == 1 <==> anchor_labels[i] == labels[j]
+        x = (labels.expand(m, n) == anchor_labels.expand(n, m).t())
 
         negative_pairs = (x == 0).type(embeddings.dtype)
         negative_pairs_prob = (negative_pairs.t() / negative_pairs.sum(dim=1)).t()
@@ -257,15 +257,15 @@ class HardTripletSelector(TripletSelector):
 
         m = positive_pairs.size(0)
 
-        acnhor_embed = embeddings[positive_pairs[:, 0]].detach()
-        acnhor_labels = labels[positive_pairs[:, 0]]
+        anchor_embed = embeddings[positive_pairs[:, 0]].detach()
+        anchor_labels = labels[positive_pairs[:, 0]]
 
         # pos_embed = embeddings[positive_pairs[:,0]].detach()
 
-        # construct matrix x (size m x n), such as x_ij == 1 <==> acnhor_labels[i] == labels[j]
-        x = (labels.expand(m, n) == acnhor_labels.expand(n, m).t())
+        # construct matrix x (size m x n), such as x_ij == 1 <==> anchor_labels[i] == labels[j]
+        x = (labels.expand(m, n) == anchor_labels.expand(n, m).t())
 
-        mat_distances = outer_pairwise_distance(acnhor_embed, embeddings.detach())  # pairwise_distance anchors x all
+        mat_distances = outer_pairwise_distance(anchor_embed, embeddings.detach())  # pairwise_distance anchors x all
 
         upper_bound = int((2 * n) ** 0.5) + 1
         mat_distances = ((upper_bound - mat_distances) * (x == 0).type(
@@ -303,17 +303,17 @@ class SemiHardTripletSelector(TripletSelector):
 
         m = positive_pairs.size(0)
 
-        acnhor_embed = embeddings[positive_pairs[:, 0]].detach()
-        acnhor_labels = labels[positive_pairs[:, 0]]
+        anchor_embed = embeddings[positive_pairs[:, 0]].detach()
+        anchor_labels = labels[positive_pairs[:, 0]]
 
         pos_embed = embeddings[positive_pairs[:, 1]].detach()
 
-        D_ap = F.pairwise_distance(acnhor_embed, pos_embed)
+        D_ap = F.pairwise_distance(anchor_embed, pos_embed)
 
-        # construct matrix x (size m x n), such as x_ij == 1 <==> acnhor_labels[i] == labels[j]
-        x = (labels.expand(m, n) == acnhor_labels.expand(n, m).t())
+        # construct matrix x (size m x n), such as x_ij == 1 <==> anchor_labels[i] == labels[j]
+        x = (labels.expand(m, n) == anchor_labels.expand(n, m).t())
 
-        mat_distances = outer_pairwise_distance(acnhor_embed, embeddings.detach())  # pairwise_distance anchors x all
+        mat_distances = outer_pairwise_distance(anchor_embed, embeddings.detach())  # pairwise_distance anchors x all
 
         neg_mat_distances = mat_distances * (x == 0).type(mat_distances.dtype)  # filter: get only negative pairs
 
