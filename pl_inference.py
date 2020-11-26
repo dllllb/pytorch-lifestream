@@ -50,8 +50,7 @@ def main(args=None):
 
     pl.seed_everything(42)
 
-    model = SequenceMetricLearning(conf['params'])
-    model.load_from_checkpoint(conf['model_path'])
+    model = SequenceMetricLearning.load_from_checkpoint(conf['model_path'])
 
     dl = create_inference_dataloader(conf['inference_dataloader'])
 
