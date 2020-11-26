@@ -112,9 +112,9 @@ def train_and_score(kw_params: KWParamsTrainAndScore):
 
         if kw_params.model_type == 'linear':
             if kw_params.model_params.get('objective') == 'regression':
-                model = LinearRegression(**{k:v for k,v in kw_params.model_params.items() if k != 'objective'})
+                model = LinearRegression(**{k: v for k, v in kw_params.model_params.items() if k != 'objective'})
             else:
-                model = LogisticRegression(**{k:v for k,v in kw_params.model_params.items() if k != 'objective'})
+                model = LogisticRegression(**{k: v for k, v in kw_params.model_params.items() if k != 'objective'})
         elif kw_params.model_type == 'xgb':
             if kw_params.model_params.get('objective', 'classification').startswith('reg'):
                 model = xgb.XGBRegressor(**kw_params.model_params)
@@ -125,6 +125,13 @@ def train_and_score(kw_params: KWParamsTrainAndScore):
                 model = lgb.LGBMRegressor(**kw_params.model_params)
             else:
                 model = lgb.LGBMClassifier(**kw_params.model_params)
+        elif kw_params.model_type == 'tabnet':
+            if kw_params.model_params.get('objective') == 'regression':
+                from pytorch_tabnet.tab_model import TabNetRegressor
+                model = TabNetRegressor(**kw_params.model_params['model_params'])
+            else:
+                from pytorch_tabnet.tab_model import TabNetClassifier
+                model = TabNetClassifier(**kw_params.model_params['model_params'])
         elif kw_params.model_type in ('neural_automl', 'fastai'):
             pass
         else:
@@ -154,6 +161,16 @@ def train_and_score(kw_params: KWParamsTrainAndScore):
                                                y_valid.values.astype('long'),
                                                kw_params.model_params)'''
             score_test = -1
+
+        if kw_params.model_type == 'tabnet':
+            model.fit(
+                X_train.values,
+                y_train.values,
+                eval_set=[(X_valid.values, y_valid.values)],
+                **kw_params.model_params['fit_params']
+            )
+            score_valid = kw_params.scorer(model, X_valid.values, y_valid.values)
+            score_test = kw_params.scorer(model, X_test.values, y_test.values)
 
         logger.info(
             ' '.join([

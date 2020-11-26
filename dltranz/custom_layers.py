@@ -19,19 +19,16 @@ class Squeeze(nn.Module):
         return x.squeeze()
 
 
-class MixedTrxFeaturesHead(nn.Module):
-    def __init__(self, trx_tail, features_tail, head):
+class CatLayer(nn.Module):
+    def __init__(self, left_tail, right_tail):
         super().__init__()
-        self.trx_tail = trx_tail
-        self.features_tail = features_tail
-        self.head = head
+        self.left_tail = left_tail
+        self.right_tail = right_tail
 
     def forward(self, x):
-        padded_batch, features = x
-        return self.head(self.features_tail(features))
-        t = torch.cat([self.trx_tail(padded_batch), self.features_tail(features)], axis=1)
-
-        return self.head(t)
+        l, r = x
+        t = torch.cat([self.left_tail(l), self.right_tail(r)], axis=1)
+        return t
 
 
 def MLP(input_size, params):

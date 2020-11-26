@@ -118,15 +118,6 @@ def metric_Recall_top_K(X, y, K, metric='cosine'):
     return np.sum(res) / len(y) / K
 
 
-class ignite_Recall_top_K(EpochMetric):
-
-    def __init__(self, output_transform=lambda x: x, K=3, metric='cosine'):
-        super(ignite_Recall_top_K, self).__init__(
-            partial(metric_Recall_top_K, K=K, metric=metric),
-            output_transform=output_transform
-        )
-
-
 class BatchRecallTop(Metric):
     def __init__(self, k, metric='cosine'):
         super().__init__(output_transform=lambda x: x)

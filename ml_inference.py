@@ -7,7 +7,7 @@ from tqdm.auto import tqdm
 
 from dltranz.data_load import read_data_gen
 from dltranz.util import init_logger, get_conf, switch_reproducibility_on
-from metric_learning import prepare_embeddings
+from metric_learning import prepare_embeddings, fill_target
 from dltranz.metric_learn.inference_tools import score_part_of_data
 from dltranz.metric_learn.ml_models import load_encoder_for_inference
 
@@ -15,12 +15,6 @@ logger = logging.getLogger(__name__)
 
 if __name__ == '__main__':
     switch_reproducibility_on()
-
-
-def fill_target(seq):
-    for rec in seq:
-        rec['target'] = -1
-        yield rec
 
 
 def read_dataset(path, conf):
