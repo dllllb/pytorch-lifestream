@@ -6,6 +6,7 @@ import numpy as np
 from functools import partial
 from ignite.metrics import EpochMetric, Metric
 import ignite.metrics
+import pytorch_lightning as pl
 
 
 logger = logging.getLogger(__name__)
@@ -157,6 +158,24 @@ class BatchRecallTop(Metric):
         if self.denum_value == 0:
             return 0.0
         return self.num_value / self.denum_value
+
+
+class BatchRecallTopPL(pl.metrics.Metric):
+    def __init__(self, K, metric='cosine'):
+        super().__init__(compute_on_step=False)
+
+        self.add_state("recall_top_k", default=torch.tensor(0.0))
+        self.add_state("batch_count", default=torch.tensor(0))
+
+        self.k = K
+        self.metric = metric
+
+    def update(self, preds, target):
+        self.recall_top_k += metric_Recall_top_K(preds, target, self.k, self.metric)
+        self.batch_count += 1
+
+    def compute(self):
+        return self.recall_top_k / self.batch_count.float()
 
 
 #custom class

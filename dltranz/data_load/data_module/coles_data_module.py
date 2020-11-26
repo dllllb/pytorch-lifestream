@@ -25,6 +25,7 @@ from tqdm.auto import tqdm
 
 from dltranz.data_load import padded_collate, IterableAugmentations, IterableChain, augmentation_chain
 from dltranz.data_load.augmentations.dropout_trx import DropoutTrx
+from dltranz.data_load.iterable_processing.category_size_clip import CategorySizeClip
 from dltranz.data_load.iterable_processing.feature_filter import FeatureFilter
 from dltranz.data_load.iterable_processing.id_filter import IdFilter
 from dltranz.data_load.iterable_processing.iterable_shuffle import IterableShuffle
@@ -40,7 +41,7 @@ logger = logging.getLogger(__name__)
 
 
 class ColesDataModuleTrain(pl.LightningDataModule):
-    def __init__(self, conf):
+    def __init__(self, conf, model):
         super().__init__()
 
         self._type = conf['type']
@@ -51,6 +52,7 @@ class ColesDataModuleTrain(pl.LightningDataModule):
         self.valid_conf = conf['valid']
 
         self.col_id = self.setup_conf['col_id']
+        self.category_max_size = model.category_max_size
 
         self.train_dataset = None
         self.valid_dataset = None
@@ -181,6 +183,7 @@ class ColesDataModuleTrain(pl.LightningDataModule):
 
         yield TargetExtractor(target_col=self.col_id)
         yield FeatureFilter(drop_non_iterable=True)
+        yield CategorySizeClip(self.category_max_size)
 
         if self._type == 'iterable':
             # all processing in single chain

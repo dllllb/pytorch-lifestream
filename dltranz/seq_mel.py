@@ -1,7 +1,7 @@
 import pytorch_lightning as pl
 import numpy as np
 
-from dltranz.metric_learn.metric import metric_Recall_top_K
+from dltranz.metric_learn.metric import BatchRecallTopPL
 from dltranz.train import get_optimizer, get_lr_scheduler
 from dltranz.metric_learn.losses import get_loss
 from dltranz.metric_learn.sampling_strategies import get_sampling_strategy
@@ -19,7 +19,12 @@ class SequenceMetricLearning(pl.LightningModule):
         model_f = ml_model_by_type(params['model_type'])
         self.model = model_f(params)
 
-        self.validation_metric_params = params['validation_metric_params']
+        self.validation_metric = BatchRecallTopPL(**params['validation_metric_params'])
+
+    @property
+    def category_max_size(self):
+        params = self.hparams.params
+        return {k: v['in'] for k, v in params['trx_encoder.embeddings'].items()}
 
     def forward(self, x):
         return self.model(x)
@@ -34,12 +39,10 @@ class SequenceMetricLearning(pl.LightningModule):
     def validation_step(self, batch, _):
         x, y = batch
         y_h = self(x)
-        recall_top_k = metric_Recall_top_K(y_h, y, **self.validation_metric_params)
-        return {'recall_top_k': recall_top_k}
+        self.validation_metric(y_h, y)
 
     def validation_epoch_end(self, outputs):
-        recall_top_k = np.mean([x['recall_top_k'] for x in outputs])
-        self.log('recall_top_k', recall_top_k, prog_bar=True)
+        self.log('recall_top_k', self.validation_metric.compute(), prog_bar=True)
 
     def configure_optimizers(self):
         params = self.hparams.params

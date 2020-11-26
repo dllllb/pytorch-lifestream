@@ -8,6 +8,7 @@ import pytorch_lightning as pl
 
 from dltranz.data_load import IterableChain, padded_collate, IterableAugmentations
 from dltranz.data_load.augmentations.seq_len_limit import SeqLenLimit
+from dltranz.data_load.iterable_processing.category_size_clip import CategorySizeClip
 from dltranz.data_load.iterable_processing.feature_filter import FeatureFilter
 from dltranz.data_load.iterable_processing.target_extractor import TargetExtractor
 from dltranz.data_load.parquet_dataset import ParquetDataset, ParquetFiles
@@ -19,12 +20,13 @@ from dltranz.util import get_conf
 logger = logging.getLogger(__name__)
 
 
-def create_inference_dataloader(conf):
+def create_inference_dataloader(conf, model):
     """This is inference dataloader for `experiments`
     """
     post_processing = IterableChain(
         TargetExtractor(target_col=conf['col_id']),
         FeatureFilter(drop_non_iterable=True),
+        CategorySizeClip(model.category_max_size),
         IterableAugmentations(
             SeqLenLimit(**conf['SeqLenLimit']),
         )
@@ -52,7 +54,7 @@ def main(args=None):
 
     model = SequenceMetricLearning.load_from_checkpoint(conf['model_path'])
 
-    dl = create_inference_dataloader(conf['inference_dataloader'])
+    dl = create_inference_dataloader(conf['inference_dataloader'], model)
 
     ids, pred = score_model(model, dl, conf['params'])
 

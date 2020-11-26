@@ -15,7 +15,7 @@ def main(args=None):
         pl.seed_everything(conf['seed_everything'])
 
     model = SequenceMetricLearning(conf['params'])
-    dm = ColesDataModuleTrain(conf['data_module'])
+    dm = ColesDataModuleTrain(conf['data_module'], model)
     trainer = pl.Trainer(**conf['trainer'])
     trainer.fit(model, dm)
 
