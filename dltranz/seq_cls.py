@@ -38,7 +38,10 @@ class SequenceClassify(pl.LightningModule):
             'auroc': EpochAuroc,
             'accuracy': pl.metrics.Accuracy,
         }
-        metric_cls = [(name, d_metrics[name]) for name in params['score_metric']]
+        params_score_metric = params['score_metric']
+        if type(params_score_metric) is str:
+            params_score_metric = [params_score_metric]
+        metric_cls = [(name, d_metrics[name]) for name in params_score_metric]
         self.valid_metrics = torch.nn.ModuleDict([(name, mc()) for name, mc in metric_cls])
         self.test_metrics = torch.nn.ModuleDict([(name, mc()) for name, mc in metric_cls])
 
