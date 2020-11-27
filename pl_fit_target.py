@@ -16,7 +16,7 @@ def main(args=None):
         pl.seed_everything(conf['seed_everything'])
 
     model = SequenceClassify(conf['params'])
-    dm = ClsDataModuleTrain(conf['data_module'])
+    dm = ClsDataModuleTrain(conf['data_module'], model)
     trainer = pl.Trainer(**conf['trainer'])
     trainer.fit(model, dm)
 
@@ -24,11 +24,12 @@ def main(args=None):
         trainer.save_checkpoint(conf['model_path'], weights_only=True)
         logger.info(f'Model weights saved to "{conf.model_path}"')
 
-    train_accuracy = model.train_accuracy.compute()
-    valid_accuracy = model.valid_accuracy.compute()
-    trainer.test(test_dataloaders=dm.test_tataloader())
-    test_accuracy = model.test_accuracy.compute()
-    print(f'train: {train_accuracy:.4f}, valid: {valid_accuracy:.4f}, test: {test_accuracy:.4f}')
+    valid_metrics = {name: mf.compute() for name, mf in model.valid_metrics.items()}
+    trainer.test(test_dataloaders=dm.test_dataloader(), ckpt_path=None, verbose=False)
+    test_metrics = {name: mf.compute() for name, mf in model.test_metrics.items()}
+
+    print(', '.join([f'valid_{name}: {v:.4f}' for name, v in valid_metrics.items()]))
+    print(', '.join([f' test_{name}: {v:.4f}' for name, v in test_metrics.items()]))
 
 
 if __name__ == '__main__':

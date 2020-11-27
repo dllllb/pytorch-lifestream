@@ -1,0 +1,92 @@
+{
+  data_module: {
+    type: map
+
+    setup: {
+      dataset_files: {
+        train_data_path: "data/train_trx.parquet"
+        test_data_path: "data/test_trx.parquet"
+      }
+      col_id: customer_id
+      col_target: gender
+
+      split_by: external
+      train_targets: "conf/embeddings_validation.work/folds/target_train_0.pickle"
+      valid_targets: "conf/embeddings_validation.work/folds/target_valid_0.pickle"
+      test_targets: "conf/embeddings_validation.work/folds/target_test.pickle"
+    }
+
+    train: {
+        min_seq_len: 0
+        random_slice: {
+            min_len: 250
+            max_len: 350
+            rate_for_min: 0.9
+        }
+        trx_dropout: 0.01
+        num_workers: 16
+        batch_size: 32
+    }
+
+    valid: {
+        max_seq_len: 1200
+        num_workers: 8
+        batch_size: 64   # 512
+    }
+  }
+
+  seed_everything: 42
+  trainer: {
+    gpus: [0]
+    auto_select_gpus: false
+
+    max_epochs: 10
+
+    checkpoint_callback: false
+    deterministic: True
+  }
+
+  params: {
+    device: cuda,
+
+    score_metric: [auroc, accuracy]
+
+    model_type: rnn,
+    ensemble_size: 1,
+    trx_encoder: {
+      norm_embeddings: false,
+      embeddings_noise: 0.003,
+      embeddings: {
+        mcc_code: {in: 200, out: 48},
+        tr_type: {in: 100, out: 24}
+      },
+      numeric_values: {
+        amount: identity
+      }
+    },
+    rnn: {
+      hidden_size: 48,
+      type: gru,
+      bidir: false,
+      trainable_starter: static
+    },
+    head: {
+      pred_all_states: false,
+      pred_all_states_mean: false,
+      explicit_lengths: false,
+      norm_input: false,
+      use_batch_norm: true
+    },
+    train: {
+      random_neg: false,
+      loss: bce,
+      lr: 0.005,
+      weight_decay: 0.0,
+    },
+    lr_scheduler: {
+      step_size: 1,
+      step_gamma: 0.90
+    },
+    norm_scores: false
+  }
+}

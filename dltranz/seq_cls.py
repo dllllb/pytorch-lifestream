@@ -1,8 +1,26 @@
 import pytorch_lightning as pl
+import torch
 
 from dltranz.loss import get_loss
 from dltranz.train import get_optimizer, get_lr_scheduler
 from dltranz.models import model_by_type
+
+
+class EpochAuroc(pl.metrics.Metric):
+    def __init__(self):
+        super().__init__(compute_on_step=False)
+
+        self.add_state('y_hat', default=[])
+        self.add_state('y', default=[])
+
+    def update(self, y_hat, y):
+        self.y_hat.append(y_hat)
+        self.y.append(y)
+
+    def compute(self):
+        y_hat = torch.cat(self.y_hat)
+        y = torch.cat(self.y)
+        return pl.metrics.functional.classification.auroc(y_hat, y)
 
 
 class SequenceClassify(pl.LightningModule):
@@ -16,9 +34,18 @@ class SequenceClassify(pl.LightningModule):
         self.model = model_f(params)
 
         # metrics
-        self.train_accuracy = pl.metrics.Accuracy()
-        self.valid_accuracy = pl.metrics.Accuracy()
-        self.test_accuracy = pl.metrics.Accuracy()
+        d_metrics = {
+            'auroc': EpochAuroc,
+            'accuracy': pl.metrics.Accuracy,
+        }
+        metric_cls = [(name, d_metrics[name]) for name in params['score_metric']]
+        self.valid_metrics = torch.nn.ModuleDict([(name, mc()) for name, mc in metric_cls])
+        self.test_metrics = torch.nn.ModuleDict([(name, mc()) for name, mc in metric_cls])
+
+    @property
+    def category_max_size(self):
+        params = self.hparams.params
+        return {k: v['in'] for k, v in params['trx_encoder.embeddings'].items()}
 
     def forward(self, x):
         return self.model(x)
@@ -28,27 +55,27 @@ class SequenceClassify(pl.LightningModule):
         y_h = self(x)
         loss = self.loss(y_h, y)
         self.log('loss', loss)
-        self.log('train_acc_step', self.train_accuracy(y_h, y))
         return loss
-
-    def training_epoch_end(self, outputs):
-        self.log('train_acc_epoch', self.train_accuracy.compute())
 
     def validation_step(self, batch, _):
         x, y = batch
         y_h = self(x)
-        self.log('valid_acc_step', self.valid_accuracy(y_h, y))
+        for name, mf in self.valid_metrics.items():
+            mf(y_h, y)
 
     def validation_epoch_end(self, outputs):
-        self.log('valid_acc_epoch', self.valid_accuracy.compute())
+        for name, mf in self.valid_metrics.items():
+            self.log(f'valid_{name}', mf.compute(), prog_bar=True)
 
     def test_step(self, batch, _):
         x, y = batch
         y_h = self(x)
-        self.log('test_acc_step', self.test_accuracy(y_h, y))
+        for name, mf in self.test_metrics.items():
+            mf(y_h, y)
 
     def test_epoch_end(self, outputs):
-        self.log('test_acc_epoch', self.test_accuracy.compute())
+        for name, mf in self.test_metrics.items():
+            self.log(f'test_{name}', mf.compute())
 
     def configure_optimizers(self):
         params = self.hparams.params

@@ -27,6 +27,7 @@ from dltranz.data_load import padded_collate, IterableAugmentations, IterableCha
 from dltranz.data_load.augmentations.dropout_trx import DropoutTrx
 from dltranz.data_load.iterable_processing.category_size_clip import CategorySizeClip
 from dltranz.data_load.iterable_processing.feature_filter import FeatureFilter
+from dltranz.data_load.iterable_processing.feature_type_cast import FeatureTypeCast
 from dltranz.data_load.iterable_processing.id_filter import IdFilter
 from dltranz.data_load.iterable_processing.iterable_shuffle import IterableShuffle
 from dltranz.data_load.iterable_processing.seq_len_filter import SeqLenFilter
@@ -181,6 +182,7 @@ class ColesDataModuleTrain(pl.LightningDataModule):
         if part == 'train':
             yield SeqLenFilter(min_seq_len=self.train_conf['min_seq_len'])
 
+        yield FeatureTypeCast({self.col_id: int})
         yield TargetExtractor(target_col=self.col_id)
         yield FeatureFilter(drop_non_iterable=True)
         yield CategorySizeClip(self.category_max_size)

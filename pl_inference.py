@@ -10,6 +10,7 @@ from dltranz.data_load import IterableChain, padded_collate, IterableAugmentatio
 from dltranz.data_load.augmentations.seq_len_limit import SeqLenLimit
 from dltranz.data_load.iterable_processing.category_size_clip import CategorySizeClip
 from dltranz.data_load.iterable_processing.feature_filter import FeatureFilter
+from dltranz.data_load.iterable_processing.feature_type_cast import FeatureTypeCast
 from dltranz.data_load.iterable_processing.target_extractor import TargetExtractor
 from dltranz.data_load.parquet_dataset import ParquetDataset, ParquetFiles
 from dltranz.metric_learn.inference_tools import save_scores
@@ -24,6 +25,7 @@ def create_inference_dataloader(conf, model):
     """This is inference dataloader for `experiments`
     """
     post_processing = IterableChain(
+        FeatureTypeCast({conf['col_id']: int}),
         TargetExtractor(target_col=conf['col_id']),
         FeatureFilter(drop_non_iterable=True),
         CategorySizeClip(model.category_max_size),
