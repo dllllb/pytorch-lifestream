@@ -12,6 +12,8 @@ import torch
 from torch.utils.data import WeightedRandomSampler, Sampler, Dataset
 from torch.utils.data.dataloader import DataLoader
 
+from dltranz.data_load.augmentations.all_time_shuffle import AllTimeShuffle
+from dltranz.data_load.iterable_processing_dataset import IterableProcessingDataset
 from dltranz.data_load.lazy_dataset import LazyDataset
 from dltranz.seq_encoder import PaddedBatch
 
@@ -188,21 +190,15 @@ class AllTimeShuffleDataset(Dataset):
     """
     def __init__(self, dataset, event_time_name='event_time'):
         self.dataset = dataset
-        self.event_time_name = event_time_name
+        self.shuffler = AllTimeShuffle(event_time_name)
         self.style = dataset.style
 
     def __len__(self):
         return len(self.dataset)
 
-    @staticmethod
-    def get_perm_ix(event_time):
-        n = len(event_time)
-        return torch.randperm(n)
-
     def __getitem__(self, item):
         x, y = self.dataset[item]
-        ix = self.get_perm_ix(x[self.event_time_name])
-        new_x = {k: v[ix] for k, v in x.items()}
+        new_x = self.shuffler(x)
         return new_x, y
 
 
@@ -211,16 +207,11 @@ class AllTimeShuffleMLDataset(Dataset):
     """
     def __init__(self, dataset, event_time_name='event_time'):
         self.core_dataset = dataset
-        self.event_time_name = event_time_name
+        self.shuffler = AllTimeShuffle(event_time_name)
         self.style = dataset.style
 
     def __len__(self):
         return len(self.core_dataset)
-
-    @staticmethod
-    def get_perm_ix(event_time):
-        n = len(event_time)
-        return torch.randperm(n)
 
     def __getitem__(self, idx):
         item = self.core_dataset[idx]
@@ -231,8 +222,7 @@ class AllTimeShuffleMLDataset(Dataset):
 
     def _one_item(self, item):
         x, y = item
-        ix = self.get_perm_ix(x[self.event_time_name])
-        new_x = {k: v[ix] for k, v in x.items()}
+        new_x = self.shuffler(x)
         return new_x, y
 
 
@@ -532,3 +522,35 @@ def create_validation_loader(dataset, params):
         collate_fn=padded_collate)
 
     return valid_loader
+
+
+def augmentation_chain(*i_filters):
+    def _func(x):
+        for f in i_filters:
+            x = f(x)
+        return x
+    return _func
+
+
+class IterableAugmentations(IterableProcessingDataset):
+    def __init__(self, *i_filters):
+        super().__init__()
+
+        self.a_chain = augmentation_chain(*i_filters)
+
+    def __iter__(self):
+        for x, *targets in self._src:
+            x = self.a_chain(x)
+            yield x, *targets
+
+
+class IterableChain:
+    def __init__(self, *i_filters):
+        self.i_filters = i_filters
+
+    def __call__(self, seq):
+        for f in self.i_filters:
+            logger.debug(f'Applied {f} to {seq}')
+            seq = f(seq)
+        logger.debug(f'Returned {seq}')
+        return seq

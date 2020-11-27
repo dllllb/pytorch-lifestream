@@ -1,0 +1,37 @@
+{
+  data_module: {
+    type: iterable
+    setup: {
+      col_id: client_id
+      dataset_files: {
+        data_path: "data/train_trx_file.parquet"
+      }
+      split_by: files
+      valid_size: 0.1
+      valid_split_seed: 42
+    }
+    train: {
+      min_seq_len: 25
+      buffer_size: 512
+      split_strategy: {
+        split_strategy: "SampleSlices"
+        split_count: 5
+        cnt_min: 25
+        cnt_max: 200
+      }
+      trx_dropout: 0.01
+      num_workers: 16
+      batch_size: 320
+    }
+    valid: {
+      split_strategy: {
+        split_strategy: SampleSlices
+        split_count: 5
+        cnt_min: 25
+        cnt_max: 100
+      }
+      num_workers: 16
+      batch_size: 5120
+    }
+  }
+}

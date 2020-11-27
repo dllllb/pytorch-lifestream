@@ -98,3 +98,14 @@ python -m scenario_gender compare_approaches --n_workers 3 \
     --add_baselines --add_emb_baselines \
     --embedding_file_names "cpc_v2_embeddings.pickle"
 ```
+
+# pytorch_lightning framework
+```sh
+#  `conf/dataset_iterable_file.hocon` may be included in `conf/mles_params.hocon`
+python ../../pl_train_coles.py \
+     trainer.gpus=[3] \
+     --conf conf/dataset_iterable_file.hocon conf/mles_params.hocon
+python ../../pl_inference.py \
+    params.device="cuda:3" \
+    --conf conf/mles_params.hocon
+```

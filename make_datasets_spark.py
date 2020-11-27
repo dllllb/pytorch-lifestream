@@ -43,6 +43,7 @@ class DatasetConverter:
         parser.add_argument('--output_train_path', type=os.path.abspath)
         parser.add_argument('--output_test_path', type=os.path.abspath)
         parser.add_argument('--output_test_ids_path', type=os.path.abspath)
+        parser.add_argument('--save_partitioned_data', action='store_true')
         parser.add_argument('--log_file', type=os.path.abspath)
 
         args = parser.parse_args(args)
@@ -105,6 +106,7 @@ class DatasetConverter:
         df_encoder = df.groupby(col_orig).agg(F.count(F.lit(1)).alias('_cnt'))
         df_encoder = df_encoder.withColumn(col_name,
                                            F.row_number().over(Window.partitionBy().orderBy(F.col('_cnt').desc())))
+        df_encoder = df_encoder.withColumn(col_name, F.col(col_name) + F.lit(1))
         df_encoder = df_encoder.withColumn(col_name, F.col(col_name))
         df_encoder = df_encoder.drop('_cnt')
 
@@ -152,7 +154,7 @@ class DatasetConverter:
         '1 12:00:00' -> 1.5
         '1 01:00:00' -> 1 + 1 / 24
         '2 23:59:59' -> 1.99
-        '432 12:00:00' -> 432.5
+        '432 12:00:00' -> 432.5   '000432 12:00:00'
 
         :param df:
         :param col_event_time:
@@ -160,7 +162,7 @@ class DatasetConverter:
         """
         df = df.withColumn('_et_day', F.substring(F.lpad(F.col(col_event_time), 15, '0'), 1, 6).cast('float'))
 
-        df = df.withColumn('_et_time', F.substring(F.lpad(F.col(col_event_time), 15, '0'), 7, 9))
+        df = df.withColumn('_et_time', F.substring(F.lpad(F.col(col_event_time), 15, '0'), 8, 8))
         df = df.withColumn('_et_time', F.regexp_replace('_et_time', r'\:60$', ':59'))
         df = df.withColumn('_et_time', F.unix_timestamp('_et_time', 'HH:mm:ss') / (24 * 60 * 60))
 
@@ -180,6 +182,11 @@ class DatasetConverter:
 
     def collect_lists(self, df, col_id):
         col_list = [col for col in df.columns if col != col_id]
+
+        if self.config.save_partitioned_data:
+            df = df.withColumn('mon_id', (F.col('event_time') / 30).cast('int'))
+            col_id = [col_id, 'mon_id']
+
         df = df \
             .withColumn('trx_count', F.count(F.lit(1)).over(Window.partitionBy(col_id))) \
             .withColumn('_rn', F.row_number().over(Window.partitionBy(col_id).orderBy('event_time')))
@@ -312,8 +319,14 @@ class DatasetConverter:
         return train, test
 
     def save_features(self, df_data, save_path):
-        df_data.write.parquet(save_path, mode='overwrite')
-        logger.info(f'Saved to: "{save_path}"')
+        if not self.config.save_partitioned_data:
+            df_data.write.parquet(save_path, mode='overwrite')
+            logger.info(f'Saved to: "{save_path}"')
+        else:
+            df_data = df_data.withColumn('hash_id', F.crc32(F.col(self.config.col_client_id)) % 100)
+            df_data.write.parquet(save_path, mode='overwrite', partitionBy=['mon_id', 'hash_id'])
+            logger.info(f'Saved partitions to: "{save_path}"')
+
 
     def run(self):
         _start = datetime.datetime.now()
@@ -393,7 +406,7 @@ class DatasetConverter:
             )
 
         if save_test_id:
-            test_ids = test.select(self.config.col_client_id).toPandas()
+            test_ids = test.select(self.config.col_client_id).distinct().toPandas()
             test_ids.to_csv(self.config.output_test_ids_path, index=False)
 
         _duration = datetime.datetime.now() - _start

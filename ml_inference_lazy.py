@@ -50,8 +50,8 @@ def read_dataset(path, conf):
     else:
         raise AssertionError(f'Unknown parquet file path format "{path}", "{file_name}"')
 
-    df = DataFiles(path_wc=path, valid_size=0)
-    ds = LazyDataset(df.train, partial(read_file, conf=conf))
+    df = DataFiles(path_wc=path)
+    ds = LazyDataset(df.files, partial(read_file, conf=conf))
     return ds
 
 

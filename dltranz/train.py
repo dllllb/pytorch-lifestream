@@ -292,13 +292,18 @@ def fit_model(model, train_loader, valid_loader, loss, optimizer, scheduler, par
 
     @trainer.on(Events.EPOCH_COMPLETED)
     def log_training_results(engine):
-        validation_evaluator.run(valid_loader)
-        metrics = validation_evaluator.state.metrics
-        msgs = []
-        for metric in metrics.keys():
-            msgs.append(f'{metric}: {metrics[metric]:.3f}')
-        pbar.log_message(
-            f'Epoch: {engine.state.epoch},  {", ".join(msgs)}')
+        if valid_loader is not None:
+            validation_evaluator.run(valid_loader)
+            metrics = validation_evaluator.state.metrics
+            msgs = []
+            for metric in metrics.keys():
+                msgs.append(f'{metric}: {metrics[metric]:.3f}')
+            pbar.log_message(
+                f'Epoch: {engine.state.epoch},  {", ".join(msgs)}')
+        else:
+            pbar.log_message(
+                f'Epoch: {engine.state.epoch},  without validation')
+
 
     @validation_evaluator.on(Events.COMPLETED)
     def reduce_step(engine):

@@ -8,6 +8,7 @@ import pandas as pd
 import torch
 import tqdm
 from sklearn.metrics import roc_auc_score, accuracy_score
+from torch.utils.data import DataLoader
 from tqdm.autonotebook import tqdm
 
 from dltranz.metric_learn.read_processing import fit_features, add_ticks, fit_types
@@ -104,7 +105,7 @@ def infer_part_of_data(part_num, part_data, columns, model, conf, lock_obj=None)
     return df_scores
 
 
-def infer_iterable(part_num, iterable_dataset, columns, model, conf, lock_obj=None):
+def infer_iterable(part_num, valid_loader, columns, model, conf, lock_obj=None):
     """
     The list of difference with `dltranz.metric_learn.inference_tools.infer_part_of_data`:
     1. Iterable dataset can'not provide the same item order.
@@ -126,9 +127,6 @@ def infer_iterable(part_num, iterable_dataset, columns, model, conf, lock_obj=No
 
     if conf['dataset.preprocessing.add_seq_len'] and 'seq_len' not in columns:
         columns.append('seq_len')  # change list object
-
-    valid_ds = ConvertingTrxDataset(TrxDataset(iterable_dataset))
-    valid_loader = create_validation_loader(valid_ds, conf['params.valid'])
 
     ids, pred = score_model(model, valid_loader, conf['params'])
 
@@ -179,8 +177,12 @@ def save_scores(df_scores, part_num, output_conf):
 def score_part_of_data(part_num, part_data, columns, model, conf, lock_obj=None):
     if type(part_data) is list:
         df_scores = infer_part_of_data(part_num, part_data, columns, model, conf, lock_obj=lock_obj)
-    else:
+    elif isinstance(part_data, DataLoader):
         df_scores = infer_iterable(part_num, part_data, columns, model, conf, lock_obj=lock_obj)
+    else:
+        valid_ds = ConvertingTrxDataset(TrxDataset(part_data))
+        valid_loader = create_validation_loader(valid_ds, conf['params.valid'])
+        df_scores = infer_iterable(part_num, valid_loader, columns, model, conf, lock_obj=lock_obj)
 
     save_scores(df_scores, part_num, conf['output'])
 
