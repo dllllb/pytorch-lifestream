@@ -10,10 +10,8 @@
       col_id: customer_id
       col_target: gender
 
-      split_by: external
-      train_targets: "conf/embeddings_validation.work/folds/target_train_0.pickle"
-      valid_targets: "conf/embeddings_validation.work/folds/target_valid_0.pickle"
-      test_targets: "conf/embeddings_validation.work/folds/target_test.pickle"
+      split_by: embeddings_validation
+      fold_info: "conf/embeddings_validation.work/folds/folds.json"
     }
 
     train: {
@@ -33,6 +31,12 @@
         num_workers: 8
         batch_size: 64   # 512
     }
+  }
+
+  embedding_validation_results: {
+    model_name: nn
+    feature_name: target_scores
+    output_path: "results/fit_target_results.json"
   }
 
   seed_everything: 42

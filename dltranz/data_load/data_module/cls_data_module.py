@@ -1,6 +1,6 @@
+import json
 import logging
 
-import pandas as pd
 import pytorch_lightning as pl
 from embeddings_validation.file_reader import TargetFile
 from torch.utils.data import DataLoader, Dataset
@@ -38,9 +38,10 @@ class MapAugmentationDataset(Dataset):
 
 
 class ClsDataModuleTrain(pl.LightningDataModule):
-    def __init__(self, conf, model):
+    def __init__(self, conf, model, fold_id):
         super().__init__()
 
+        self.fold_id = fold_id
         self._type = conf['type']
         assert self._type in ('map', 'iterable')
 
@@ -60,6 +61,8 @@ class ClsDataModuleTrain(pl.LightningDataModule):
         self._valid_targets = None
         self._test_targets = None
 
+        self._fold_info = None
+
     def prepare_data(self):
         if 'dataset_files' in self.setup_conf:
             self.setup_iterable_files()
@@ -72,7 +75,7 @@ class ClsDataModuleTrain(pl.LightningDataModule):
             self.setup_map()
 
     def setup_iterable_files(self):
-        if self.setup_conf['split_by'] == 'external':
+        if self.setup_conf['split_by'] == 'embeddings_validation':
             train_data_files = ParquetFiles(self.setup_conf['dataset_files.train_data_path']).data_files
             test_data_files = ParquetFiles(self.setup_conf['dataset_files.test_data_path']).data_files
 
@@ -98,14 +101,19 @@ class ClsDataModuleTrain(pl.LightningDataModule):
             raise AttributeError(f'Unknown split strategy: {self.setup_conf.split_by}')
 
     def read_external_splits(self):
-        self._train_targets = TargetFile.load(self.setup_conf['train_targets'])
-        self._valid_targets = TargetFile.load(self.setup_conf['valid_targets'])
-        self._test_targets = TargetFile.load(self.setup_conf['test_targets'])
+        if self.setup_conf['split_by'] == 'embeddings_validation':
+            with open(self.setup_conf['fold_info'], 'r') as f:
+                self._fold_info = json.load(f)
+
+        current_fold = self._fold_info[self.fold_id]
+        self._train_targets = TargetFile.load(current_fold['train']['path'])
+        self._valid_targets = TargetFile.load(current_fold['valid']['path'])
+        self._test_targets = TargetFile.load(current_fold['test']['path'])
 
     def build_iterable_processing(self, part):
         yield FeatureTypeCast({self.col_id: int})
 
-        if 'dataset_files' in self.setup_conf and self.setup_conf['split_by'] == 'external':
+        if 'dataset_files' in self.setup_conf and self.setup_conf['split_by'] == 'embeddings_validation':
             if part == 'train':
                 yield IdFilter(id_col=self.col_id, relevant_ids=self._train_targets.df[self.col_id].values.tolist())
             elif part == 'valid':
