@@ -2,6 +2,7 @@ import torch
 
 from dltranz.seq_encoder import PerTransHead, scoring_head, TimeStepShuffle, RnnEncoder, skip_rnn_encoder, \
     PerTransTransf
+from dltranz.seq_mel import SequenceMetricLearning
 from dltranz.transf_seq_encoder import TransformerSeqEncoder
 from dltranz.trellisnet import TrellisNetEncoder
 from dltranz.trx_encoder import TrxEncoder, TrxMeanEncoder
@@ -31,6 +32,19 @@ def rnn_model(params):
 
     m = torch.nn.Sequential(p, e, h)
     return m
+
+
+def pretrained_model(params):
+    p_model = SequenceMetricLearning.load_from_checkpoint(params['pretrained.model_path'])
+
+    h = scoring_head(
+        input_size=p_model.embedding_size,
+        params=params['head']
+    )
+
+    m = torch.nn.Sequential(p_model, h)
+    return m
+
 
 
 def rnn_shuffle_model(params):
@@ -99,6 +113,7 @@ def model_by_type(model_type):
         'skip-rnn2': skip_rnn2_model,
         'transf': transformer_model,
         'trellisnet': trellisnet_model,
+        'pretrained': pretrained_model,
     }[model_type]
     return model
 

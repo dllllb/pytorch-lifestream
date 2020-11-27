@@ -1,9 +1,14 @@
+import logging
+
 import pytorch_lightning as pl
 import torch
 
 from dltranz.loss import get_loss
 from dltranz.train import get_optimizer, get_lr_scheduler
 from dltranz.models import model_by_type
+
+
+logger = logging.getLogger(__name__)
 
 
 class EpochAuroc(pl.metrics.Metric):
@@ -48,6 +53,9 @@ class SequenceClassify(pl.LightningModule):
     @property
     def category_max_size(self):
         params = self.hparams.params
+
+        if params['model_type'] == 'pretrained':
+            return self.model[0].category_max_size
         return {k: v['in'] for k, v in params['trx_encoder.embeddings'].items()}
 
     def forward(self, x):
@@ -82,6 +90,28 @@ class SequenceClassify(pl.LightningModule):
 
     def configure_optimizers(self):
         params = self.hparams.params
-        optimizer = get_optimizer(self, params)
+        if params['model_type'] == 'pretrained':
+            optimizer = self.get_pretrained_optimizer()
+        else:
+            optimizer = get_optimizer(self, params)
         scheduler = get_lr_scheduler(optimizer, params)
         return [optimizer], [scheduler]
+
+    def get_pretrained_optimizer(self):
+        params = self.hparams.params
+
+        p_model = self.model[0]
+        head = self.model[1]
+
+        if params['pretrained.lr'] == 'freeze':
+            p_model.freeze()
+            logger.info('Created optimizer with frozen encoder')
+            return get_optimizer(self, params)
+
+        parameters = [
+            {'params': p_model.parameters(), 'lr': params['pretrained.lr']},
+            {'params': head.parameters(), 'lr': params['train.lr']},
+        ]
+        logger.info('Created optimizer with two lr groups')
+
+        return torch.optim.Adam(parameters, lr=params['train.lr'], weight_decay=params['train.weight_decay'])

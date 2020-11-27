@@ -1,6 +1,7 @@
 import pytorch_lightning as pl
 import numpy as np
 
+from dltranz.agg_feature_model import AggFeatureModel
 from dltranz.metric_learn.metric import BatchRecallTopPL
 from dltranz.train import get_optimizer, get_lr_scheduler
 from dltranz.metric_learn.losses import get_loss
@@ -25,6 +26,20 @@ class SequenceMetricLearning(pl.LightningModule):
     def category_max_size(self):
         params = self.hparams.params
         return {k: v['in'] for k, v in params['trx_encoder.embeddings'].items()}
+
+    @property
+    def embedding_size(self):
+        params = self.hparams.params
+        if params['model_type'] == 'rnn':
+            return params['rnn.hidden_size']
+        if params['model_type'] == 'transf':
+            return params['transf.input_size']
+        if params['model_type'] == 'agg_features':
+            return AggFeatureModel.output_size(params['trx_encoder'])
+        if params['model_type'] == 'cpc_model':
+            return params['rnn.hidden_size']
+
+        raise NotImplementedError(f'Unknown model_type {params.model_type}')
 
     def forward(self, x):
         return self.model(x)

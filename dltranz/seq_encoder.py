@@ -234,7 +234,7 @@ def scoring_head(input_size, params):
 
     layers = []
 
-    if not params['pred_all_states']:
+    if not params['pred_all_states'] and not params.get('seq_encoder_before', False):
         if params['explicit_lengths']:
             e0 = ConcatLenEncoder()
             input_size += 2
@@ -283,7 +283,9 @@ def scoring_head(input_size, params):
         for size_in, size_out in zip(head_layers[:-1], head_layers[1:]):
             layers.append(nn.Linear(size_in, size_out))
             if size_out != 1:
+                layers.append(nn.BatchNorm1d(size_out))
                 layers.append(nn.ReLU())
+                layers.append(nn.Dropout(0.1))
             else:
                 layers.append(nn.Sigmoid())
         layers.append(Squeeze())
