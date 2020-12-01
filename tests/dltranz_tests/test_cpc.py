@@ -1,5 +1,5 @@
 import torch
-from dltranz.seq_encoder import RnnEncoder
+from dltranz.seq_encoder.rnn_encoder import RnnEncoder
 from dltranz.trx_encoder import TrxEncoder
 from dltranz.baselines.cpc import CPC_Ecoder, run_experiment
 from tests.dltranz_tests.test_trx_encoder import gen_trx_data
@@ -57,7 +57,7 @@ def test_rnn_model():
     config = tst_params()
 
     trx_e = TrxEncoder(config['trx_encoder'])
-    rnn_e = RnnEncoder(TrxEncoder.output_size(config['trx_encoder']), config['rnn'])
+    rnn_e = RnnEncoder(trx_e.output_size, config['rnn'])
     cpc_e = CPC_Ecoder(trx_e, rnn_e, 6, config['cpc'])
 
     train_data = gen_trx_data((torch.rand(1000)*60+1).long())

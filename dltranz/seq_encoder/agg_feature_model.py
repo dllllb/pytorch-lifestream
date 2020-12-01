@@ -2,6 +2,7 @@ from collections import OrderedDict
 
 import torch
 
+from dltranz.seq_encoder.abs_seq_encoder import AbsSeqEncoder
 from dltranz.trx_encoder import PaddedBatch
 
 
@@ -109,11 +110,43 @@ class AggFeatureModel(torch.nn.Module):
         out = torch.cat(processed, 1)
         return out
 
-    @staticmethod
-    def output_size(config):
-        numeric_values = config['numeric_values']
-        embeddings = config['embeddings']
+    @property
+    def output_size(self):
+        numeric_values = self.numeric_values
+        embeddings = self.embeddings
 
         e_sizes = [options_embed['in'] for col_embed, options_embed in embeddings.items()]
 
         return 1 + len(numeric_values) * (3 + 3 * sum(e_sizes)) + len(embeddings)
+
+    @property
+    def category_max_size(self):
+        return {k: v['in'] for k, v in self.embeddings.items()}
+
+
+class AggFeatureSeqEncoder(AbsSeqEncoder):
+    def __init__(self, params, is_reduce_sequence):
+        super().__init__(params, is_reduce_sequence)
+
+        if not is_reduce_sequence:
+            raise NotImplementedError('Only sequence embedding can be returned')
+
+        self.model = AggFeatureModel(params['trx_encoder'])
+        self.use_batch_norm_on_train = params['use_batch_norm_on_train']
+        self.use_batch_norm_on_inference = params['use_batch_norm_on_inference']
+        self.bn = torch.nn.BatchNorm1d(self.embedding_size)
+
+    @property
+    def category_max_size(self):
+        return self.model.category_max_size
+
+    @property
+    def embedding_size(self):
+        return self.model.output_size
+
+    def forward(self, x):
+        x = self.model(x)
+        if self.training and self.use_batch_norm_on_train or \
+                not self.training and self.use_batch_norm_on_inference:
+            x = self.bn(x)
+        return x

@@ -13,6 +13,10 @@ import numpy as np
 from sklearn.metrics import cohen_kappa_score
 from ignite.metrics import Metric
 
+import warnings
+import functools
+
+
 logger = logging.getLogger(__name__)
 
 
@@ -306,3 +310,22 @@ def switch_reproducibility_on():
     torch.backends.cudnn.deterministic = True
     torch.manual_seed(42)
     torch.cuda.manual_seed_all(42)
+
+
+class Deprecated:
+    """This is a decorator which can be used to mark functions
+    as deprecated. It will result in a warning being emitted
+    when the function is used."""
+    def __init__(self, message):
+        self._message = message
+
+    def __call__(self, func):
+        @functools.wraps(func)
+        def new_func(*args, **kwargs):
+            warnings.simplefilter('always', DeprecationWarning)  # turn off filter
+            warnings.warn(f"Call to deprecated function {func.__name__}. {self._message}",
+                          category=DeprecationWarning,
+                          stacklevel=2)
+            warnings.simplefilter('default', DeprecationWarning)  # reset filter
+            return func(*args, **kwargs)
+        return new_func

@@ -6,23 +6,17 @@ import torch.nn as nn
 
 from torch.autograd import Function
 
-from dltranz.agg_feature_model import AggFeatureModel
+from dltranz.seq_encoder.agg_feature_model import AggFeatureModel
 from dltranz.baselines.cpc import CPC_Ecoder
-from dltranz.transf_seq_encoder import TransformerSeqEncoder
-from dltranz.seq_encoder import RnnEncoder, LastStepEncoder, PerTransTransf, FirstStepEncoder, PaddedBatch
+from dltranz.seq_encoder.transf_seq_encoder import TransformerSeqEncoder
+from dltranz.seq_encoder.rnn_encoder import RnnEncoder
+from dltranz.trx_encoder import PaddedBatch
+from dltranz.seq_encoder.utils import PerTransTransf, LastStepEncoder, FirstStepEncoder, NormEncoder
 from dltranz.custom_layers import DropoutEncoder
 from dltranz.trx_encoder import TrxEncoder
+from dltranz.util import Deprecated
 
 logger = logging.getLogger(__name__)
-
-
-# TODO: is the same as dltranz.seq_encoder.NormEncoder
-class L2Normalization(nn.Module):
-    def __init__(self):
-        super(L2Normalization, self).__init__()
-
-    def forward(self, x):
-        return x.div(torch.norm(x, dim=1).view(-1, 1))
 
 
 class Binarization(Function):
@@ -59,9 +53,10 @@ def projection_head(input_size, output_size):
 
 
 def rnn_model(params):
+    p = TrxEncoder(params['trx_encoder'])
     encoder_layers = [
-        TrxEncoder(params['trx_encoder']),
-        RnnEncoder(TrxEncoder.output_size(params['trx_encoder']), params['rnn']),
+        p,
+        RnnEncoder(p.output_size, params['rnn']),
         LastStepEncoder(),
     ]
 
@@ -75,15 +70,15 @@ def rnn_model(params):
         logger.info('DropoutEncoder included')
 
     if params['use_normalization_layer']:
-        layers.append(L2Normalization())
-        logger.info('L2Normalization included')
+        layers.append(NormEncoder())
+        logger.info('NormEncoder included')
     m = torch.nn.Sequential(*layers)
     return m
 
 
 def transformer_model(params):
     p = TrxEncoder(params['trx_encoder'])
-    trx_size = TrxEncoder.output_size(params['trx_encoder'])
+    trx_size = p.output_size
     enc_input_size = params['transf']['input_size']
     if enc_input_size != trx_size:
         inp_reshape = PerTransTransf(trx_size, enc_input_size)
@@ -96,32 +91,34 @@ def transformer_model(params):
     encoder = torch.nn.Sequential(*layers)
     layers = [encoder]
     if params['use_normalization_layer']:
-        layers.append(L2Normalization())
+        layers.append(NormEncoder())
     m = torch.nn.Sequential(*layers)
     return m
 
 
 def agg_feature_model(params):
+    p = AggFeatureModel(params['trx_encoder'])
     layers = [
         torch.nn.Sequential(
-            AggFeatureModel(params['trx_encoder']),
+            p,
         ),
-        torch.nn.BatchNorm1d(AggFeatureModel.output_size(params['trx_encoder'])),
+        torch.nn.BatchNorm1d(p.output_size),
     ]
     if params['use_normalization_layer']:
-        layers.append(L2Normalization())
+        layers.append(NormEncoder())
     m = torch.nn.Sequential(*layers)
     return m
 
 
 def cpc_model(params):
     trx_e = TrxEncoder(params['trx_encoder'])
-    trx_e_out_size = TrxEncoder.output_size(params['trx_encoder'])
+    trx_e_out_size = trx_e.output_size
     rnn_e = RnnEncoder(trx_e_out_size, params['rnn'])
     cpc_e = CPC_Ecoder(trx_e, rnn_e, trx_e_out_size, params['cpc'])
     return cpc_e
 
 
+@Deprecated('Use dltranz.seq_mel.SequenceMetricLearning to manage model')
 def ml_model_by_type(model_type):
     model = {
         'rnn': rnn_model,
@@ -136,8 +133,8 @@ class MeLESModel(torch.nn.Module):
     def __init__(self, params):
         super().__init__()
         self.p = TrxEncoder(params['trx_encoder'])
-        self.e = RnnEncoder(TrxEncoder.output_size(params['trx_encoder']), params['rnn'])
-        self.l = torch.nn.Sequential(LastStepEncoder(), L2Normalization())
+        self.e = RnnEncoder(self.p.output_size, params['rnn'])
+        self.l = torch.nn.Sequential(LastStepEncoder(), NormEncoder())
 
     def forward(self, padded_x, h_0=None):
         outputs = self.l(self.e(self.p(padded_x), h_0))
@@ -179,6 +176,7 @@ class ComplexModel(torch.nn.Module):
         return aug_head_output, ml_head_output
 
 
+@Deprecated('Use dltranz.seq_mel.SequenceMetricLearning.load_from_checkpoint')
 def load_encoder_for_inference(conf):
     ext = os.path.splitext(conf['model_path.model'])[1]
     if ext in ('.pth', '.pt'):

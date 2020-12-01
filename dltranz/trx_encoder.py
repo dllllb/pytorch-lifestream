@@ -201,13 +201,16 @@ class TrxEncoder(nn.Module):
         out = torch.cat(processed, -1)
         return PaddedBatch(out, x.seq_lens)
 
-    @staticmethod
-    def output_size(config):
-        nv = config.get('numeric_values', dict())
-        sz = len(nv.keys())
-        sz += sum(econf['out'] for econf in config.get('embeddings', dict()).values() if not econf.get('disabled', False))
-        sz += sum(pos_params['out_size'] for pos_params in config.get('positions', {}).values())
+    @property
+    def output_size(self):
+        sz = len(self.scalers)
+        sz += sum(econf.embedding_dim for econf in self.embeddings.values())
+        sz += sum(pos_params.out_size for pos_params in self.pos.values())
         return sz
+
+    @property
+    def category_max_size(self):
+        return {k: v.num_embeddings for k, v in self.embeddings.items()}
 
 
 class TrxMeanEncoder(nn.Module):

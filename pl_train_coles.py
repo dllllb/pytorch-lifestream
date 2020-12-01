@@ -2,7 +2,7 @@ import logging
 
 from dltranz.data_load.data_module.coles_data_module import ColesDataModuleTrain
 import pytorch_lightning as pl
-from dltranz.seq_mel import SequenceMetricLearning
+from dltranz.lightning_modules.coles_module import CoLESModule
 from dltranz.util import get_conf
 
 logger = logging.getLogger(__name__)
@@ -14,7 +14,7 @@ def main(args=None):
     if 'seed_everything' in conf:
         pl.seed_everything(conf['seed_everything'])
 
-    model = SequenceMetricLearning(conf['params'])
+    model = CoLESModule(conf['params'])
     dm = ColesDataModuleTrain(conf['data_module'], model)
     trainer = pl.Trainer(**conf['trainer'])
     trainer.fit(model, dm)

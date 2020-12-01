@@ -1,7 +1,7 @@
 import torch
 
 from dltranz.data_load import padded_collate_wo_target
-from dltranz.seq_encoder import PaddedBatch
+from dltranz.trx_encoder import PaddedBatch
 
 
 def collate_rtd_batch(batch, replace_prob, skip_first=0):

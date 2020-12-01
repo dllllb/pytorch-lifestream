@@ -2,7 +2,7 @@ import logging
 import torch
 
 from dltranz.metric_learn.ml_models import ml_model_by_type
-from dltranz.seq_encoder import LastStepEncoder
+from dltranz.seq_encoder.utils import LastStepEncoder
 from dltranz.baselines.cpc import run_experiment
 from dltranz.util import init_logger, get_conf, switch_reproducibility_on
 from dltranz.data_load import TrxDataset, ConvertingTrxDataset, SameTimeShuffleDataset, AllTimeShuffleDataset

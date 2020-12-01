@@ -3,7 +3,9 @@ import math
 import torch
 from torch import nn
 
-from dltranz.trx_encoder import PaddedBatch
+from dltranz.seq_encoder.abs_seq_encoder import AbsSeqEncoder
+from dltranz.seq_encoder.utils import PerTransTransf, FirstStepEncoder
+from dltranz.trx_encoder import PaddedBatch, TrxEncoder
 
 logger = logging.getLogger(__name__)
 
@@ -94,3 +96,35 @@ class TransformerSeqEncoder(nn.Module):
         out = torch.transpose(out, 0, 1)
 
         return PaddedBatch(out, x.seq_lens)
+
+
+class TransfSeqEncoder(AbsSeqEncoder):
+    def __init__(self, params, is_reduce_sequence):
+        super().__init__(params, is_reduce_sequence)
+
+        p = TrxEncoder(params['trx_encoder'])
+        trx_size = p.output_size
+        enc_input_size = params['transf']['input_size']
+        if enc_input_size != trx_size:
+            inp_reshape = PerTransTransf(trx_size, enc_input_size)
+            p = torch.nn.Sequential(p, inp_reshape)
+
+        e = TransformerSeqEncoder(enc_input_size, params['transf'])
+
+        layers = [p, e]
+        if is_reduce_sequence:
+            layers.append(FirstStepEncoder())
+
+        self.model = torch.nn.Sequential(*layers)
+        self._category_max_size = p.category_max_size
+
+    @property
+    def category_max_size(self):
+        return self._category_max_size
+
+    @property
+    def embedding_size(self):
+        return self.params['transf.input_size']
+
+    def forward(self, x):
+        return self.model(x)

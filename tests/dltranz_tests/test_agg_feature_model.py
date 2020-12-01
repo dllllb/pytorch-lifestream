@@ -1,7 +1,7 @@
 import torch
 from pyhocon import ConfigFactory
 
-from dltranz.agg_feature_model import AggFeatureModel
+from dltranz.seq_encoder.agg_feature_model import AggFeatureModel
 from dltranz.trx_encoder import PaddedBatch
 
 
@@ -42,7 +42,7 @@ def get_conf():
 
 
 def test_output_size():
-    out_size = AggFeatureModel.output_size(get_conf()['params.trx_encoder'])
+    out_size = AggFeatureModel(get_conf()['params.trx_encoder']).output_size
     assert out_size == 29
 
 

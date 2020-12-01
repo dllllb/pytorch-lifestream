@@ -13,7 +13,7 @@ from math import sqrt
 
 warnings.filterwarnings('ignore', module='tensorboard.compat.tensorflow_stub.dtypes')
 from torch.utils.tensorboard import SummaryWriter
-from dltranz.seq_encoder import PaddedBatch
+from dltranz.trx_encoder import PaddedBatch
 from dltranz.swa import SWA
 
 from ignite.engine import Engine, Events, create_supervised_trainer, create_supervised_evaluator

@@ -14,7 +14,7 @@ from dltranz.data_load.iterable_processing.feature_type_cast import FeatureTypeC
 from dltranz.data_load.iterable_processing.target_extractor import TargetExtractor
 from dltranz.data_load.parquet_dataset import ParquetDataset, ParquetFiles
 from dltranz.metric_learn.inference_tools import save_scores
-from dltranz.seq_mel import SequenceMetricLearning
+from dltranz.lightning_modules.coles_module import CoLESModule
 from dltranz.train import score_model
 from dltranz.util import get_conf
 
@@ -54,7 +54,7 @@ def main(args=None):
 
     pl.seed_everything(42)
 
-    model = SequenceMetricLearning.load_from_checkpoint(conf['model_path'])
+    model = CoLESModule.load_from_checkpoint(conf['model_path'])
 
     dl = create_inference_dataloader(conf['inference_dataloader'], model)
 

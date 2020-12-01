@@ -14,21 +14,13 @@
     deterministic: True
   }
 
-
   params: {
     validation_metric_params: {
         K: 4
         metric: cosine
     }
 
-    model_type: rnn,
-    rnn: {
-      type: gru,
-      hidden_size: 1024,
-      bidir: false,
-      trainable_starter: static
-    },
-    use_normalization_layer : true,
+    encoder_type: rnn,
     trx_encoder: {
       norm_embeddings: false,
       embeddings_noise: 0.003,
@@ -40,22 +32,22 @@
         amount: identity
       }
     },
+    rnn: {
+      type: gru,
+      hidden_size: 1024,
+      bidir: false,
+      trainable_starter: static
+    },
+    head: [
+        [NormEncoder, {}],
+    ]
+
     lr_scheduler: {
       step_size: 10,
       step_gamma: 0.9025
     },
     train: {
-      num_workers: 8,
-      batch_size: 128,
-      split_strategy: {
-        split_strategy: SampleSlices,
-        split_count: 5,
-        cnt_min: 15,
-        cnt_max: 75
-      },
       sampling_strategy: HardNegativePair,
-      trx_dropout: 0.01,
-      max_seq_len: 1200,
       neg_count: 5,
       loss: ContrastiveLoss,
       margin: 0.5,
@@ -63,17 +55,6 @@
       weight_decay: 0.0
     },
     norm_scores: false,
-    valid: {
-      batch_size: 1024,
-      num_workers: 16,
-      split_strategy: {
-        split_strategy: SampleSlices,
-        split_count: 5,
-        cnt_min: 25,
-        cnt_max: 100
-      },
-      max_seq_len: 1200
-    }
   },
 
   model_path: "models/mles_model.p"

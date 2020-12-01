@@ -15,7 +15,7 @@ from torch.utils.data.dataloader import DataLoader
 from dltranz.data_load.augmentations.all_time_shuffle import AllTimeShuffle
 from dltranz.data_load.iterable_processing_dataset import IterableProcessingDataset
 from dltranz.data_load.lazy_dataset import LazyDataset
-from dltranz.seq_encoder import PaddedBatch
+from dltranz.trx_encoder import PaddedBatch
 
 
 logger = logging.getLogger(__name__)
