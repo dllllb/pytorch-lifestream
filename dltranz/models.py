@@ -110,11 +110,18 @@ def freeze_layers(model):
         p.requires_grad = False
 
 
-def create_head(params):
+def create_head_layers(params, seq_encoder):
+    from torch.nn import Linear, BatchNorm1d, Sigmoid
+    from dltranz.custom_layers import Squeeze
     from dltranz.seq_encoder.utils import NormEncoder
 
     layers = []
-    for l_name, l_params in params['head']:
-        cls = locals().get(l_name, None)
+    _locals = locals()
+    for l_name, l_params in params['head_layers']:
+        l_params = {k: int(v.format(**_locals)) if type(v) is str else v
+                    for k, v in l_params.items()}
+
+        cls = _locals.get(l_name, None)
         layers.append(cls(**l_params))
     return torch.nn.Sequential(*layers)
+

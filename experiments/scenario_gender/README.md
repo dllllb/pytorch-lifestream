@@ -105,7 +105,7 @@ python -m scenario_gender compare_approaches --n_workers 3 \
 
 # CoLES unsupervised
 python ../../pl_train_coles.py \
-     trainer.gpus=[3] \
+     trainer.gpus=[0] \
      --conf conf/dataset_iterable_file.hocon conf/mles_params.hocon
 python ../../pl_inference.py \
     params.device="cuda:3" \

@@ -51,26 +51,23 @@
   }
 
   params: {
-    device: cuda,
-
     score_metric: [auroc, accuracy]
 
-    model_type: pretrained,
+    encoder_type: pretrained,
     pretrained: {
+        model_type: "CoLESModule",
         model_path: "models/mles_model_for_finetuning.p"
         lr: 0.0001
         # lr: freeze
     }
 
-    head: {
-      pred_all_states: false
-      pred_all_states_mean: false
-      seq_encoder_before: true
-      explicit_lengths: false,
-      norm_input: true,
-      use_batch_norm: true
-      num_classes: 1
-    },
+    head_layers: [
+        [BatchNorm1d, {num_features: "{seq_encoder.embedding_size}"}]
+        [Linear, {"in_features": "{seq_encoder.embedding_size}", "out_features": 1}]
+        [Sigmoid, {}]
+        [Squeeze, {}]
+    ]
+
     train: {
       random_neg: false,
       loss: bce,
@@ -80,7 +77,6 @@
     lr_scheduler: {
       step_size: 1,
       step_gamma: 0.60
-    },
-    norm_scores: false
+    }
   }
 }

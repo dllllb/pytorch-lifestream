@@ -1,12 +1,13 @@
 import logging
+from copy import deepcopy
 
 import pytorch_lightning as pl
 import torch
 
 from dltranz.loss import get_loss
+from dltranz.seq_encoder import create_encoder
 from dltranz.train import get_optimizer, get_lr_scheduler
-from dltranz.models import model_by_type
-
+from dltranz.models import create_head_layers
 
 logger = logging.getLogger(__name__)
 
@@ -29,14 +30,19 @@ class EpochAuroc(pl.metrics.Metric):
 
 
 class SequenceClassify(pl.LightningModule):
-    def __init__(self, params):
+    def __init__(self, params, pretrained_encoder=None):
         super().__init__()
-        self.save_hyperparameters()
+        self.save_hyperparameters('params')
 
         self.loss = get_loss(params)
 
-        model_f = model_by_type(params['model_type'])
-        self.model = model_f(params)
+        if pretrained_encoder is not None:
+            self._seq_encoder = deepcopy(pretrained_encoder)
+            self._is_pretrained_encoder = True
+        else:
+            self._seq_encoder = create_encoder(params, is_reduce_sequence=True)
+            self._is_pretrained_encoder = False
+        self._head = create_head_layers(params, self._seq_encoder)
 
         # metrics
         d_metrics = {
@@ -51,15 +57,13 @@ class SequenceClassify(pl.LightningModule):
         self.test_metrics = torch.nn.ModuleDict([(name, mc()) for name, mc in metric_cls])
 
     @property
-    def category_max_size(self):
-        params = self.hparams.params
-
-        if params['model_type'] == 'pretrained':
-            return self.model[0].category_max_size
-        return {k: v['in'] for k, v in params['trx_encoder.embeddings'].items()}
+    def seq_encoder(self):
+        return self._seq_encoder
 
     def forward(self, x):
-        return self.model(x)
+        x = self._seq_encoder(x)
+        x = self._head(x)
+        return x
 
     def training_step(self, batch, _):
         x, y = batch
@@ -90,7 +94,7 @@ class SequenceClassify(pl.LightningModule):
 
     def configure_optimizers(self):
         params = self.hparams.params
-        if params['model_type'] == 'pretrained':
+        if self._is_pretrained_encoder:
             optimizer = self.get_pretrained_optimizer()
         else:
             optimizer = get_optimizer(self, params)
@@ -100,17 +104,14 @@ class SequenceClassify(pl.LightningModule):
     def get_pretrained_optimizer(self):
         params = self.hparams.params
 
-        p_model = self.model[0]
-        head = self.model[1]
-
         if params['pretrained.lr'] == 'freeze':
-            p_model.freeze()
+            self._seq_encoder.freeze()
             logger.info('Created optimizer with frozen encoder')
             return get_optimizer(self, params)
 
         parameters = [
-            {'params': p_model.parameters(), 'lr': params['pretrained.lr']},
-            {'params': head.parameters(), 'lr': params['train.lr']},
+            {'params': self._seq_encoder.parameters(), 'lr': params['pretrained.lr']},
+            {'params': self._head.parameters(), 'lr': params['train.lr']},
         ]
         logger.info('Created optimizer with two lr groups')
 

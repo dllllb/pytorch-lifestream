@@ -5,14 +5,16 @@ import numpy as np
 from dltranz.data_load.data_module.cls_data_module import ClsDataModuleTrain
 import pytorch_lightning as pl
 
+from dltranz.lightning_modules.coles_module import CoLESModule
 from dltranz.seq_cls import SequenceClassify
 from dltranz.util import get_conf
 
 logger = logging.getLogger(__name__)
 
 
-def fold_fit_test(conf, fold_id):
-    model = SequenceClassify(conf['params'])
+def fold_fit_test(conf, fold_id, pretrained_module=None):
+    pretrained_encoder = None if pretrained_module is None else pretrained_module.seq_encoder
+    model = SequenceClassify(conf['params'], pretrained_encoder)
     dm = ClsDataModuleTrain(conf['data_module'], model, fold_id)
     trainer = pl.Trainer(**conf['trainer'])
     trainer.fit(model, dm)
@@ -51,10 +53,25 @@ def main(args=None):
         raise NotImplementedError(f'Only `embeddings_validation` split supported,'
                                   f'found "{conf.data_module.setup.split_by}"')
 
+    if conf['params.encoder_type'] == 'pretrained':
+        pre_conf = conf['params.pretrained']
+
+        cls = None
+        for c_name in [CoLESModule]:
+            if pre_conf['model_type'] == c_name.__name__:
+                cls = c_name
+                break
+        if cls is None:
+            raise AttributeError(f"Can'not find {pre_conf.model_type} in module list")
+
+        pretrained_module = cls.load_from_checkpoint(pre_conf['model_path'])
+    else:
+        pretrained_module = None
+
     results = []
     for fold_id in fold_list:
         logger.info(f'==== Fold [{fold_id}] fit-test start ====')
-        result = fold_fit_test(conf, fold_id)
+        result = fold_fit_test(conf, fold_id, pretrained_module)
         results.append(result)
 
     stats_file = conf['embedding_validation_results.output_path']

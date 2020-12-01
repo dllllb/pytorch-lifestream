@@ -42,7 +42,7 @@ logger = logging.getLogger(__name__)
 
 
 class ColesDataModuleTrain(pl.LightningDataModule):
-    def __init__(self, conf, model):
+    def __init__(self, conf, pl_module):
         super().__init__()
 
         self._type = conf['type']
@@ -53,7 +53,7 @@ class ColesDataModuleTrain(pl.LightningDataModule):
         self.valid_conf = conf['valid']
 
         self.col_id = self.setup_conf['col_id']
-        self.category_max_size = model.category_max_size
+        self.category_max_size = pl_module.seq_encoder.category_max_size
 
         self.train_dataset = None
         self.valid_dataset = None

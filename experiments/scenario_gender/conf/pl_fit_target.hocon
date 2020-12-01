@@ -51,12 +51,9 @@
   }
 
   params: {
-    device: cuda,
-
     score_metric: [auroc, accuracy]
 
-    model_type: rnn,
-    ensemble_size: 1,
+    encoder_type: rnn,
     trx_encoder: {
       norm_embeddings: false,
       embeddings_noise: 0.003,
@@ -74,13 +71,14 @@
       bidir: false,
       trainable_starter: static
     },
-    head: {
-      pred_all_states: false,
-      pred_all_states_mean: false,
-      explicit_lengths: false,
-      norm_input: false,
-      use_batch_norm: true
-    },
+
+    head_layers: [
+        [BatchNorm1d, {num_features: "{seq_encoder.embedding_size}"}]
+        [Linear, {"in_features": "{seq_encoder.embedding_size}", "out_features": 1}]
+        [Sigmoid, {}]
+        [Squeeze, {}]
+    ]
+
     train: {
       random_neg: false,
       loss: bce,
@@ -90,7 +88,6 @@
     lr_scheduler: {
       step_size: 1,
       step_gamma: 0.90
-    },
-    norm_scores: false
+    }
   }
 }

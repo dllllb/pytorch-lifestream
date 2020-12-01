@@ -38,7 +38,7 @@ class MapAugmentationDataset(Dataset):
 
 
 class ClsDataModuleTrain(pl.LightningDataModule):
-    def __init__(self, conf, model, fold_id):
+    def __init__(self, conf, pl_module, fold_id):
         super().__init__()
 
         self.fold_id = fold_id
@@ -52,7 +52,7 @@ class ClsDataModuleTrain(pl.LightningDataModule):
 
         self.col_id = self.setup_conf['col_id']
         self.col_target = self.setup_conf['col_target']
-        self.category_max_size = model.category_max_size
+        self.category_max_size = pl_module.seq_encoder.category_max_size
 
         self.train_dataset = None
         self.valid_dataset = None

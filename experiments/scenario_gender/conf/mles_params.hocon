@@ -38,7 +38,7 @@
       bidir: false,
       trainable_starter: static
     },
-    head: [
+    head_layers: [
         [NormEncoder, {}],
     ]
 

@@ -48,7 +48,7 @@ def tst_params():
             },
             'numeric_values': {'amount': 'log'}
         },
-        "head": [
+        "head_layers": [
             ["NormEncoder", {}],
         ],
         "lr_scheduler": {

@@ -132,7 +132,7 @@ def scoring_head(input_size, params):
 
     layers = []
 
-    if not params['pred_all_states'] and not params.get('seq_encoder_before', False):
+    if not params['pred_all_states']:
         if params['explicit_lengths']:
             e0 = ConcatLenEncoder()
             input_size += 2

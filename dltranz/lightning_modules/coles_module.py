@@ -1,7 +1,7 @@
 import pytorch_lightning as pl
 
 from dltranz.metric_learn.metric import BatchRecallTopPL
-from dltranz.models import create_head
+from dltranz.models import create_head_layers
 from dltranz.seq_encoder import create_encoder
 from dltranz.train import get_optimizer, get_lr_scheduler
 from dltranz.metric_learn.losses import get_loss
@@ -17,17 +17,13 @@ class CoLESModule(pl.LightningModule):
         self.loss = get_loss(params, self.sampling_strategy)
 
         self._seq_encoder = create_encoder(params, is_reduce_sequence=True)
-        self._head = create_head(params)
+        self._head = create_head_layers(params, self._seq_encoder)
 
         self.validation_metric = BatchRecallTopPL(**params['validation_metric_params'])
 
     @property
-    def category_max_size(self):
-        return self._seq_encoder.category_max_size
-
-    @property
-    def embedding_size(self):
-        return self._seq_encoder.embedding_size
+    def seq_encoder(self):
+        return self._seq_encoder
 
     def forward(self, x):
         return self._seq_encoder(x)
