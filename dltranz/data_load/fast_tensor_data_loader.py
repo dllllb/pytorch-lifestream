@@ -23,6 +23,9 @@ class FastTensorDataLoader:
         if sampler is not None and shuffle:
             raise ValueError('sampler option is mutually exclusive with shuffle')
 
+        if sampler is not None:
+            raise NotImplemented('sampler support is not implemented yet')
+
         self.tensors = tensors
 
         self.dataset_len = self.tensors[0].shape[0]
