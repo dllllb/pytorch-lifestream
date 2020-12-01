@@ -3,6 +3,7 @@ from copy import deepcopy
 
 import pytorch_lightning as pl
 import torch
+from pytorch_lightning.metrics.functional.classification import auroc
 
 from dltranz.loss import get_loss
 from dltranz.seq_encoder import create_encoder
@@ -26,7 +27,7 @@ class EpochAuroc(pl.metrics.Metric):
     def compute(self):
         y_hat = torch.cat(self.y_hat)
         y = torch.cat(self.y)
-        return pl.metrics.functional.classification.auroc(y_hat, y)
+        return auroc(y_hat, y)
 
 
 class SequenceClassify(pl.LightningModule):
