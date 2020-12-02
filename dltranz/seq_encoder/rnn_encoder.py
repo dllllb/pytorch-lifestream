@@ -88,8 +88,7 @@ class RnnSeqEncoder(AbsSeqEncoder):
         p = TrxEncoder(params['trx_encoder'])
         e = RnnEncoder(p.output_size, params['rnn'])
         layers = [p, e]
-        if is_reduce_sequence:
-            layers.append(LastStepEncoder())
+        self.reducer = LastStepEncoder()
         self.model = torch.nn.Sequential(*layers)
 
     @property
@@ -101,7 +100,10 @@ class RnnSeqEncoder(AbsSeqEncoder):
         return self.params['rnn.hidden_size']
 
     def forward(self, x):
-        return self.model(x)
+        x = self.model(x)
+        if self.is_reduce_sequence:
+            x = self.reducer(x)
+        return x
 
 
 class SkipStepEncoder(nn.Module):

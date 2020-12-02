@@ -8,40 +8,32 @@
     gpus: 1
     auto_select_gpus: false
 
-    max_epochs: 150
+    max_epochs: 10
 
     checkpoint_callback: false
     deterministic: True
   }
 
   params: {
-    data_module_name: ColesDataModuleTrain
-    pl_module_name: CoLESModule
-
     validation_metric_params: {
         K: 4
         metric: cosine
     }
 
-    encoder_type: rnn,
+    encoder_type: agg_features
     trx_encoder: {
-      norm_embeddings: false,
-      embeddings_noise: 0.003,
       embeddings: {
-        mcc_code: {in: 200, out: 48},
-        tr_type: {in: 100, out: 24}
-      },
+        mcc_code: {in: 200}
+        tr_type: {in: 100}
+      }
       numeric_values: {
         amount: identity
       }
-    },
-    rnn: {
-      type: gru,
-      hidden_size: 1024,
-      bidir: false,
-      trainable_starter: static
+      was_logified: true
+      log_scale_factor: 1
     },
     head_layers: [
+        [BatchNorm1d, {num_features: "{seq_encoder.embedding_size}"}]
         [NormEncoder, {}],
     ]
 
@@ -52,18 +44,19 @@
     train: {
       sampling_strategy: HardNegativePair,
       neg_count: 5,
-      loss: ContrastiveLoss,
-      margin: 0.5,
+      loss: MarginLoss,
+      margin: 0.2,
+      beta: 0.4,
       lr: 0.002,
-      weight_decay: 0.0
+      weight_decay: 0.0,
     }
     norm_scores: false
-  },
+  }
 
-  model_path: "models/mles_model.p"
+  model_path: "models/agg_features_model.p"
 
   output: {
-    path: "data/mles_embeddings"
+    path: data/agg_feat_embed
     format: pickle
   }
 }

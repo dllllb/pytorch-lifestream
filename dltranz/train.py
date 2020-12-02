@@ -351,7 +351,10 @@ def fit_model(model, train_loader, valid_loader, loss, optimizer, scheduler, par
 
 
 def score_model(model, valid_loader, params):
-    device = torch.device(params.get('device', 'cpu'))
+    if torch.cuda.is_available():
+        device = torch.device(params.get('device', 'cuda'))
+    else:
+        device = torch.device(params.get('device', 'cpu'))
     model.to(device)
 
     pred = []

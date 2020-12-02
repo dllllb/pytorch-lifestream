@@ -21,5 +21,5 @@ python -m scenario_gender fit_finetuning params.device="$SC_DEVICE" --conf conf/
 # Compare
 rm results/scenario_gender_baselines_supervised.txt
 # rm -r conf/embeddings_validation.work/
-LUIGI_CONFIG_PATH=conf/luigi.cfg python -m embeddings_validation \
+python -m embeddings_validation \
     --conf conf/embeddings_validation_baselines_supervised.hocon --workers 10 --total_cpu_count 20

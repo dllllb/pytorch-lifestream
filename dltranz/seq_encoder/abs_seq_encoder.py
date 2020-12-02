@@ -12,6 +12,10 @@ class AbsSeqEncoder(torch.nn.Module):
     def is_reduce_sequence(self):
         return self._is_reduce_sequence
 
+    @is_reduce_sequence.setter
+    def is_reduce_sequence(self, value):
+        self._is_reduce_sequence = value
+
     @property  
     def category_max_size(self):
         raise NotImplementedError()

@@ -112,8 +112,7 @@ class TransfSeqEncoder(AbsSeqEncoder):
         e = TransformerSeqEncoder(enc_input_size, params['transf'])
 
         layers = [p, e]
-        if is_reduce_sequence:
-            layers.append(FirstStepEncoder())
+        self.reducer = FirstStepEncoder()
 
         self.model = torch.nn.Sequential(*layers)
         self._category_max_size = p.category_max_size
@@ -127,4 +126,7 @@ class TransfSeqEncoder(AbsSeqEncoder):
         return self.params['transf.input_size']
 
     def forward(self, x):
-        return self.model(x)
+        x = self.model(x)
+        if self.is_reduce_sequence:
+            x = self.reducer(x)
+        return x

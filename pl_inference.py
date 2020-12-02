@@ -15,20 +15,21 @@ from dltranz.data_load.iterable_processing.target_extractor import TargetExtract
 from dltranz.data_load.parquet_dataset import ParquetDataset, ParquetFiles
 from dltranz.metric_learn.inference_tools import save_scores
 from dltranz.lightning_modules.coles_module import CoLESModule
+from dltranz.lightning_modules.cpc_module import CpcModule
 from dltranz.train import score_model
 from dltranz.util import get_conf
 
 logger = logging.getLogger(__name__)
 
 
-def create_inference_dataloader(conf, model):
+def create_inference_dataloader(conf, pl_module):
     """This is inference dataloader for `experiments`
     """
     post_processing = IterableChain(
         FeatureTypeCast({conf['col_id']: int}),
         TargetExtractor(target_col=conf['col_id']),
         FeatureFilter(drop_non_iterable=True),
-        CategorySizeClip(model.category_max_size),
+        CategorySizeClip(pl_module.seq_encoder.category_max_size),
         IterableAugmentations(
             SeqLenLimit(**conf['SeqLenLimit']),
         )
@@ -54,7 +55,15 @@ def main(args=None):
 
     pl.seed_everything(42)
 
-    model = CoLESModule.load_from_checkpoint(conf['model_path'])
+    pl_module = None
+    for m in [CoLESModule, CpcModule]:
+        if m.__name__ == conf['params.pl_module_name']:
+            pl_module = m
+            break
+    if pl_module is None:
+        raise NotImplementedError(f'Unknown pl module {conf.params.pl_module_name}')
+    model = pl_module.load_from_checkpoint(conf['model_path'])
+    model.seq_encoder.is_reduce_sequence = True
 
     dl = create_inference_dataloader(conf['inference_dataloader'], model)
 

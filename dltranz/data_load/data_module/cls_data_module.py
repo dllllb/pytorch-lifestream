@@ -3,13 +3,14 @@ import logging
 
 import pytorch_lightning as pl
 from embeddings_validation.file_reader import TargetFile
-from torch.utils.data import DataLoader, Dataset
+from torch.utils.data import DataLoader
 from tqdm.auto import tqdm
 
 from dltranz.data_load import padded_collate, IterableChain, IterableAugmentations, augmentation_chain
 from dltranz.data_load.augmentations.dropout_trx import DropoutTrx
 from dltranz.data_load.augmentations.random_slice import RandomSlice
 from dltranz.data_load.augmentations.seq_len_limit import SeqLenLimit
+from dltranz.data_load.data_module.map_augmentation_dataset import MapAugmentationDataset
 from dltranz.data_load.iterable_processing.category_size_clip import CategorySizeClip
 from dltranz.data_load.iterable_processing.feature_filter import FeatureFilter
 from dltranz.data_load.iterable_processing.feature_type_cast import FeatureTypeCast
@@ -20,21 +21,6 @@ from dltranz.data_load.iterable_processing.target_join import TargetJoin
 from dltranz.data_load.parquet_dataset import ParquetFiles, ParquetDataset
 
 logger = logging.getLogger(__name__)
-
-
-class MapAugmentationDataset(Dataset):
-    def __init__(self, base_dataset, a_chain=None):
-        self.base_dataset = base_dataset
-        self.a_chain = a_chain
-
-    def __len__(self):
-        return len(self.base_dataset)
-
-    def __getitem__(self, idx):
-        feature_arrays, target = self.base_dataset[idx]
-        if self.a_chain is not None:
-            feature_arrays = self.a_chain(feature_arrays)
-        return feature_arrays, target
 
 
 class ClsDataModuleTrain(pl.LightningDataModule):

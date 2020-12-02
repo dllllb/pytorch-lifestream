@@ -128,13 +128,17 @@ class AggFeatureSeqEncoder(AbsSeqEncoder):
     def __init__(self, params, is_reduce_sequence):
         super().__init__(params, is_reduce_sequence)
 
-        if not is_reduce_sequence:
-            raise NotImplementedError('Only sequence embedding can be returned')
-
         self.model = AggFeatureModel(params['trx_encoder'])
-        self.use_batch_norm_on_train = params['use_batch_norm_on_train']
-        self.use_batch_norm_on_inference = params['use_batch_norm_on_inference']
-        self.bn = torch.nn.BatchNorm1d(self.embedding_size)
+
+    @property
+    def is_reduce_sequence(self):
+        return super().is_reduce_sequence
+
+    @is_reduce_sequence.setter
+    def is_reduce_sequence(self, value):
+        if not value:
+            raise NotImplementedError('Only sequence embedding can be returned')
+        super().is_reduce_sequence = value
 
     @property
     def category_max_size(self):
@@ -146,7 +150,4 @@ class AggFeatureSeqEncoder(AbsSeqEncoder):
 
     def forward(self, x):
         x = self.model(x)
-        if self.training and self.use_batch_norm_on_train or \
-                not self.training and self.use_batch_norm_on_inference:
-            x = self.bn(x)
         return x

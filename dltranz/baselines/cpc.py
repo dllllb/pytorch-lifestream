@@ -1,6 +1,7 @@
 import logging
 import torch
 import torch.nn as nn
+import pytorch_lightning as pl
 
 from ignite.metrics import Loss, RunningAverage
 from torch.nn import functional as F
@@ -103,6 +104,22 @@ class CPC_Loss(nn.Module):
             accurate += (((positive_pred_i.unsqueeze(-1).expand(*neg_pred_i.shape) > neg_pred_i) \
                           .sum(dim=-1) == self.n_negatives) * i_mask).sum().item()
         return accurate / total
+
+
+class CpcAccuracyPL(pl.metrics.Metric):
+    def __init__(self, loss):
+        super().__init__(compute_on_step=False)
+
+        self.loss = loss
+        self.add_state('batch_results', default=torch.tensor([0.0]))
+        self.add_state('total_count', default=torch.tensor([0]))
+
+    def update(self, *input):
+        self.batch_results += self.loss.cpc_accuracy(*input)
+        self.total_count += 1
+
+    def compute(self):
+        return self.batch_results / self.total_count.float()
 
 
 def run_experiment(train_loader, valid_loader, model, conf):

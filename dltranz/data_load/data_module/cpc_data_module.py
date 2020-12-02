@@ -1,20 +1,15 @@
 """
 Creates data loaders for contrastive learning
-Each record pass throw the sampler and splits into views of the main record
-X - is feature_arrays, sub-samples of main event sequences
-Y - is Id of main record, for positive item identification
+Each record is features from main record
+X - is feature_arrays, samples of event sequences
+Y - is Id of main record, not used
 
     Input:        -> Output
 dict of arrays    ->  X,                 Y
-client_1          -> client_1_smpl_1, client_1_id
-                     client_1_smpl_2, client_1_id
-                     client_1_smpl_3, client_1_id
-client_2          -> client_2_smpl_1, client_2_id
-                     client_2_smpl_2, client_2_id
-                     client_2_smpl_3, client_2_id
+client_1          -> client_1_features, client_1_id
+client_2          -> client_2_features, client_2_id
 """
 import logging
-import random
 
 import numpy as np
 import pytorch_lightning as pl
@@ -25,6 +20,8 @@ from tqdm.auto import tqdm
 
 from dltranz.data_load import padded_collate, IterableAugmentations, IterableChain, augmentation_chain
 from dltranz.data_load.augmentations.dropout_trx import DropoutTrx
+from dltranz.data_load.augmentations.seq_len_limit import SeqLenLimit
+from dltranz.data_load.data_module.map_augmentation_dataset import MapAugmentationDataset
 from dltranz.data_load.iterable_processing.category_size_clip import CategorySizeClip
 from dltranz.data_load.iterable_processing.feature_filter import FeatureFilter
 from dltranz.data_load.iterable_processing.feature_type_cast import FeatureTypeCast
@@ -35,13 +32,11 @@ from dltranz.data_load.iterable_processing.target_extractor import TargetExtract
 from dltranz.data_load.list_splitter import ListSplitter
 from dltranz.data_load.parquet_dataset import ParquetDataset, ParquetFiles
 from dltranz.data_load.partitioned_dataset import PartitionedDataset, PartitionedDataFiles
-from dltranz.metric_learn.dataset import split_strategy, collate_splitted_rows
-from dltranz.metric_learn.dataset.splitting_dataset import IterableSplittingDataset, MapSplittingDataset
 
 logger = logging.getLogger(__name__)
 
 
-class ColesDataModuleTrain(pl.LightningDataModule):
+class CpcDataModuleTrain(pl.LightningDataModule):
     def __init__(self, conf, pl_module):
         super().__init__()
 
@@ -60,7 +55,7 @@ class ColesDataModuleTrain(pl.LightningDataModule):
         self._train_ids = None
         self._valid_ids = None
 
-    def prepare_data(self):
+    def prepare_data(self, stage=None):
         if 'dataset_files' in self.setup_conf:
             self.setup_iterable_files()
         elif 'dataset_parts' in self.setup_conf:
@@ -192,17 +187,16 @@ class ColesDataModuleTrain(pl.LightningDataModule):
             if part == 'train':
                 yield IterableShuffle(self.train_conf['buffer_size'])
 
-            if part == 'train':
-                split_strategy_conf = self.train_conf['split_strategy']
-            else:
-                split_strategy_conf = self.valid_conf['split_strategy']
-            yield IterableSplittingDataset(split_strategy.create(**split_strategy_conf))
-
             yield IterableAugmentations(*self.build_augmentations(part))
 
     def build_augmentations(self, part):
         if part == 'train':
+            # yield RandomSlice(**self.train_conf['random_slice'])
+            # TODO: RandomSlice can provide more varied samples
+            yield SeqLenLimit(self.train_conf['max_seq_len'])
             yield DropoutTrx(self.train_conf['trx_dropout'])
+        else:
+            yield SeqLenLimit(self.valid_conf['max_seq_len'])
 
     def setup_map(self):
         self.train_dataset = list(tqdm(iter(self.train_dataset)))
@@ -210,21 +204,19 @@ class ColesDataModuleTrain(pl.LightningDataModule):
         self.valid_dataset = list(tqdm(iter(self.valid_dataset)))
         logger.info(f'Loaded {len(self.valid_dataset)} for valid')
 
-        self.train_dataset = MapSplittingDataset(
+        self.train_dataset = MapAugmentationDataset(
             base_dataset=self.train_dataset,
-            splitter=split_strategy.create(**self.train_conf['split_strategy']),
             a_chain=augmentation_chain(*self.build_augmentations('train')),
         )
-        self.valid_dataset = MapSplittingDataset(
+        self.valid_dataset = MapAugmentationDataset(
             base_dataset=self.valid_dataset,
-            splitter=split_strategy.create(**self.valid_conf['split_strategy']),
             a_chain=augmentation_chain(*self.build_augmentations('valid')),
         )
 
     def train_dataloader(self):
         return DataLoader(
             dataset=self.train_dataset,
-            collate_fn=padded_collate if self._type == 'iterable' else collate_splitted_rows,
+            collate_fn=padded_collate,
             shuffle=False if self._type == 'iterable' else True,
             num_workers=self.train_conf['num_workers'],
             batch_size=self.train_conf['batch_size'],
@@ -233,7 +225,7 @@ class ColesDataModuleTrain(pl.LightningDataModule):
     def val_dataloader(self):
         return DataLoader(
             dataset=self.valid_dataset,
-            collate_fn=padded_collate if self._type == 'iterable' else collate_splitted_rows,
+            collate_fn=padded_collate,
             num_workers=self.valid_conf['num_workers'],
             batch_size=self.valid_conf['batch_size'],
         )
