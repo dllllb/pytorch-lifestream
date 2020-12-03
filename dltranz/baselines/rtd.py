@@ -26,4 +26,4 @@ def collate_rtd_batch(batch, replace_prob, skip_first=0):
     for k, v in new_x.items():
         v.flatten()[to_replace_flatten] = v.flatten()[sampled_trx_ids]
 
-    return PaddedBatch(new_x, lengths), to_replace.long().flatten()[mask.flatten().bool()]
+    return PaddedBatch(new_x, lengths), to_replace.long().float().flatten()[mask.flatten().bool()]
