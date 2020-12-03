@@ -1,8 +1,6 @@
 {
   include "dataset_map_file.hocon"
 
-  include "dataset_inference_file.hocon"
-
   seed_everything: 42
   trainer: {
     gpus: 1
@@ -61,6 +59,8 @@
   },
 
   model_path: "models/mles_model.p"
+
+  include "dataset_inference_file.hocon"
 
   output: {
     path: "data/mles_embeddings"

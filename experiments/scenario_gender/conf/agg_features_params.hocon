@@ -1,8 +1,6 @@
 {
   include "dataset_map_file.hocon"
 
-  include "dataset_inference_file.hocon"
-
   seed_everything: 42
   trainer: {
     gpus: 1
@@ -15,6 +13,9 @@
   }
 
   params: {
+    data_module_name: ColesDataModuleTrain
+    pl_module_name: CoLESModule
+
     validation_metric_params: {
         K: 4
         metric: cosine
@@ -54,6 +55,8 @@
   }
 
   model_path: "models/agg_features_model.p"
+
+  include "dataset_inference_file.hocon"
 
   output: {
     path: data/agg_feat_embed

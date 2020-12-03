@@ -1,8 +1,6 @@
 {
   include "dataset_map_file.hocon"
 
-  include "dataset_inference_file.hocon"
-
   data_module: {
     train: {
       num_workers: 8
@@ -66,6 +64,8 @@
   },
 
   model_path: "models/cpc_model.p"
+
+  include "dataset_inference_file.hocon"
 
   output: {
     path: data/cpc_embeddings,
