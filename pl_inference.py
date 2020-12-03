@@ -13,6 +13,7 @@ from dltranz.data_load.iterable_processing.feature_filter import FeatureFilter
 from dltranz.data_load.iterable_processing.feature_type_cast import FeatureTypeCast
 from dltranz.data_load.iterable_processing.target_extractor import TargetExtractor
 from dltranz.data_load.parquet_dataset import ParquetDataset, ParquetFiles
+from dltranz.lightning_modules.sop_module import SopModule
 from dltranz.metric_learn.inference_tools import save_scores
 from dltranz.lightning_modules.coles_module import CoLESModule
 from dltranz.lightning_modules.cpc_module import CpcModule
@@ -56,7 +57,7 @@ def main(args=None):
     pl.seed_everything(42)
 
     pl_module = None
-    for m in [CoLESModule, CpcModule]:
+    for m in [CoLESModule, CpcModule, SopModule]:
         if m.__name__ == conf['params.pl_module_name']:
             pl_module = m
             break

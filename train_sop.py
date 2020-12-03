@@ -8,7 +8,7 @@ from torch.utils.data import DataLoader
 from dltranz.data_load import ConvertingTrxDataset
 from dltranz.experiment import update_model_stats, get_epoch_score_metric
 from dltranz.loss import get_loss
-from dltranz.metric_learn.dataset import SplittingDataset, split_strategy
+from dltranz.metric_learn.dataset import SplittingDataset, split_strategy, nested_list_to_flat_with_collate
 from dltranz.metric_learn.ml_models import ml_model_by_type
 from dltranz.baselines.sop import SentencePairsHead, collate_sop_pairs
 from dltranz.baselines.nsp import SequencePairsDataset
@@ -36,7 +36,7 @@ def create_data_loaders(conf):
     train_loader = DataLoader(
         dataset=train_dataset,
         shuffle=True,
-        collate_fn=collate_sop_pairs,
+        collate_fn=nested_list_to_flat_with_collate(collate_sop_pairs),
         num_workers=conf['params.train'].get('num_workers', 0),
         batch_size=conf['params.train.batch_size'],
     )
@@ -51,7 +51,7 @@ def create_data_loaders(conf):
     valid_loader = DataLoader(
         dataset=valid_dataset,
         shuffle=False,
-        collate_fn=collate_sop_pairs,
+        collate_fn=nested_list_to_flat_with_collate(collate_sop_pairs),
         num_workers=conf['params.valid'].get('num_workers', 0),
         batch_size=conf['params.valid.batch_size'],
     )

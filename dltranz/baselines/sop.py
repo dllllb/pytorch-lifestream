@@ -25,8 +25,6 @@ class SentencePairsHead(torch.nn.Module):
 
 
 def collate_sop_pairs(batch):
-    batch = functools.reduce(operator.iadd, batch)
-
     targets = torch.randint(low=0, high=2, size=(len(batch),))
 
     lefts = [left if target else right for (left, right), target in zip(batch, targets)]
@@ -37,5 +35,5 @@ def collate_sop_pairs(batch):
             padded_collate_wo_target(lefts),
             padded_collate_wo_target(rights)
         ),
-        targets
+        targets.float()
     )

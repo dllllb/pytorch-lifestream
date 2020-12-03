@@ -11,8 +11,8 @@ python ../../pl_train_module.py --conf conf/cpc_params.hocon
 python ../../pl_inference.py    --conf conf/cpc_params.hocon
 
 # Train the Sequence Order Prediction (SOP) model; inference
-python ../../train_sop.py params.device="$SC_DEVICE" --conf conf/dataset.hocon conf/sop_params.json
-python ../../ml_inference.py params.device="$SC_DEVICE" --conf conf/dataset.hocon conf/sop_params.json
+python ../../pl_train_module.py --conf conf/sop_params.hocon
+python ../../pl_inference.py    --conf conf/sop_params.hocon
 
 # Train the Next Sequence Prediction (NSP) model; inference
 python ../../train_nsp.py params.device="$SC_DEVICE" --conf conf/dataset.hocon conf/nsp_params.json

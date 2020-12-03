@@ -17,6 +17,14 @@ from dltranz.metric_learn.dataset.complex_target_dataset import ComplexTargetDat
 from dltranz.metric_learn.dataset.preload_dataset import PreloadDataset, PreloadDataLoader
 
 
+def nested_list_to_flat_with_collate(collate_fn):
+    def _func(batch):
+        batch = functools.reduce(operator.iadd, batch)
+        return collate_fn(batch)
+
+    return _func
+
+
 def collate_splitted_rows(batch):
     # add Y and flatten samples
     batch = functools.reduce(operator.iadd, batch)

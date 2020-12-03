@@ -23,6 +23,8 @@ from pyhocon.config_parser import ConfigFactory
 from torch.utils.data import DataLoader
 from tqdm.auto import tqdm
 
+from dltranz.baselines.nsp import sequence_pair_augmentation
+from dltranz.baselines.sop import collate_sop_pairs
 from dltranz.data_load import padded_collate, IterableAugmentations, IterableChain, augmentation_chain
 from dltranz.data_load.augmentations.dropout_trx import DropoutTrx
 from dltranz.data_load.iterable_processing.category_size_clip import CategorySizeClip
@@ -35,13 +37,13 @@ from dltranz.data_load.iterable_processing.target_extractor import TargetExtract
 from dltranz.data_load.list_splitter import ListSplitter
 from dltranz.data_load.parquet_dataset import ParquetDataset, ParquetFiles
 from dltranz.data_load.partitioned_dataset import PartitionedDataset, PartitionedDataFiles
-from dltranz.metric_learn.dataset import split_strategy, nested_list_to_flat_with_collate
+from dltranz.metric_learn.dataset import split_strategy, collate_splitted_rows, nested_list_to_flat_with_collate
 from dltranz.metric_learn.dataset.splitting_dataset import IterableSplittingDataset, MapSplittingDataset
 
 logger = logging.getLogger(__name__)
 
 
-class ColesDataModuleTrain(pl.LightningDataModule):
+class SopDataModuleTrain(pl.LightningDataModule):
     def __init__(self, conf, pl_module):
         super().__init__()
 
@@ -183,7 +185,6 @@ class ColesDataModuleTrain(pl.LightningDataModule):
             yield SeqLenFilter(min_seq_len=self.train_conf['min_seq_len'])
 
         yield FeatureTypeCast({self.col_id: int})
-        yield TargetExtractor(target_col=self.col_id)
         yield FeatureFilter(drop_non_iterable=True)
         yield CategorySizeClip(self.category_max_size)
 
@@ -203,6 +204,7 @@ class ColesDataModuleTrain(pl.LightningDataModule):
     def build_augmentations(self, part):
         if part == 'train':
             yield DropoutTrx(self.train_conf['trx_dropout'])
+        yield sequence_pair_augmentation
 
     def setup_map(self):
         self.train_dataset = list(tqdm(iter(self.train_dataset)))
@@ -222,7 +224,7 @@ class ColesDataModuleTrain(pl.LightningDataModule):
         )
 
     def train_dataloader(self):
-        collate_fn = padded_collate
+        collate_fn = collate_sop_pairs
         if self._type != 'iterable':
             collate_fn = nested_list_to_flat_with_collate(collate_fn)
 
@@ -235,7 +237,7 @@ class ColesDataModuleTrain(pl.LightningDataModule):
         )
 
     def val_dataloader(self):
-        collate_fn = padded_collate
+        collate_fn = collate_sop_pairs
         if self._type != 'iterable':
             collate_fn = nested_list_to_flat_with_collate(collate_fn)
 

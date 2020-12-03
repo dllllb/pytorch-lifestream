@@ -3,11 +3,13 @@ import torch
 
 from dltranz.baselines.cpc import CPC_Loss, CpcAccuracyPL
 from dltranz.seq_encoder import create_encoder
-from dltranz.train import get_optimizer, get_lr_scheduler
+from dltranz.train import get_optimizer, get_lr_scheduler, ReduceLROnPlateauWrapper
 from dltranz.trx_encoder import PaddedBatch
 
 
 class CpcModule(pl.LightningModule):
+    metric_name = 'cpc_accuracy'
+
     def __init__(self, params):
         super().__init__()
         self.save_hyperparameters()
@@ -59,10 +61,15 @@ class CpcModule(pl.LightningModule):
         self.validation_metric(embeddings, y)
 
     def validation_epoch_end(self, outputs):
-        self.log('cpc_accuracy', self.validation_metric.compute(), prog_bar=True)
+        self.log(self.metric_name, self.validation_metric.compute(), prog_bar=True)
 
     def configure_optimizers(self):
         params = self.hparams.params
         optimizer = get_optimizer(self, params)
         scheduler = get_lr_scheduler(optimizer, params)
+        if isinstance(scheduler, ReduceLROnPlateauWrapper):
+            scheduler = {
+                'scheduler': scheduler,
+                'monitor': self.metric_name,
+            }
         return [optimizer], [scheduler]
