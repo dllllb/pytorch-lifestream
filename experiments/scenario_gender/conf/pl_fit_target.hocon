@@ -41,7 +41,7 @@
 
   seed_everything: 42
   trainer: {
-    gpus: [0]
+    gpus: 1
     auto_select_gpus: false
 
     max_epochs: 10

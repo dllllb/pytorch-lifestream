@@ -44,14 +44,17 @@ def main(args=None):
     model = pl_module(conf['params'])
     dm = data_module(conf['data_module'], model)
 
-    callbacks = []
+    _trainer_params = conf['trainer']
     _use_best_epoch = conf['params.train'].get('use_best_epoch', False)
     if _use_best_epoch:
         checkpoint_callback = ModelCheckpoint(monitor=model.metric_name, mode='max')
-        callbacks.append(checkpoint_callback)
         logger.info(f'Create ModelCheckpoint callback with monitor="{model.metric_name}"')
+        if 'checkpoint_callback' in _trainer_params:
+            logger.warning(f'Overwrite `trainer.checkpoint_callback`, was "{_trainer_params.checkpoint_callback}". '
+                           f'New value is ModelCheckpoint callback')
+        _trainer_params['checkpoint_callback'] = checkpoint_callback
 
-    trainer = pl.Trainer(**conf['trainer'], checkpoint_callback=checkpoint_callback)
+    trainer = pl.Trainer(**_trainer_params)
     trainer.fit(model, dm)
 
     if 'model_path' in conf:

@@ -6,6 +6,9 @@ from dltranz.data_load.data_module.cls_data_module import ClsDataModuleTrain
 import pytorch_lightning as pl
 
 from dltranz.lightning_modules.coles_module import CoLESModule
+from dltranz.lightning_modules.cpc_module import CpcModule
+from dltranz.lightning_modules.rtd_module import RtdModule
+from dltranz.lightning_modules.sop_nsp_module import SopNspModule
 from dltranz.seq_cls import SequenceClassify
 from dltranz.util import get_conf
 
@@ -57,7 +60,7 @@ def main(args=None):
         pre_conf = conf['params.pretrained']
 
         cls = None
-        for c_name in [CoLESModule]:
+        for c_name in [CoLESModule, CpcModule, SopNspModule, RtdModule]:
             if pre_conf['model_type'] == c_name.__name__:
                 cls = c_name
                 break
@@ -65,6 +68,7 @@ def main(args=None):
             raise AttributeError(f"Can'not find {pre_conf.model_type} in module list")
 
         pretrained_module = cls.load_from_checkpoint(pre_conf['model_path'])
+        pretrained_module.seq_encoder.is_reduce_sequence = True
     else:
         pretrained_module = None
 
