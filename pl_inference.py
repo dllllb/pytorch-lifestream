@@ -1,10 +1,9 @@
 import logging
 
 import pandas as pd
+import pytorch_lightning as pl
 from torch.utils.data import ChainDataset
 from torch.utils.data.dataloader import DataLoader
-
-import pytorch_lightning as pl
 
 from dltranz.data_load import IterableChain, padded_collate, IterableAugmentations
 from dltranz.data_load.augmentations.seq_len_limit import SeqLenLimit
@@ -13,10 +12,11 @@ from dltranz.data_load.iterable_processing.feature_filter import FeatureFilter
 from dltranz.data_load.iterable_processing.feature_type_cast import FeatureTypeCast
 from dltranz.data_load.iterable_processing.target_extractor import TargetExtractor
 from dltranz.data_load.parquet_dataset import ParquetDataset, ParquetFiles
-from dltranz.lightning_modules.sop_module import SopModule
-from dltranz.metric_learn.inference_tools import save_scores
 from dltranz.lightning_modules.coles_module import CoLESModule
 from dltranz.lightning_modules.cpc_module import CpcModule
+from dltranz.lightning_modules.rtd_module import RtdModule
+from dltranz.lightning_modules.sop_nsp_module import SopNspModule
+from dltranz.metric_learn.inference_tools import save_scores
 from dltranz.train import score_model
 from dltranz.util import get_conf
 
@@ -57,7 +57,7 @@ def main(args=None):
     pl.seed_everything(42)
 
     pl_module = None
-    for m in [CoLESModule, CpcModule, SopModule]:
+    for m in [CoLESModule, CpcModule, SopNspModule, RtdModule]:
         if m.__name__ == conf['params.pl_module_name']:
             pl_module = m
             break

@@ -1,13 +1,15 @@
 import pytorch_lightning as pl
+import torch
 from torch.nn import BCELoss
 
-from dltranz.baselines.sop import SentencePairsHead
+from dltranz.custom_layers import Squeeze
 from dltranz.seq_cls import EpochAuroc
 from dltranz.seq_encoder import create_encoder
+from dltranz.seq_encoder.utils import AllStepsHead, FlattenHead
 from dltranz.train import get_optimizer, get_lr_scheduler, ReduceLROnPlateauWrapper
 
 
-class SopModule(pl.LightningModule):
+class RtdModule(pl.LightningModule):
     metric_name = 'valid_auroc'
 
     def __init__(self, params):
@@ -16,8 +18,17 @@ class SopModule(pl.LightningModule):
 
         self.loss = BCELoss()
 
-        self._seq_encoder = create_encoder(params, is_reduce_sequence=True)
-        self._head = SentencePairsHead(self._seq_encoder, self._seq_encoder.embedding_size, params['head'])
+        self._seq_encoder = create_encoder(params, is_reduce_sequence=False)
+        self._head = torch.nn.Sequential(
+            AllStepsHead(
+                torch.nn.Sequential(
+                    torch.nn.Linear(self._seq_encoder.embedding_size, 1),
+                    torch.nn.Sigmoid(),
+                    Squeeze(),
+                )
+            ),
+            FlattenHead(),
+        )
 
         self.validation_metric = EpochAuroc()
 
@@ -30,14 +41,16 @@ class SopModule(pl.LightningModule):
 
     def training_step(self, batch, _):
         x, y = batch
-        y_h = self._head(x)
+        y_h = self._seq_encoder(x)
+        y_h = self._head(y_h)
         loss = self.loss(y_h, y)
         self.log('loss', loss)
         return loss
 
     def validation_step(self, batch, _):
         x, y = batch
-        y_h = self._head(x)
+        y_h = self._seq_encoder(x)
+        y_h = self._head(y_h)
         self.validation_metric(y_h, y)
 
     def validation_epoch_end(self, outputs):

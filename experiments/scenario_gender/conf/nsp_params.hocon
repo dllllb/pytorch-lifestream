@@ -15,7 +15,7 @@
       split_strategy: {
         split_strategy: "SampleSlices"
         split_count: 4
-        cnt_min: 50
+        cnt_min: 25
         cnt_max: 200
       }
       trx_dropout: 0.01
@@ -26,7 +26,7 @@
       split_strategy: {
         split_strategy: SampleSlices
         split_count: 4
-        cnt_min: 50
+        cnt_min: 25
         cnt_max: 200
       }
       num_workers: 16
@@ -45,7 +45,7 @@
   }
 
   params: {
-    data_module_name: SopDataModuleTrain
+    data_module_name: NspDataModuleTrain
     pl_module_name: SopNspModule
 
     encoder_type: rnn,
@@ -84,12 +84,12 @@
     norm_scores: false,
   },
 
-  model_path: "models/sop_model.p"
+  model_path: "models/nsp_model.p"
 
   include "dataset_inference_file.hocon"
 
   output: {
-    path: data/sop_embeddings,
+    path: data/nsp_embeddings,
     format: pickle,
   }
 }

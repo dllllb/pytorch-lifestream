@@ -1,20 +1,21 @@
 """
-Creates data loaders for Sequence Order Prediction learning
+Creates data loaders for Next Sequence Prediction learning
 Each record pass throw the sampler and splits into views of the main record
 Each sample slits into left and right part.
+Some right part are shuffled.
 X - is pair of feature_arrays (left and right), sub-samples of main event sequences
-Y - order of left and right part. 0 is (left, right), 1 is (right, left)
+Y - is left and right from she same sample.
+    0 means left and right from different sample, 1 means left and right from the same sample
 
     Input:        -> Output
 dict of arrays    ->  X,                                            Y
-client_1          -> (client_1_smpl_1_left, client_1_smpl_1_right), 0
-                     (client_1_smpl_2_left, client_1_smpl_2_right), 0
-                     (client_1_smpl_3_right, client_1_smpl_3_left), 1
-client_2          -> (client_2_smpl_1_right, client_2_smpl_1_left), 1
+client_1          -> (client_1_smpl_1_left, client_1_smpl_1_right), 1
+                     (client_1_smpl_2_left, client_1_smpl_2_right), 1
+                     (client_1_smpl_3_left, client_3_smpl_1_right), 0
+client_2          -> (client_2_smpl_1_left, client_2_smpl_3_right), 0
                      ...
 """
 import logging
-import random
 
 import numpy as np
 import pytorch_lightning as pl
@@ -23,9 +24,8 @@ from pyhocon.config_parser import ConfigFactory
 from torch.utils.data import DataLoader
 from tqdm.auto import tqdm
 
-from dltranz.baselines.nsp import sequence_pair_augmentation
-from dltranz.baselines.sop import collate_sop_pairs
-from dltranz.data_load import padded_collate, IterableAugmentations, IterableChain, augmentation_chain
+from dltranz.baselines.nsp import sequence_pair_augmentation, collate_nsp_pairs
+from dltranz.data_load import IterableAugmentations, IterableChain, augmentation_chain
 from dltranz.data_load.augmentations.dropout_trx import DropoutTrx
 from dltranz.data_load.iterable_processing.category_size_clip import CategorySizeClip
 from dltranz.data_load.iterable_processing.feature_filter import FeatureFilter
@@ -33,17 +33,16 @@ from dltranz.data_load.iterable_processing.feature_type_cast import FeatureTypeC
 from dltranz.data_load.iterable_processing.id_filter import IdFilter
 from dltranz.data_load.iterable_processing.iterable_shuffle import IterableShuffle
 from dltranz.data_load.iterable_processing.seq_len_filter import SeqLenFilter
-from dltranz.data_load.iterable_processing.target_extractor import TargetExtractor
 from dltranz.data_load.list_splitter import ListSplitter
 from dltranz.data_load.parquet_dataset import ParquetDataset, ParquetFiles
 from dltranz.data_load.partitioned_dataset import PartitionedDataset, PartitionedDataFiles
-from dltranz.metric_learn.dataset import split_strategy, collate_splitted_rows, nested_list_to_flat_with_collate
+from dltranz.metric_learn.dataset import split_strategy, nested_list_to_flat_with_collate
 from dltranz.metric_learn.dataset.splitting_dataset import IterableSplittingDataset, MapSplittingDataset
 
 logger = logging.getLogger(__name__)
 
 
-class SopDataModuleTrain(pl.LightningDataModule):
+class NspDataModuleTrain(pl.LightningDataModule):
     def __init__(self, conf, pl_module):
         super().__init__()
 
@@ -224,7 +223,7 @@ class SopDataModuleTrain(pl.LightningDataModule):
         )
 
     def train_dataloader(self):
-        collate_fn = collate_sop_pairs
+        collate_fn = collate_nsp_pairs
         if self._type != 'iterable':
             collate_fn = nested_list_to_flat_with_collate(collate_fn)
 
@@ -237,7 +236,7 @@ class SopDataModuleTrain(pl.LightningDataModule):
         )
 
     def val_dataloader(self):
-        collate_fn = collate_sop_pairs
+        collate_fn = collate_nsp_pairs
         if self._type != 'iterable':
             collate_fn = nested_list_to_flat_with_collate(collate_fn)
 

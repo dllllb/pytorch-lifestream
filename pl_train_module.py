@@ -1,15 +1,17 @@
 import logging
 
+import pytorch_lightning as pl
 from pytorch_lightning.callbacks import ModelCheckpoint
 
 from dltranz.data_load.data_module.coles_data_module import ColesDataModuleTrain
 from dltranz.data_load.data_module.cpc_data_module import CpcDataModuleTrain
-import pytorch_lightning as pl
-
+from dltranz.data_load.data_module.nsp_data_module import NspDataModuleTrain
+from dltranz.data_load.data_module.rtd_data_module import RtdDataModuleTrain
 from dltranz.data_load.data_module.sop_data_module import SopDataModuleTrain
 from dltranz.lightning_modules.coles_module import CoLESModule
 from dltranz.lightning_modules.cpc_module import CpcModule
-from dltranz.lightning_modules.sop_module import SopModule
+from dltranz.lightning_modules.rtd_module import RtdModule
+from dltranz.lightning_modules.sop_nsp_module import SopNspModule
 from dltranz.util import get_conf
 
 logger = logging.getLogger(__name__)
@@ -22,7 +24,7 @@ def main(args=None):
         pl.seed_everything(conf['seed_everything'])
 
     data_module = None
-    for m in [ColesDataModuleTrain, CpcDataModuleTrain, SopDataModuleTrain]:
+    for m in [ColesDataModuleTrain, CpcDataModuleTrain, SopDataModuleTrain, NspDataModuleTrain, RtdDataModuleTrain]:
         if m.__name__ == conf['params.data_module_name']:
             data_module = m
             break
@@ -31,7 +33,7 @@ def main(args=None):
     logger.info(f'{data_module.__name__} used')
 
     pl_module = None
-    for m in [CoLESModule, CpcModule, SopModule]:
+    for m in [CoLESModule, CpcModule, SopNspModule, RtdModule]:
         if m.__name__ == conf['params.pl_module_name']:
             pl_module = m
             break
@@ -66,6 +68,5 @@ def main(args=None):
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)-7s %(funcName)-20s   : %(message)s')
     logging.getLogger("lightning").setLevel(logging.INFO)
-    import torch.autograd.profiler as profiler
 
     main()

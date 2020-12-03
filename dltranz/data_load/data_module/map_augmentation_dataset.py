@@ -10,7 +10,14 @@ class MapAugmentationDataset(Dataset):
         return len(self.base_dataset)
 
     def __getitem__(self, idx):
-        feature_arrays, target = self.base_dataset[idx]
-        if self.a_chain is not None:
-            feature_arrays = self.a_chain(feature_arrays)
-        return feature_arrays, target
+        row = self.base_dataset[idx]
+        if type(row) is tuple:
+            feature_arrays, target = row
+            if self.a_chain is not None:
+                feature_arrays = self.a_chain(feature_arrays)
+            return feature_arrays, target
+        else:
+            feature_arrays = row
+            if self.a_chain is not None:
+                feature_arrays = self.a_chain(feature_arrays)
+            return feature_arrays

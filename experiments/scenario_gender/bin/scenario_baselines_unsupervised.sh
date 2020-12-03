@@ -15,8 +15,8 @@ python ../../pl_train_module.py --conf conf/sop_params.hocon
 python ../../pl_inference.py    --conf conf/sop_params.hocon
 
 # Train the Next Sequence Prediction (NSP) model; inference
-python ../../train_nsp.py params.device="$SC_DEVICE" --conf conf/dataset.hocon conf/nsp_params.json
-python ../../ml_inference.py params.device="$SC_DEVICE" --conf conf/dataset.hocon conf/nsp_params.json
+python ../../pl_train_module.py --conf conf/nsp_params.hocon
+python ../../pl_inference.py    --conf conf/nsp_params.hocon
 
 # Train the Replaced Token Detection (RTD) model; inference
 python ../../train_rtd.py params.device="$SC_DEVICE" --conf conf/dataset.hocon conf/rtd_params.json

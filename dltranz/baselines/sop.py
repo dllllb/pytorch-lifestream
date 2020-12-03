@@ -9,11 +9,13 @@ class SentencePairsHead(torch.nn.Module):
     def __init__(self, base_model, embeds_dim, config):
         super().__init__()
         self.base_model = base_model
+        # TODO: check batch_norm position
         self.head = torch.nn.Sequential(
             torch.nn.Linear(embeds_dim * 2, config['hidden_size'], bias=True),
+            torch.nn.BatchNorm1d(config['hidden_size']),
             torch.nn.ReLU(),
             torch.nn.Dropout(config['drop_p']),
-            torch.nn.BatchNorm1d(config['hidden_size']),
+            # torch.nn.BatchNorm1d(config['hidden_size']),
             torch.nn.Linear(config['hidden_size'], 1),
             torch.nn.Sigmoid()
         )

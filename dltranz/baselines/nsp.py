@@ -1,11 +1,18 @@
-import functools
-import operator
 import random
 import torch
 
 from torch.utils.data import Dataset
 
 from dltranz.data_load import padded_collate_wo_target
+
+
+def sequence_pair_augmentation(item):
+    length = len(next(iter(item.values())))
+    l_length = random.randint(length // 4, 3 * length // 4)
+    left = {k: v[:l_length] for k, v in item.items()}
+    right = {k: v[l_length:] for k, v in item.items()}
+
+    return left, right
 
 
 class SequencePairsDataset(Dataset):
@@ -27,17 +34,10 @@ class SequencePairsDataset(Dataset):
             return self._one_item(item)
 
     def _one_item(self, item):
-        length = len(next(iter(item.values())))
-        l_length = random.randint(length//4, 3*length//4)
-        left = {k: v[:l_length] for k, v in item.items()}
-        right = {k: v[l_length:] for k, v in item.items()}
-
-        return left, right
+        return sequence_pair_augmentation(item)
 
 
 def collate_nsp_pairs(batch):
-    batch = functools.reduce(operator.iadd, batch)
-
     lefts = [left for left, _ in batch] * 2
 
     rights = [right for _, right in batch]
@@ -55,5 +55,5 @@ def collate_nsp_pairs(batch):
             padded_collate_wo_target(lefts),
             padded_collate_wo_target(rights)
         ),
-        targets
+        targets.float(),
     )
