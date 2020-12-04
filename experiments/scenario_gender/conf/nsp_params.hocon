@@ -33,6 +33,7 @@
       batch_size: 1024
     }
   }
+  logger_name: nsp_model
 
   seed_everything: 42
   trainer: {

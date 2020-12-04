@@ -96,6 +96,14 @@ class ClsDataModuleTrain(pl.LightningDataModule):
         self._valid_targets = TargetFile.load(current_fold['valid']['path'])
         self._test_targets = TargetFile.load(current_fold['test']['path'])
 
+        labeled_amount = self.train_conf.get('labeled_amount', None)
+        if labeled_amount is not None:
+            _len_orig = len(self._train_targets)
+            if type(labeled_amount) is float:
+                labeled_amount = int(_len_orig * labeled_amount)
+            self._train_targets.df = self._train_targets.df.iloc[:labeled_amount]
+            logger.info(f'Reduced train amount from {_len_orig} to {len(self._train_targets)}')
+
     def build_iterable_processing(self, part):
         yield FeatureTypeCast({self.col_id: int})
 

@@ -11,6 +11,7 @@
     checkpoint_callback: false
     deterministic: True
   }
+  logger_name: agg_features_model
 
   params: {
     data_module_name: ColesDataModuleTrain

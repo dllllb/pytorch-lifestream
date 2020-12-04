@@ -24,6 +24,7 @@
     checkpoint_callback: false
     deterministic: True
   }
+  logger_name: cpc_model
 
   params: {
     data_module_name: CpcDataModuleTrain

@@ -2,6 +2,7 @@ import logging
 
 import pytorch_lightning as pl
 from pytorch_lightning.callbacks import ModelCheckpoint
+from pytorch_lightning.loggers import TensorBoardLogger
 
 from dltranz.data_load.data_module.coles_data_module import ColesDataModuleTrain
 from dltranz.data_load.data_module.cpc_data_module import CpcDataModuleTrain
@@ -46,6 +47,7 @@ def main(args=None):
 
     _trainer_params = conf['trainer']
     _use_best_epoch = conf['params.train'].get('use_best_epoch', False)
+
     if _use_best_epoch:
         checkpoint_callback = ModelCheckpoint(monitor=model.metric_name, mode='max')
         logger.info(f'Create ModelCheckpoint callback with monitor="{model.metric_name}"')
@@ -53,6 +55,12 @@ def main(args=None):
             logger.warning(f'Overwrite `trainer.checkpoint_callback`, was "{_trainer_params.checkpoint_callback}". '
                            f'New value is ModelCheckpoint callback')
         _trainer_params['checkpoint_callback'] = checkpoint_callback
+
+    if 'logger_name' in conf:
+        _trainer_params['logger'] = TensorBoardLogger(
+            save_dir='lightning_logs',
+            name=conf.get('logger_name'),
+        )
 
     trainer = pl.Trainer(**_trainer_params)
     trainer.fit(model, dm)

@@ -1,6 +1,7 @@
 import json
 import logging
 import numpy as np
+from pytorch_lightning.loggers import TensorBoardLogger
 
 from dltranz.data_load.data_module.cls_data_module import ClsDataModuleTrain
 import pytorch_lightning as pl
@@ -19,7 +20,14 @@ def fold_fit_test(conf, fold_id, pretrained_module=None):
     pretrained_encoder = None if pretrained_module is None else pretrained_module.seq_encoder
     model = SequenceClassify(conf['params'], pretrained_encoder)
     dm = ClsDataModuleTrain(conf['data_module'], model, fold_id)
-    trainer = pl.Trainer(**conf['trainer'])
+
+    _trainer_params = conf['trainer']
+    if 'logger_name' in conf:
+        _trainer_params['logger'] = TensorBoardLogger(
+            save_dir='lightning_logs',
+            name=conf.get('logger_name'),
+        )
+    trainer = pl.Trainer(**_trainer_params)
     trainer.fit(model, dm)
 
     if 'model_path' in conf:

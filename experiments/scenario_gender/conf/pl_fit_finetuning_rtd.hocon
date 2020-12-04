@@ -50,6 +50,7 @@
     checkpoint_callback: false
     deterministic: True
   }
+  logger_name: rtd_finetuning
 
   params: {
     score_metric: [auroc, accuracy]

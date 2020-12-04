@@ -49,6 +49,7 @@
     checkpoint_callback: false
     deterministic: True
   }
+  logger_name: target_scores
 
   params: {
     score_metric: [auroc, accuracy]

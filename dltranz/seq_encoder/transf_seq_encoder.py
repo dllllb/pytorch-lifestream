@@ -104,6 +104,8 @@ class TransfSeqEncoder(AbsSeqEncoder):
 
         p = TrxEncoder(params['trx_encoder'])
         trx_size = p.output_size
+        self._category_max_size = p.category_max_size
+
         enc_input_size = params['transf']['input_size']
         if enc_input_size != trx_size:
             inp_reshape = PerTransTransf(trx_size, enc_input_size)
@@ -115,7 +117,6 @@ class TransfSeqEncoder(AbsSeqEncoder):
         self.reducer = FirstStepEncoder()
 
         self.model = torch.nn.Sequential(*layers)
-        self._category_max_size = p.category_max_size
 
     @property
     def category_max_size(self):

@@ -43,6 +43,7 @@
 
     deterministic: True
   }
+  logger_name: sop_model
 
   params: {
     data_module_name: SopDataModuleTrain

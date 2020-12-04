@@ -132,13 +132,13 @@ class AggFeatureSeqEncoder(AbsSeqEncoder):
 
     @property
     def is_reduce_sequence(self):
-        return super().is_reduce_sequence
+        return self._is_reduce_sequence
 
     @is_reduce_sequence.setter
     def is_reduce_sequence(self, value):
         if not value:
             raise NotImplementedError('Only sequence embedding can be returned')
-        super().is_reduce_sequence = value
+        self._is_reduce_sequence = value
 
     @property
     def category_max_size(self):

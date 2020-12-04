@@ -38,6 +38,7 @@
     checkpoint_callback: false
     deterministic: True
   }
+  logger_name: rtd_model
 
   params: {
     data_module_name: RtdDataModuleTrain
