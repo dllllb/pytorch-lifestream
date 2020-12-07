@@ -65,5 +65,5 @@ def test_train_loop():
 
     model = CoLESModule(params)
     dl = RandomEventData(params['data_module'])
-    trainer = pl.Trainer(max_epochs=1)
+    trainer = pl.Trainer(max_epochs=1, logger=None, checkpoint_callback=False)
     trainer.fit(model, dl)

@@ -95,7 +95,7 @@ def test_train_loop_rnn():
 
     model = SequenceClassify(params)
     dl = RandomEventData(params['data_module'])
-    trainer = pl.Trainer(max_epochs=1)
+    trainer = pl.Trainer(max_epochs=1, logger=None, checkpoint_callback=False)
     trainer.fit(model, dl)
 
 def test_train_loop_transf():
@@ -103,5 +103,5 @@ def test_train_loop_transf():
 
     model = SequenceClassify(params)
     dl = RandomEventData(params['data_module'])
-    trainer = pl.Trainer(max_epochs=1)
+    trainer = pl.Trainer(max_epochs=1, logger=None, checkpoint_callback=False)
     trainer.fit(model, dl)

@@ -70,7 +70,7 @@ def test_triplet_loss():
 
 def test_histogram_loss1():
     x, y = get_data()
-    loss_fn = HistogramLoss(num_steps=5, device='cpu')
+    loss_fn = HistogramLoss(num_steps=5)
 
     print(x)
     print(y)
@@ -81,7 +81,7 @@ def test_histogram_loss1():
 
 def test_histogram_loss2():
     x, y = get_data()
-    loss_fn = HistogramLoss(num_steps=51, device='cpu')
+    loss_fn = HistogramLoss(num_steps=51)
 
     print(x)
     print(y)
