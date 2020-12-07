@@ -1,4 +1,4 @@
-export SC_SUFFIX="smpl_SampleRandom"
+export SC_SUFFIX="subseq_smpl_SampleRandom"
 export SC_STRATEGY="SampleRandom"
 python ../../pl_train_module.py \
     logger_name=${SC_SUFFIX} \
@@ -12,7 +12,7 @@ python ../../pl_inference.py \
     --conf "conf/mles_params.hocon"
 
 
-export SC_SUFFIX="smpl_SplitRandom"
+export SC_SUFFIX="subseq_smpl_SplitRandom"
 export SC_STRATEGY="SplitRandom"
 python ../../pl_train_module.py \
     logger_name=${SC_SUFFIX} \
@@ -36,4 +36,4 @@ python -m embeddings_validation \
     --conf conf/embeddings_validation_short.hocon --workers 10 --total_cpu_count 20 \
     --conf_extra \
       'report_file: "../results/scenario_gender__subseq_smpl_strategy.txt",
-      auto_features: ["../data/emb__smpl_*.pickle"]'
+      auto_features: ["../data/emb__subseq_smpl_*.pickle"]'

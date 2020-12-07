@@ -14,7 +14,6 @@ client_2          -> client_2_smpl_1, client_2_id
                      client_2_smpl_3, client_2_id
 """
 import logging
-import random
 
 import numpy as np
 import pytorch_lightning as pl
@@ -25,6 +24,7 @@ from tqdm.auto import tqdm
 
 from dltranz.data_load import padded_collate, IterableAugmentations, IterableChain, augmentation_chain
 from dltranz.data_load.augmentations.dropout_trx import DropoutTrx
+from dltranz.data_load.augmentations.seq_len_limit import SeqLenLimit
 from dltranz.data_load.iterable_processing.category_size_clip import CategorySizeClip
 from dltranz.data_load.iterable_processing.feature_filter import FeatureFilter
 from dltranz.data_load.iterable_processing.feature_type_cast import FeatureTypeCast
@@ -202,7 +202,13 @@ class ColesDataModuleTrain(pl.LightningDataModule):
 
     def build_augmentations(self, part):
         if part == 'train':
+            if 'max_seq_len' in self.train_conf:
+                yield SeqLenLimit(self.train_conf['max_seq_len'])
             yield DropoutTrx(self.train_conf['trx_dropout'])
+
+        if part == 'valid':
+            if 'max_seq_len' in self.valid_conf:
+                yield SeqLenLimit(self.valid_conf['max_seq_len'])
 
     def setup_map(self):
         self.train_dataset = list(tqdm(iter(self.train_dataset)))
