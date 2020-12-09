@@ -3,15 +3,16 @@ import os
 import numpy as np
 import torch
 
-from torch.utils.data import DataLoader
+from torch.utils.data import DataLoader, Dataset
 
 from dltranz.data_load import ConvertingTrxDataset
 from dltranz.experiment import update_model_stats, get_epoch_score_metric
 from dltranz.loss import get_loss
 from dltranz.metric_learn.dataset import SplittingDataset, split_strategy, nested_list_to_flat_with_collate
 from dltranz.metric_learn.ml_models import ml_model_by_type
-from dltranz.baselines.sop import SentencePairsHead
-from dltranz.baselines.nsp import SequencePairsDataset, collate_nsp_pairs
+from dltranz.lightning_modules.sop_nsp_module import SentencePairsHead
+from dltranz.data_load.augmentations.sequence_pair_augmentation import sequence_pair_augmentation
+from dltranz.data_load.data_module.nsp_data_module import collate_nsp_pairs
 from dltranz.train import get_optimizer, get_lr_scheduler, fit_model
 from dltranz.util import init_logger, get_conf, switch_reproducibility_on
 from metric_learning import prepare_data
@@ -21,6 +22,28 @@ logger = logging.getLogger(__name__)
 if __name__ == '__main__':
     # reproducibility
     switch_reproducibility_on()
+
+
+class SequencePairsDataset(Dataset):
+    def __init__(self, delegate):
+        self.delegate = delegate
+
+    def __len__(self):
+        return len(self.delegate)
+
+    def __iter__(self):
+        for rec in iter(self.delegate):
+            yield self._one_item(rec)
+
+    def __getitem__(self, idx):
+        item = self.delegate[idx]
+        if type(item) is list:
+            return [self._one_item(t) for t in item]
+        else:
+            return self._one_item(item)
+
+    def _one_item(self, item):
+        return sequence_pair_augmentation(item)
 
 
 def create_data_loaders(conf):

@@ -3,11 +3,11 @@ import logging
 import os
 import torch
 import torch.nn as nn
+from torch import nn as nn
 
 from torch.autograd import Function
 
 from dltranz.seq_encoder.agg_feature_model import AggFeatureModel
-from dltranz.baselines.cpc import CPC_Ecoder
 from dltranz.seq_encoder.transf_seq_encoder import TransformerSeqEncoder
 from dltranz.seq_encoder.rnn_encoder import RnnEncoder
 from dltranz.trx_encoder import PaddedBatch
@@ -108,6 +108,27 @@ def agg_feature_model(params):
         layers.append(NormEncoder())
     m = torch.nn.Sequential(*layers)
     return m
+
+
+class CPC_Ecoder(nn.Module):
+    def __init__(self, trx_encoder, seq_encoder, linear_size, conf):
+        super().__init__()
+        self.trx_encoder = trx_encoder
+        self.seq_encoder = seq_encoder
+        embedding_size = seq_encoder.hidden_size
+        linear_size = linear_size
+        self.linears = nn.ModuleList([nn.Linear(embedding_size, linear_size) for i in range(conf['n_forward_steps'])])
+
+    def forward(self, x: PaddedBatch):
+        base_embeddings = self.trx_encoder(x)
+        context_embeddings = self.seq_encoder(base_embeddings)
+
+        me = []
+        for l in self.linears:
+            me.append(l(context_embeddings.payload))
+        mapped_ctx_embeddings = PaddedBatch(torch.stack(me, dim=3), context_embeddings.seq_lens)
+
+        return base_embeddings, context_embeddings, mapped_ctx_embeddings
 
 
 def cpc_model(params):

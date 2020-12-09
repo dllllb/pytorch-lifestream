@@ -1,7 +1,8 @@
 import torch
 from dltranz.seq_encoder.rnn_encoder import RnnEncoder
 from dltranz.trx_encoder import TrxEncoder
-from dltranz.baselines.cpc import CPC_Ecoder, run_experiment
+from dltranz.metric_learn.ml_models import CPC_Ecoder
+from train_cpc import run_experiment
 from tests.dltranz_tests.test_trx_encoder import gen_trx_data
 from dltranz.data_load import TrxDataset
 from dltranz.data_load import create_train_loader, create_validation_loader

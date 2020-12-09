@@ -14,13 +14,12 @@ from functools import partial
 
 import numpy as np
 import pytorch_lightning as pl
-
+import torch
 from pyhocon.config_parser import ConfigFactory
 from torch.utils.data import DataLoader
 from tqdm.auto import tqdm
 
-from dltranz.baselines.rtd import collate_rtd_batch
-from dltranz.data_load import IterableAugmentations, IterableChain, augmentation_chain
+from dltranz.data_load import IterableAugmentations, IterableChain, augmentation_chain, padded_collate_wo_target
 from dltranz.data_load.augmentations.dropout_trx import DropoutTrx
 from dltranz.data_load.augmentations.seq_len_limit import SeqLenLimit
 from dltranz.data_load.data_module.map_augmentation_dataset import MapAugmentationDataset
@@ -33,8 +32,34 @@ from dltranz.data_load.iterable_processing.seq_len_filter import SeqLenFilter
 from dltranz.data_load.list_splitter import ListSplitter
 from dltranz.data_load.parquet_dataset import ParquetDataset, ParquetFiles
 from dltranz.data_load.partitioned_dataset import PartitionedDataset, PartitionedDataFiles
+from dltranz.trx_encoder import PaddedBatch
 
 logger = logging.getLogger(__name__)
+
+
+def collate_rtd_batch(batch, replace_prob, skip_first=0):
+    padded_batch = padded_collate_wo_target(batch)
+
+    new_x, lengths = padded_batch.payload, padded_batch.seq_lens
+
+    mask = torch.zeros(next(iter(new_x.values())).shape, dtype=torch.int64)
+    for i, length in enumerate(lengths):
+        mask[i, :length] = 1
+
+    to_replace = torch.bernoulli(mask * replace_prob).bool()
+    to_replace[:, :skip_first] = False
+
+    sampled_trx_ids = torch.multinomial(
+        mask.flatten().float(),
+        num_samples=to_replace.sum().item(),
+        replacement=True
+    )
+
+    to_replace_flatten = to_replace.flatten()
+    for k, v in new_x.items():
+        v.flatten()[to_replace_flatten] = v.flatten()[sampled_trx_ids]
+
+    return PaddedBatch(new_x, lengths), to_replace.long().float().flatten()[mask.flatten().bool()]
 
 
 class RtdDataModuleTrain(pl.LightningDataModule):

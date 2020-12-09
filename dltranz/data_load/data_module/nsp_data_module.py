@@ -16,16 +16,18 @@ client_2          -> (client_2_smpl_1_left, client_2_smpl_3_right), 0
                      ...
 """
 import logging
+import random
 
 import numpy as np
 import pytorch_lightning as pl
+import torch
 
 from pyhocon.config_parser import ConfigFactory
 from torch.utils.data import DataLoader
 from tqdm.auto import tqdm
 
-from dltranz.baselines.nsp import sequence_pair_augmentation, collate_nsp_pairs
-from dltranz.data_load import IterableAugmentations, IterableChain, augmentation_chain
+from dltranz.data_load.augmentations.sequence_pair_augmentation import sequence_pair_augmentation
+from dltranz.data_load import IterableAugmentations, IterableChain, augmentation_chain, padded_collate_wo_target
 from dltranz.data_load.augmentations.dropout_trx import DropoutTrx
 from dltranz.data_load.iterable_processing.category_size_clip import CategorySizeClip
 from dltranz.data_load.iterable_processing.feature_filter import FeatureFilter
@@ -40,6 +42,28 @@ from dltranz.metric_learn.dataset import split_strategy, nested_list_to_flat_wit
 from dltranz.metric_learn.dataset.splitting_dataset import IterableSplittingDataset, MapSplittingDataset
 
 logger = logging.getLogger(__name__)
+
+
+def collate_nsp_pairs(batch):
+    lefts = [left for left, _ in batch] * 2
+
+    rights = [right for _, right in batch]
+    rights_ = rights[:]
+    random.shuffle(rights_)
+    rights += rights_
+
+    targets = torch.cat([
+        torch.ones(len(batch), dtype=torch.int64),
+        torch.zeros(len(batch), dtype=torch.int64),
+    ])
+
+    return (
+        (
+            padded_collate_wo_target(lefts),
+            padded_collate_wo_target(rights)
+        ),
+        targets.float(),
+    )
 
 
 class NspDataModuleTrain(pl.LightningDataModule):

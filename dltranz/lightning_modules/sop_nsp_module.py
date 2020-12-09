@@ -1,55 +1,51 @@
-import pytorch_lightning as pl
+import torch
 from torch.nn import BCELoss
 
-from dltranz.baselines.sop import SentencePairsHead
+from dltranz.lightning_modules.AbsModule import ABSModule
 from dltranz.seq_cls import EpochAuroc
-from dltranz.seq_encoder import create_encoder
-from dltranz.train import get_optimizer, get_lr_scheduler, ReduceLROnPlateauWrapper
 
 
-class SopNspModule(pl.LightningModule):
-    metric_name = 'valid_auroc'
-
-    def __init__(self, params):
+class SentencePairsHead(torch.nn.Module):
+    def __init__(self, base_model, embeds_dim, config):
         super().__init__()
-        self.save_hyperparameters()
-
-        self.loss = BCELoss()
-
-        self._seq_encoder = create_encoder(params, is_reduce_sequence=True)
-        self._head = SentencePairsHead(self._seq_encoder, self._seq_encoder.embedding_size, params['head'])
-
-        self.validation_metric = EpochAuroc()
-
-    @property
-    def seq_encoder(self):
-        return self._seq_encoder
+        self.base_model = base_model
+        # TODO: check batch_norm position
+        self.head = torch.nn.Sequential(
+            torch.nn.Linear(embeds_dim * 2, config['hidden_size'], bias=True),
+            torch.nn.BatchNorm1d(config['hidden_size']),
+            torch.nn.ReLU(),
+            torch.nn.Dropout(config['drop_p']),
+            # torch.nn.BatchNorm1d(config['hidden_size']),
+            torch.nn.Linear(config['hidden_size'], 1),
+            torch.nn.Sigmoid()
+        )
 
     def forward(self, x):
-        return self._seq_encoder(x)
+        left, right = x
+        x = torch.cat([self.base_model(left), self.base_model(right)], dim=1)
+        return self.head(x).squeeze(-1)
 
-    def training_step(self, batch, _):
-        x, y = batch
+
+class SopNspModule(ABSModule):
+    def __init__(self, params):
+        super().__init__(params)
+
+        self._head = SentencePairsHead(self.seq_encoder, self.seq_encoder.embedding_size, params['head'])
+
+    @property
+    def metric_name(self):
+        return 'valid_auroc'
+
+    @property
+    def is_requires_reduced_sequence(self):
+        return True
+
+    def get_loss(self):
+        return BCELoss()
+
+    def get_validation_metric(self):
+        return EpochAuroc()
+
+    def shared_step(self, x, y):
         y_h = self._head(x)
-        loss = self.loss(y_h, y)
-        self.log('loss', loss)
-        return loss
-
-    def validation_step(self, batch, _):
-        x, y = batch
-        y_h = self._head(x)
-        self.validation_metric(y_h, y)
-
-    def validation_epoch_end(self, outputs):
-        self.log(self.metric_name, self.validation_metric.compute(), prog_bar=True)
-
-    def configure_optimizers(self):
-        params = self.hparams.params
-        optimizer = get_optimizer(self, params)
-        scheduler = get_lr_scheduler(optimizer, params)
-        if isinstance(scheduler, ReduceLROnPlateauWrapper):
-            scheduler = {
-                'scheduler': scheduler,
-                'monitor': self.metric_name,
-            }
-        return [optimizer], [scheduler]
+        return y_h, y

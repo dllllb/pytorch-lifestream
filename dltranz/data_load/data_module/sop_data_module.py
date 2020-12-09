@@ -14,18 +14,16 @@ client_2          -> (client_2_smpl_1_right, client_2_smpl_1_left), 1
                      ...
 """
 import logging
-import random
 
 import numpy as np
 import pytorch_lightning as pl
-
+import torch
 from pyhocon.config_parser import ConfigFactory
 from torch.utils.data import DataLoader
 from tqdm.auto import tqdm
 
-from dltranz.baselines.nsp import sequence_pair_augmentation
-from dltranz.baselines.sop import collate_sop_pairs
-from dltranz.data_load import padded_collate, IterableAugmentations, IterableChain, augmentation_chain
+from dltranz.data_load.augmentations.sequence_pair_augmentation import sequence_pair_augmentation
+from dltranz.data_load import IterableAugmentations, IterableChain, augmentation_chain, padded_collate_wo_target
 from dltranz.data_load.augmentations.dropout_trx import DropoutTrx
 from dltranz.data_load.iterable_processing.category_size_clip import CategorySizeClip
 from dltranz.data_load.iterable_processing.feature_filter import FeatureFilter
@@ -33,14 +31,28 @@ from dltranz.data_load.iterable_processing.feature_type_cast import FeatureTypeC
 from dltranz.data_load.iterable_processing.id_filter import IdFilter
 from dltranz.data_load.iterable_processing.iterable_shuffle import IterableShuffle
 from dltranz.data_load.iterable_processing.seq_len_filter import SeqLenFilter
-from dltranz.data_load.iterable_processing.target_extractor import TargetExtractor
 from dltranz.data_load.list_splitter import ListSplitter
 from dltranz.data_load.parquet_dataset import ParquetDataset, ParquetFiles
 from dltranz.data_load.partitioned_dataset import PartitionedDataset, PartitionedDataFiles
-from dltranz.metric_learn.dataset import split_strategy, collate_splitted_rows, nested_list_to_flat_with_collate
+from dltranz.metric_learn.dataset import split_strategy, nested_list_to_flat_with_collate
 from dltranz.metric_learn.dataset.splitting_dataset import IterableSplittingDataset, MapSplittingDataset
 
 logger = logging.getLogger(__name__)
+
+
+def collate_sop_pairs(batch):
+    targets = torch.randint(low=0, high=2, size=(len(batch),))
+
+    lefts = [left if target else right for (left, right), target in zip(batch, targets)]
+    rights = [right if target else left for (left, right), target in zip(batch, targets)]
+
+    return (
+        (
+            padded_collate_wo_target(lefts),
+            padded_collate_wo_target(rights)
+        ),
+        targets.float()
+    )
 
 
 class SopDataModuleTrain(pl.LightningDataModule):

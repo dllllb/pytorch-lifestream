@@ -7,7 +7,7 @@ from functools import partial
 from torch.utils.data import DataLoader
 
 from dltranz.data_load import TrxDataset, ConvertingTrxDataset, DropoutTrxDataset
-from dltranz.baselines.rtd import collate_rtd_batch
+from dltranz.data_load.data_module.rtd_data_module import collate_rtd_batch
 from dltranz.experiment import update_model_stats, get_epoch_score_metric
 from dltranz.loss import get_loss
 from dltranz.models import model_by_type

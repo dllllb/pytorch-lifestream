@@ -10,8 +10,9 @@ from dltranz.experiment import update_model_stats, get_epoch_score_metric
 from dltranz.loss import get_loss
 from dltranz.metric_learn.dataset import SplittingDataset, split_strategy, nested_list_to_flat_with_collate
 from dltranz.metric_learn.ml_models import ml_model_by_type
-from dltranz.baselines.sop import SentencePairsHead, collate_sop_pairs
-from dltranz.baselines.nsp import SequencePairsDataset
+from dltranz.data_load.data_module.sop_data_module import collate_sop_pairs
+from dltranz.lightning_modules.sop_nsp_module import SentencePairsHead
+from train_nsp import SequencePairsDataset
 from dltranz.train import get_optimizer, get_lr_scheduler, fit_model
 from dltranz.util import init_logger, get_conf, switch_reproducibility_on
 from metric_learning import prepare_data
