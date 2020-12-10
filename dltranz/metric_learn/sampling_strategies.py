@@ -108,13 +108,12 @@ class DistanceWeightedPairSelector(PairSelector):
 
     """
 
-    def __init__(self, batch_k, device='cuda', cutoff=0.5, nonzero_loss_cutoff=1.4, normalize=False):
+    def __init__(self, batch_k, cutoff=0.5, nonzero_loss_cutoff=1.4, normalize=False):
         super(DistanceWeightedPairSelector, self).__init__()
         self.batch_k = batch_k
         self.cutoff = cutoff
         self.nonzero_loss_cutoff = nonzero_loss_cutoff
         self.normalize = normalize
-        self.device = device
 
     def get_pairs(self, x, labels):
         k = self.batch_k
@@ -129,8 +128,8 @@ class DistanceWeightedPairSelector(PairSelector):
 
         weights = torch.exp(log_weights - torch.max(log_weights))
 
-        if x.device != weights.device:
-            weights = weights.to(x.device)
+        device = x.device
+        weights = weights.to(device)
 
         mask = torch.ones_like(weights)
         for i in range(0, n, k):
@@ -162,7 +161,7 @@ class DistanceWeightedPairSelector(PairSelector):
         positive_pairs = [[a, p] for a, p in zip(a_indices, p_indices)]
         negative_pairs = [[a, n] for a, n in zip(a_indices, n_indices)]
 
-        return torch.LongTensor(positive_pairs).to(self.device), torch.LongTensor(negative_pairs).to(self.device)
+        return torch.LongTensor(positive_pairs).to(device), torch.LongTensor(negative_pairs).to(device)
 
 
 class TripletSelector:
@@ -369,7 +368,6 @@ def get_sampling_strategy(params):
     elif params['train.sampling_strategy'] == 'DistanceWeightedPair':
         kwargs = {
             'batch_k': params['train.n_samples_from_class'],
-            'device': params['device'],
             'cutoff': params.get('train.cutoff', None),
             'nonzero_loss_cutoff': params.get('train.nonzero_loss_cutoff', None),
             'normalize': params.get('train.normalize', None),

@@ -13,7 +13,7 @@ from math import sqrt
 
 warnings.filterwarnings('ignore', module='tensorboard.compat.tensorflow_stub.dtypes')
 from torch.utils.tensorboard import SummaryWriter
-from dltranz.seq_encoder import PaddedBatch
+from dltranz.trx_encoder import PaddedBatch
 from dltranz.swa import SWA
 
 from ignite.engine import Engine, Events, create_supervised_trainer, create_supervised_evaluator
@@ -142,7 +142,7 @@ def get_lr_scheduler(optimizer, params):
             logger.info('MultiGammaScheduler used')
 
     elif params['lr_scheduler'].get('CosineAnnealing', False):
-        T_max = params['train']['n_epoch']
+        T_max = params['train'].get('n_epoch', params['train.lr_scheduler.n_epoch'])
         eta_min = params['lr_scheduler'].get('eta_min', 0)
         scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=T_max, eta_min=eta_min)
         logger.info('CosineAnnealingLR lr_scheduler used')
@@ -351,7 +351,10 @@ def fit_model(model, train_loader, valid_loader, loss, optimizer, scheduler, par
 
 
 def score_model(model, valid_loader, params):
-    device = torch.device(params.get('device', 'cpu'))
+    if torch.cuda.is_available():
+        device = torch.device(params.get('device', 'cuda'))
+    else:
+        device = torch.device(params.get('device', 'cpu'))
     model.to(device)
 
     pred = []

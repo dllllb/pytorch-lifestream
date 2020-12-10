@@ -14,7 +14,8 @@ bin/make-datasets-spark.sh
 
 ```sh
 cd experiments/scenario_gender
-export SC_DEVICE="cuda"
+export SC_DEVICE="cuda"        # define here one gpu device number
+export CUDA_VISIBLE_DEVICES=0  # define here one gpu device number
 
 
 sh bin/run_all_scenarios.sh
@@ -102,10 +103,18 @@ python -m scenario_gender compare_approaches --n_workers 3 \
 # pytorch_lightning framework
 ```sh
 #  `conf/dataset_iterable_file.hocon` may be included in `conf/mles_params.hocon`
+
+# CoLES unsupervised
 python ../../pl_train_coles.py \
-     trainer.gpus=[3] \
+     trainer.gpus=[0] \
      --conf conf/dataset_iterable_file.hocon conf/mles_params.hocon
 python ../../pl_inference.py \
     params.device="cuda:3" \
     --conf conf/mles_params.hocon
+
+# Supervised train
+python ../../pl_fit_target.py \
+    trainer.gpus=[0] params.device="cuda:0" \
+    --conf conf/pl_fit_target.hocon
+
 ```

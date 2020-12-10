@@ -1,0 +1,66 @@
+{
+  include "dataset_map_file.hocon"
+
+  seed_everything: 42
+  trainer: {
+    gpus: 1
+    auto_select_gpus: false
+
+    max_epochs: 10
+
+    checkpoint_callback: false
+    deterministic: True
+  }
+  logger_name: agg_features_model
+
+  params: {
+    data_module_name: ColesDataModuleTrain
+    pl_module_name: CoLESModule
+
+    validation_metric_params: {
+        K: 4
+        metric: cosine
+    }
+
+    encoder_type: agg_features
+    trx_encoder: {
+      embeddings: {
+        mcc_code: {in: 200}
+        tr_type: {in: 100}
+      }
+      numeric_values: {
+        amount: identity
+      }
+      was_logified: true
+      log_scale_factor: 1
+    },
+    head_layers: [
+        [BatchNorm1d, {num_features: "{seq_encoder.embedding_size}"}]
+        [NormEncoder, {}],
+    ]
+
+    lr_scheduler: {
+      step_size: 10,
+      step_gamma: 0.9025
+    },
+    train: {
+      sampling_strategy: HardNegativePair,
+      neg_count: 5,
+      loss: MarginLoss,
+      margin: 0.2,
+      beta: 0.4,
+      lr: 0.002,
+      weight_decay: 0.0,
+    }
+    norm_scores: false
+  }
+
+  model_path: "models/agg_features_model.p"
+
+  include "dataset_inference_file.hocon"
+
+  output: {
+    path: data/agg_feat_embed
+    format: pickle
+  }
+}

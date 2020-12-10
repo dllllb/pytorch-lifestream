@@ -84,7 +84,7 @@ def test_hard_pair_selector():
 
 def test_distance_weighted_pair_selector():
     x, y = get_data()
-    sampling_strategy = DistanceWeightedPairSelector(batch_k=3, device='cpu')
+    sampling_strategy = DistanceWeightedPairSelector(batch_k=3)
     positive_pairs, negative_pairs = sampling_strategy.get_pairs(x, y)
     check_positive_pairs(positive_pairs, y)
     check_negative_pairs(negative_pairs, y)

@@ -99,14 +99,13 @@ class HistogramLoss(torch.nn.Module):
     code based on https://github.com/valerystrizh/pytorch-histogram-loss
     """
     
-    def __init__(self, num_steps=100, device='cuda'):
+    def __init__(self, num_steps=100):
         super(HistogramLoss, self).__init__()
         self.step = 2 / (num_steps - 1)
         self.eps = 1 / num_steps
-        self.device = device
         self.t = torch.arange(-1, 1+self.step, self.step).view(-1, 1)
         self.tsize = self.t.size()[0]
-        self.t = self.t.to(self.device)
+        self.device = None
         
     def forward(self, embeddings, classes):
         def histogram(inds, size):
@@ -126,7 +125,10 @@ class HistogramLoss(torch.nn.Module):
             s_repeat_[indsb] = (-s_repeat_ + self.t + self.step)[indsb] / self.step
 
             return s_repeat_.sum(1) / size
-        
+
+        self.device = embeddings.device
+        self.t = self.t.to(self.device)
+
         # L2 normalization
         classes_size = classes.size()[0]
         classes_eq = (classes.repeat(classes_size, 1)  == classes.view(-1, 1).repeat(1, classes_size)).data
@@ -239,7 +241,6 @@ def get_loss(params, sampling_strategy, kw_params=None):
     elif params['train.loss'] == 'HistogramLoss':
         kwargs = {
             'num_steps': params.get('train.num_steps', None),
-            'device': torch.device(params['device']),
         }
         kwargs = {k: v for k, v in kwargs.items() if v is not None}
         loss_fn = HistogramLoss(**kwargs)

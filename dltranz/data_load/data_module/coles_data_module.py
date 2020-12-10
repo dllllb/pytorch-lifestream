@@ -14,7 +14,6 @@ client_2          -> client_2_smpl_1, client_2_id
                      client_2_smpl_3, client_2_id
 """
 import logging
-import random
 
 import numpy as np
 import pytorch_lightning as pl
@@ -25,8 +24,10 @@ from tqdm.auto import tqdm
 
 from dltranz.data_load import padded_collate, IterableAugmentations, IterableChain, augmentation_chain
 from dltranz.data_load.augmentations.dropout_trx import DropoutTrx
+from dltranz.data_load.augmentations.seq_len_limit import SeqLenLimit
 from dltranz.data_load.iterable_processing.category_size_clip import CategorySizeClip
 from dltranz.data_load.iterable_processing.feature_filter import FeatureFilter
+from dltranz.data_load.iterable_processing.feature_type_cast import FeatureTypeCast
 from dltranz.data_load.iterable_processing.id_filter import IdFilter
 from dltranz.data_load.iterable_processing.iterable_shuffle import IterableShuffle
 from dltranz.data_load.iterable_processing.seq_len_filter import SeqLenFilter
@@ -34,14 +35,14 @@ from dltranz.data_load.iterable_processing.target_extractor import TargetExtract
 from dltranz.data_load.list_splitter import ListSplitter
 from dltranz.data_load.parquet_dataset import ParquetDataset, ParquetFiles
 from dltranz.data_load.partitioned_dataset import PartitionedDataset, PartitionedDataFiles
-from dltranz.metric_learn.dataset import split_strategy, collate_splitted_rows
+from dltranz.metric_learn.dataset import split_strategy, nested_list_to_flat_with_collate
 from dltranz.metric_learn.dataset.splitting_dataset import IterableSplittingDataset, MapSplittingDataset
 
 logger = logging.getLogger(__name__)
 
 
 class ColesDataModuleTrain(pl.LightningDataModule):
-    def __init__(self, conf, model):
+    def __init__(self, conf, pl_module):
         super().__init__()
 
         self._type = conf['type']
@@ -52,14 +53,14 @@ class ColesDataModuleTrain(pl.LightningDataModule):
         self.valid_conf = conf['valid']
 
         self.col_id = self.setup_conf['col_id']
-        self.category_max_size = model.category_max_size
+        self.category_max_size = pl_module.seq_encoder.category_max_size
 
         self.train_dataset = None
         self.valid_dataset = None
         self._train_ids = None
         self._valid_ids = None
 
-    def setup(self, stage=None):
+    def prepare_data(self):
         if 'dataset_files' in self.setup_conf:
             self.setup_iterable_files()
         elif 'dataset_parts' in self.setup_conf:
@@ -181,6 +182,7 @@ class ColesDataModuleTrain(pl.LightningDataModule):
         if part == 'train':
             yield SeqLenFilter(min_seq_len=self.train_conf['min_seq_len'])
 
+        yield FeatureTypeCast({self.col_id: int})
         yield TargetExtractor(target_col=self.col_id)
         yield FeatureFilter(drop_non_iterable=True)
         yield CategorySizeClip(self.category_max_size)
@@ -200,7 +202,13 @@ class ColesDataModuleTrain(pl.LightningDataModule):
 
     def build_augmentations(self, part):
         if part == 'train':
+            if 'max_seq_len' in self.train_conf:
+                yield SeqLenLimit(self.train_conf['max_seq_len'])
             yield DropoutTrx(self.train_conf['trx_dropout'])
+
+        if part == 'valid':
+            if 'max_seq_len' in self.valid_conf:
+                yield SeqLenLimit(self.valid_conf['max_seq_len'])
 
     def setup_map(self):
         self.train_dataset = list(tqdm(iter(self.train_dataset)))
@@ -220,18 +228,26 @@ class ColesDataModuleTrain(pl.LightningDataModule):
         )
 
     def train_dataloader(self):
+        collate_fn = padded_collate
+        if self._type != 'iterable':
+            collate_fn = nested_list_to_flat_with_collate(collate_fn)
+
         return DataLoader(
             dataset=self.train_dataset,
-            collate_fn=padded_collate if self._type == 'iterable' else collate_splitted_rows,
+            collate_fn=collate_fn,
             shuffle=False if self._type == 'iterable' else True,
             num_workers=self.train_conf['num_workers'],
             batch_size=self.train_conf['batch_size'],
         )
 
     def val_dataloader(self):
+        collate_fn = padded_collate
+        if self._type != 'iterable':
+            collate_fn = nested_list_to_flat_with_collate(collate_fn)
+
         return DataLoader(
             dataset=self.valid_dataset,
-            collate_fn=padded_collate if self._type == 'iterable' else collate_splitted_rows,
+            collate_fn=collate_fn,
             num_workers=self.valid_conf['num_workers'],
             batch_size=self.valid_conf['batch_size'],
         )

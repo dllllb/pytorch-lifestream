@@ -37,11 +37,17 @@ class MapSplittingDataset(Dataset):
         return len(self.base_dataset)
 
     def __getitem__(self, idx):
-        feature_arrays, uid = self.base_dataset[idx]
-
-        local_date = feature_arrays['event_time']
-        indexes = self.splitter.split(local_date)
-        data = [(self.a_chain({k: v[ix] for k, v in feature_arrays.items()}), uid) for ix in indexes]
+        row = self.base_dataset[idx]
+        if type(row) is tuple:
+            feature_arrays, uid = row
+            local_date = feature_arrays['event_time']
+            indexes = self.splitter.split(local_date)
+            data = [(self.a_chain({k: v[ix] for k, v in feature_arrays.items()}), uid) for ix in indexes]
+        else:
+            feature_arrays = row
+            local_date = feature_arrays['event_time']
+            indexes = self.splitter.split(local_date)
+            data = [self.a_chain({k: v[ix] for k, v in feature_arrays.items()}) for ix in indexes]
         return data
 
 

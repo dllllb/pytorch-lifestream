@@ -1,0 +1,96 @@
+{
+  data_module: {
+    type: map
+    setup: {
+      col_id: customer_id
+      dataset_files: {
+        data_path: "data/train_trx.parquet"
+      }
+      split_by: files
+      valid_size: 0.05
+      valid_split_seed: 42
+    }
+    train: {
+      min_seq_len: 25
+      split_strategy: {
+        split_strategy: "SampleSlices"
+        split_count: 4
+        cnt_min: 25
+        cnt_max: 200
+      }
+      trx_dropout: 0.01
+      num_workers: 8
+      batch_size: 256
+    }
+    valid: {
+      split_strategy: {
+        split_strategy: SampleSlices
+        split_count: 4
+        cnt_min: 25
+        cnt_max: 200
+      }
+      num_workers: 16
+      batch_size: 1024
+    }
+  }
+  logger_name: nsp_model
+
+  seed_everything: 42
+  trainer: {
+    gpus: 1
+    auto_select_gpus: false
+
+    max_epochs: 100
+
+    deterministic: True
+  }
+
+  params: {
+    data_module_name: NspDataModuleTrain
+    pl_module_name: SopNspModule
+
+    encoder_type: rnn,
+    trx_encoder: {
+      norm_embeddings: false,
+      embeddings_noise: 0.003,
+      embeddings: {
+        mcc_code: {in: 200, out: 48},
+        tr_type: {in: 100, out: 24}
+      },
+      numeric_values: {
+        amount: identity
+      }
+    },
+    rnn: {
+      type: gru,
+      hidden_size: 256,
+      bidir: false,
+      trainable_starter: static
+    },
+    head: {
+      hidden_size: 512,
+      drop_p: 0.5,
+      pred_all_states: false
+    },
+
+    lr_scheduler: {
+      ReduceLROnPlateau: true,
+      patience: 15
+    },
+    train: {
+      lr: 0.001,
+      weight_decay: 0.0,
+      use_best_epoch: true
+    },
+    norm_scores: false,
+  },
+
+  model_path: "models/nsp_model.p"
+
+  include "dataset_inference_file.hocon"
+
+  output: {
+    path: data/nsp_embeddings,
+    format: pickle,
+  }
+}

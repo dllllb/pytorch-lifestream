@@ -195,7 +195,7 @@ def main(args=None):
     if 'data_module' in conf:
         logger.info('ColesDataModuleTrain used')
         dm = ColesDataModuleTrain(conf['data_module'])
-        dm.setup()
+        dm.prepare_data()
         train_loader, valid_loader = dm.train_dataloader(), dm.val_dataloader()
     else:
         logger.info('create_data_loaders used')

@@ -1,7 +1,7 @@
 import torch
 from torch import nn
 
-from dltranz.seq_encoder import PaddedBatch
+from dltranz.trx_encoder import PaddedBatch
 
 
 class PairwiseMarginRankingLoss(nn.Module):

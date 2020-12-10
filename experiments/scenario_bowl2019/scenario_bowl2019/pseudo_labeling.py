@@ -16,7 +16,7 @@ from dltranz.experiment import get_epoch_score_metric, update_model_stats
 from dltranz.loss import get_loss
 from dltranz.metric_learn.inference_tools import infer_part_of_data, save_scores
 from dltranz.models import model_by_type
-from dltranz.seq_encoder import PaddedBatch
+from dltranz.trx_encoder import PaddedBatch
 from dltranz.train import get_optimizer, get_lr_scheduler, fit_model
 from dltranz.util import init_logger, get_conf
 from scenario_bowl2019.fit_target import read_consumer_data, EpochTrackingDataLoader, SubsamplingDataset

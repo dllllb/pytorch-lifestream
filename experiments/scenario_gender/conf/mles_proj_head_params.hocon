@@ -1,0 +1,74 @@
+{
+  include "dataset_map_file.hocon"
+
+  seed_everything: 42
+  trainer: {
+    gpus: 1
+    auto_select_gpus: false
+
+    max_epochs: 150
+
+    checkpoint_callback: false
+    deterministic: True
+  }
+  logger_name: mles_proj_head_model
+
+  params: {
+    data_module_name: ColesDataModuleTrain
+    pl_module_name: CoLESModule
+
+    validation_metric_params: {
+        K: 4
+        metric: cosine
+    }
+
+    encoder_type: rnn,
+    trx_encoder: {
+      norm_embeddings: false,
+      embeddings_noise: 0.003,
+      embeddings: {
+        mcc_code: {in: 200, out: 48},
+        tr_type: {in: 100, out: 24}
+      },
+      numeric_values: {
+        amount: identity
+      }
+   },
+   rnn: {
+      type: gru,
+      hidden_size: 1024,
+      bidir: false,
+      trainable_starter: static
+    },
+    head_layers: [
+        [Linear, {"in_features": "{seq_encoder.embedding_size}", "out_features": 256}]
+        [BatchNorm1d, {num_features: 256}]
+        [ReLU, {}]
+        [Linear, {"in_features": 256, "out_features": 256}]
+        [NormEncoder, {}]
+    ]
+
+    lr_scheduler: {
+      step_size: 10,
+      step_gamma: 0.9025
+    },
+    train: {
+      sampling_strategy: HardNegativePair,
+      neg_count: 5,
+      loss: ContrastiveLoss,
+      margin: 0.5,
+      lr: 0.002,
+      weight_decay: 0.0
+    }
+    norm_scores: false
+  },
+
+  model_path: "models/mles_proj_head_model.p"
+
+  include "dataset_inference_file.hocon"
+
+  output: {
+    path: "data/mles_proj_head_embeddings"
+    format: pickle,
+  }
+}

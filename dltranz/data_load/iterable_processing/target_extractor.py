@@ -21,7 +21,7 @@ class TargetExtractor(IterableProcessingDataset):
     def __iter__(self):
         for rec in self._src:
             features = rec[0] if type(rec) is tuple else rec
-            y = int(features[self._target_col])
+            y = features[self._target_col]
             if self._drop_from_features:
                 features = {k: v for k, v in features.items() if k != self._target_col}
             yield features, y

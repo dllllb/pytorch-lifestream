@@ -1,57 +1,119 @@
+import logging
+from copy import deepcopy
+
 import pytorch_lightning as pl
+import torch
+from pytorch_lightning.metrics.functional.classification import auroc
 
 from dltranz.loss import get_loss
+from dltranz.seq_encoder import create_encoder
 from dltranz.train import get_optimizer, get_lr_scheduler
-from dltranz.models import model_by_type
+from dltranz.models import create_head_layers
+
+logger = logging.getLogger(__name__)
+
+
+class EpochAuroc(pl.metrics.Metric):
+    def __init__(self):
+        super().__init__(compute_on_step=False)
+
+        self.add_state('y_hat', default=[])
+        self.add_state('y', default=[])
+
+    def update(self, y_hat, y):
+        self.y_hat.append(y_hat)
+        self.y.append(y)
+
+    def compute(self):
+        y_hat = torch.cat(self.y_hat)
+        y = torch.cat(self.y)
+        return auroc(y_hat, y)
 
 
 class SequenceClassify(pl.LightningModule):
-    def __init__(self, params):
+    def __init__(self, params, pretrained_encoder=None):
         super().__init__()
-        self.save_hyperparameters()
+        self.save_hyperparameters('params')
 
         self.loss = get_loss(params)
 
-        model_f = model_by_type(params['model_type'])
-        self.model = model_f(params)
+        if pretrained_encoder is not None:
+            self._seq_encoder = deepcopy(pretrained_encoder)
+            self._is_pretrained_encoder = True
+        else:
+            self._seq_encoder = create_encoder(params, is_reduce_sequence=True)
+            self._is_pretrained_encoder = False
+        self._head = create_head_layers(params, self._seq_encoder)
 
         # metrics
-        self.train_accuracy = pl.metrics.Accuracy()
-        self.valid_accuracy = pl.metrics.Accuracy()
-        self.test_accuracy = pl.metrics.Accuracy()
+        d_metrics = {
+            'auroc': EpochAuroc,
+            'accuracy': pl.metrics.Accuracy,
+        }
+        params_score_metric = params['score_metric']
+        if type(params_score_metric) is str:
+            params_score_metric = [params_score_metric]
+        metric_cls = [(name, d_metrics[name]) for name in params_score_metric]
+        self.valid_metrics = torch.nn.ModuleDict([(name, mc()) for name, mc in metric_cls])
+        self.test_metrics = torch.nn.ModuleDict([(name, mc()) for name, mc in metric_cls])
+
+    @property
+    def seq_encoder(self):
+        return self._seq_encoder
 
     def forward(self, x):
-        return self.model(x)
+        x = self._seq_encoder(x)
+        x = self._head(x)
+        return x
 
     def training_step(self, batch, _):
         x, y = batch
         y_h = self(x)
         loss = self.loss(y_h, y)
         self.log('loss', loss)
-        self.log('train_acc_step', self.train_accuracy(y_h, y))
         return loss
-
-    def training_epoch_end(self, outputs):
-        self.log('train_acc_epoch', self.train_accuracy.compute())
 
     def validation_step(self, batch, _):
         x, y = batch
         y_h = self(x)
-        self.log('valid_acc_step', self.valid_accuracy(y_h, y))
+        for name, mf in self.valid_metrics.items():
+            mf(y_h, y)
 
     def validation_epoch_end(self, outputs):
-        self.log('valid_acc_epoch', self.valid_accuracy.compute())
+        for name, mf in self.valid_metrics.items():
+            self.log(f'valid_{name}', mf.compute(), prog_bar=True)
 
     def test_step(self, batch, _):
         x, y = batch
         y_h = self(x)
-        self.log('test_acc_step', self.test_accuracy(y_h, y))
+        for name, mf in self.test_metrics.items():
+            mf(y_h, y)
 
     def test_epoch_end(self, outputs):
-        self.log('test_acc_epoch', self.test_accuracy.compute())
+        for name, mf in self.test_metrics.items():
+            self.log(f'test_{name}', mf.compute())
 
     def configure_optimizers(self):
         params = self.hparams.params
-        optimizer = get_optimizer(self, params)
+        if self._is_pretrained_encoder:
+            optimizer = self.get_pretrained_optimizer()
+        else:
+            optimizer = get_optimizer(self, params)
         scheduler = get_lr_scheduler(optimizer, params)
         return [optimizer], [scheduler]
+
+    def get_pretrained_optimizer(self):
+        params = self.hparams.params
+
+        if params['pretrained.lr'] == 'freeze':
+            self._seq_encoder.freeze()
+            logger.info('Created optimizer with frozen encoder')
+            return get_optimizer(self, params)
+
+        parameters = [
+            {'params': self._seq_encoder.parameters(), 'lr': params['pretrained.lr']},
+            {'params': self._head.parameters(), 'lr': params['train.lr']},
+        ]
+        logger.info('Created optimizer with two lr groups')
+
+        return torch.optim.Adam(parameters, lr=params['train.lr'], weight_decay=params['train.weight_decay'])

@@ -5,17 +5,22 @@ from pyhocon import ConfigFactory
 
 def tst_params_rnn():
     params = {
-        "model_type": "rnn",
-        'ensemble_size': 1,
-        'score_metric': 'auroc',
-        'norm_scores': True,
-        'head': {
-            "pred_all_states": False,
-            "pred_all_states_mean": False,
-            "explicit_lengths": True,
-            "norm_input": False,
-            'use_batch_norm': False,
+        "data_module": {
+            "train": {
+                "batch_size": 32,
+                "num_workers": 1,
+                "trx_dropout": .1,
+                "max_seq_len": 30
+            },
+            "valid": {
+                "batch_size": 32,
+                "num_workers": 1,
+                "max_seq_len": 30
+            },
+
         },
+        "encoder_type": "rnn",
+        'score_metric': 'auroc',
         "train": {
             "weight_decay": 0,
             "lr": 0.004,
@@ -47,6 +52,11 @@ def tst_params_rnn():
             },
             'numeric_values': {'amount': 'log'}
         },
+        'head_layers': [
+            ["Linear", {"in_features": "{seq_encoder.embedding_size}", "out_features": 1}],
+            ["Sigmoid", {}],
+            ["Squeeze", {}],
+        ],
         "lr_scheduler": {
             "step_size": 10,
             "step_gamma": 0.8
@@ -84,14 +94,14 @@ def test_train_loop_rnn():
     params = tst_params_rnn()
 
     model = SequenceClassify(params)
-    dl = RandomEventData(params)
-    trainer = pl.Trainer(max_epochs=1)
+    dl = RandomEventData(params['data_module'])
+    trainer = pl.Trainer(max_epochs=1, logger=None, checkpoint_callback=False)
     trainer.fit(model, dl)
 
 def test_train_loop_transf():
     params = tst_params_transf()
 
     model = SequenceClassify(params)
-    dl = RandomEventData(params)
-    trainer = pl.Trainer(max_epochs=1)
+    dl = RandomEventData(params['data_module'])
+    trainer = pl.Trainer(max_epochs=1, logger=None, checkpoint_callback=False)
     trainer.fit(model, dl)
