@@ -29,7 +29,7 @@ def test_squeeze():
 def test_mlp():
     mlp_config = {
         "hidden_layers_size": [512, 100],
-        "drop_p": 0,
+        "drop_p": 0.5,
         "objective": "classification"
     }
 

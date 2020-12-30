@@ -1,0 +1,54 @@
+{
+  "params": {
+    "device": "cuda",
+    "model_type": "mlp",
+    "mlp" : {
+      "hidden_layers_size": [512, 256],
+      "drop_p": 0,
+      "use_batch_norm": true
+    },
+    "tabnet" : {
+      "output_dim": 256
+    },
+    "lr_scheduler": {
+      "step_size": 10,
+      "step_gamma": 0.5
+    },
+    "train": {
+      "num_workers": 4,
+      "batch_size": 256,
+      "max_seq_len": 800,
+      "lr": 0.001,
+      "weight_decay": 0.0,
+      "n_epoch": 30
+    },
+    "norm_scores": false,
+    "valid": {
+      "batch_size": 64,
+      "num_workers": 4,
+      "max_seq_len": 800
+    }
+  },
+
+  "dataset": {
+    "path": "data/agg_feat_timestamps",
+    "valid_size": 0.05,
+    "features_count": 1127
+  },
+
+  "save_model": true,
+  "model_path": {
+    "model": "models/agg_features_encoder.p",
+    "agg_model": "models/agg_features_ts_model.p"
+  },
+
+  "output": {
+    "path": "data/agg_feat_encoded_embed",
+    "format": "pickle",
+    "columns": ["client_id"]
+  },
+
+  "stats": {
+    "path": "runs/cpc_result.json"
+  }
+}

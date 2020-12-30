@@ -1,0 +1,57 @@
+{
+  "params": {
+    "experiment": {
+      "name": "default"
+    },
+    "device": "cuda",
+    "model_type": "agg_features",
+    "use_normalization_layer" : false,
+    "trx_encoder": {
+      "embeddings": {
+        "level_3": {"in": 200},
+        "segment_id": {"in": 120},
+        "level_4": {"in": 800}
+      },
+      "numeric_values": {
+        "trn_sum_from_iss": "identity"
+      },
+      "was_logified": true,
+      "log_scale_factor": 1,
+      "agg_cat_features": {
+        "count": false,
+        "sum": true,
+        "std": false
+      }
+    },
+    "lr_scheduler": {
+      "step_size": 30,
+      "step_gamma": 0.9025
+    },
+    "inference": {
+      "num_workers": 4,
+      "batch_size": 8
+    },
+    "valid": {
+      "batch_size": 256,
+      "num_workers": 16,
+      "max_seq_len": 800
+    },
+    "norm_scores": false,
+    "chunk_size": 5000
+  },
+
+  "save_model": true,
+  "model_path": {
+    "model": "models/agg_features_ts_model.p"
+  },
+
+  "dataset_output": {
+    "path": "data/agg_feat_timestamps"
+  },
+
+  "output": {
+    "path": "data/agg_feat_embed_before",
+    "format": "pickle",
+    "columns": ["client_id"]
+  }
+}
