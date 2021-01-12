@@ -34,7 +34,15 @@ def get_conf():
                     'cat1': {'in': 8}
                 },
                 'was_logified': False,
-                'log_scale_factor': 1.0
+                'log_scale_factor': 1.0,
+                "num_aggregators": {
+                    "count": False,
+                    "sum": True,
+                    "std": True
+                },
+                "cat_aggregators": {
+                    "top_k": 3
+                }
             }
         }
     }
@@ -43,10 +51,10 @@ def get_conf():
 
 def test_output_size():
     out_size = AggFeatureModel(get_conf()['params.trx_encoder']).output_size
-    assert out_size == 29
+    assert out_size == 24
 
 
 def test_model():
     model = AggFeatureModel(get_conf()['params.trx_encoder'])
     out = model(get_data())
-    assert out.size() == (3, 29)
+    assert out.size() == (3, 24)

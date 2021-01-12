@@ -2,6 +2,11 @@
   "params": {
     "device": "cuda",
     "model_type": "mlp",
+    "tabular_encoder": {
+      "num_features_count": 1127,
+      "cat_features_dims": [200, 200, 200, 120, 120, 120, 800, 800, 800],
+      "cat_emb_dim": 12
+    },
     "mlp" : {
       "hidden_layers_size": [512, 256],
       "drop_p": 0,
@@ -33,7 +38,8 @@
   "dataset": {
     "path": "data/agg_feat_timestamps",
     "valid_size": 0.05,
-    "features_count": 1127
+    "num_features_count": 1127,
+    "cat_features_count": 9
   },
 
   "save_model": true,

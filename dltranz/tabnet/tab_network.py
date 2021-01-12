@@ -42,7 +42,7 @@ class GBN(torch.nn.Module):
         return torch.cat(res, dim=0)
 
 
-class TabNetNoEmbeddings(torch.nn.Module):
+class TabNet(torch.nn.Module):
     def __init__(self, input_dim, output_dim,
                  n_d=8, n_a=8,
                  n_steps=3, gamma=1.3,
@@ -50,7 +50,7 @@ class TabNetNoEmbeddings(torch.nn.Module):
                  virtual_batch_size=128, momentum=0.02,
                  mask_type="sparsemax"):
         """
-        Defines main part of the TabNet network without the embedding layers.
+        Defines TabNet network
 
         Parameters
         ----------
@@ -80,7 +80,7 @@ class TabNetNoEmbeddings(torch.nn.Module):
         mask_type : str
             Either "sparsemax" or "entmax" : this is the masking function to use
         """
-        super(TabNetNoEmbeddings, self).__init__()
+        super().__init__()
         self.input_dim = input_dim
         self.output_dim = output_dim
         self.is_multi_task = isinstance(output_dim, list)
@@ -143,13 +143,12 @@ class TabNetNoEmbeddings(torch.nn.Module):
         x = self.initial_bn(x)
 
         prior = torch.ones(x.shape).to(x.device)
-        M_loss = 0
+        # M_loss = 0
         att = self.initial_splitter(x)[:, self.n_d:]
 
         for step in range(self.n_steps):
             M = self.att_transformers[step](prior, att)
-            M_loss += torch.mean(torch.sum(torch.mul(M, torch.log(M+self.epsilon)),
-                                           dim=1))
+            # M_loss += torch.mean(torch.sum(torch.mul(M, torch.log(M+self.epsilon)), dim=1))
             # update prior
             prior = torch.mul(self.gamma - M, prior)
             # output
@@ -160,7 +159,7 @@ class TabNetNoEmbeddings(torch.nn.Module):
             # update attention
             att = out[:, self.n_d:]
 
-        M_loss /= self.n_steps
+        # M_loss /= self.n_steps
 
         if self.is_multi_task:
             # Result will be in list format
@@ -169,7 +168,7 @@ class TabNetNoEmbeddings(torch.nn.Module):
                 out.append(task_mapping(res))
         else:
             out = self.final_mapping(res)
-        return out, M_loss
+        return out  # , M_loss
 
     def forward_masks(self, x):
         x = self.initial_bn(x)
@@ -195,98 +194,6 @@ class TabNetNoEmbeddings(torch.nn.Module):
             att = out[:, self.n_d:]
 
         return M_explain, masks
-
-
-class TabNet(torch.nn.Module):
-    def __init__(self, input_dim, output_dim, n_d=8, n_a=8,
-                 n_steps=3, gamma=1.3, cat_idxs=[], cat_dims=[], cat_emb_dim=1,
-                 n_independent=2, n_shared=2, epsilon=1e-15,
-                 virtual_batch_size=128, momentum=0.02, device_name='auto',
-                 mask_type="sparsemax"):
-        """
-        Defines TabNet network
-
-        Parameters
-        ----------
-        input_dim : int
-            Initial number of features
-        output_dim : int
-            Dimension of network output
-            examples : one for regression, 2 for binary classification etc...
-        n_d : int
-            Dimension of the prediction  layer (usually between 4 and 64)
-        n_a : int
-            Dimension of the attention  layer (usually between 4 and 64)
-        n_steps : int
-            Number of sucessive steps in the newtork (usually betwenn 3 and 10)
-        gamma : float
-            Float above 1, scaling factor for attention updates (usually betwenn 1.0 to 2.0)
-        cat_idxs : list of int
-            Index of each categorical column in the dataset
-        cat_dims : list of int
-            Number of categories in each categorical column
-        cat_emb_dim : int or list of int
-            Size of the embedding of categorical features
-            if int, all categorical features will have same embedding size
-            if list of int, every corresponding feature will have specific size
-        n_independent : int
-            Number of independent GLU layer in each GLU block (default 2)
-        n_shared : int
-            Number of independent GLU layer in each GLU block (default 2)
-        epsilon : float
-            Avoid log(0), this should be kept very low
-        virtual_batch_size : int
-            Batch size for Ghost Batch Normalization
-        momentum : float
-            Float value between 0 and 1 which will be used for momentum in all batch norm
-        device_name : {'auto', 'cuda', 'cpu'}
-        mask_type : str
-            Either "sparsemax" or "entmax" : this is the masking function to use
-        """
-        super(TabNet, self).__init__()
-        self.cat_idxs = cat_idxs or []
-        self.cat_dims = cat_dims or []
-        self.cat_emb_dim = cat_emb_dim
-
-        self.input_dim = input_dim
-        self.output_dim = output_dim
-        self.n_d = n_d
-        self.n_a = n_a
-        self.n_steps = n_steps
-        self.gamma = gamma
-        self.epsilon = epsilon
-        self.n_independent = n_independent
-        self.n_shared = n_shared
-        self.mask_type = mask_type
-
-        if self.n_steps <= 0:
-            raise ValueError("n_steps should be a positive integer.")
-        if self.n_independent == 0 and self.n_shared == 0:
-            raise ValueError("n_shared and n_independant can't be both zero.")
-
-        self.virtual_batch_size = virtual_batch_size
-        self.embedder = EmbeddingGenerator(input_dim, cat_dims, cat_idxs, cat_emb_dim)
-        self.post_embed_dim = self.embedder.post_embed_dim
-        self.tabnet = TabNetNoEmbeddings(self.post_embed_dim, output_dim, n_d, n_a, n_steps,
-                                         gamma, n_independent, n_shared, epsilon,
-                                         virtual_batch_size, momentum, mask_type)
-
-        # Defining device
-        if device_name == 'auto':
-            if torch.cuda.is_available():
-                device_name = 'cuda'
-            else:
-                device_name = 'cpu'
-        self.device = torch.device(device_name)
-        self.to(self.device)
-
-    def forward(self, x):
-        x = self.embedder(x)
-        return self.tabnet(x)
-
-    def forward_masks(self, x):
-        x = self.embedder(x)
-        return self.tabnet.forward_masks(x)
 
 
 class AttentiveTransformer(torch.nn.Module):
@@ -453,81 +360,3 @@ class GLU_Layer(torch.nn.Module):
         x = self.bn(x)
         out = torch.mul(x[:, :self.output_dim], torch.sigmoid(x[:, self.output_dim:]))
         return out
-
-
-class EmbeddingGenerator(torch.nn.Module):
-    """
-        Classical embeddings generator
-    """
-
-    def __init__(self, input_dim, cat_dims, cat_idxs, cat_emb_dim):
-        """ This is an embedding module for an entier set of features
-
-        Parameters
-        ----------
-        input_dim : int
-            Number of features coming as input (number of columns)
-        cat_dims : list of int
-            Number of modalities for each categorial features
-            If the list is empty, no embeddings will be done
-        cat_idxs : list of int
-            Positional index for each categorical features in inputs
-        cat_emb_dim : int or list of int
-            Embedding dimension for each categorical features
-            If int, the same embdeding dimension will be used for all categorical features
-        """
-        super(EmbeddingGenerator, self).__init__()
-        if cat_dims == [] or cat_idxs == []:
-            self.skip_embedding = True
-            self.post_embed_dim = input_dim
-            return
-
-        self.skip_embedding = False
-        if isinstance(cat_emb_dim, int):
-            self.cat_emb_dims = [cat_emb_dim]*len(cat_idxs)
-        else:
-            self.cat_emb_dims = cat_emb_dim
-
-        # check that all embeddings are provided
-        if len(self.cat_emb_dims) != len(cat_dims):
-            msg = """ cat_emb_dim and cat_dims must be lists of same length, got {len(self.cat_emb_dims)}
-                      and {len(cat_dims)}"""
-            raise ValueError(msg)
-        self.post_embed_dim = int(input_dim + np.sum(self.cat_emb_dims) - len(self.cat_emb_dims))
-
-        self.embeddings = torch.nn.ModuleList()
-
-        # Sort dims by cat_idx
-        sorted_idxs = np.argsort(cat_idxs)
-        cat_dims = [cat_dims[i] for i in sorted_idxs]
-        self.cat_emb_dims = [self.cat_emb_dims[i] for i in sorted_idxs]
-
-        for cat_dim, emb_dim in zip(cat_dims, self.cat_emb_dims):
-            self.embeddings.append(torch.nn.Embedding(cat_dim, emb_dim))
-
-        # record continuous indices
-        self.continuous_idx = torch.ones(input_dim, dtype=torch.bool)
-        self.continuous_idx[cat_idxs] = 0
-
-    def forward(self, x):
-        """
-        Apply embdeddings to inputs
-        Inputs should be (batch_size, input_dim)
-        Outputs will be of size (batch_size, self.post_embed_dim)
-        """
-        if self.skip_embedding:
-            # no embeddings required
-            return x
-
-        cols = []
-        cat_feat_counter = 0
-        for feat_init_idx, is_continuous in enumerate(self.continuous_idx):
-            # Enumerate through continuous idx boolean mask to apply embeddings
-            if is_continuous:
-                cols.append(x[:, feat_init_idx].float().view(-1, 1))
-            else:
-                cols.append(self.embeddings[cat_feat_counter](x[:, feat_init_idx].long()))
-                cat_feat_counter += 1
-        # concat
-        post_embeddings = torch.cat(cols, dim=1)
-        return post_embeddings
