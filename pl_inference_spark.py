@@ -35,7 +35,7 @@ class InferenceSpark(object):
         df_t\
         .orderBy("trx_count")\
         .withColumn("group_id",F.monotonically_increasing_id())\
-        .groupby(F.floor(F.col("group_id")/350).alias("group_id"))\
+        .groupby(F.floor(F.col("group_id")/200).alias("group_id"))\
         .agg(
             F.collect_list(self.col_id).alias(self.col_id),
             F.struct([F.collect_list(F.col(name)).alias(name) for name in columns]).alias("feature_arrays"),
@@ -65,8 +65,15 @@ class InferenceSpark(object):
 
             import torch
             from dltranz.trx_encoder import PaddedBatch
-            
+            import subprocess
+
             if torch.cuda.is_available():
+                result = subprocess.check_output(
+                    ['nvidia-smi', '--query-gpu=memory.free',
+                        '--format=csv,nounits,noheader'
+                    ], encoding='utf-8')
+                gpu_memory = [int(x) for x in result.strip().split('\n')]
+                num_cuda = gpu_memory.index(max(gpu_memory))
                 core = f"cuda:{num_cuda}"
             else:
                 core = "cpu"
