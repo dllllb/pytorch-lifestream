@@ -77,11 +77,7 @@ class MLP(nn.Module):
         return self.model(x)
 
 
-class EmbeddingGenerator(torch.nn.Module):
-    """
-        Classical embeddings generator
-    """
-
+class TabularRowEncoder(torch.nn.Module):
     def __init__(self, input_dim, cat_dims, cat_idxs, cat_emb_dim):
         """ This is an embedding module for an entier set of features
 
@@ -157,3 +153,14 @@ class EmbeddingGenerator(torch.nn.Module):
     @property
     def output_size(self):
         return self.post_embed_dim
+
+
+class EmbedderNetwork(nn.Module):
+    def __init__(self, embedder, network):
+        super().__init__()
+        self.embedder = embedder
+        self.network = network
+
+    def forward(self, x):
+        embedded_x = self.embedder(x)
+        return embedded_x, self.network(embedded_x)

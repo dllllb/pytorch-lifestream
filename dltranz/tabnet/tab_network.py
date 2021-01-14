@@ -360,3 +360,80 @@ class GLU_Layer(torch.nn.Module):
         x = self.bn(x)
         out = torch.mul(x[:, :self.output_dim], torch.sigmoid(x[:, self.output_dim:]))
         return out
+
+
+class TabNetDecoder(torch.nn.Module):
+    def __init__(
+        self,
+        input_dim,
+        n_d=8,
+        n_steps=3,
+        n_independent=2,
+        n_shared=2,
+        virtual_batch_size=128,
+        momentum=0.02,
+    ):
+        """
+        Defines TabNet Decoder for self pre-training.
+        Parameters
+        ----------
+        input_dim : int
+            Number of features
+            Dimension of network output
+            examples : one for regression, 2 for binary classification etc...
+        n_d : int
+            Dimension of the prediction  layer (usually between 4 and 64)
+        n_steps : int
+            Number of successive steps in the network (usually between 3 and 10)
+        n_independent : int
+            Number of independent GLU layer in each GLU block (default 2)
+        n_shared : int
+            Number of independent GLU layer in each GLU block (default 2)
+        virtual_batch_size : int
+            Batch size for Ghost Batch Normalization
+        momentum : float
+            Float value between 0 and 1 which will be used for momentum in all batch norm
+        """
+        super(TabNetDecoder, self).__init__()
+        self.input_dim = input_dim
+        self.n_d = n_d
+        self.n_steps = n_steps
+        self.n_independent = n_independent
+        self.n_shared = n_shared
+        self.virtual_batch_size = virtual_batch_size
+
+        self.feat_transformers = torch.nn.ModuleList()
+        self.reconstruction_layers = torch.nn.ModuleList()
+
+        if self.n_shared > 0:
+            shared_feat_transform = torch.nn.ModuleList()
+            for i in range(self.n_shared):
+                if i == 0:
+                    shared_feat_transform.append(Linear(n_d, 2 * n_d, bias=False))
+                else:
+                    shared_feat_transform.append(Linear(n_d, 2 * n_d, bias=False))
+
+        else:
+            shared_feat_transform = None
+
+        for step in range(n_steps):
+            transformer = FeatTransformer(
+                n_d,
+                n_d,
+                shared_feat_transform,
+                n_glu_independent=self.n_independent,
+                virtual_batch_size=self.virtual_batch_size,
+                momentum=momentum,
+            )
+            self.feat_transformers.append(transformer)
+            reconstruction_layer = Linear(n_d, self.input_dim, bias=False)
+            initialize_non_glu(reconstruction_layer, n_d, self.input_dim)
+            self.reconstruction_layers.append(reconstruction_layer)
+
+    def forward(self, steps_output):
+        res = 0
+        for step_nb, step_output in enumerate(steps_output):
+            x = self.feat_transformers[step_nb](step_output)
+            x = self.reconstruction_layers[step_nb](step_output)
+            res = torch.add(res, x)
+        return res

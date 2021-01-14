@@ -1,6 +1,6 @@
 import torch
 
-from dltranz.custom_layers import DropoutEncoder, Squeeze, CatLayer, MLP, EmbeddingGenerator
+from dltranz.custom_layers import DropoutEncoder, Squeeze, CatLayer, MLP, TabularRowEncoder
 
 
 class TrxEncoderTest(torch.nn.Module):
@@ -58,7 +58,7 @@ def test_embedding_generator():
         'cat_emb_dim': 4
     }
 
-    tabular_row_encoder = EmbeddingGenerator(
+    tabular_row_encoder = TabularRowEncoder(
         input_dim=tabular_config['num_features_count'] + len(tabular_config['cat_features_dims']),
         cat_dims=tabular_config['cat_features_dims'],
         cat_idxs=[x + tabular_config['num_features_count'] for x in range(len(tabular_config['cat_features_dims']))],
