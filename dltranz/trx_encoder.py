@@ -209,6 +209,13 @@ class TrxEncoder(nn.Module):
         return sz
 
     @property
+    def category_names(self):
+        return set([field_name for field_name in self.embeddings.keys()] +
+                   [value_name for value_name in self.scalers.keys()] +
+                   [pos_name for pos_name in self.pos.keys()]
+                   )
+
+    @property
     def category_max_size(self):
         return {k: v.num_embeddings for k, v in self.embeddings.items()}
 

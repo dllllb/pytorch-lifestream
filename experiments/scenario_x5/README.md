@@ -14,7 +14,8 @@ bin/make-datasets-spark.sh
 
 ```sh
 cd experiments/scenario_x5
-export SC_DEVICE="cuda"
+export SC_DEVICE="cuda"        # define here one gpu device number
+export CUDA_VISIBLE_DEVICES=0  # define here one gpu device number
 
 sh bin/run_all_scenarios.sh
 

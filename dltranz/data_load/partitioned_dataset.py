@@ -234,7 +234,10 @@ class PartitionedDataset(torch.utils.data.IterableDataset):
 
     def join_key(self, key, dtype, values):
         if dtype is np.ndarray:
-            return torch.from_numpy(np.concatenate(values))
+            x = np.concatenate(values)
+            if x.dtype.kind in ('i', 'f'):
+                return torch.from_numpy(x)
+            return x
         elif key == self.col_id:
             return values[0]
         else:

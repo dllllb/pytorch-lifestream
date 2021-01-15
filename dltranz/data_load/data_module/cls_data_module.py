@@ -2,14 +2,12 @@ import json
 import logging
 
 import pytorch_lightning as pl
-from embeddings_validation.file_reader import TargetFile
+from embeddings_validation.file_reader import TargetFile, ID_TYPE_MAPPING
 from torch.utils.data import DataLoader
 from tqdm.auto import tqdm
 
-from dltranz.data_load import padded_collate, IterableChain, IterableAugmentations, augmentation_chain
-from dltranz.data_load.augmentations.dropout_trx import DropoutTrx
-from dltranz.data_load.augmentations.random_slice import RandomSlice
-from dltranz.data_load.augmentations.seq_len_limit import SeqLenLimit
+from dltranz.data_load import padded_collate, IterableChain, IterableAugmentations
+from dltranz.data_load.augmentations.build_augmentations import build_augmentations
 from dltranz.data_load.data_module.map_augmentation_dataset import MapAugmentationDataset
 from dltranz.data_load.iterable_processing.category_size_clip import CategorySizeClip
 from dltranz.data_load.iterable_processing.feature_filter import FeatureFilter
@@ -37,7 +35,13 @@ class ClsDataModuleTrain(pl.LightningDataModule):
         self.test_conf = conf.get('test', self.valid_conf)
 
         self.col_id = self.setup_conf['col_id']
+        self.col_id_dtype = {
+            'str': str,
+            'int': int,
+        }[self.setup_conf['col_id_dtype']]
         self.col_target = self.setup_conf['col_target']
+        self.category_names = pl_module.seq_encoder.category_names
+        self.category_names.add('event_time')
         self.category_max_size = pl_module.seq_encoder.category_max_size
 
         self.train_dataset = None
@@ -105,7 +109,7 @@ class ClsDataModuleTrain(pl.LightningDataModule):
             logger.info(f'Reduced train amount from {_len_orig} to {len(self._train_targets)}')
 
     def build_iterable_processing(self, part):
-        yield FeatureTypeCast({self.col_id: int})
+        yield FeatureTypeCast({self.col_id: self.col_id_dtype})
 
         if 'dataset_files' in self.setup_conf and self.setup_conf['split_by'] == 'embeddings_validation':
             if part == 'train':
@@ -129,7 +133,7 @@ class ClsDataModuleTrain(pl.LightningDataModule):
         else:
             raise AttributeError(f'Unknown part: {part}')
 
-        yield FeatureFilter(drop_non_iterable=True)
+        yield FeatureFilter(keep_feature_names=self.category_names)
         yield CategorySizeClip(self.category_max_size)
 
         if self._type == 'iterable':
@@ -137,16 +141,15 @@ class ClsDataModuleTrain(pl.LightningDataModule):
             if part == 'train':
                 yield IterableShuffle(self.train_conf['buffer_size'])
 
-            yield IterableAugmentations(*self.build_augmentations(part))
+            yield IterableAugmentations(self.build_augmentations(part))
 
     def build_augmentations(self, part):
         if part == 'train':
-            yield RandomSlice(**self.train_conf['random_slice'])
-            yield DropoutTrx(self.train_conf['trx_dropout'])
+            return build_augmentations(self.train_conf['augmentations'])
         elif part == 'valid':
-            yield SeqLenLimit(self.valid_conf['max_seq_len'])
+            return build_augmentations(self.valid_conf['augmentations'])
         elif part == 'test':
-            yield SeqLenLimit(self.test_conf['max_seq_len'])
+            return build_augmentations(self.test_conf['augmentations'])
 
     def train_dataloader(self):
         return DataLoader(
@@ -167,15 +170,15 @@ class ClsDataModuleTrain(pl.LightningDataModule):
 
         self.train_dataset = MapAugmentationDataset(
             base_dataset=self.train_dataset,
-            a_chain=augmentation_chain(*self.build_augmentations('train')),
+            a_chain=self.build_augmentations('train'),
         )
         self.valid_dataset = MapAugmentationDataset(
             base_dataset=self.valid_dataset,
-            a_chain=augmentation_chain(*self.build_augmentations('valid')),
+            a_chain=self.build_augmentations('valid'),
         )
         self.test_dataset = MapAugmentationDataset(
             base_dataset=self.test_dataset,
-            a_chain=augmentation_chain(*self.build_augmentations('test')),
+            a_chain=self.build_augmentations('test'),
         )
 
     def val_dataloader(self):

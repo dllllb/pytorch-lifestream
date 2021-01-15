@@ -49,13 +49,17 @@ class ABSModule(pl.LightningModule):
         y_h, y = self.shared_step(*batch)
         loss = self._loss(y_h, y)
         self.log('loss', loss)
+        if type(batch) is tuple:
+            x, y = batch
+            self.log('seq_len', x.seq_lens.float().mean(), prog_bar=True)
+        else:
+            # this code should not be reached
+            self.log('seq_len', -1, prog_bar=True)
+            raise AssertionError('batch is not a tuple')
         return loss
 
     def validation_step(self, batch, _):
-        x, y = batch
-        y_h = self(x)
-        if self._head is not None:
-            y_h = self._head(y_h)
+        y_h, y = self.shared_step(*batch)
         self._validation_metric(y_h, y)
 
     def validation_epoch_end(self, outputs):

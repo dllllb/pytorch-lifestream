@@ -420,7 +420,9 @@ def padded_collate(batch):
     lengths = torch.IntTensor([len(e) for e in next(iter(new_x_.values()))])
 
     new_x = {k: torch.nn.utils.rnn.pad_sequence(v, batch_first=True) for k, v in new_x_.items()}
-    new_y = torch.tensor([y for _, y in batch])
+    new_y = np.array([y for _, y in batch])
+    if new_y.dtype.kind in ('i', 'f'):
+        new_y = torch.from_numpy(new_y)
 
     return PaddedBatch(new_x, lengths), new_y
 
@@ -533,15 +535,21 @@ def augmentation_chain(*i_filters):
 
 
 class IterableAugmentations(IterableProcessingDataset):
-    def __init__(self, *i_filters):
+    def __init__(self, a_chain):
         super().__init__()
 
-        self.a_chain = augmentation_chain(*i_filters)
+        self.a_chain = a_chain
 
     def __iter__(self):
-        for x, *targets in self._src:
-            x = self.a_chain(x)
-            yield x, *targets
+        for row in self._src:
+            if type(row) is tuple:
+                x, *targets = row
+                x = self.a_chain(x)
+                yield x, *targets
+            else:
+                x = row
+                x = self.a_chain(x)
+                yield x
 
 
 class IterableChain:

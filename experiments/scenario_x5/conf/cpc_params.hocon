@@ -2,7 +2,8 @@
   data_module: {
     type: map
     setup: {
-      col_id: customer_id
+      col_id: client_id
+      col_target: target
       dataset_files: {
         data_path: "data/train_trx.parquet"
       }
@@ -11,88 +12,82 @@
       valid_split_seed: 42
     }
     train: {
-      min_seq_len: 25
-      split_strategy: {
-        split_strategy: "SampleSlices"
-        split_count: 4
-        cnt_min: 25
-        cnt_max: 200
-      }
+      min_seq_len: 30
       augmentations: [
+        [AllTimeShuffle, {}]
         [DropoutTrx, {trx_dropout: 0.01}]
+        [SeqLenLimit, {max_seq_len: 800}]
       ]
       num_workers: 8
-      batch_size: 256
+      batch_size: 32
     }
     valid: {
-      split_strategy: {
-        split_strategy: SampleSlices
-        split_count: 4
-        cnt_min: 25
-        cnt_max: 200
-      }
-      augmentations: []
+      augmentations: [
+        [SeqLenLimit, {max_seq_len: 800}]
+      ]
       num_workers: 16
-      batch_size: 1024
+      batch_size: 64
     }
   }
-  logger_name: nsp_model
 
   seed_everything: 42
   trainer: {
     gpus: 1
     auto_select_gpus: false
 
-    max_epochs: 100
+    max_epochs: 28
 
+    checkpoint_callback: false
     deterministic: True
   }
+  logger_name: cpc_model
 
   params: {
-    data_module_name: NspDataModuleTrain
-    pl_module_name: SopNspModule
+    data_module_name: CpcDataModuleTrain
+    pl_module_name: CpcModule
 
     encoder_type: rnn,
     trx_encoder: {
       norm_embeddings: false,
       embeddings_noise: 0.003,
       embeddings: {
-        mcc_code: {in: 200, out: 48},
-        tr_type: {in: 100, out: 24}
+        level_3: {in: 200, out: 32},
+        level_4: {in: 800, out: 32},
+        segment_id: {in: 120, out: 32}
       },
       numeric_values: {
-        amount: identity
+        trn_sum_from_iss: identity,
+        netto: identity,
+        regular_points_received: identity
       }
     },
     rnn: {
       type: gru,
-      hidden_size: 256,
+      hidden_size: 128,
       bidir: false,
       trainable_starter: static
     },
-    head: {
-      hidden_size: 512,
-      drop_p: 0.5,
-      pred_all_states: false
-    },
+    cpc: {
+      n_forward_steps: 6,
+      n_negatives: 40
+    }
 
     lr_scheduler: {
-      ReduceLROnPlateau: true,
-      patience: 15
+      step_size: 3,
+      step_gamma: 0.7
     },
     train: {
       lr: 0.001,
       weight_decay: 0.0,
-      use_best_epoch: true
     }
   }
 
-  model_path: "models/nsp_model.p"
+  model_path: "models/cpc_model.p"
 
   include "dataset_inference_file.hocon"
 
   output: {
-    path: data/nsp_embeddings,
+    path: data/cpc_embeddings,
     format: pickle,
   }
 }

@@ -8,6 +8,7 @@
         test_data_path: "data/test_trx.parquet"
       }
       col_id: customer_id
+      col_id_dtype: int
       col_target: gender
 
       split_by: embeddings_validation
@@ -16,18 +17,18 @@
 
     train: {
         min_seq_len: 0
-        random_slice: {
-            min_len: 250
-            max_len: 350
-            rate_for_min: 0.9
-        }
-        trx_dropout: 0.01
+        augmentations: [
+            [RandomSlice, {min_len: 250, max_len: 350, rate_for_min: 0.9}]
+            [DropoutTrx, {trx_dropout: 0.01}]
+        ]
         num_workers: 16
         batch_size: 64
     }
 
     valid: {
-        max_seq_len: 1200
+        augmentations: [
+            [SeqLenLimit, {max_seq_len: 1200}]
+        ]
         num_workers: 8
         batch_size: 64   # 512
     }

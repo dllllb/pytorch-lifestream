@@ -96,6 +96,6 @@ class ParquetDataset(torch.utils.data.IterableDataset):
 
     @staticmethod
     def to_torch(x):
-        if type(x) is np.ndarray:
+        if type(x) is np.ndarray and x.dtype.kind in ('i', 'f'):
             return torch.from_numpy(x)
         return x

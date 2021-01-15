@@ -1,3 +1,4 @@
+import numpy as np
 import torch
 from pyhocon import ConfigFactory
 from sklearn.metrics import roc_auc_score
@@ -6,7 +7,7 @@ from dltranz.data_load import create_validation_loader, TrxDataset
 from dltranz.experiment import run_experiment
 from dltranz.models import rnn_model
 from .test_data_load import gen_trx_data
-from dltranz.train import score_model
+from dltranz.train import score_model, score_model2
 
 
 def tst_params():
@@ -126,6 +127,33 @@ def test_score_model():
 
     pred, true = score_model(rnn_model(params), valid_loader, params)
     print(roc_auc_score(pred, true))
+
+
+def test_score_model_mult1():
+    params = tst_params()
+
+    test_data = gen_trx_data((torch.rand(1000)*60+1).long())
+    valid_loader = create_validation_loader(TrxDataset(test_data), params['valid'])
+
+    pred, true = score_model2(rnn_model(params), valid_loader, params)
+    print(roc_auc_score(true, pred))
+
+
+def test_score_model_mult2():
+    model = torch.nn.Sequential(torch.nn.Linear(16, 2), torch.nn.Sigmoid())
+    valid_loader = [
+        (torch.rand(4, 16), np.arange(4), np.arange(4).astype(str)),
+        (torch.rand(2, 16), np.arange(2), np.arange(2).astype(str)),
+        (torch.rand(1, 16), np.arange(1), np.arange(1).astype(str)),
+    ]
+
+    pred, id1, id2 = score_model2(model, valid_loader, {'device': 'cpu'})
+    assert pred.shape == (7, 2)
+    assert id1.shape == (7,)
+    assert id2.shape == (7,)
+
+    np.testing.assert_array_almost_equal(id1, np.array([0, 1, 2, 3, 0, 1, 0]))
+    assert id2.tolist() == ['0', '1', '2', '3', '0', '1', '0']
 
 
 def test_train_loop_skip_rnn():

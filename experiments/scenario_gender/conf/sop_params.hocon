@@ -18,7 +18,9 @@
         cnt_min: 50
         cnt_max: 200
       }
-      trx_dropout: 0.01
+      augmentations: [
+        [DropoutTrx, {trx_dropout: 0.01}]
+      ]
       num_workers: 8
       batch_size: 256
     }
@@ -29,6 +31,7 @@
         cnt_min: 50
         cnt_max: 200
       }
+      augmentations: []
       num_workers: 16
       batch_size: 1024
     }
@@ -81,9 +84,8 @@
       lr: 0.001,
       weight_decay: 0.0,
       use_best_epoch: true
-    },
-    norm_scores: false,
-  },
+    }
+  }
 
   model_path: "models/sop_model.p"
 

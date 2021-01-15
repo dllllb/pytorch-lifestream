@@ -14,26 +14,28 @@ import logging
 import numpy as np
 import pytorch_lightning as pl
 
-from pyhocon.config_parser import ConfigFactory
 from torch.utils.data import DataLoader
 from tqdm.auto import tqdm
 
-from dltranz.data_load import padded_collate, IterableAugmentations, IterableChain, augmentation_chain
-from dltranz.data_load.augmentations.dropout_trx import DropoutTrx
-from dltranz.data_load.augmentations.seq_len_limit import SeqLenLimit
+from dltranz.data_load import IterableAugmentations, IterableChain, padded_collate_wo_target
+from dltranz.data_load.augmentations.build_augmentations import build_augmentations
 from dltranz.data_load.data_module.map_augmentation_dataset import MapAugmentationDataset
 from dltranz.data_load.iterable_processing.category_size_clip import CategorySizeClip
 from dltranz.data_load.iterable_processing.feature_filter import FeatureFilter
-from dltranz.data_load.iterable_processing.feature_type_cast import FeatureTypeCast
-from dltranz.data_load.iterable_processing.id_filter import IdFilter
 from dltranz.data_load.iterable_processing.iterable_shuffle import IterableShuffle
 from dltranz.data_load.iterable_processing.seq_len_filter import SeqLenFilter
-from dltranz.data_load.iterable_processing.target_extractor import TargetExtractor
 from dltranz.data_load.list_splitter import ListSplitter
 from dltranz.data_load.parquet_dataset import ParquetDataset, ParquetFiles
 from dltranz.data_load.partitioned_dataset import PartitionedDataset, PartitionedDataFiles
 
 logger = logging.getLogger(__name__)
+
+
+def cpc_collate_fn(batch):
+    """Just add empty target for compatibility
+    """
+    batch = padded_collate_wo_target(batch)
+    return batch, None
 
 
 class CpcDataModuleTrain(pl.LightningDataModule):
@@ -48,6 +50,8 @@ class CpcDataModuleTrain(pl.LightningDataModule):
         self.valid_conf = conf['valid']
 
         self.col_id = self.setup_conf['col_id']
+        self.category_names = pl_module.seq_encoder.category_names
+        self.category_names.add('event_time')
         self.category_max_size = pl_module.seq_encoder.category_max_size
 
         self.train_dataset = None
@@ -88,21 +92,21 @@ class CpcDataModuleTrain(pl.LightningDataModule):
                 post_processing=IterableChain(*self.build_iterable_processing('valid')),
                 shuffle_files=False,
             )
-        elif self.setup_conf['split_by'] == 'rows':
-            data_files = ParquetFiles(self.setup_conf['dataset_files.data_path']).data_files
-
-            self.split_by_rows(data_files)
-
-            self.train_dataset = ParquetDataset(
-                data_files,
-                post_processing=IterableChain(*self.build_iterable_processing('train')),
-                shuffle_files=True if self._type == 'iterable' else False,
-            )
-            self.valid_dataset = ParquetDataset(
-                data_files,
-                post_processing=IterableChain(*self.build_iterable_processing('valid')),
-                shuffle_files=False,
-            )
+        # elif self.setup_conf['split_by'] == 'rows':
+        #     data_files = ParquetFiles(self.setup_conf['dataset_files.data_path']).data_files
+        #
+        #     self.split_by_rows(data_files)
+        #
+        #     self.train_dataset = ParquetDataset(
+        #         data_files,
+        #         post_processing=IterableChain(*self.build_iterable_processing('train')),
+        #         shuffle_files=True if self._type == 'iterable' else False,
+        #     )
+        #     self.valid_dataset = ParquetDataset(
+        #         data_files,
+        #         post_processing=IterableChain(*self.build_iterable_processing('valid')),
+        #         shuffle_files=False,
+        #     )
 
         else:
             raise AttributeError(f'Unknown split strategy: {self.setup_conf.split_by}')
@@ -135,51 +139,49 @@ class CpcDataModuleTrain(pl.LightningDataModule):
         else:
             raise AttributeError(f'Unknown split strategy: {self.setup_conf.split_by}')
 
-    def split_by_rows(self, data_files):
-        """
-        This code is correct. Just make reproducible shuffle and split, if needed
-
-        Args:
-            data_files:
-
-        Returns:
-
-        """
-        ds = ParquetDataset(data_files, post_processing=SeqLenFilter(min_seq_len=self.train_conf['min_seq_len']))
-        list_ids = [row for row in ds]
-        list_ids = shuffle_client_list_reproducible(ConfigFactory.from_dict({
-            'dataset': {
-                'client_list_shuffle_seed': 42,
-                'col_id': self.col_id,
-            }
-        }), list_ids)
-        list_ids = [row[self.col_id] for row in list_ids]
-
-        valid_ix = np.arange(len(list_ids))
-        valid_ix = np.random.RandomState(42).choice(valid_ix, size=int(len(list_ids) * self.setup_conf['valid_size']), replace=False)
-        valid_ix = set(valid_ix.tolist())
-
-        logger.info(f'Loaded {len(list_ids)} rows. Split in progress...')
-        train_data = [rec for i, rec in enumerate(list_ids) if i not in valid_ix]
-        valid_data = [rec for i, rec in enumerate(list_ids) if i in valid_ix]
-
-        logger.info(f'Train data len: {len(train_data)}, Valid data len: {len(valid_data)}')
-        self._train_ids = train_data
-        self._valid_ids = valid_data
+    # def split_by_rows(self, data_files):
+    #     """
+    #     This code is correct. Just make reproducible shuffle and split, if needed
+    #
+    #     Args:
+    #         data_files:
+    #
+    #     Returns:
+    #
+    #     """
+    #     ds = ParquetDataset(data_files, post_processing=SeqLenFilter(min_seq_len=self.train_conf['min_seq_len']))
+    #     list_ids = [row for row in ds]
+    #     list_ids = shuffle_client_list_reproducible(ConfigFactory.from_dict({
+    #         'dataset': {
+    #             'client_list_shuffle_seed': 42,
+    #             'col_id': self.col_id,
+    #         }
+    #     }), list_ids)
+    #     list_ids = [row[self.col_id] for row in list_ids]
+    #
+    #     valid_ix = np.arange(len(list_ids))
+    #     valid_ix = np.random.RandomState(42).choice(valid_ix, size=int(len(list_ids) * self.setup_conf['valid_size']), replace=False)
+    #     valid_ix = set(valid_ix.tolist())
+    #
+    #     logger.info(f'Loaded {len(list_ids)} rows. Split in progress...')
+    #     train_data = [rec for i, rec in enumerate(list_ids) if i not in valid_ix]
+    #     valid_data = [rec for i, rec in enumerate(list_ids) if i in valid_ix]
+    #
+    #     logger.info(f'Train data len: {len(train_data)}, Valid data len: {len(valid_data)}')
+    #     self._train_ids = train_data
+    #     self._valid_ids = valid_data
 
     def build_iterable_processing(self, part):
-        if 'dataset_files' in self.setup_conf and self.setup_conf['split_by'] == 'rows':
-            if part == 'train':
-                yield IdFilter(id_col=self.col_id, relevant_ids=self._train_ids)
-            else:
-                yield IdFilter(id_col=self.col_id, relevant_ids=self._valid_ids)
+        # if 'dataset_files' in self.setup_conf and self.setup_conf['split_by'] == 'rows':
+        #     if part == 'train':
+        #         yield IdFilter(id_col=self.col_id, relevant_ids=self._train_ids)
+        #     else:
+        #         yield IdFilter(id_col=self.col_id, relevant_ids=self._valid_ids)
 
         if part == 'train':
             yield SeqLenFilter(min_seq_len=self.train_conf['min_seq_len'])
 
-        yield FeatureTypeCast({self.col_id: int})
-        yield TargetExtractor(target_col=self.col_id)
-        yield FeatureFilter(drop_non_iterable=True)
+        yield FeatureFilter(keep_feature_names=self.category_names)
         yield CategorySizeClip(self.category_max_size)
 
         if self._type == 'iterable':
@@ -187,16 +189,13 @@ class CpcDataModuleTrain(pl.LightningDataModule):
             if part == 'train':
                 yield IterableShuffle(self.train_conf['buffer_size'])
 
-            yield IterableAugmentations(*self.build_augmentations(part))
+            yield IterableAugmentations(self.build_augmentations(part))
 
     def build_augmentations(self, part):
         if part == 'train':
-            # yield RandomSlice(**self.train_conf['random_slice'])
-            # TODO: RandomSlice can provide more varied samples
-            yield SeqLenLimit(self.train_conf['max_seq_len'])
-            yield DropoutTrx(self.train_conf['trx_dropout'])
+            return build_augmentations(self.train_conf['augmentations'])
         else:
-            yield SeqLenLimit(self.valid_conf['max_seq_len'])
+            return build_augmentations(self.valid_conf['augmentations'])
 
     def setup_map(self):
         self.train_dataset = list(tqdm(iter(self.train_dataset)))
@@ -206,17 +205,17 @@ class CpcDataModuleTrain(pl.LightningDataModule):
 
         self.train_dataset = MapAugmentationDataset(
             base_dataset=self.train_dataset,
-            a_chain=augmentation_chain(*self.build_augmentations('train')),
+            a_chain=self.build_augmentations('train'),
         )
         self.valid_dataset = MapAugmentationDataset(
             base_dataset=self.valid_dataset,
-            a_chain=augmentation_chain(*self.build_augmentations('valid')),
+            a_chain=self.build_augmentations('valid'),
         )
 
     def train_dataloader(self):
         return DataLoader(
             dataset=self.train_dataset,
-            collate_fn=padded_collate,
+            collate_fn=cpc_collate_fn,
             shuffle=False if self._type == 'iterable' else True,
             num_workers=self.train_conf['num_workers'],
             batch_size=self.train_conf['batch_size'],
@@ -225,7 +224,7 @@ class CpcDataModuleTrain(pl.LightningDataModule):
     def val_dataloader(self):
         return DataLoader(
             dataset=self.valid_dataset,
-            collate_fn=padded_collate,
+            collate_fn=cpc_collate_fn,
             num_workers=self.valid_conf['num_workers'],
             batch_size=self.valid_conf['batch_size'],
         )

@@ -2,6 +2,9 @@
 python ../../pl_train_module.py --conf conf/agg_features_params.hocon
 python ../../pl_inference.py    --conf conf/agg_features_params.hocon
 
+# Random encoder
+python ../../pl_inference.py    --conf conf/random_params.hocon
+
 # Train the MeLES encoder and take embedidngs; inference
 python ../../pl_train_module.py --conf conf/mles_params.hocon
 python ../../pl_inference.py    --conf conf/mles_params.hocon
