@@ -1,7 +1,7 @@
 import logging
 import torch
 import pytorch_lightning as pl
-from dltranz.lightning_modules.get_pl_module_by_name import GetPLModuleByName
+from dltranz.lightning_modules.get_pl_module_by_name import get_pl_module_by_name
 import pyspark.sql.functions as F
 import pyspark.sql.types as T
 from pyspark.sql import SparkSession
@@ -47,7 +47,7 @@ class InferenceSpark(object):
 
         pl.seed_everything(42)
 
-        pl_module = GetPLModuleByName(self.pl_module_name).get_pl_module_by_name()
+        pl_module = get_pl_module_by_name(self.pl_module_name)
 
         model = pl_module.load_from_checkpoint(f"{self.work_path}/{self.model_path}")
         model.seq_encoder.is_reduce_sequence = True
