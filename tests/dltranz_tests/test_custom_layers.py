@@ -1,6 +1,6 @@
 import torch
 
-from dltranz.custom_layers import DropoutEncoder, Squeeze, CatLayer, MLP
+from dltranz.custom_layers import DropoutEncoder, Squeeze, CatLayer, MLP, TabularRowEncoder
 
 
 class TrxEncoderTest(torch.nn.Module):
@@ -29,7 +29,7 @@ def test_squeeze():
 def test_mlp():
     mlp_config = {
         "hidden_layers_size": [512, 100],
-        "drop_p": 0,
+        "drop_p": 0.5,
         "objective": "classification"
     }
 
@@ -49,3 +49,27 @@ def test_cat_layer():
     x = (l, r)
     y = cat_layer(x)
     assert y.shape == (256, 30)
+
+
+def test_embedding_generator():
+    tabular_config = {
+        'num_features_count': 10,
+        'cat_features_dims': [10, 10],
+        'cat_emb_dim': 4
+    }
+
+    tabular_row_encoder = TabularRowEncoder(
+        input_dim=tabular_config['num_features_count'] + len(tabular_config['cat_features_dims']),
+        cat_dims=tabular_config['cat_features_dims'],
+        cat_idxs=[x + tabular_config['num_features_count'] for x in range(len(tabular_config['cat_features_dims']))],
+        cat_emb_dim=tabular_config['cat_emb_dim']
+    )
+
+    assert tabular_row_encoder.output_size == 18
+
+    num = torch.rand(256, 10)
+    cat = torch.randint(0, 10, (256, 2))
+    x = torch.cat([num, cat], dim=1)
+    y = tabular_row_encoder(x)
+
+    assert y.shape == (256, 18)
