@@ -1,10 +1,7 @@
 import logging
 import torch
 import pytorch_lightning as pl
-from dltranz.lightning_modules.coles_module import CoLESModule
-from dltranz.lightning_modules.cpc_module import CpcModule
-from dltranz.lightning_modules.rtd_module import RtdModule
-from dltranz.lightning_modules.sop_nsp_module import SopNspModule
+from dltranz.lightning_modules.get_pl_module_by_name import GetPLModuleByName
 import pyspark.sql.functions as F
 import pyspark.sql.types as T
 from pyspark.sql import SparkSession
@@ -15,18 +12,18 @@ logger = logging.getLogger(__name__)
 class InferenceSpark(object):
 
     def __init__(self, spark, work_path, model_path, output_path, dataset_files, 
-                 col_id, num_workers, pl_module_name, hidden_size):
+                       col_id, pl_module_name, hidden_size, batch_size):
         self.spark          = spark
         self.work_path      = work_path
         self.model_path     = model_path
         self.output_path    = output_path
         self.dataset_files  = dataset_files
         self.col_id         = col_id
-        self.num_workers    = num_workers
         self.pl_module_name = pl_module_name
         self.hidden_size    = hidden_size
+        self.batch_size     = batch_size
 
-    def collect_batchs(self):
+    def collect_batches(self):
 
         df_t = self.spark.read.parquet(*[f"{self.work_path}/{i}" for i in self.dataset_files])
 
@@ -35,7 +32,7 @@ class InferenceSpark(object):
         df_t\
         .orderBy("trx_count")\
         .withColumn("group_id",F.monotonically_increasing_id())\
-        .groupby(F.floor(F.col("group_id")/200).alias("group_id"))\
+        .groupby(F.floor(F.col("group_id")/self.batch_size).alias("group_id"))\
         .agg(
             F.collect_list(self.col_id).alias(self.col_id),
             F.struct([F.collect_list(F.col(name)).alias(name) for name in columns]).alias("feature_arrays"),
@@ -44,24 +41,20 @@ class InferenceSpark(object):
         .write.format("parquet").mode("overwrite")\
         .save(f"{self.work_path}/data/tmp_batch_train")
 
+        logger.info(f'broken into batches no more than {self.batch_size} and save path {self.work_path}/data/tmp_batch_train')
+
     def exec_inference(self):
 
         pl.seed_everything(42)
 
-        pl_module = None
-        for m in [CoLESModule, CpcModule, SopNspModule, RtdModule]:
-            if m.__name__ == self.pl_module_name:
-                pl_module = m
-                break
-        if pl_module is None:
-            raise NotImplementedError(f'Unknown pl module {self.pl_module_name}')
+        pl_module = GetPLModuleByName(self.pl_module_name).get_pl_module_by_name()
 
         model = pl_module.load_from_checkpoint(f"{self.work_path}/{self.model_path}")
         model.seq_encoder.is_reduce_sequence = True
 
         br_m = self.spark.sparkContext.broadcast(model.seq_encoder)
 
-        def inference_func(data_feature, data_length, num_cuda):
+        def inference_func(data_feature, data_length):
 
             import torch
             from dltranz.trx_encoder import PaddedBatch
@@ -74,11 +67,9 @@ class InferenceSpark(object):
                     ], encoding='utf-8')
                 gpu_memory = [int(x) for x in result.strip().split('\n')]
                 num_cuda = gpu_memory.index(max(gpu_memory))
-                core = f"cuda:{num_cuda}"
+                device = torch.device(f"cuda:{num_cuda}")
             else:
-                core = "cpu"
-                
-            device = torch.device(core)
+                device = torch.device("cpu")
 
             data_obj = PaddedBatch(
                 payload={
@@ -105,13 +96,14 @@ class InferenceSpark(object):
             F.col(self.col_id),
             inference_func_udf(
                 F.col("feature_arrays"),
-                F.col("trx_count"),
-                F.col("group_id")%self.num_workers
+                F.col("trx_count")
             ).alias("inf_res")
         )\
         .repartition(1)\
         .write.format("parquet").mode("overwrite")\
         .save(f"{self.work_path}/data/tmp_res_emb")
+
+        logger.info(f'distribute to cuda and make inferences and save path {self.work_path}/data/tmp_res_emb')
 
     def explode_embedd(self):
 
@@ -123,6 +115,8 @@ class InferenceSpark(object):
         .repartition(1)\
         .write.format("parquet").mode("overwrite")\
         .save(f"{self.work_path}/{self.output_path}")
+
+        logger.info(f'explode arrays and save path {self.work_path}/{self.output_path}')
 
 def main(args=None):
 
@@ -141,12 +135,12 @@ def main(args=None):
         conf['output.path'], 
         conf['inference_dataloader.dataset_files'],
         conf['inference_dataloader.col_id'],
-        conf["inference_dataloader.loader.num_workers"],
         conf['params.pl_module_name'],
-        conf['params.rnn.hidden_size']
+        conf['params.rnn.hidden_size'],
+        conf["inference_dataloader.loader.batch_size"]
         )
 
-    inference_obj.collect_batchs()
+    inference_obj.collect_batches()
     inference_obj.exec_inference()
     inference_obj.explode_embedd()
 
@@ -154,5 +148,5 @@ def main(args=None):
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)-7s %(funcName)-20s : %(message)s')
-    logging.getLogger("spark_inference").setLevel(logging.INFO)
+    logging.getLogger("lightning").setLevel(logging.INFO)
     main()
