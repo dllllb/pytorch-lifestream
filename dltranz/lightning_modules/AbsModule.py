@@ -1,6 +1,7 @@
 import pytorch_lightning as pl
 from dltranz.seq_encoder import create_encoder
 from dltranz.train import get_optimizer, get_lr_scheduler, ReduceLROnPlateauWrapper
+from dltranz.trx_encoder import PaddedBatch
 
 
 class ABSModule(pl.LightningModule):
@@ -51,7 +52,8 @@ class ABSModule(pl.LightningModule):
         self.log('loss', loss)
         if type(batch) is tuple:
             x, y = batch
-            self.log('seq_len', x.seq_lens.float().mean(), prog_bar=True)
+            if isinstance(x, PaddedBatch):
+                self.log('seq_len', x.seq_lens.float().mean(), prog_bar=True)
         else:
             # this code should not be reached
             self.log('seq_len', -1, prog_bar=True)
