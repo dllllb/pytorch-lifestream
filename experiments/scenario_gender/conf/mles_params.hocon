@@ -16,6 +16,7 @@
   params: {
     data_module_name: ColesDataModuleTrain
     pl_module_name: CoLESModule
+    pl_module_class: dltranz.lightning_modules.coles_module.CoLESModule
 
     validation_metric_params: {
         K: 4
