@@ -35,6 +35,15 @@ def cycle_block_iterator(iterator, size):
     return block_iterator(itertools.cycle(iterator), size)
 
 
+def get_cls(cls_name):
+    i = cls_name.split('.')
+    mod = __import__('.'.join(i[:-1]), fromlist=[i[-1]])
+    cls = getattr(mod, i[-1])
+    if cls is None:
+        raise AttributeError(f'Unknown class name: "{cls_name}"')
+    return cls
+
+
 class ListSubset:
     def __init__(self, delegate, idx_to_take):
         self.delegate = delegate

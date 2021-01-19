@@ -12,7 +12,10 @@ from dltranz.data_load.iterable_processing.feature_filter import FeatureFilter
 from dltranz.data_load.iterable_processing.feature_type_cast import FeatureTypeCast
 from dltranz.data_load.iterable_processing.target_extractor import TargetExtractor
 from dltranz.data_load.parquet_dataset import ParquetDataset, ParquetFiles
-from dltranz.lightning_modules.get_pl_module_by_name import get_pl_module_by_name
+from dltranz.lightning_modules.coles_module import CoLESModule
+from dltranz.lightning_modules.cpc_module import CpcModule
+from dltranz.lightning_modules.rtd_module import RtdModule
+from dltranz.lightning_modules.sop_nsp_module import SopNspModule
 from dltranz.metric_learn.inference_tools import save_scores
 from dltranz.train import score_model
 from dltranz.util import get_conf
@@ -53,8 +56,13 @@ def main(args=None):
 
     pl.seed_everything(42)
 
-    pl_module = get_pl_module_by_name(conf['params.pl_module_name'])
-
+    pl_module = None
+    for m in [CoLESModule, CpcModule, SopNspModule, RtdModule]:
+        if m.__name__ == conf['params.pl_module_name']:
+            pl_module = m
+            break
+    if pl_module is None:
+        raise NotImplementedError(f'Unknown pl module {conf.params.pl_module_name}')
     model = pl_module.load_from_checkpoint(conf['model_path'])
     model.seq_encoder.is_reduce_sequence = True
 

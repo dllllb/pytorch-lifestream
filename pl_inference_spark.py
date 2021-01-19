@@ -1,27 +1,26 @@
 import logging
 import torch
 import pytorch_lightning as pl
-from dltranz.lightning_modules.get_pl_module_by_name import get_pl_module_by_name
 import pyspark.sql.functions as F
 import pyspark.sql.types as T
 from pyspark.sql import SparkSession
-from dltranz.util import get_conf
+from dltranz.util import get_conf, get_cls
 
 logger = logging.getLogger(__name__)
 
 class InferenceSpark(object):
 
     def __init__(self, spark, work_path, model_path, output_path, dataset_files, 
-                       col_id, pl_module_name, hidden_size, batch_size):
-        self.spark          = spark
-        self.work_path      = work_path
-        self.model_path     = model_path
-        self.output_path    = output_path
-        self.dataset_files  = dataset_files
-        self.col_id         = col_id
-        self.pl_module_name = pl_module_name
-        self.hidden_size    = hidden_size
-        self.batch_size     = batch_size
+                       col_id, pl_module_class, hidden_size, batch_size):
+        self.spark           = spark
+        self.work_path       = work_path
+        self.model_path      = model_path
+        self.output_path     = output_path
+        self.dataset_files   = dataset_files
+        self.col_id          = col_id
+        self.pl_module_class = pl_module_class
+        self.hidden_size     = hidden_size
+        self.batch_size      = batch_size
 
     def collect_batches(self):
 
@@ -47,7 +46,7 @@ class InferenceSpark(object):
 
         pl.seed_everything(42)
 
-        pl_module = get_pl_module_by_name(self.pl_module_name)
+        pl_module = get_cls(self.pl_module_class)
 
         model = pl_module.load_from_checkpoint(f"{self.work_path}/{self.model_path}")
         model.seq_encoder.is_reduce_sequence = True
@@ -135,7 +134,7 @@ def main(args=None):
         conf['output.path'], 
         conf['inference_dataloader.dataset_files'],
         conf['inference_dataloader.col_id'],
-        conf['params.pl_module_name'],
+        conf['params.pl_module_class'],
         conf['params.rnn.hidden_size'],
         conf["inference_dataloader.loader.batch_size"]
         )
