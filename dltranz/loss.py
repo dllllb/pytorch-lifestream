@@ -133,6 +133,26 @@ class PseudoLabeledLoss(nn.Module):
             return (Lloss + Uloss) / (1 + self.unlabeled_weight)
 
 
+class UnsupervisedTabNetLoss(nn.Module):
+    def __init__(self, eps=1e-9):
+        super().__init__()
+        self.eps = eps
+
+    def forward(self, output, obf_vars):
+        embedded_x, y_pred = output
+        errors = y_pred - embedded_x
+        reconstruction_errors = torch.mul(errors, obf_vars) ** 2
+        batch_stds = torch.std(embedded_x, dim=0) ** 2 + self.eps
+        features_loss = torch.matmul(reconstruction_errors, 1 / batch_stds)
+        # compute the number of obfuscated variables to reconstruct
+        nb_reconstructed_variables = torch.sum(obf_vars, dim=1)
+        # take the mean of the reconstructed variable errors
+        features_loss = features_loss / (nb_reconstructed_variables + self.eps)
+        # the mean per batch
+        loss = torch.mean(features_loss)
+        return loss
+
+
 def get_loss(params):
     loss_type = params['train.loss']
 
@@ -151,6 +171,8 @@ def get_loss(params):
     elif loss_type == 'transaction_sum':
         n_variables_to_predict = params['variable_predicted']
         loss = TransactionSumLoss(n_variables_to_predict)
+    elif loss_type == 'unsupervised_tabnet':
+        loss = UnsupervisedTabNetLoss()
     elif loss_type == 'pseudo_labeled':
         loss = PseudoLabeledLoss(
             loss=get_loss(params['labeled']),

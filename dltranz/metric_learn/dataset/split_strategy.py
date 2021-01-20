@@ -148,6 +148,17 @@ class SampleUniform(AbsSplit):
         return [date_range[s:s + self.seq_len] for s in start_pos]
 
 
+class CutByDays(AbsSplit):
+    def __init__(self, first_date, last_date):
+        self.days_arange = np.arange(first_date, last_date+1)
+
+    def split(self, dates):
+        all_indexes = np.arange(len(dates))
+        left_indexes = np.searchsorted(dates.astype(np.int32), self.days_arange)
+        indexes = [all_indexes[:x] for x in left_indexes]
+        return indexes
+
+
 def create(split_strategy, **params):
     cls = globals().get(split_strategy, None)
     if cls is None:

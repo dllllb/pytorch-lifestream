@@ -107,14 +107,29 @@ def tst_params_transf():
     return ConfigFactory.from_dict(params).with_fallback(tst_params())
 
 
+def tst_params_swa():
+    params = {
+        'train': {
+            'swa': {
+                'swa_start': 0
+            }
+        }
+    }
+
+    return ConfigFactory.from_dict(params).with_fallback(tst_params_skip_rnn())
+
+
+def tst_loaders():
+    train_data = gen_trx_data((torch.rand(1000) * 60 + 1).long())
+    train_ds = TrxDataset(train_data)
+    test_data = gen_trx_data((torch.rand(100) * 60 + 1).long())
+    valid_ds = TrxDataset(test_data)
+    return train_ds, valid_ds
+
+
 def test_train_loop_rnn():
     params = tst_params()
-
-    train_data = gen_trx_data((torch.rand(1000)*60+1).long())
-    train_ds = TrxDataset(train_data)
-    test_data = gen_trx_data((torch.rand(100)*60+1).long())
-    valid_ds = TrxDataset(test_data)
-
+    train_ds, valid_ds = tst_loaders()
     res = run_experiment(train_ds, valid_ds, {'params': params}, rnn_model)
     print(res)
 
@@ -158,23 +173,20 @@ def test_score_model_mult2():
 
 def test_train_loop_skip_rnn():
     params = tst_params_skip_rnn()
-
-    train_data = gen_trx_data((torch.rand(1000) * 60 + 1).long())
-    train_ds = TrxDataset(train_data)
-    test_data = gen_trx_data((torch.rand(100) * 60 + 1).long())
-    valid_ds = TrxDataset(test_data)
-
+    train_ds, valid_ds = tst_loaders()
     res = run_experiment(train_ds, valid_ds, {'params': params}, rnn_model)
     print(res)
 
 
 def test_train_loop_transf():
     params = tst_params_transf()
+    train_ds, valid_ds = tst_loaders()
+    res = run_experiment(train_ds, valid_ds, {'params': params}, rnn_model)
+    print(res)
 
-    train_data = gen_trx_data((torch.rand(1000) * 60 + 1).long())
-    train_ds = TrxDataset(train_data)
-    test_data = gen_trx_data((torch.rand(100) * 60 + 1).long())
-    valid_ds = TrxDataset(test_data)
 
+def test_train_loop_swa():
+    params = tst_params_swa()
+    train_ds, valid_ds = tst_loaders()
     res = run_experiment(train_ds, valid_ds, {'params': params}, rnn_model)
     print(res)

@@ -24,6 +24,9 @@ class AggFeatureModel(torch.nn.Module):
             self.ohe_buffer[col_embed] = ohe
             self.register_buffer(f'ohe_{col_embed}', ohe)
 
+        self.num_aggregators = config.get('num_aggregators', {'count': True, 'sum': True, 'std': True})
+        self.cat_aggregators = config.get('cat_aggregators', {})
+
     def forward(self, x: PaddedBatch):
         """
         {
@@ -45,6 +48,7 @@ class AggFeatureModel(torch.nn.Module):
         #     raise Exception('seq_lens == 0')
 
         processed = [seq_lens.unsqueeze(1)]  # count
+        cat_processed = []
 
         for col_num, options_num in self.numeric_values.items():
             # take array with numerical feature and convert it to original scale
@@ -79,18 +83,21 @@ class AggFeatureModel(torch.nn.Module):
                 # counts over val_embed
                 mask = (1.0 - ohe[0]).unsqueeze(0)  # 0, 1, 1, 1, ..., 1
                 e_cnt = ohe_transform.sum(dim=1) * mask
-                processed.append(e_cnt)
+                if self.num_aggregators.get('count', False):
+                    processed.append(e_cnt)
 
                 # sum over val_embed
-                e_sum = m_sum.sum(dim=1)
-                e_mean = e_sum.div(e_cnt + 1e-9)
-                processed.append(e_mean)
+                if self.num_aggregators.get('sum', False):
+                    e_sum = m_sum.sum(dim=1)
+                    e_mean = e_sum.div(e_cnt + 1e-9)
+                    processed.append(e_mean)
 
-                a = torch.clamp(m_sum.pow(2).sum(dim=1) - m_sum.sum(dim=1).pow(2).div(e_cnt + 1e-9), min=0.0)
-                e_std = a.div(torch.clamp(e_cnt - 1, min=0) + 1e-9).pow(0.5)
-                processed.append(e_std)
+                if self.num_aggregators.get('std', False):
+                    a = torch.clamp(m_sum.pow(2).sum(dim=1) - m_sum.sum(dim=1).pow(2).div(e_cnt + 1e-9), min=0.0)
+                    e_std = a.div(torch.clamp(e_cnt - 1, min=0) + 1e-9).pow(0.5)
+                    processed.append(e_std)
 
-        # n_unique
+        # n_unique and top_k
         for col_embed, options_embed in self.embeddings.items():
             ohe = getattr(self, f'ohe_{col_embed}')
             val_embed = feature_arrays[col_embed].long()
@@ -103,11 +110,14 @@ class AggFeatureModel(torch.nn.Module):
 
             processed.append(e_cnt.gt(0.0).float().sum(dim=1, keepdim=True))
 
+            if self.cat_aggregators and self.cat_aggregators['top_k']:
+                cat_processed.append(torch.topk(e_cnt, self.cat_aggregators['top_k'], dim=1)[1])
+
         for i, t in enumerate(processed):
             if torch.isnan(t).any():
                 raise Exception(f'nan in {i}')
 
-        out = torch.cat(processed, 1)
+        out = torch.cat(processed + cat_processed, 1)
         return out
 
     @property
@@ -117,7 +127,17 @@ class AggFeatureModel(torch.nn.Module):
 
         e_sizes = [options_embed['in'] for col_embed, options_embed in embeddings.items()]
 
-        return 1 + len(numeric_values) * (3 + 3 * sum(e_sizes)) + len(embeddings)
+        out_size = 1
+
+        n_features = sum(self.num_aggregators.values())
+        out_size += len(numeric_values) * (3 + n_features * sum(e_sizes)) + len(embeddings)
+        out_size += len(e_sizes) * self.cat_aggregators.get('top_k', 0)
+        return out_size
+
+    @property
+    def cat_output_size(self):
+        e_sizes = [options_embed['in'] for col_embed, options_embed in self.embeddings.items()]
+        return len(e_sizes) * self.cat_aggregators.get('top_k', 0)
 
     @property
     def category_names(self):

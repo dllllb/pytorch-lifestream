@@ -1,0 +1,68 @@
+{
+  "params": {
+    "device": "cuda",
+    "model_type": "mlp",
+    "tabular_encoder": {
+      "num_features_count": 1127,
+      "cat_features_dims": [200, 200, 200, 120, 120, 120, 800, 800, 800],
+      "cat_emb_dim": 1
+    },
+    "mlp" : {
+      "hidden_layers_size": [512, 256],
+      "drop_p": 0,
+      "use_batch_norm": true
+    },
+    "mlp_decoder" : {
+      "hidden_layers_size": [512],
+      "drop_p": 0,
+      "use_batch_norm": true
+    },
+    "tabnet" : {
+      "output_dim": 256
+    },
+    "lr_scheduler": {
+      "step_size": 10,
+      "step_gamma": 0.5
+    },
+    "train": {
+      "loss": "unsupervised_tabnet",
+      "zero_prob": 0.15,
+      "target_lag": 10,
+      "num_workers": 16,
+      "batch_size": 64,
+      "max_seq_len": 800,
+      "lr": 0.001,
+      "weight_decay": 0.0,
+      "n_epoch": 30
+    },
+    "norm_scores": false,
+    "valid": {
+      "batch_size": 64,
+      "num_workers": 16,
+      "max_seq_len": 800
+    }
+  },
+
+  "dataset": {
+    "path": "data/agg_feat_timestamps",
+    "valid_size": 0.05,
+    "num_features_count": 1127,
+    "cat_features_count": 9
+  },
+
+  "save_model": true,
+  "model_path": {
+    "model": "models/agg_features_encoder.p",
+    "agg_model": "models/agg_features_ts_model.p"
+  },
+
+  "output": {
+    "path": "data/agg_feat_encoded_embed",
+    "format": "pickle",
+    "columns": ["client_id"]
+  },
+
+  "stats": {
+    "path": "runs/tabnet_result.json"
+  }
+}
