@@ -9,6 +9,11 @@
             read_params: {file_name: ../data/agg_feat_embed.pickle}
             target_options: {}
         }
+        random_encoder: {
+            enabled: true
+            read_params: {file_name: ../data/random_embeddings.pickle}
+            target_options: {}
+        }
         mles_embeddings: {
             enabled: true
             read_params: {file_name: ../data/mles_embeddings.pickle}

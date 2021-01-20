@@ -140,6 +140,12 @@ class AggFeatureModel(torch.nn.Module):
         return len(e_sizes) * self.cat_aggregators.get('top_k', 0)
 
     @property
+    def category_names(self):
+        return set([field_name for field_name in self.embeddings.keys()] +
+                   [value_name for value_name in self.numeric_values.keys()]
+                   )
+
+    @property
     def category_max_size(self):
         return {k: v['in'] for k, v in self.embeddings.items()}
 
@@ -163,6 +169,10 @@ class AggFeatureSeqEncoder(AbsSeqEncoder):
     @property
     def category_max_size(self):
         return self.model.category_max_size
+
+    @property
+    def category_names(self):
+        return self.model.category_names
 
     @property
     def embedding_size(self):

@@ -71,6 +71,7 @@ class SequenceClassify(pl.LightningModule):
         y_h = self(x)
         loss = self.loss(y_h, y)
         self.log('loss', loss)
+        self.log('seq_len', x.seq_lens.float().mean(), prog_bar=True)
         return loss
 
     def validation_step(self, batch, _):

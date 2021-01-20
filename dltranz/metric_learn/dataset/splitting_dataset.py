@@ -37,32 +37,23 @@ class MapSplittingDataset(Dataset):
         return len(self.base_dataset)
 
     def __getitem__(self, idx):
-        row = self.base_dataset[idx]
-        if type(row) is tuple:
-            feature_arrays, uid = row
-            local_date = feature_arrays['event_time']
-            indexes = self.splitter.split(local_date)
-            data = [(self.a_chain({k: v[ix] for k, v in feature_arrays.items()}), uid) for ix in indexes]
-        else:
-            feature_arrays = row
-            local_date = feature_arrays['event_time']
-            indexes = self.splitter.split(local_date)
-            data = [self.a_chain({k: v[ix] for k, v in feature_arrays.items()}) for ix in indexes]
-        return data
+        feature_arrays = self.base_dataset[idx]
+        local_date = feature_arrays['event_time']
+        indexes = self.splitter.split(local_date)
+        return [self.a_chain({k: v[ix] for k, v in feature_arrays.items()}) for ix in indexes]
 
 
 class IterableSplittingDataset(IterableProcessingDataset):
-    def __init__(self, splitter):
+    def __init__(self, splitter, a_chain):
         super().__init__()
 
         self.splitter = splitter
+        self.a_chain = a_chain
 
     def __iter__(self):
-        for row, uid in self._src:
+        for row in self._src:
             local_date = row['event_time']
-
-            for ix in self.splitter.split(local_date):
-                yield {k: v[ix] for k, v in row.items()}, uid
+            yield [self.a_chain({k: v[ix] for k, v in row.items()}) for ix in self.splitter.split(local_date)]
 
 
 class SeveralSplittingsDataset(Dataset):

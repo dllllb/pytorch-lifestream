@@ -7,9 +7,9 @@
         train_data_path: "data/train_trx.parquet"
         test_data_path: "data/test_trx.parquet"
       }
-      col_id: customer_id
-      col_id_dtype: int
-      col_target: gender
+      col_id: client_id
+      col_id_dtype: str
+      col_target: age
 
       split_by: embeddings_validation
       fold_info: "conf/embeddings_validation.work/folds/folds.json"
@@ -18,8 +18,11 @@
     train: {
         min_seq_len: 0
         augmentations: [
-            [RandomSlice, {min_len: 250, max_len: 350, rate_for_min: 0.9}]
-            [DropoutTrx, {trx_dropout: 0.01}]
+            [SeqLenLimit, {max_seq_len: 800}]
+            [DropoutTrx, {trx_dropout: 0.03}]
+            # [DropDay, {}]
+            # [RandomSlice, {min_len: 50, max_len: 150, rate_for_min: 0.9}]
+            [AllTimeShuffle, {}]
         ]
         num_workers: 16
         batch_size: 32
@@ -27,17 +30,17 @@
 
     valid: {
         augmentations: [
-            [SeqLenLimit, {max_seq_len: 1200}]
+            [SeqLenLimit, {max_seq_len: 800}]
         ]
         num_workers: 8
-        batch_size: 64   # 512
+        batch_size: 512
     }
   }
 
   embedding_validation_results: {
     model_name: nn
-    feature_name: mles_finetuning
-    output_path: "results/mles_finetuning_results.json"
+    feature_name: cpc_finetuning
+    output_path: "results/cpc_finetuning_results.json"
   }
 
   seed_everything: 42
@@ -51,30 +54,28 @@
     checkpoint_callback: false
     deterministic: True
   }
-  logger_name: mles_finetuning
+  logger_name: cpc_finetuning
 
   params: {
-    score_metric: [auroc, accuracy]
+    score_metric: [accuracy]
 
     encoder_type: pretrained,
     pretrained: {
-        pl_module_class: dltranz.lightning_modules.coles_module.CoLESModule
-        model_path: "models/mles_model_for_finetuning.p"
-        lr: 0.0001
+        pl_module_name: dltranz.lightning_modules.cpc_module.CpcModule
+        model_path: "models/cpc_model.p"
+        lr: 0.00001
         # lr: freeze
     }
 
     head_layers: [
         [BatchNorm1d, {num_features: "{seq_encoder.embedding_size}"}]
-        [Linear, {"in_features": "{seq_encoder.embedding_size}", "out_features": 1}]
-        [Sigmoid, {}]
-        [Squeeze, {}]
+        [Linear, {"in_features": "{seq_encoder.embedding_size}", "out_features": 4}]
+        [LogSoftmax, {dim: 1}]
     ]
 
     train: {
-      random_neg: false,
-      loss: bce,
-      lr: 0.005,
+      loss: NLLLoss,
+      lr: 0.001,
       weight_decay: 0.0,
     },
     lr_scheduler: {

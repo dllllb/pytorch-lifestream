@@ -105,6 +105,7 @@ class TransfSeqEncoder(AbsSeqEncoder):
         p = TrxEncoder(params['trx_encoder'])
         trx_size = p.output_size
         self._category_max_size = p.category_max_size
+        self._category_names = p.category_names
 
         enc_input_size = params['transf']['input_size']
         if enc_input_size != trx_size:
@@ -121,6 +122,10 @@ class TransfSeqEncoder(AbsSeqEncoder):
     @property
     def category_max_size(self):
         return self._category_max_size
+
+    @property
+    def category_names(self):
+        return self._category_names
 
     @property
     def embedding_size(self):

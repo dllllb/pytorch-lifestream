@@ -19,6 +19,7 @@ from dltranz.swa import SWA
 from ignite.engine import Engine, Events, create_supervised_trainer, create_supervised_evaluator
 import ignite
 from bisect import bisect_right
+from tqdm import tqdm
 
 logger = logging.getLogger(__name__)
 
@@ -386,6 +387,40 @@ def score_model(model, valid_loader, params):
         pred = pred - np.min(pred)
 
     return true, pred
+
+
+def score_model2(model, valid_loader, params):
+    """
+    Difference from score_model:
+      - extended valid_loader. input format: x, * in batch:
+      - reversed output:
+            true, pred(x) in score_model
+            pred(x), * in score_model2
+      - ignite not used
+
+    Returns:
+
+    """
+    if torch.cuda.is_available():
+        device = torch.device(params.get('device', 'cuda'))
+    else:
+        device = torch.device(params.get('device', 'cpu'))
+    model.to(device)
+    model.eval()
+
+    outputs = []
+    with torch.no_grad():
+        for batch in tqdm(valid_loader, leave=False):
+            x, *others = batch
+            x = x.to(device)
+            out = model(x)
+
+            batch_output = [out.cpu().numpy(), *others]
+            outputs.append(batch_output)
+
+    outputs = zip(*outputs)
+    outputs = (np.concatenate(l) for l in outputs)
+    return outputs
 
 
 def block_iterator(iterator, size):

@@ -96,6 +96,10 @@ class RnnSeqEncoder(AbsSeqEncoder):
         return self.model[0].category_max_size
 
     @property
+    def category_names(self):
+        return self.model[0].category_names
+
+    @property
     def embedding_size(self):
         return self.params['rnn.hidden_size']
 

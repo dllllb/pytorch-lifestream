@@ -6,12 +6,8 @@ from pytorch_lightning.loggers import TensorBoardLogger
 from dltranz.data_load.data_module.cls_data_module import ClsDataModuleTrain
 import pytorch_lightning as pl
 
-from dltranz.lightning_modules.coles_module import CoLESModule
-from dltranz.lightning_modules.cpc_module import CpcModule
-from dltranz.lightning_modules.rtd_module import RtdModule
-from dltranz.lightning_modules.sop_nsp_module import SopNspModule
 from dltranz.seq_cls import SequenceClassify
-from dltranz.util import get_conf
+from dltranz.util import get_conf, get_cls
 
 logger = logging.getLogger(__name__)
 
@@ -66,15 +62,7 @@ def main(args=None):
 
     if conf['params.encoder_type'] == 'pretrained':
         pre_conf = conf['params.pretrained']
-
-        cls = None
-        for c_name in [CoLESModule, CpcModule, SopNspModule, RtdModule]:
-            if pre_conf['model_type'] == c_name.__name__:
-                cls = c_name
-                break
-        if cls is None:
-            raise AttributeError(f"Can'not find {pre_conf.model_type} in module list")
-
+        cls = get_cls(pre_conf['pl_module_class'])
         pretrained_module = cls.load_from_checkpoint(pre_conf['model_path'])
         pretrained_module.seq_encoder.is_reduce_sequence = True
     else:

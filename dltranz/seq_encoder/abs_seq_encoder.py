@@ -21,5 +21,9 @@ class AbsSeqEncoder(torch.nn.Module):
         raise NotImplementedError()
 
     @property
+    def category_names(self):
+        raise NotImplementedError()
+
+    @property
     def embedding_size(self):
         raise NotImplementedError()
