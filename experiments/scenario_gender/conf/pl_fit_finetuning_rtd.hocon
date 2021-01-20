@@ -58,7 +58,7 @@
 
     encoder_type: pretrained,
     pretrained: {
-        model_type: "RtdModule",
+        pl_module_class: dltranz.lightning_modules.rtd_module.RtdModule
         model_path: "models/rtd_model.p"
         lr: 0.0001
         # lr: freeze

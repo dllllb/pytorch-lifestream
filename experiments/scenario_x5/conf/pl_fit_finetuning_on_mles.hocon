@@ -61,7 +61,7 @@
 
     encoder_type: pretrained,
     pretrained: {
-        model_type: "CoLESModule",
+        pl_module_class: dltranz.lightning_modules.coles_module.CoLESModule
         model_path: "models/mles_model_ft.p"
         lr: 0.001
         # lr: freeze

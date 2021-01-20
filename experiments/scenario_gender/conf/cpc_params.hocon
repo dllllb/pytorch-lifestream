@@ -32,8 +32,8 @@
   logger_name: cpc_model
 
   params: {
-    data_module_name: CpcDataModuleTrain
-    pl_module_name: CpcModule
+    data_module_class: dltranz.data_load.data_module.cpc_data_module.CpcDataModuleTrain
+    pl_module_name: dltranz.lightning_modules.cpc_module.CpcModule
 
     encoder_type: rnn,
     trx_encoder: {

@@ -45,8 +45,8 @@
   logger_name: rtd_model
 
   params: {
-    data_module_name: RtdDataModuleTrain
-    pl_module_name: RtdModule
+    data_module_class: dltranz.data_load.data_module.rtd_data_module.RtdDataModuleTrain
+    pl_module_class: dltranz.lightning_modules.rtd_module.RtdModule
 
     encoder_type: rnn,
     trx_encoder: {

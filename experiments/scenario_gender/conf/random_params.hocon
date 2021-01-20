@@ -2,7 +2,7 @@
   seed_everything: 42
 
   params: {
-    data_module_name: ColesDataModuleTrain
+    data_module_class: dltranz.data_load.data_module.coles_data_module.ColesDataModuleTrain
     pl_module_name: CoLESModule
 
     validation_metric_params: {

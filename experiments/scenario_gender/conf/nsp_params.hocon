@@ -49,8 +49,8 @@
   }
 
   params: {
-    data_module_name: NspDataModuleTrain
-    pl_module_name: SopNspModule
+    data_module_class: dltranz.data_load.data_module.nsp_data_module.NspDataModuleTrain
+    pl_module_class: dltranz.lightning_modules.sop_nsp_module.SopNspModule
 
     encoder_type: rnn,
     trx_encoder: {

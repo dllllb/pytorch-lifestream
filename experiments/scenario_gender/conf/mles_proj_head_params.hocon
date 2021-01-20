@@ -14,8 +14,8 @@
   logger_name: mles_proj_head_model
 
   params: {
-    data_module_name: ColesDataModuleTrain
-    pl_module_name: CoLESModule
+    data_module_class: dltranz.data_load.data_module.coles_data_module.ColesDataModuleTrain
+    pl_module_class: dltranz.lightning_modules.coles_module.CoLESModule
 
     validation_metric_params: {
         K: 4

@@ -50,8 +50,8 @@
   logger_name: sop_model
 
   params: {
-    data_module_name: SopDataModuleTrain
-    pl_module_name: SopNspModule
+    data_module_class: dltranz.data_load.data_module.sop_data_module.SopDataModuleTrain
+    pl_module_class: dltranz.lightning_modules.sop_nsp_module.SopNspModule
 
     encoder_type: rnn,
     trx_encoder: {

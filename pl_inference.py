@@ -11,13 +11,9 @@ from dltranz.data_load.iterable_processing.category_size_clip import CategorySiz
 from dltranz.data_load.iterable_processing.feature_filter import FeatureFilter
 from dltranz.data_load.iterable_processing.target_extractor import TargetExtractor
 from dltranz.data_load.parquet_dataset import ParquetDataset, ParquetFiles
-from dltranz.lightning_modules.coles_module import CoLESModule
-from dltranz.lightning_modules.cpc_module import CpcModule
-from dltranz.lightning_modules.rtd_module import RtdModule
-from dltranz.lightning_modules.sop_nsp_module import SopNspModule
 from dltranz.metric_learn.inference_tools import save_scores
 from dltranz.train import score_model2
-from dltranz.util import get_conf
+from dltranz.util import get_conf, get_cls
 
 logger = logging.getLogger(__name__)
 
@@ -55,13 +51,7 @@ def main(args=None):
     if 'seed_everything' in conf:
         pl.seed_everything(conf['seed_everything'])
 
-    pl_module = None
-    for m in [CoLESModule, CpcModule, SopNspModule, RtdModule]:
-        if m.__name__ == conf['params.pl_module_name']:
-            pl_module = m
-            break
-    if pl_module is None:
-        raise NotImplementedError(f'Unknown pl module {conf.params.pl_module_name}')
+    pl_module = get_cls(conf['params.pl_module_class'])
 
     if conf.get('random_model', False):
         model = pl_module(conf['params'])

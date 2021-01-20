@@ -61,7 +61,7 @@
 
     encoder_type: pretrained,
     pretrained: {
-        model_type: "CpcModule",
+        pl_module_name: dltranz.lightning_modules.cpc_module.CpcModule
         model_path: "models/cpc_model.p"
         lr: 0.00001
         # lr: freeze
