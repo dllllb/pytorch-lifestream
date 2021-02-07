@@ -21,57 +21,57 @@ trx_to_features        : Encoder stat for "mcc":
 codes | trx_count
                cnt  % of total
 mcc                           
-[1, 12)     726038    0.719641
-[12, 24)    110273    0.109301
-[24, 36)     62243    0.061695
-[36, 48)     39736    0.039386
-[48, 59)     20143    0.019966
-[59, 71)     16673    0.016526
-[71, 83)     11573    0.011471
-[83, 95)      7836    0.007767
-[95, 107)     4176    0.004139
-[107, 385)   10198    0.010108
+[2, 13)     726038    0.719641
+[13, 25)    110273    0.109301
+[25, 37)     62243    0.061695
+[37, 49)     39736    0.039386
+[49, 60)     20143    0.019966
+[60, 72)     16673    0.016526
+[72, 84)     11573    0.011471
+[84, 96)      7836    0.007767
+[96, 108)     4176    0.004139
+[108, 386)   10198    0.010108
 trx_to_features        : Encoder stat for "channel_type":
 codes | trx_count
                  cnt  % of total
 channel_type                    
-[1, 2)        619756    0.614296
-[2, 3)        357071    0.353925
-[3, 4)          9668    0.009583
-[4, 5)          9485    0.009401
-[5, 6)          7845    0.007776
-[6, 7)          5064    0.005019
+[2, 3)        619756    0.614296
+[3, 4)        357071    0.353925
+[4, 5)          9668    0.009583
+[5, 6)          9485    0.009401
+[6, 7)          7845    0.007776
+[7, 8)          5064    0.005019
 trx_to_features        : Encoder stat for "currency":
 codes | trx_count
              cnt    % of total
 currency                      
-[1, 2)    981731  9.730813e-01
-[2, 3)     11573  1.147103e-02
-[3, 4)      3808  3.774449e-03
-[4, 5)      1460  1.447136e-03
-[5, 6)       941  9.327091e-04
+[2, 3)    981731  9.730813e-01
+[3, 4)     11573  1.147103e-02
+[4, 5)      3808  3.774449e-03
+[5, 6)      1460  1.447136e-03
+[6, 7)       941  9.327091e-04
 ...          ...           ...
-[63, 64)       2  1.982379e-06
 [64, 65)       2  1.982379e-06
-[65, 66)       1  9.911893e-07
+[65, 66)       2  1.982379e-06
 [66, 67)       1  9.911893e-07
 [67, 68)       1  9.911893e-07
+[68, 69)       1  9.911893e-07
 
 [67 rows x 2 columns]
 trx_to_features        : Encoder stat for "trx_category":
 codes | trx_count
                  cnt  % of total
 trx_category                    
-[1, 2)        858574    0.851009
-[2, 3)         43086    0.042706
-[3, 4)         38414    0.038076
-[4, 5)         20428    0.020248
-[5, 6)         15196    0.015062
-[6, 7)         14117    0.013993
-[7, 8)         11210    0.011111
-[8, 9)          5433    0.005385
-[9, 10)         2358    0.002337
-[10, 11)          73    0.000072
+[2, 3)        858574    0.851009
+[3, 4)         43086    0.042706
+[4, 5)         38414    0.038076
+[5, 6)         20428    0.020248
+[6, 7)         15196    0.015062
+[7, 8)         14117    0.013993
+[8, 9)         11210    0.011111
+[9, 10)         5433    0.005385
+[10, 11)        2358    0.002337
+[11, 12)          73    0.000072
 trx_to_features        : Trx count per clients:
 len(trx_list) | client_count
              cnt  % of total
@@ -92,6 +92,6 @@ trx_to_features        : Prepared features for 10217 clients
 update_with_target     : Target updated for 10217 clients
 split_dataset          : Train size: 9717 clients
 split_dataset          : Test size: 500 clients
-save_features          : Saved to: "/mnt/data/kireev/pycharm_deploy/dltranz/experiments/scenario_rosbank/data/train_trx.parquet"
-save_features          : Saved to: "/mnt/data/kireev/pycharm_deploy/dltranz/experiments/scenario_rosbank/data/test_trx.parquet"
-run                    : Data collected in 41 sec (0:00:41.715559)
+save_features          : Saved to: "/mnt/dnurlybay/pytorch-lifestream/experiments/scenario_rosbank/data/train_trx.parquet"
+save_features          : Saved to: "/mnt/dnurlybay/pytorch-lifestream/experiments/scenario_rosbank/data/test_trx.parquet"
+run                    : Data collected in 31 sec (0:00:31.323834)

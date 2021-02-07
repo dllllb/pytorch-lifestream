@@ -158,6 +158,7 @@ class ClsDataModuleTrain(pl.LightningDataModule):
             shuffle=False if self._type == 'iterable' else True,
             num_workers=self.train_conf['num_workers'],
             batch_size=self.train_conf['batch_size'],
+            drop_last=self.train_conf.get('drop_last', False)
         )
 
     def setup_map(self):

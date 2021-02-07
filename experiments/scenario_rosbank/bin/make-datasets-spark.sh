@@ -22,7 +22,8 @@ spark-submit \
     --output_train_path "data/train_trx.parquet" \
     --output_test_path "data/test_trx.parquet" \
     --output_test_ids_path "data/test_ids.csv" \
-    --log_file "results/dataset_rosbank.log"
+    --log_file "results/dataset_rosbank.log" \
+    --print_dataset_info
 
 # 41 sec with    --print_dataset_info
 # 21 sec without --print_dataset_info
