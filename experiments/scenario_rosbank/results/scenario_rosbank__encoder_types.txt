@@ -1,40 +1,44 @@
 ------------------------------------------------------------------------------------------------------------------------
 Vector testing report
 Params:
-    conf: "conf/embeddings_validation_short_1612648619.hocon"
+    conf: "conf/embeddings_validation_short_1612786611.hocon"
 
-Collected 15 files with 0 errors
+Collected 20 files with 0 errors
 
 ------------------------------------------------------------------------------------------------------------------------
 Metric: "auroc"
-                                  scores_valid                                                                                                                                                                                             
-                                          mean  t_pm t_int_l t_int_h   std                           values t_f_stat t_f_alpha t_t_stat t_t_alpha t_delta t_delta_pm t_delta_l t_delta_h t_delta_pp t_delta_pm_pp t_delta_l_pp t_delta_h_pp
-model_name feature_name                                                                                                                                                                                                                    
-lgbm       emb_mles__encoder_gru         0.819 0.016   0.803   0.835 0.013  [0.835 0.802 0.824 0.811 0.822]    0.926     0.471   -0.373     0.360  -0.003      0.018    -0.021     0.015     -0.362         2.240       -2.602        1.878
-           emb_mles__encoder_lstm        0.824 0.011   0.814   0.835 0.009  [0.834 0.811 0.827 0.823 0.827]    2.113     0.757    0.406     0.652   0.003      0.015    -0.013     0.018      0.332         1.885       -1.553        2.218
-           mles_embeddings               0.822 0.015   0.806   0.837 0.012  [0.834 0.805 0.819 0.816 0.834]    1.000     0.500    0.000     0.500   0.000      0.018    -0.018     0.018      0.000         2.197       -2.197        2.197
-                                  scores_test                                                                                                                                                                                             
-                                         mean  t_pm t_int_l t_int_h   std                           values t_f_stat t_f_alpha t_t_stat t_t_alpha t_delta t_delta_pm t_delta_l t_delta_h t_delta_pp t_delta_pm_pp t_delta_l_pp t_delta_h_pp
-model_name feature_name                                                                                                                                                                                                                   
-lgbm       emb_mles__encoder_gru        0.836 0.004   0.832   0.840 0.003  [0.832 0.839 0.839 0.833 0.835]    3.087     0.850   -2.185     0.030  -0.007      0.007    -0.013     0.000     -0.778         0.821       -1.598        0.043
-           emb_mles__encoder_lstm       0.846 0.004   0.842   0.851 0.003  [0.842 0.846 0.850 0.850 0.845]    2.818     0.830    1.330     0.890   0.004      0.007    -0.003     0.011      0.479         0.830       -0.351        1.309
-           mles_embeddings              0.842 0.007   0.835   0.850 0.006  [0.833 0.847 0.847 0.844 0.841]    1.000     0.500    0.000     0.500   0.000      0.008    -0.008     0.008      0.000         1.008       -1.008        1.008
+                                    scores_valid                                                                                                                                                                                             
+                                            mean  t_pm t_int_l t_int_h   std                           values t_f_stat t_f_alpha t_t_stat t_t_alpha t_delta t_delta_pm t_delta_l t_delta_h t_delta_pp t_delta_pm_pp t_delta_l_pp t_delta_h_pp
+model_name feature_name                                                                                                                                                                                                                      
+lgbm       emb_mles__encoder_gru           0.819 0.016   0.803   0.835 0.013  [0.835 0.802 0.824 0.811 0.822]    0.926     0.471   -0.373     0.360  -0.003      0.018    -0.021     0.015     -0.362         2.240       -2.602        1.878
+           emb_mles__encoder_lstm          0.824 0.011   0.814   0.835 0.009  [0.834 0.811 0.827 0.823 0.827]    2.113     0.757    0.406     0.652   0.003      0.015    -0.013     0.018      0.332         1.885       -1.553        2.218
+           emb_mles__encoder_transf        0.783 0.010   0.773   0.793 0.008  [0.780 0.778 0.797 0.778 0.782]    2.471     0.799   -5.914     0.000  -0.039      0.015    -0.054    -0.024     -4.721         1.841       -6.563       -2.880
+           mles_embeddings                 0.822 0.015   0.806   0.837 0.012  [0.834 0.805 0.819 0.816 0.834]    1.000     0.500    0.000     0.500   0.000      0.018    -0.018     0.018      0.000         2.197       -2.197        2.197
+                                    scores_test                                                                                                                                                                                             
+                                           mean  t_pm t_int_l t_int_h   std                           values t_f_stat t_f_alpha t_t_stat t_t_alpha t_delta t_delta_pm t_delta_l t_delta_h t_delta_pp t_delta_pm_pp t_delta_l_pp t_delta_h_pp
+model_name feature_name                                                                                                                                                                                                                     
+lgbm       emb_mles__encoder_gru          0.836 0.004   0.832   0.840 0.003  [0.832 0.839 0.839 0.833 0.835]    3.087     0.850   -2.185     0.030  -0.007      0.007    -0.013     0.000     -0.778         0.821       -1.598        0.043
+           emb_mles__encoder_lstm         0.846 0.004   0.842   0.851 0.003  [0.842 0.846 0.850 0.850 0.845]    2.818     0.830    1.330     0.890   0.004      0.007    -0.003     0.011      0.479         0.830       -0.351        1.309
+           emb_mles__encoder_transf       0.788 0.003   0.784   0.791 0.003  [0.786 0.786 0.787 0.792 0.787]    5.218     0.931  -19.263     0.000  -0.055      0.007    -0.061    -0.048     -6.502         0.778       -7.281       -5.724
+           mles_embeddings                0.842 0.007   0.835   0.850 0.006  [0.833 0.847 0.847 0.844 0.841]    1.000     0.500    0.000     0.500   0.000      0.008    -0.008     0.008      0.000         1.008       -1.008        1.008
 
 ------------------------------------------------------------------------------------------------------------------------
 Metric: "accuracy"
-                                  scores_valid                                                                                                                                                                                             
-                                          mean  t_pm t_int_l t_int_h   std                           values t_f_stat t_f_alpha t_t_stat t_t_alpha t_delta t_delta_pm t_delta_l t_delta_h t_delta_pp t_delta_pm_pp t_delta_l_pp t_delta_h_pp
-model_name feature_name                                                                                                                                                                                                                    
-lgbm       emb_mles__encoder_gru         0.750 0.021   0.729   0.771 0.017  [0.770 0.728 0.763 0.742 0.747]    0.467     0.240    0.582     0.712   0.005      0.021    -0.016     0.026      0.716         2.836       -2.120        3.552
-           emb_mles__encoder_lstm        0.752 0.020   0.732   0.772 0.016  [0.769 0.738 0.744 0.740 0.770]    0.528     0.276    0.859     0.792   0.008      0.020    -0.013     0.028      1.015         2.723       -1.709        3.738
-           mles_embeddings               0.745 0.014   0.730   0.759 0.012  [0.756 0.736 0.742 0.732 0.758]    1.000     0.500    0.000     0.500   0.000      0.017    -0.017     0.017      0.000         2.264       -2.264        2.264
-                                  scores_test                                                                                                                                                                                             
-                                         mean  t_pm t_int_l t_int_h   std                           values t_f_stat t_f_alpha t_t_stat t_t_alpha t_delta t_delta_pm t_delta_l t_delta_h t_delta_pp t_delta_pm_pp t_delta_l_pp t_delta_h_pp
-model_name feature_name                                                                                                                                                                                                                   
-lgbm       emb_mles__encoder_gru        0.759 0.006   0.753   0.765 0.005  [0.756 0.754 0.766 0.758 0.762]    2.414     0.793    2.312     0.975   0.009      0.009     0.000     0.018      1.227         1.224        0.003        2.450
-           emb_mles__encoder_lstm       0.762 0.007   0.755   0.770 0.006  [0.762 0.754 0.764 0.770 0.762]    1.707     0.691    2.942     0.991   0.012      0.010     0.003     0.022      1.653         1.296        0.358        2.949
-           mles_embeddings              0.750 0.009   0.741   0.759 0.007  [0.740 0.752 0.760 0.752 0.746]    1.000     0.500    0.000     0.500   0.000      0.011    -0.011     0.011      0.000         1.455       -1.455        1.455
+                                    scores_valid                                                                                                                                                                                             
+                                            mean  t_pm t_int_l t_int_h   std                           values t_f_stat t_f_alpha t_t_stat t_t_alpha t_delta t_delta_pm t_delta_l t_delta_h t_delta_pp t_delta_pm_pp t_delta_l_pp t_delta_h_pp
+model_name feature_name                                                                                                                                                                                                                      
+lgbm       emb_mles__encoder_gru           0.750 0.021   0.729   0.771 0.017  [0.770 0.728 0.763 0.742 0.747]    0.467     0.240    0.582     0.712   0.005      0.021    -0.016     0.026      0.716         2.836       -2.120        3.552
+           emb_mles__encoder_lstm          0.752 0.020   0.732   0.772 0.016  [0.769 0.738 0.744 0.740 0.770]    0.528     0.276    0.859     0.792   0.008      0.020    -0.013     0.028      1.015         2.723       -1.709        3.738
+           emb_mles__encoder_transf        0.715 0.010   0.704   0.725 0.008  [0.721 0.708 0.726 0.712 0.707]    1.925     0.729   -4.709     0.001  -0.030      0.015    -0.045    -0.015     -4.029         1.973       -6.002       -2.056
+           mles_embeddings                 0.745 0.014   0.730   0.759 0.012  [0.756 0.736 0.742 0.732 0.758]    1.000     0.500    0.000     0.500   0.000      0.017    -0.017     0.017      0.000         2.264       -2.264        2.264
+                                    scores_test                                                                                                                                                                                             
+                                           mean  t_pm t_int_l t_int_h   std                           values t_f_stat t_f_alpha t_t_stat t_t_alpha t_delta t_delta_pm t_delta_l t_delta_h t_delta_pp t_delta_pm_pp t_delta_l_pp t_delta_h_pp
+model_name feature_name                                                                                                                                                                                                                     
+lgbm       emb_mles__encoder_gru          0.759 0.006   0.753   0.765 0.005  [0.756 0.754 0.766 0.758 0.762]    2.414     0.793    2.312     0.975   0.009      0.009     0.000     0.018      1.227         1.224        0.003        2.450
+           emb_mles__encoder_lstm         0.762 0.007   0.755   0.770 0.006  [0.762 0.754 0.764 0.770 0.762]    1.707     0.691    2.942     0.991   0.012      0.010     0.003     0.022      1.653         1.296        0.358        2.949
+           emb_mles__encoder_transf       0.727 0.012   0.715   0.739 0.010  [0.720 0.724 0.716 0.738 0.736]    0.588     0.310   -4.219     0.001  -0.023      0.013    -0.036    -0.011     -3.093         1.691       -4.784       -1.403
+           mles_embeddings                0.750 0.009   0.741   0.759 0.007  [0.740 0.752 0.760 0.752 0.746]    1.000     0.500    0.000     0.500   0.000      0.011    -0.011     0.011      0.000         1.455       -1.455        1.455
 
 ------------------------------------------------------------------------------------------------------------------------
-End of report.     Current time: 2021-02-06 21:57:01
+End of report.     Current time: 2021-02-08 12:16:58
 ------------------------------------------------------------------------------------------------------------------------
