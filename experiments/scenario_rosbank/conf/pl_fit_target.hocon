@@ -1,0 +1,111 @@
+{
+  data_module: {
+    type: map
+
+    setup: {
+      dataset_files: {
+        train_data_path: "data/train_trx.parquet"
+        test_data_path: "data/test_trx.parquet"
+      }
+      col_id: cl_id
+      col_id_dtype: int
+      col_target: target_flag
+
+      split_by: embeddings_validation
+      fold_info: "conf/embeddings_validation.work/folds/folds.json"
+    }
+
+    train: {
+        min_seq_len: 0
+        augmentations: [
+            [RandomSlice, {min_len: 250, max_len: 350, rate_for_min: 0.9}]
+            [DropoutTrx, {trx_dropout: 0.01}]
+            [SeqLenLimit, {max_seq_len: 1200}]
+        ]
+        num_workers: 16
+        batch_size: 32
+    }
+
+    valid: {
+        augmentations: [
+            [SeqLenLimit, {max_seq_len: 1200}]
+        ]
+        num_workers: 8
+        batch_size: 512
+    }
+  }
+
+  embedding_validation_results: {
+    model_name: nn
+    feature_name: target_scores
+    output_path: "results/fit_target_results.json"
+  }
+
+  seed_everything: 42
+  
+  trainer: {
+    gpus: 1
+    auto_select_gpus: false
+
+    max_epochs: 10
+
+    checkpoint_callback: false
+    deterministic: true
+  }
+
+  logger_name: target_scores
+
+  params: {
+    score_metric: auroc
+
+    encoder_type: rnn
+    rnn: {
+      hidden_size: 48
+      type: gru
+      bidir: false
+      trainable_starter: static
+    }
+
+    trx_encoder: {
+      use_batch_norm_with_lens: true
+      norm_embeddings: false
+      embeddings_noise: 0.0003
+      embeddings: {
+        mcc: {in: 100, out: 24}
+        channel_type: {in: 4, out: 4}
+        currency: {in: 4, out: 4}
+        trx_category: {in: 10, out: 4}
+      }
+      numeric_values: {
+        amount: identity
+      }
+    }
+    
+    head: {
+      pred_all_states: false
+      pred_all_states_mean: false
+      explicit_lengths: false
+      norm_input: false
+      use_batch_norm: true
+    }
+
+    lr_scheduler: {
+      step_size: 3
+      step_gamma: 0.25
+    }
+
+    head_layers: [
+      [BatchNorm1d, {num_features: "{seq_encoder.embedding_size}"}]
+      [Linear, {"in_features": "{seq_encoder.embedding_size}", "out_features": 1}]
+      [Sigmoid, {}]
+      [Squeeze, {}]
+    ]
+
+    train: {
+      random_neg: false
+      loss: bce
+      lr: 0.006
+      weight_decay: 0.0
+    }
+  }
+}
