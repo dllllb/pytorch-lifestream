@@ -5,21 +5,20 @@ from dltranz.data_load import IterableProcessingDataset
 
 
 class TakeFirstTrx(IterableProcessingDataset):
-    def __init__(self, num=None, denom=None, seq_len_col=None, sequence_col=None):
+    def __init__(self, take_first_fraction=0.5, seq_len_col=None, sequence_col=None):
         """
         Args:
-            num & denom:  parameters to control fraction of transactions
-                          chosen to create target distribution
-                          EXAMPLE: num=1, denom=4 -> the last 1/4 of the data
-                                   will be chosen as target distribution
+            take_first_fraction: control the fraction of transactions to keep
+                                 EXAMPLE: take_first_fraction=0.75 -> the last 0.25 of all user
+                                          transactions will be chosen as user target distribution
+                                          and therefore will be cutted off
             seq_len_col:  field where sequence length stored, if None, `target_col` used
             sequence_col: field for sequence length detection, if None, any
                           iterable field will be used
         """
         super().__init__()
 
-        self._num = num
-        self._denom = denom
+        self._take_first_fraction = take_first_fraction
         self._sequence_col = sequence_col
         self._seq_len_col = seq_len_col
 
@@ -27,7 +26,7 @@ class TakeFirstTrx(IterableProcessingDataset):
         for rec in self._src:
             features = rec[0] if type(rec) is tuple else rec
             seq_len = self.get_len(features)
-            take_first_n = seq_len // self._denom * self._num
+            take_first_n = int(seq_len * self._take_first_fraction)
             for key, val in features.items():
                 if type(val) in (list, np.ndarray, torch.Tensor):
                     features[key] = val[:take_first_n]

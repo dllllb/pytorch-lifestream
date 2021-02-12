@@ -8,8 +8,8 @@ def transform(x):
 def transform_inv(x):
     return np.sign(x) * (np.exp(np.abs(x)) - 1)
 
-def create_new_targets_on_gender_train_csv(file_name_in, filename_out, TR_AMOUNTS_COL = 1,
-                                           TR_TYPES_COL = 4, top_THR = 15, NUM = 1, DENOM = 2):
+def create_new_targets_on_gender_train_csv(file_name_in, filename_out, TR_AMOUNTS_COL=1,
+                                           TR_TYPES_COL=4, top_THR=15, take_first_fraction=0.5):
     '''
     This function changes target to spending/income distribution and write it to `filename_out`.
 
@@ -19,10 +19,10 @@ def create_new_targets_on_gender_train_csv(file_name_in, filename_out, TR_AMOUNT
     TR_TYPES_COL : column index with types of transactions
     top_THR : number of the most valuable transactions chosen to create classes for target,
               total number of classes equal to `top_THR` + 1 (the last class for others)
-    NUM & DENOM : parameters to control fraction of transactions chosen to create
-                  target distribution
-                  EXAMPLE: num=1, denom=4 -> the last 1/4 of the data
-                           will be chosen as target distribution
+    take_first_fraction: control the fraction of transactions to keep
+                         EXAMPLE: take_first_fraction=0.75 -> the last 0.25 of all user
+                                  transactions will be chosen as user target distribution
+                                  and therefore will be cutted off
 
     '''
 
@@ -65,7 +65,7 @@ def create_new_targets_on_gender_train_csv(file_name_in, filename_out, TR_AMOUNT
     pos_distribution = [[] for _ in range(len(df))]
 
     for i in range(len(df)):
-        thr_target_ix = len(np_data[i][TR_TYPES_COL]) * NUM // DENOM
+        thr_target_ix = int(len(np_data[i][TR_TYPES_COL]) * take_first_fraction)
 
         tr_type_target = np_data[i][TR_TYPES_COL][thr_target_ix:]
         amount_target = transform_inv(np_data[i][TR_AMOUNTS_COL][thr_target_ix:])
