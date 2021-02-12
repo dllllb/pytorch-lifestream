@@ -7,12 +7,14 @@ from dltranz.data_load import IterableProcessingDataset
 class TakeFirstTrx(IterableProcessingDataset):
     def __init__(self, num=None, denom=None, seq_len_col=None, sequence_col=None):
         """
-        
         Args:
-            min_seq_len: if set than drop sequences shorter than `min_seq_len`
-            max_seq_len: if set than drop sequences longer than `max_seq_len`
-            seq_len_col: field where sequence length stored, if None, `target_col` used
-            sequence_col: field for sequence length detection, if None, any iterable field will be used
+            num & denom:  parameters to control fraction of transactions
+                          chosen to create target distribution
+                          EXAMPLE: num=1, denom=4 -> the last 1/4 of the data
+                                   will be chosen as target distribution
+            seq_len_col:  field where sequence length stored, if None, `target_col` used
+            sequence_col: field for sequence length detection, if None, any
+                          iterable field will be used
         """
         super().__init__()
 

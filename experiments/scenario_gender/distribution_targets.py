@@ -21,6 +21,8 @@ def create_new_targets_on_gender_train_csv(file_name_in, filename_out, TR_AMOUNT
               total number of classes equal to `top_THR` + 1 (the last class for others)
     NUM & DENOM : parameters to control fraction of transactions chosen to create
                   target distribution
+                  EXAMPLE: num=1, denom=4 -> the last 1/4 of the data
+                           will be chosen as target distribution
 
     '''
 
