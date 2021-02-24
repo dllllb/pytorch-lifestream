@@ -36,7 +36,6 @@ class InferenceSpark(object):
             F.collect_list(self.col_id).alias(self.col_id),
             F.struct([F.collect_list(F.col(name)).alias(name) for name in columns]).alias("feature_arrays"),
             F.collect_list("trx_count").alias("trx_count"))\
-        .repartition(1)\
         .write.format("parquet").mode("overwrite")\
         .save(f"{self.work_path}/data/tmp_batch_train")
 
@@ -98,7 +97,6 @@ class InferenceSpark(object):
                 F.col("trx_count")
             ).alias("inf_res")
         )\
-        .repartition(1)\
         .write.format("parquet").mode("overwrite")\
         .save(f"{self.work_path}/data/tmp_res_emb")
 
@@ -111,7 +109,6 @@ class InferenceSpark(object):
         .withColumn("cols_explode",F.explode("cols_zip"))\
         .select(F.col("cols_explode")[self.col_id].alias(self.col_id),
             *[F.col("cols_explode")["inf_res"][i].alias(f"v{i}") for i in range(self.hidden_size)])\
-        .repartition(1)\
         .write.format("parquet").mode("overwrite")\
         .save(f"{self.work_path}/{self.output_path}")
 
@@ -124,7 +121,9 @@ def main(args=None):
     spark = SparkSession.builder\
         .appName("spark_inference")\
         .master(f"local[{conf.inference_dataloader.loader.num_workers}]")\
-        .config("spark.sql.shuffle.partitions",50)\
+        .config("spark.sql.shuffle.partitions",100)\
+        .config("spark.driver.memory",conf['spark_memory'])\
+        .config("spark.local.dir",f"{conf.work_path}/spark_local_dir")\
         .enableHiveSupport()\
         .getOrCreate()
 
