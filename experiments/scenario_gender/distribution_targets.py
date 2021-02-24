@@ -9,7 +9,7 @@ def transform_inv(x):
     return np.sign(x) * (np.exp(np.abs(x)) - 1)
 
 def create_new_targets_on_gender_train_csv(file_name_in, filename_out, TR_AMOUNTS_COL=1,
-                                           TR_TYPES_COL=4, top_THR=15, take_first_fraction=0.5):
+                                           TR_TYPES_COL=4, top_THR=6, take_first_fraction=0.5):
     '''
     This function changes target to spending/income distribution and write it to `filename_out`.
 
