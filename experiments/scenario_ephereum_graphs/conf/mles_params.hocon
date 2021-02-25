@@ -1,0 +1,121 @@
+{
+  data_module: {
+    type: iterable
+    setup: {
+      col_id: node_id
+      dataset_files: {
+        data_path: "/mnt/ildar/tmp_trans_collect_v2.parquet"
+      }
+      split_by: files
+      valid_size: 0.01
+      valid_split_seed: 42
+    }
+    train: {
+      augmentations: [
+        [DropoutTrx, {trx_dropout: 0.01}]
+      ]
+      min_seq_len: 25
+      split_strategy: {
+        split_strategy: "SampleSlices"
+        split_count: 5
+        cnt_min: 5
+        cnt_max: 10
+      }
+      trx_dropout: 0.01
+      num_workers: 8
+      batch_size: 640
+      buffer_size: 100000
+    }
+    valid: {
+      augmentations: []
+      split_strategy: {
+        split_strategy: SampleSlices
+        split_count: 5
+        cnt_min: 5
+        cnt_max: 10
+      }
+      num_workers: 16
+      batch_size: 1024
+    }
+  }
+
+  seed_everything: 42
+  trainer: {
+    gpus: 1
+    auto_select_gpus: false
+
+    max_epochs: 150
+    val_check_interval: 1000
+    checkpoint_callback: false
+    deterministic: True
+  }
+  logger_name: mles_model
+
+  params: {
+    data_module_class: dltranz.data_load.data_module.coles_data_module.ColesDataModuleTrain
+    pl_module_class: dltranz.lightning_modules.coles_module.CoLESModule
+
+    validation_metric_params: {
+        K: 4
+        metric: cosine
+    }
+
+    encoder_type: rnn,
+    trx_encoder: {
+      norm_embeddings: false,
+      embeddings_noise: 0.003,
+      embeddings: {
+        dt_event_weekday: {in: 9, out: 2},
+        dt_event_hour: {in: 26, out: 2},
+        dir: {in: 4, out: 2}
+      },
+      numeric_values: {
+        value: identity,
+        gas: identity,
+        gas_price: identity
+      }
+    },
+    rnn: {
+      type: gru,
+      hidden_size: 256,
+      bidir: false,
+      trainable_starter: static
+    },
+    head_layers: [
+        [NormEncoder, {}],
+    ]
+
+    lr_scheduler: {
+      step_size: 1,
+      step_gamma: 0.9025
+    },
+    train: {
+      sampling_strategy: HardNegativePair,
+      neg_count: 5,
+      loss: ContrastiveLoss,
+      margin: 0.5,
+      lr: 0.002,
+      weight_decay: 0.0
+    }
+  },
+
+  model_path: "models/mles_model.p"
+
+  inference_dataloader: {
+    col_id: node_id
+    dataset_files: [
+      "tmp_trans_collect_v2.parquet"
+    ]
+    SeqLenLimit: {max_seq_len: 1600}
+    loader: {
+      num_workers: 4
+      batch_size: 500
+    }
+  }
+
+  output: {
+    path: "data/mles_embeddings"
+    format: parquet
+  }
+
+}

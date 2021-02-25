@@ -1,0 +1,37 @@
+{
+  data_module: {
+    type: iterable
+    setup: {
+      col_id: node_id
+      dataset_files: {
+        data_path: "/mnt/ildar/tmp_trans_collect_all.parquet"
+      }
+      split_by: files
+      valid_size: 0.05
+      valid_split_seed: 42
+    }
+    train: {
+      min_seq_len: 25
+      split_strategy: {
+        split_strategy: "SampleSlices"
+        split_count: 5
+        cnt_min: 15
+        cnt_max: 75
+      }
+      trx_dropout: 0.01
+      num_workers: 8
+      batch_size: 640
+      buffer_size: 1000
+    }
+    valid: {
+      split_strategy: {
+        split_strategy: SampleSlices
+        split_count: 5
+        cnt_min: 25
+        cnt_max: 100
+      }
+      num_workers: 16
+      batch_size: 5120
+    }
+  }
+}
