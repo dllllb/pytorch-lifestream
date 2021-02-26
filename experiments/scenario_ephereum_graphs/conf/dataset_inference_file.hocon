@@ -1,0 +1,13 @@
+{
+  inference_dataloader: {
+    col_id: node_id
+    dataset_files: [
+      "tmp_trans_collect_v2.parquet"
+    ]
+    SeqLenLimit: {max_seq_len: 1600}
+    loader: {
+      num_workers: 4
+      batch_size: 1000
+    }
+  }
+}
