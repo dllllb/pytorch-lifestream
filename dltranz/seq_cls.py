@@ -120,7 +120,7 @@ class SequenceClassify(pl.LightningModule):
             params_score_metric = [params_score_metric]
         metric_cls = [(name, d_metrics[name]) for name in params_score_metric]
 
-        if not params.get('distribution_targets_task'):
+        if not dict(params).get('distribution_targets_task'):
              self.valid_metrics = torch.nn.ModuleDict([(name, mc()) for name, mc in metric_cls])
              self.test_metrics = torch.nn.ModuleDict([(name, mc()) for name, mc in metric_cls])
         else:

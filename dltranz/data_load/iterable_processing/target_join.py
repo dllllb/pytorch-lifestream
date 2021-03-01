@@ -4,7 +4,7 @@ import ast
 
 
 class TargetJoin(IterableProcessingDataset):
-    def __init__(self, id_col, target_values, distribution_targets_task):
+    def __init__(self, id_col, target_values, distribution_targets_task=False):
         """Extract value from `target_values` by id_col and mention it as `y`
 
         for x, * in seq:

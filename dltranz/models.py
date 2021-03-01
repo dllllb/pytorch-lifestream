@@ -142,7 +142,7 @@ class DistributionTargetsHead(torch.nn.Module):
 
 
 def create_head_layers(params, seq_encoder):
-    if not params.get('distribution_targets_task'):
+    if not dict(params).get('distribution_targets_task'):
         from torch.nn import Linear, BatchNorm1d, ReLU, Sigmoid, LogSoftmax
         from dltranz.custom_layers import Squeeze
         from dltranz.seq_encoder.utils import NormEncoder

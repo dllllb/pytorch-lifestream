@@ -1,7 +1,5 @@
 {
   data_module: {
-    distribution_targets_task : False
-
     type: map
 
     setup: {
@@ -55,8 +53,6 @@
   logger_name: target_scores
 
   params: {
-    distribution_targets_task : False
-
     score_metric: [auroc, accuracy]
 
     encoder_type: rnn,

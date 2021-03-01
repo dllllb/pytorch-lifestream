@@ -29,7 +29,7 @@ class ClsDataModuleTrain(pl.LightningDataModule):
         self._type = conf['type']
         assert self._type in ('map', 'iterable')
 
-        self.distribution_targets_task = conf['distribution_targets_task']
+        self.distribution_targets_task = dict(conf).get('distribution_targets_task')
         self.setup_conf = conf['setup']
         self.train_conf = conf['train']
         self.valid_conf = conf['valid']
