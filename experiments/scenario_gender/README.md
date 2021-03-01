@@ -118,3 +118,26 @@ python ../../pl_fit_target.py \
     --conf conf/pl_fit_target.hocon
 
 ```
+
+# Distribution targets scenario
+
+```sh
+cd experiments/scenario_gender
+export SC_DEVICE="cuda"        # define here one gpu device number
+export CUDA_VISIBLE_DEVICES=0  # define here one gpu device number
+
+[ -d data/ ] && rm -r data/
+[ -d conf/embeddings_validation.work/ ] && rm -r conf/embeddings_validation.work/
+[ -d lightning_logs/ ] && rm -r lightning_logs/
+
+bin/get-data.sh
+python distribution_target.py
+bin/make-datasets-distribution-target-spark.sh
+
+python -m embeddings_validation \
+    --conf conf/embeddings_validation_distribution_target.hocon --workers 10 --total_cpu_count 20 \
+    --split_only
+
+python ../../pl_fit_target.py --conf conf/pl_fit_distribution_target.hocon
+
+```

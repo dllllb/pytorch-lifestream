@@ -110,17 +110,51 @@ def freeze_layers(model):
         p.requires_grad = False
 
 
+class DistributionTargetsHead(torch.nn.Module):
+    def __init__(self, seq_encoder, in_size=48, num_distr_classes=6):
+        super().__init__()
+        self.dense1 = torch.nn.Linear(seq_encoder.embedding_size, 512)
+
+        self.dense2_distributions = torch.nn.Linear(512, 128)
+        self.dense2_sums = torch.nn.Linear(512, 64)
+
+        self.dense3_distr_neg = torch.nn.Linear(128, num_distr_classes)
+        self.dense3_distr_pos = torch.nn.Linear(128, num_distr_classes)
+
+        self.dense3_sums_neg = torch.nn.Linear(64, 1)
+        self.dense3_sums_pos = torch.nn.Linear(64, 1)
+
+        self.relu = torch.nn.ReLU()
+
+    def forward(self, x):
+        out1 = self.relu(self.dense1(x))
+
+        out2_distr = self.relu(self.dense2_distributions(out1))
+        out2_sums = self.relu(self.dense2_sums(out1))
+
+        out3_distr_neg = self.dense3_distr_neg(out2_distr)
+        out3_distr_pos = self.dense3_distr_pos(out2_distr)
+
+        out3_sums_neg = self.dense3_sums_neg(out2_sums)
+        out3_sums_pos = self.dense3_sums_pos(out2_sums)
+
+        return out3_sums_neg, out3_distr_neg, out3_sums_pos, out3_distr_pos
+
+
 def create_head_layers(params, seq_encoder):
-    from torch.nn import Linear, BatchNorm1d, ReLU, Sigmoid, LogSoftmax
-    from dltranz.custom_layers import Squeeze
-    from dltranz.seq_encoder.utils import NormEncoder
+    if not params.get('distribution_targets_task'):
+        from torch.nn import Linear, BatchNorm1d, ReLU, Sigmoid, LogSoftmax
+        from dltranz.custom_layers import Squeeze
+        from dltranz.seq_encoder.utils import NormEncoder
 
-    layers = []
-    _locals = locals()
-    for l_name, l_params in params['head_layers']:
-        l_params = {k: int(v.format(**_locals)) if type(v) is str else v
-                    for k, v in l_params.items()}
+        layers = []
+        _locals = locals()
+        for l_name, l_params in params['head_layers']:
+            l_params = {k: int(v.format(**_locals)) if type(v) is str else v
+                        for k, v in l_params.items()}
 
-        cls = _locals.get(l_name, None)
-        layers.append(cls(**l_params))
-    return torch.nn.Sequential(*layers)
+            cls = _locals.get(l_name, None)
+            layers.append(cls(**l_params))
+        return torch.nn.Sequential(*layers)
+    else:
+        return DistributionTargetsHead(seq_encoder)

@@ -1,6 +1,8 @@
 {
+  include "dataset_inference_file.hocon"
+
   data_module: {
-    distribution_targets_task : False
+    distribution_targets_task : True
 
     type: map
 
@@ -25,6 +27,7 @@
         ]
         num_workers: 16
         batch_size: 32
+        take_first_fraction: 0.5
     }
 
     valid: {
@@ -33,6 +36,14 @@
         ]
         num_workers: 8
         batch_size: 64   # 512
+        take_first_fraction: 0.5
+    }
+
+    test: {
+        augmentations: []
+        num_workers: 8
+        batch_size: 64
+        take_first_fraction: 0.5
     }
   }
 
@@ -55,7 +66,7 @@
   logger_name: target_scores
 
   params: {
-    distribution_targets_task : False
+    distribution_targets_task : True
 
     score_metric: [auroc, accuracy]
 
@@ -70,6 +81,8 @@
       numeric_values: {
         amount: identity
       }
+      was_logified: true
+      log_scale_factor: 1
     },
     rnn: {
       hidden_size: 48,
@@ -87,7 +100,7 @@
 
     train: {
       random_neg: false,
-      loss: bce,
+      loss: distribution_targets,
       lr: 0.005,
       weight_decay: 0.0,
     },

@@ -1,7 +1,25 @@
 import torch
 from torch import nn
+import numpy as np
 
 from dltranz.trx_encoder import PaddedBatch
+
+
+def cross_entropy(pred, soft_targets):
+    logsoftmax = torch.nn.LogSoftmax()
+    return torch.mean(torch.sum(-soft_targets * logsoftmax(pred), 1))
+
+
+def mse_loss(pred, actual):
+    return torch.mean((pred - actual)**2)
+
+
+def mape_metric(pred, actual):
+    eps = 1
+    return torch.mean((actual - pred).abs() / (actual.abs() + eps))
+
+def r_squared(pred, actual):
+    return 1 - torch.sum((actual - pred)**2) / torch.sum((actual - torch.mean(actual))**2)
 
 
 class PairwiseMarginRankingLoss(nn.Module):
@@ -153,6 +171,31 @@ class UnsupervisedTabNetLoss(nn.Module):
         return loss
 
 
+class DistributionTargetsLoss(nn.Module):
+    def __init__(self):
+        super().__init__()
+
+    def forward(self, pred, true):
+        log_minus_sum = np.log(np.abs(true[:, 0].astype(np.float)) + 1)[:, None]
+        minus_distribution = np.array(true[:, 1].tolist())
+        log_plus_sum = np.log(np.abs(true[:, 2].astype(np.float)) + 1)[:, None]
+        plus_distribution = np.array(true[:, 3].tolist())
+
+        log_minus_sum_hat = pred[0]
+        minus_distribution_hat = pred[1]
+        log_plus_sum_hat = pred[2]
+        plus_distribution_hat = pred[3]
+
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        loss_minus_sum = mse_loss(log_minus_sum_hat, torch.tensor(log_minus_sum, device=device).float())
+        loss_plus_sum = mse_loss(log_plus_sum_hat, torch.tensor(log_plus_sum, device=device).float())
+        loss_minus_distr = cross_entropy(minus_distribution_hat, torch.tensor(minus_distribution, device=device))
+        loss_plus_distr = cross_entropy(plus_distribution_hat, torch.tensor(plus_distribution, device=device))
+
+        loss = loss_minus_distr + loss_plus_distr + loss_minus_sum * 3 + loss_plus_sum / 6
+        return loss.float()
+
+
 def get_loss(params):
     loss_type = params['train.loss']
 
@@ -179,6 +222,8 @@ def get_loss(params):
             pl_threshold=params['pl_threshold'],
             unlabeled_weight=params['unlabeled_weight']
         )
+    elif loss_type == 'distribution_targets':
+        loss = DistributionTargetsLoss()
     else:
         raise Exception(f'unknown loss type: {loss_type}')
 

@@ -8,8 +8,8 @@ def transform(x):
 def transform_inv(x):
     return np.sign(x) * (np.exp(np.abs(x)) - 1)
 
-def create_new_targets_on_gender_train_csv(file_name_in, filename_out, TR_AMOUNTS_COL=1,
-                                           TR_TYPES_COL=4, top_THR=15, take_first_fraction=0.5):
+def create_new_targets_on_gender_train_csv(file_name_in, filename_out, TR_AMOUNTS_COL=2,
+                                           TR_TYPES_COL=1, top_THR=5, take_first_fraction=0.5):
     '''
     This function changes target to spending/income distribution and write it to `filename_out`.
 
@@ -26,15 +26,19 @@ def create_new_targets_on_gender_train_csv(file_name_in, filename_out, TR_AMOUNT
 
     '''
 
-    table = pq.read_table(file_name_in)
-    df = table.to_pandas()
+    df = pd.read_csv('data/transactions.csv')
+    grouped = df.groupby('customer_id')
+    res = {}
+    res['tr_type'] = grouped['tr_type'].apply(list)
+    res['amount'] = grouped['amount'].apply(list)
+    df = pd.concat(res, axis = 1).reset_index()
     np_data = df.to_numpy()
 
 
     tr_amounts_by_value = {}
     for i in range(len(df)):
         tr_types_ = np_data[i][TR_TYPES_COL]
-        tr_amounts_ = transform_inv(np_data[i][TR_AMOUNTS_COL])
+        tr_amounts_ = np_data[i][TR_AMOUNTS_COL]
         for ix_, j in enumerate(tr_types_):
             if j in tr_amounts_by_value:
                 tr_amounts_by_value[j] += tr_amounts_[ix_]
@@ -68,7 +72,7 @@ def create_new_targets_on_gender_train_csv(file_name_in, filename_out, TR_AMOUNT
         thr_target_ix = int(len(np_data[i][TR_TYPES_COL]) * take_first_fraction)
 
         tr_type_target = np_data[i][TR_TYPES_COL][thr_target_ix:]
-        amount_target = transform_inv(np_data[i][TR_AMOUNTS_COL][thr_target_ix:])
+        amount_target = np_data[i][TR_AMOUNTS_COL][thr_target_ix:]
 
         neg_tr_amounts_target = {}
         others_neg_tr_amounts_target = 0
@@ -127,5 +131,5 @@ def create_new_targets_on_gender_train_csv(file_name_in, filename_out, TR_AMOUNT
 
 
 if __name__ == '__main__':
-    create_new_targets_on_gender_train_csv('data/train_trx.parquet',
+    create_new_targets_on_gender_train_csv('data/transactions.csv',
                                            'data/gender_train_distribution_target.csv')

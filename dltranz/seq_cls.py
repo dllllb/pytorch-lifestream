@@ -3,14 +3,22 @@ from copy import deepcopy
 
 import pytorch_lightning as pl
 import torch
+import numpy as np
 from pytorch_lightning.metrics.functional.classification import auroc
 
-from dltranz.loss import get_loss
+from dltranz.loss import get_loss, cross_entropy, mape_metric, mse_loss, r_squared
 from dltranz.seq_encoder import create_encoder
 from dltranz.train import get_optimizer, get_lr_scheduler
 from dltranz.models import create_head_layers
 
 logger = logging.getLogger(__name__)
+
+
+# columns indexes for distribution targets task:
+COLUMNS_IX = {'neg_sum': 0,
+              'neg_distribution': 1, 
+              'pos_sum': 2, 
+              'pos_distribution': 3}
 
 
 class EpochAuroc(pl.metrics.Metric):
@@ -28,6 +36,63 @@ class EpochAuroc(pl.metrics.Metric):
         y_hat = torch.cat(self.y_hat)
         y = torch.cat(self.y)
         return auroc(y_hat, y)
+
+
+class DistributionTargets(pl.metrics.Metric):
+    def __init__(self, col_ix):
+        super().__init__(compute_on_step=False)
+
+        self.add_state('y_hat', default=[])
+        self.add_state('y', default=[])
+        self.col_ix = col_ix
+        self.sign = -1 if self.col_ix == COLUMNS_IX['neg_sum'] else 1
+
+    def update(self, y_hat, y):
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        y = torch.tensor(np.array(y[:, self.col_ix].tolist()), device=device)
+        y_hat = y_hat[self.col_ix]
+        self.y_hat.append(y_hat)
+        self.y.append(y)
+
+
+class CrossEntropy(DistributionTargets):
+    def __init__(self, col_ix):
+        super().__init__(col_ix)
+
+    def compute(self):
+        y_hat = torch.cat(self.y_hat)
+        y = torch.cat(self.y)
+        return cross_entropy(y_hat, y)
+
+
+class MSE(DistributionTargets):
+    def __init__(self, col_ix):
+        super().__init__(col_ix)
+
+    def compute(self):
+        y_hat = torch.cat(self.y_hat)
+        y = torch.cat(self.y)
+        return mse_loss(y_hat, torch.log(self.sign * y[:, None] + 1))
+
+
+class MAPE(DistributionTargets):
+    def __init__(self, col_ix):
+        super().__init__(col_ix)
+
+    def compute(self):
+        y_hat = torch.cat(self.y_hat)
+        y = torch.cat(self.y)
+        return mape_metric(self.sign * torch.exp(y_hat - 1), y[:, None])
+
+
+class R_squared(DistributionTargets):
+    def __init__(self, col_ix):
+        super().__init__(col_ix)
+
+    def compute(self):
+        y_hat = torch.cat(self.y_hat)
+        y = torch.cat(self.y)
+        return r_squared(self.sign * torch.exp(y_hat - 1), y[:, None])
 
 
 class SequenceClassify(pl.LightningModule):
@@ -48,14 +113,27 @@ class SequenceClassify(pl.LightningModule):
         # metrics
         d_metrics = {
             'auroc': EpochAuroc,
-            'accuracy': pl.metrics.Accuracy,
+            'accuracy': pl.metrics.Accuracy
         }
         params_score_metric = params['score_metric']
         if type(params_score_metric) is str:
             params_score_metric = [params_score_metric]
         metric_cls = [(name, d_metrics[name]) for name in params_score_metric]
-        self.valid_metrics = torch.nn.ModuleDict([(name, mc()) for name, mc in metric_cls])
-        self.test_metrics = torch.nn.ModuleDict([(name, mc()) for name, mc in metric_cls])
+
+        if not params.get('distribution_targets_task'):
+             self.valid_metrics = torch.nn.ModuleDict([(name, mc()) for name, mc in metric_cls])
+             self.test_metrics = torch.nn.ModuleDict([(name, mc()) for name, mc in metric_cls])
+        else:
+            self.valid_metrics = torch.nn.ModuleDict([('R2n', R_squared(COLUMNS_IX['neg_sum'])),
+                                                      ('MSEn', MSE(COLUMNS_IX['neg_sum'])),
+                                                      ('MAPEn', MAPE(COLUMNS_IX['neg_sum'])),
+                                                      ('R2p', R_squared(COLUMNS_IX['pos_sum'])),
+                                                      ('MSEp', MSE(COLUMNS_IX['pos_sum'])),
+                                                      ('MAPEp', MAPE(COLUMNS_IX['pos_sum'])),
+                                                      ('CEn', CrossEntropy(COLUMNS_IX['neg_distribution'])),
+                                                      ('CEp', CrossEntropy(COLUMNS_IX['pos_distribution']))])
+            self.test_metrics = self.valid_metrics
+
 
     @property
     def seq_encoder(self):
@@ -82,7 +160,7 @@ class SequenceClassify(pl.LightningModule):
 
     def validation_epoch_end(self, outputs):
         for name, mf in self.valid_metrics.items():
-            self.log(f'valid_{name}', mf.compute(), prog_bar=True)
+            self.log(f'val_{name}', mf.compute(), prog_bar=True)
 
     def test_step(self, batch, _):
         x, y = batch

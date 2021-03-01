@@ -29,6 +29,7 @@ class ClsDataModuleTrain(pl.LightningDataModule):
         self._type = conf['type']
         assert self._type in ('map', 'iterable')
 
+        self.distribution_targets_task = conf['distribution_targets_task']
         self.setup_conf = conf['setup']
         self.train_conf = conf['train']
         self.valid_conf = conf['valid']
@@ -125,11 +126,11 @@ class ClsDataModuleTrain(pl.LightningDataModule):
             yield SeqLenFilter(min_seq_len=self.train_conf['min_seq_len'])
 
         if part == 'train':
-            yield TargetJoin(self.col_id, self._train_targets.df.set_index(self.col_id)[self.col_target].to_dict())
+            yield TargetJoin(self.col_id, self._train_targets.df.set_index(self.col_id)[self.col_target].to_dict(), self.distribution_targets_task)
         elif part == 'valid':
-            yield TargetJoin(self.col_id, self._valid_targets.df.set_index(self.col_id)[self.col_target].to_dict())
+            yield TargetJoin(self.col_id, self._valid_targets.df.set_index(self.col_id)[self.col_target].to_dict(), self.distribution_targets_task)
         elif part == 'test':
-            yield TargetJoin(self.col_id, self._test_targets.df.set_index(self.col_id)[self.col_target].to_dict())
+            yield TargetJoin(self.col_id, self._test_targets.df.set_index(self.col_id)[self.col_target].to_dict(), self.distribution_targets_task)
         else:
             raise AttributeError(f'Unknown part: {part}')
 
@@ -158,6 +159,7 @@ class ClsDataModuleTrain(pl.LightningDataModule):
             shuffle=False if self._type == 'iterable' else True,
             num_workers=self.train_conf['num_workers'],
             batch_size=self.train_conf['batch_size'],
+            drop_last=self.train_conf.get('drop_last', False)
         )
 
     def setup_map(self):
@@ -196,4 +198,3 @@ class ClsDataModuleTrain(pl.LightningDataModule):
             num_workers=self.test_conf['num_workers'],
             batch_size=self.test_conf['batch_size'],
         )
-
