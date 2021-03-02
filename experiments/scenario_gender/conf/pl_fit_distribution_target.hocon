@@ -66,9 +66,7 @@
   logger_name: target_scores
 
   params: {
-    distribution_targets_task : True
-
-    score_metric: [auroc, accuracy]
+    score_metric: [R2n, MSEn, MAPEn, R2p, MSEp, MAPEp, CEn, CEp],
 
     encoder_type: rnn,
     trx_encoder: {
@@ -92,10 +90,7 @@
     },
 
     head_layers: [
-        [BatchNorm1d, {num_features: "{seq_encoder.embedding_size}"}]
-        [Linear, {"in_features": "{seq_encoder.embedding_size}", "out_features": 1}]
-        [Sigmoid, {}]
-        [Squeeze, {}]
+        [DistributionTargetsHead, {in_size: "{seq_encoder.embedding_size}", num_distr_classes:  6}]
     ]
 
     train: {

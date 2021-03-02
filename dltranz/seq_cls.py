@@ -112,27 +112,24 @@ class SequenceClassify(pl.LightningModule):
 
         # metrics
         d_metrics = {
-            'auroc': EpochAuroc,
-            'accuracy': pl.metrics.Accuracy
+            'auroc': EpochAuroc(),
+            'accuracy': pl.metrics.Accuracy(),
+            'R2n': R_squared(COLUMNS_IX['neg_sum']),
+            'MSEn': MSE(COLUMNS_IX['neg_sum']),
+            'MAPEn': MAPE(COLUMNS_IX['neg_sum']),
+            'R2p': R_squared(COLUMNS_IX['pos_sum']),
+            'MSEp': MSE(COLUMNS_IX['pos_sum']),
+            'MAPEp': MAPE(COLUMNS_IX['pos_sum']),
+            'CEn': CrossEntropy(COLUMNS_IX['neg_distribution']),
+            'CEp': CrossEntropy(COLUMNS_IX['pos_distribution'])
         }
         params_score_metric = params['score_metric']
         if type(params_score_metric) is str:
             params_score_metric = [params_score_metric]
         metric_cls = [(name, d_metrics[name]) for name in params_score_metric]
 
-        if not dict(params).get('distribution_targets_task'):
-             self.valid_metrics = torch.nn.ModuleDict([(name, mc()) for name, mc in metric_cls])
-             self.test_metrics = torch.nn.ModuleDict([(name, mc()) for name, mc in metric_cls])
-        else:
-            self.valid_metrics = torch.nn.ModuleDict([('R2n', R_squared(COLUMNS_IX['neg_sum'])),
-                                                      ('MSEn', MSE(COLUMNS_IX['neg_sum'])),
-                                                      ('MAPEn', MAPE(COLUMNS_IX['neg_sum'])),
-                                                      ('R2p', R_squared(COLUMNS_IX['pos_sum'])),
-                                                      ('MSEp', MSE(COLUMNS_IX['pos_sum'])),
-                                                      ('MAPEp', MAPE(COLUMNS_IX['pos_sum'])),
-                                                      ('CEn', CrossEntropy(COLUMNS_IX['neg_distribution'])),
-                                                      ('CEp', CrossEntropy(COLUMNS_IX['pos_distribution']))])
-            self.test_metrics = self.valid_metrics
+        self.valid_metrics = torch.nn.ModuleDict([(name, mc) for name, mc in metric_cls])
+        self.test_metrics = torch.nn.ModuleDict([(name, mc) for name, mc in metric_cls])
 
 
     @property
