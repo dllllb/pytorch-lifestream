@@ -181,16 +181,15 @@ class DistributionTargetsLoss(nn.Module):
         log_plus_sum = np.log(np.abs(true[:, 2].astype(np.float)) + 1)[:, None]
         plus_distribution = np.array(true[:, 3].tolist())
 
-        log_minus_sum_hat = pred[0]
-        minus_distribution_hat = pred[1]
-        log_plus_sum_hat = pred[2]
-        plus_distribution_hat = pred[3]
+        log_minus_sum_hat = pred[0].cpu()
+        minus_distribution_hat = pred[1].cpu()
+        log_plus_sum_hat = pred[2].cpu()
+        plus_distribution_hat = pred[3].cpu()
 
-        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        loss_minus_sum = mse_loss(log_minus_sum_hat, torch.tensor(log_minus_sum, device=device).float())
-        loss_plus_sum = mse_loss(log_plus_sum_hat, torch.tensor(log_plus_sum, device=device).float())
-        loss_minus_distr = cross_entropy(minus_distribution_hat, torch.tensor(minus_distribution, device=device))
-        loss_plus_distr = cross_entropy(plus_distribution_hat, torch.tensor(plus_distribution, device=device))
+        loss_minus_sum = mse_loss(log_minus_sum_hat, torch.tensor(log_minus_sum).float())
+        loss_plus_sum = mse_loss(log_plus_sum_hat, torch.tensor(log_plus_sum).float())
+        loss_minus_distr = cross_entropy(minus_distribution_hat, torch.tensor(minus_distribution))
+        loss_plus_distr = cross_entropy(plus_distribution_hat, torch.tensor(plus_distribution))
 
         loss = loss_minus_distr + loss_plus_distr + loss_minus_sum * 3 + loss_plus_sum / 6
         return loss.float()
