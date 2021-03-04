@@ -1,6 +1,6 @@
 DEFAULT_DATA_PATH = 'data/'
 DEFAULT_RESULT_FILE = 'results/scenario.csv'
-TEST_IDS_FILE = 'test_ids.csv'
+TEST_IDS_FILE = 'test_ids_file.csv'
 DATASET_FILE = 'train_target.csv'
 COL_ID = 'client_id'
 COL_TARGET = 'bins'
