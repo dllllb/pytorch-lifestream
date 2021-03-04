@@ -19,7 +19,7 @@
         split_strategy: "SampleSlices"
         split_count: 5
         cnt_min: 25
-        cnt_max: 200
+        cnt_max: 150
       }
       num_workers: 16
       batch_size: 64
@@ -42,12 +42,12 @@
     gpus: 1
     auto_select_gpus: false
 
-    max_epochs: 150
+    max_epochs: 100
 
     checkpoint_callback: false
-    deterministic: true
+    deterministic: True
   }
-  logger_name: mles_model
+  logger_name: mles_proj_head_model
 
   params: {
     data_module_class: dltranz.data_load.data_module.coles_data_module.ColesDataModuleTrain
@@ -57,14 +57,8 @@
         K: 4
         metric: cosine
     }
-    encoder_type: rnn
-    rnn: {
-      type: gru
-      hidden_size: 800
-      bidir: false
-      trainable_starter: static
-    }
 
+    encoder_type: rnn
     trx_encoder: {
       norm_embeddings: false
       embeddings_noise: 0.003
@@ -76,11 +70,21 @@
         amount_rur: identity
       }
     }
+   rnn: {
+      type: gru
+      hidden_size: 400
+      bidir: false
+      trainable_starter: static
+    }
 
     head_layers: [
+      [Linear, {"in_features": "{seq_encoder.embedding_size}", "out_features": 256}]
+      [BatchNorm1d, {num_features: 256}]
+      [ReLU, {}]
+      [Linear, {"in_features": 256, "out_features": 256}]
       [NormEncoder, {}]
     ]
-    
+
     lr_scheduler: {
       step_size: 30
       step_gamma: 0.9025
@@ -91,17 +95,28 @@
       neg_count: 5
       loss: ContrastiveLoss
       margin: 0.5
-      lr: 0.001
+      lr: 0.002
       weight_decay: 0.0
-    } 
+    }
   }
 
-  model_path: "models/mles_model.p"
+  model_path: "models/mles_proj_head_model.p"
 
-  include "dataset_inference_file.hocon"
+  inference_dataloader: {
+    col_id: client_id
+    dataset_files: [
+      "data/train_trx_file.parquet"
+      "data/test_trx_file.parquet"
+    ]
+    SeqLenLimit: {max_seq_len: 1600}
+    loader: {
+      num_workers: 4
+      batch_size: 512
+    }
+  }
 
   output: {
-    path: "data/mles_embeddings"
-    format: pickle
+    path: "data/mles_proj_head_embeddings"
+    format: pickle,
   }
 }

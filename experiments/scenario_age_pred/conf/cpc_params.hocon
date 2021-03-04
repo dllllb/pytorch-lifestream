@@ -1,0 +1,92 @@
+{
+  data_module: {
+    type: map
+    setup: {
+      col_id: client_id
+      dataset_files: {
+        data_path: "data/train_trx_file.parquet"
+      }
+      split_by: files
+      valid_size: 0.05
+      valid_split_seed: 42
+    }
+    train: {
+      min_seq_len: 25
+      augmentations: [
+        [DropoutTrx, {trx_dropout: 0.01}]
+        [SeqLenLimit, {max_seq_len: 1200}]
+      ]
+      num_workers: 16
+      batch_size: 64
+    }
+    valid: {
+      augmentations: [
+        [SeqLenLimit, {max_seq_len: 1200}]
+      ]
+      num_workers: 16
+      batch_size: 64
+    }
+  }
+
+  seed_everything: 42
+  trainer: {
+    gpus: 1
+    auto_select_gpus: false
+
+    max_epochs: 30
+
+    checkpoint_callback: false
+    deterministic: true
+  }
+  logger_name: cpc_model
+
+  params: {
+    data_module_class: dltranz.data_load.data_module.cpc_data_module.CpcDataModuleTrain
+    pl_module_class: dltranz.lightning_modules.cpc_module.CpcModule
+
+    encoder_type: rnn
+    rnn: {
+      type: gru
+      hidden_size: 512
+      bidir: false
+      trainable_starter: static
+    }
+
+    trx_encoder: {
+      norm_embeddings: false
+      embeddings_noise: 0.003
+      embeddings: {
+        trans_date: {in: 800, out: 127}
+        small_group: {in: 250, out: 128}
+      }
+      numeric_values: {
+        amount_rur: identity
+      }
+    }
+
+    cpc: {
+      n_forward_steps: 6
+      n_negatives: 40
+    }
+
+    lr_scheduler: {
+      step_size: 5
+      step_gamma: 0.5
+    }
+
+    train: {
+      lr: 0.002
+      weight_decay: 0.0
+    }
+    
+  }
+
+  model_path: "models/cpc_model.p"
+
+  include "dataset_inference_file.hocon"
+
+  output: {
+    path: data/cpc_embeddings,
+    format: pickle,
+  }
+}

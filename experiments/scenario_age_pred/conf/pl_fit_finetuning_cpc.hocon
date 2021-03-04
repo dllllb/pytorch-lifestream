@@ -1,0 +1,83 @@
+{
+  data_module: {
+    type: map
+
+    setup: {
+      dataset_files: {
+        train_data_path: "data/train_trx_file.parquet"
+        test_data_path: "data/test_trx_file.parquet"
+      }
+      col_id: client_id
+      col_id_dtype: int
+      col_target: bins
+
+      split_by: embeddings_validation
+      fold_info: "conf/embeddings_validation.work/folds/folds.json"
+    }
+
+    train: {
+        min_seq_len: 0
+        augmentations: [
+          [RandomSlice, {min_len: 150, max_len: 250}]
+          [DropoutTrx, {trx_dropout: 0.005}]
+        ]
+        num_workers: 16
+        batch_size: 32
+    }
+
+    valid: {
+        augmentations: [
+          [SeqLenLimit, {max_seq_len: 1200}]
+        ]
+        num_workers: 8
+        batch_size: 512
+    }
+  }
+
+  embedding_validation_results: {
+    model_name: nn
+    feature_name: cpc_finetuning
+    output_path: "results/cpc_finetuning_results.json"
+  }
+
+  seed_everything: 42
+  trainer: {
+    gpus: 1
+    auto_select_gpus: false
+
+    max_epochs: 13
+    log_every_n_steps: 10
+
+    checkpoint_callback: false
+    deterministic: True
+  }
+  logger_name: cpc_finetuning
+
+  params: {
+    score_metric: accuracy
+
+    encoder_type: pretrained
+    pretrained: {
+      pl_module_class: dltranz.lightning_modules.cpc_module.CpcModule
+      model_path: "models/cpc_model.p"
+      lr: 0.0001
+    }
+
+    head_layers: [
+      [Linear, {"in_features": "{seq_encoder.embedding_size}", "out_features": 4}]
+      [LogSoftmax, {dim: 1}]
+    ]
+
+    train: {
+      random_neg: false
+      loss: NLLLoss
+      lr: 0.002
+      weight_decay: 0.0
+    }
+
+    lr_scheduler: {
+      step_size: 5
+      step_gamma: 0.4
+    }
+  }
+}

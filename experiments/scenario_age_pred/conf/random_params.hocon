@@ -1,0 +1,55 @@
+{
+  seed_everything: 42
+
+  params: {
+    data_module_class: dltranz.data_load.data_module.coles_data_module.ColesDataModuleTrain
+    pl_module_class: dltranz.lightning_modules.coles_module.CoLESModule
+
+    validation_metric_params: {
+        K: 4
+        metric: cosine
+    }
+
+    encoder_type: rnn
+    rnn: {
+      type: gru
+      hidden_size: 512
+      bidir: false
+      trainable_starter: static
+    }
+
+    trx_encoder: {
+      norm_embeddings: false
+      embeddings_noise: 0.003
+      embeddings: {
+        trans_date: {in: 800, out: 10}
+        small_group: {in: 250, out: 10}
+      }
+      numeric_values: {
+        amount_rur: identity
+      }
+    }
+    
+    head_layers: [
+      [NormEncoder, {}]
+    ]
+
+    train: {
+      sampling_strategy: HardNegativePair
+      neg_count: 5
+      loss: ContrastiveLoss
+      margin: 0.5
+      lr: 0.0005
+      weight_decay: 0.0
+    } 
+  }
+
+  random_model: true
+
+  include "dataset_inference_file.hocon"
+
+  output: {
+    path: "data/random_embeddings"
+    format: pickle
+  }
+}

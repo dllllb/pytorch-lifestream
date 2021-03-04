@@ -18,7 +18,7 @@
       split_strategy: {
         split_strategy: "SampleSlices"
         split_count: 5
-        cnt_min: 25
+        cnt_min: 50
         cnt_max: 200
       }
       num_workers: 16
@@ -29,11 +29,11 @@
       split_strategy: {
         split_strategy: SampleSlices
         split_count: 5
-        cnt_min: 25
-        cnt_max: 100
+        cnt_min: 50
+        cnt_max: 200
       }
       num_workers: 16
-      batch_size: 512
+      batch_size: 1024
     }
   }
 
@@ -44,19 +44,16 @@
 
     max_epochs: 150
 
-    checkpoint_callback: false
     deterministic: true
   }
-  logger_name: mles_model
+  logger_name: sop_model
 
   params: {
-    data_module_class: dltranz.data_load.data_module.coles_data_module.ColesDataModuleTrain
-    pl_module_class: dltranz.lightning_modules.coles_module.CoLESModule
+    data_module_class: dltranz.data_load.data_module.sop_data_module.SopDataModuleTrain
+    pl_module_class: dltranz.lightning_modules.sop_nsp_module.SopNspModule
 
-    validation_metric_params: {
-        K: 4
-        metric: cosine
-    }
+    score_metric: auroc
+
     encoder_type: rnn
     rnn: {
       type: gru
@@ -69,7 +66,6 @@
       norm_embeddings: false
       embeddings_noise: 0.003
       embeddings: {
-        trans_date: {in: 800, out: 16}
         small_group: {in: 250, out: 16}
       }
       numeric_values: {
@@ -77,31 +73,29 @@
       }
     }
 
-    head_layers: [
-      [NormEncoder, {}]
-    ]
-    
+    head: {
+      hidden_size: 512
+      drop_p: 0.5
+      pred_all_states: false
+    }
+
     lr_scheduler: {
-      step_size: 30
-      step_gamma: 0.9025
+      ReduceLROnPlateau: true
+      patience: 15
     }
 
     train: {
-      sampling_strategy: HardNegativePair
-      neg_count: 5
-      loss: ContrastiveLoss
-      margin: 0.5
       lr: 0.001
       weight_decay: 0.0
-    } 
+    }
   }
 
-  model_path: "models/mles_model.p"
+  model_path: "models/sop_model.p"
 
   include "dataset_inference_file.hocon"
 
   output: {
-    path: "data/mles_embeddings"
+    path: data/sop_embeddings
     format: pickle
   }
 }

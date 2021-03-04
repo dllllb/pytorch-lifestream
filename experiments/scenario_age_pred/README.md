@@ -7,7 +7,7 @@ cd experiments/scenario_age_pred
 bin/get-data.sh
 
 # convert datasets from transaction list to features for metric learning
-bin/make-datasets-spark.sh
+bin/make_datasets_spark_file.sh
 ```
 
 # Main scenario, best params
@@ -15,22 +15,22 @@ bin/make-datasets-spark.sh
 ```sh
 cd experiments/scenario_age_pred
 export SC_DEVICE="cuda"
+export CUDA_VISIBLE_DEVICES=0
 
 sh bin/run_all_scenarios.sh
-
 ```
 
 ### Semi-supervised setup
 ```sh
 cd experiments/scenario_age_pred
 export SC_DEVICE="cuda"
+export CUDA_VISIBLE_DEVICES=0
 
 # run semi supervised scenario
 ./bin/scenario_semi_supervised.sh
 
 # check the results
 cat results/semi_scenario_age_pred_*.csv
-
 ```
 
 ### Test model configurations
@@ -38,6 +38,7 @@ cat results/semi_scenario_age_pred_*.csv
 ```sh
 cd experiments/scenario_age_pred
 export SC_DEVICE="cuda"
+export CUDA_VISIBLE_DEVICES=0
 
 # run all scenarios or select one
 ./bin/*.sh
@@ -50,56 +51,39 @@ cat results/scenario_age_pred_*.csv
 ```sh
 cd experiments/scenario_age_pred
 export SC_DEVICE="cuda"
+export CUDA_VISIBLE_DEVICES=0
 
 # Train the MeLES encoder on transformer and take embedidngs; inference
-python ../../metric_learning.py params.device="$SC_DEVICE" --conf conf/dataset.hocon conf/transformer_params.json
-python ../../ml_inference.py    params.device="$SC_DEVICE" --conf conf/dataset.hocon conf/transformer_params.json
+python ../../pl_train_module.py  --conf conf/transformer_params.hocon
+python ../../pl_inference.py --conf conf/transformer_params.hocon
 
-python -m scenario_age_pred fit_finetuning \
-    params.device="$SC_DEVICE" \
-    --conf conf/dataset.hocon conf/fit_finetuning_on_transf_params.json
+python ../../pl_fit_target.py --conf conf/pl_fit_finetuning_on_transf_params.hocon
 
 # Check some options with `--help` argument
 python -m scenario_age_pred compare_approaches --n_workers 1 \
     --add_baselines --add_emb_baselines \
     --embedding_file_names "transf_embeddings.pickle" \
     --score_file_names "transf_finetuning_scores"
-
 ```
 
 ### Projection head network (like SimCLR)
 ```sh
 cd experiments/scenario_age_pred
 export SC_DEVICE="cuda"
+export CUDA_VISIBLE_DEVICES=0
 
 # Train the encoder on transformer and take embedidngs; inference
-python ../../metric_learning.py params.device="$SC_DEVICE" --conf conf/dataset.hocon conf/mles_proj_head_params.json
-python ../../ml_inference.py    params.device="$SC_DEVICE" --conf conf/dataset.hocon conf/mles_proj_head_params.json
+python ../../pl_train_module.py --conf conf/mles_proj_head_params.hocon
+python ../../pl_inference.py --conf conf/mles_proj_head_params.hocon
 
 # Check some options with `--help` argument
 python -m scenario_age_pred compare_approaches --n_workers 3 \
     --add_baselines --add_emb_baselines \
     --embedding_file_names "mles_proj_head_embeddings.pickle"
-
 ```
 
-# Complex Learning
+# CPC v2 [TODO]
 
-```sh
-cd experiments/scenario_age_pred
-export SC_DEVICE="cuda"
-
-# Train complex model and get an embeddings
-python ../../complex_learning.py    params.device="$SC_DEVICE" --conf conf/dataset.hocon conf/complex_learning_params.json
-python ../../ml_inference.py    params.device="$SC_DEVICE" --conf conf/dataset.hocon conf/complex_learning_params.json
-
-python -m scenario_age_pred compare_approaches --n_workers 5 \
-    --output_file "results/scenario_age_pred__complex_learning.csv" \
-    --embedding_file_names "complex_embeddings.pickle"
-
-```
-
-# CPC v2
 ```sh
 # Train the Contrastive Predictive Coding (CPC v2) model; inference 
 python ../../cpc_v2_learning.py params.device="$SC_DEVICE" --conf conf/dataset.hocon conf/cpc_v2_params.json
@@ -112,4 +96,19 @@ python -m scenario_age_pred compare_approaches --n_workers 1 \
     --add_baselines --add_emb_baselines \
     --embedding_file_names "cpc_v2_embeddings.pickle"
 
+```
+
+# Complex Learning [TODO]
+
+```sh
+cd experiments/scenario_age_pred
+export SC_DEVICE="cuda"
+
+# Train complex model and get an embeddings
+python ../../complex_learning.py    params.device="$SC_DEVICE" --conf conf/dataset.hocon conf/complex_learning_params.json
+python ../../ml_inference.py    params.device="$SC_DEVICE" --conf conf/dataset.hocon conf/complex_learning_params.json
+
+python -m scenario_age_pred compare_approaches --n_workers 5 \
+    --output_file "results/scenario_age_pred__complex_learning.csv" \
+    --embedding_file_names "complex_embeddings.pickle"
 ```

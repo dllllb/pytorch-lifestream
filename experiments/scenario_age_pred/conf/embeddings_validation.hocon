@@ -17,7 +17,7 @@
             file_name: "../data/train_target.csv"
         }
         test_id: {
-            file_name: "../data/test_ids.csv"
+            file_name: "../data/test_ids_file.csv"
         }
 
         cv_split_count: 5
