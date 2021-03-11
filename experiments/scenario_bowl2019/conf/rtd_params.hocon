@@ -1,0 +1,103 @@
+{
+  data_module: {
+    type: map
+    setup: {
+      col_id: game_session
+      dataset_files: {
+        data_path: "data/train_trx.parquet"
+      }
+      split_by: files
+      valid_size: 0.05
+      valid_split_seed: 42
+    }
+    train: {
+      min_seq_len: 25
+      augmentations: [
+        [DropoutTrx, {trx_dropout: 0.15}]
+        [SeqLenLimit, {max_seq_len: 2500}]
+      ]
+      num_workers: 16
+      batch_size: 256
+    }
+    valid: {
+      augmentations: [
+        [SeqLenLimit, {max_seq_len: 2500}]
+      ]
+      num_workers: 16
+      batch_size: 256
+    }
+    replace_token: {
+      replace_prob: 0.15
+      skip_first: 1
+    }
+  }
+
+  seed_everything: 42
+  trainer: {
+    gpus: 1
+    auto_select_gpus: false
+
+    max_epochs: 100
+
+    checkpoint_callback: false
+    deterministic: true
+  }
+  logger_name: rtd_model
+
+  params: {
+    data_module_class: dltranz.data_load.data_module.rtd_data_module.RtdDataModuleTrain
+    pl_module_class: dltranz.lightning_modules.rtd_module.RtdModule
+
+    encoder_type: rnn
+    rnn: {
+      type: gru
+      hidden_size: 100
+      bidir: false
+      trainable_starter: static
+    }
+
+    trx_encoder: {
+      norm_embeddings: false
+      embeddings_noise: 0.003
+      embeddings: {
+        event_id: {in: 500, out: 16}
+        event_code: {in: 50, out: 8}
+        event_type: {in: 6, out: 8}
+        title: {in: 50, out: 8}
+        world: {in: 6, out: 8}
+        correct: {in: 4, out: 2}
+      }
+      numeric_values: {}
+    }
+
+    head: {
+      pred_all_states: true
+      pred_all_states_mean: false
+      pred_flatten: true
+      explicit_lengths: false
+      norm_input: false
+      use_batch_norm: false
+    }
+
+    lr_scheduler: {
+      ReduceLROnPlateau: true
+      patience: 15
+    }
+
+    train: {
+      loss: bce
+      lr: 0.001
+      margin: 0.5
+      weight_decay: 0.0
+    }
+  }
+
+  model_path: "models/rtd_model.p"
+
+  include "dataset_inference_file.hocon"
+
+  output: {
+    path: data/rtd_embeddings
+    format: pickle
+  }
+}

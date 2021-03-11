@@ -1,48 +1,50 @@
 # ReduceLROnPlateau
 export SC_SUFFIX="reduce_on_plateau"
-python ../../metric_learning.py \
-    params.device="$SC_DEVICE" \
+python ../../pl_train_module.py \
+    logger_name=${SC_SUFFIX} \
     params.lr_scheduler.ReduceLROnPlateau=true \
-    model_path.model="models/bowl2019_mlm__$SC_SUFFIX.p" \
-    --conf "conf/trx_dataset.hocon" "conf/mles_params.json"
-python ../../ml_inference.py \
-    params.device="$SC_DEVICE" \
-    model_path.model="models/bowl2019_mlm__$SC_SUFFIX.p" \
+    model_path="models/bowl2019_mlm__$SC_SUFFIX.p" \
+    --conf "conf/mles_params.hocon"
+python ../../pl_inference.py \
+    model_path="models/bowl2019_mlm__$SC_SUFFIX.p" \
     output.path="data/emb__$SC_SUFFIX" \
-    --conf "conf/dataset.hocon" "conf/mles_params.json"
+    --conf "conf/mles_params.hocon"
 
 # ReduceLROnPlateau x2 epochs
 export SC_SUFFIX="reduce_on_plateau_x2epochs"
-python ../../metric_learning.py \
-    params.device="$SC_DEVICE" \
+python ../../pl_train_module.py \
+    logger_name=${SC_SUFFIX} \
     params.lr_scheduler.ReduceLROnPlateau=true \
     params.lr_scheduler.threshold=0.0001 \
-    params.train.n_epoch=200 \
-    model_path.model="models/bowl2019_mlm__$SC_SUFFIX.p" \
-    --conf "conf/trx_dataset.hocon" "conf/mles_params.json"
-python ../../ml_inference.py \
-    params.device="$SC_DEVICE" \
-    model_path.model="models/bowl2019_mlm__$SC_SUFFIX.p" \
+    trainer.max_epochs=200 \
+    model_path="models/bowl2019_mlm__$SC_SUFFIX.p" \
+    --conf "conf/mles_params.hocon"
+python ../../pl_inference.py \
+    model_path="models/bowl2019_mlm__$SC_SUFFIX.p" \
     output.path="data/emb__$SC_SUFFIX" \
-    --conf "conf/dataset.hocon" "conf/mles_params.json"
+    --conf "conf/mles_params.hocon"
 
 # CosineAnnealing
 export SC_SUFFIX="cosine_annealing"
-python ../../metric_learning.py \
-    params.device="$SC_DEVICE" \
+python ../../pl_train_module.py \
+    logger_name=${SC_SUFFIX} \
+    params.train.lr_scheduler.n_epoch=150 \
     params.lr_scheduler.CosineAnnealing=true \
-    model_path.model="models/bowl2019_mlm__$SC_SUFFIX.p" \
-    --conf "conf/trx_dataset.hocon" "conf/mles_params.json"
-python ../../ml_inference.py \
-    params.device="$SC_DEVICE" \
-    model_path.model="models/bowl2019_mlm__$SC_SUFFIX.p" \
+    model_path="models/bowl2019_mlm__$SC_SUFFIX.p" \
+    --conf "conf/mles_params.hocon"
+python ../../pl_inference.py \
+    model_path="models/bowl2019_mlm__$SC_SUFFIX.p" \
     output.path="data/emb__$SC_SUFFIX" \
-    --conf "conf/dataset.hocon" "conf/mles_params.json"
+    --conf "conf/mles_params.hocon"
 
 # Compare
-python -m scenario_bowl2019 compare_approaches --output_file "results/scenario_lr_schedule.csv" \
-    --n_workers 4 --models lgb --embedding_file_names \
-    "mles_embeddings.pickle"        \
-    "emb__reduce_on_plateau.pickle" \
-    "emb__reduce_on_plateau_x2epochs.pickle" \
-    "emb__cosine_annealing.pickle"
+rm results/rm results/scenario_lr_schedule.txt
+# rm -r conf/embeddings_validation.work/
+python -m embeddings_validation \
+    --conf conf/embeddings_validation_short.hocon --workers 10 --total_cpu_count 20 --local_scheduler \
+    --conf_extra \
+      'report_file: "../results/scenario_lr_schedule.txt",
+      auto_features: [
+          "../data/emb__reduce_on_plateau.pickle", 
+          "../data/emb__reduce_on_plateau_x2epochs.pickle",
+          "../data/emb__cosine_annealing.pickle"]'

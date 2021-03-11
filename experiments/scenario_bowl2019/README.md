@@ -7,7 +7,7 @@ cd experiments/scenario_bowl2019
 bin/get-data.sh
 
 # convert datasets from transaction list to features for metric learning
-bin/make-datasets.sh
+bin/make-datasets-spark.sh
 ```
 
 # Main scenario, best params
@@ -15,26 +15,31 @@ bin/make-datasets.sh
 ```sh
 cd experiments/scenario_bowl2019
 export SC_DEVICE="cuda"
+export CUDA_VISIBLE_DEVICES=0
 
 # Train a supervised model and save scores to the file
-python -m scenario_bowl2019 fit_target params.device="$SC_DEVICE" --conf conf/dataset.hocon conf/fit_target_params.json
+python ../../pl_fit_target.py --conf conf/pl_fit_target.hocon
 
 # Train the MeLES encoder and take embedidngs; inference
-python ../../metric_learning.py params.device="$SC_DEVICE" --conf conf/trx_dataset.hocon conf/mles_params.json
-python ../../ml_inference.py    params.device="$SC_DEVICE" --conf conf/dataset.hocon conf/mles_params.json
+python ../../pl_train_module.py --conf conf/mles_params.hocon
+python ../../pl_inference.py --conf conf/mles_params.hocon
 
 # Fine tune the MeLES model in supervised mode and save scores to the file
-python -m scenario_bowl2019 fit_finetuning params.device="$SC_DEVICE" --conf conf/dataset.hocon conf/fit_finetuning_on_mles_params.json
+
+python ../../pl_train_module.py params.train.neg_count=5 model_path="models/mles_model_ft.p" --conf conf/mles_params.hocon
+
+python ../../pl_fit_target.py params.pretrained.model_path="models/mles_model_ft.p" data_module.train.drop_last=true --conf conf/pl_fit_finetuning_mles.hocon
 
 # Train the Contrastive Predictive Coding (CPC) model; inference
-python ../../train_cpc.py    params.device="$SC_DEVICE" --conf conf/trx_dataset.hocon conf/cpc_params.json
-python ../../ml_inference.py params.device="$SC_DEVICE" --conf conf/dataset.hocon conf/cpc_params.json
+python ../../pl_train_module.py --conf conf/cpc_params.hocon
+python ../../pl_inference.py --conf conf/cpc_params.hocon
 
 # Train a special CPC model for fine-tuning 
 # it is quite smaller, than one which is used for embeddings extraction, due to insufficiency labeled data to fine-tune a big model. 
-python ../../train_cpc.py params.device="$SC_DEVICE" --conf conf/trx_dataset.hocon conf/cpc_params_for_finetuning.json
+python ../../pl_train_module.py --conf conf/cpc_params_for_finetuning.hocon
+
 # Fine tune the CPC model in supervised mode and save scores to the file
-python -m scenario_bowl2019 fit_finetuning params.device="$SC_DEVICE" --conf conf/dataset.hocon conf/fit_finetuning_on_cpc_params.json
+python ../../pl_fit_target.py --conf conf/pl_fit_finetuning_cpc.hocon
 
 # Run estimation for different approaches
 # Check some options with `--help` argument
@@ -52,13 +57,13 @@ cat results/scenario.csv
 ```sh
 cd experiments/scenario_bowl2019
 export SC_DEVICE="cuda"
+export CUDA_VISIBLE_DEVICES=0
 
 # run semi supervised scenario
 ./bin/scenario_semi_supervised.sh
 
 # check the results
-cat results/semi_scenario_bowl2019_*.csv
-
+cat results/scenario_bowl2019_*.txt
 ```
 
 ### Test model configurations
@@ -66,6 +71,7 @@ cat results/semi_scenario_bowl2019_*.csv
 ```sh
 cd experiments/scenario_bowl2019
 export SC_DEVICE="cuda"
+export CUDA_VISIBLE_DEVICES=0
 
 # run all scenarios or select one
 ./bin/scenario*.sh
@@ -74,11 +80,12 @@ export SC_DEVICE="cuda"
 cat results/scenario_bowl2019_*.csv
 ```
 
-# Complex Learning
+# Complex Learning [TODO]
 
 ```sh
 cd experiments/scenario_bowl2019
 export SC_DEVICE="cuda"
+export CUDA_VISIBLE_DEVICES=0
 
 # Train complex model and get an embeddings
 python ../../complex_learning.py    params.device="$SC_DEVICE" --conf conf/trx_dataset.hocon conf/complex_learning_params.json

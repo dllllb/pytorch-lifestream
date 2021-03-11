@@ -1,79 +1,53 @@
 # HardNegativePair
-export SC_SUFFIX="smpl_strategy_HardNegativePair_neg_count_5"
-python ../../metric_learning.py \
-    params.device="$SC_DEVICE" \
-    params.train.sampling_strategy="HardNegativePair" \
-    params.train.neg_count=5 \
-    model_path.model="models/mles__$SC_SUFFIX.p" \
-    --conf "conf/trx_dataset.hocon" "conf/mles_params.json"
-python ../../ml_inference.py \
-    params.device="$SC_DEVICE" \
-    model_path.model="models/mles__$SC_SUFFIX.p" \
-    output.path="data/emb__$SC_SUFFIX" \
-    --conf "conf/dataset.hocon" "conf/mles_params.json"
-
-export SC_SUFFIX="smpl_strategy_HardNegativePair_neg_count_9"
-python ../../metric_learning.py \
-    params.device="$SC_DEVICE" \
-    params.train.sampling_strategy="HardNegativePair" \
-    params.train.neg_count=9 \
-    model_path.model="models/mles__$SC_SUFFIX.p" \
-    --conf "conf/trx_dataset.hocon" "conf/mles_params.json"
-python ../../ml_inference.py \
-    params.device="$SC_DEVICE" \
-    model_path.model="models/mles__$SC_SUFFIX.p" \
-    output.path="data/emb__$SC_SUFFIX" \
-    --conf "conf/dataset.hocon" "conf/mles_params.json"
-
-export SC_SUFFIX="smpl_strategy_HardNegativePair_neg_count_2"
-python ../../metric_learning.py \
-    params.device="$SC_DEVICE" \
-    params.train.sampling_strategy="HardNegativePair" \
-    params.train.neg_count=2 \
-    model_path.model="models/mles__$SC_SUFFIX.p" \
-    --conf "conf/trx_dataset.hocon" "conf/mles_params.json"
-python ../../ml_inference.py \
-    params.device="$SC_DEVICE" \
-    model_path.model="models/mles__$SC_SUFFIX.p" \
-    output.path="data/emb__$SC_SUFFIX" \
-    --conf "conf/dataset.hocon" "conf/mles_params.json"
-
+for SC_NEG_COUNT in 2 5 9
+do
+    export SC_SUFFIX="smpl_strategy_HardNegativePair_neg_count_${SC_NEG_COUNT}"
+    python ../../pl_train_module.py \
+        logger_name=${SC_SUFFIX} \
+        params.train.sampling_strategy="HardNegativePair" \
+        params.train.neg_count=${SC_NEG_COUNT} \
+        model_path="models/mles__$SC_SUFFIX.p" \
+        --conf "conf/mles_params.hocon"
+    python ../../pl_inference.py \
+        model_path="models/mles__$SC_SUFFIX.p" \
+        output.path="data/emb__$SC_SUFFIX" \
+        --conf "conf/mles_params.hocon"
+done  
 
 # AllPositivePair
 export SC_SUFFIX="smpl_strategy_AllPositivePair"
-python ../../metric_learning.py \
-    params.device="$SC_DEVICE" \
+python ../../pl_train_module.py \
+    logger_name=${SC_SUFFIX} \
     params.train.sampling_strategy="AllPositivePair" \
-    model_path.model="models/mles__$SC_SUFFIX.p" \
-    --conf "conf/trx_dataset.hocon" "conf/mles_params.json"
-python ../../ml_inference.py \
-    params.device="$SC_DEVICE" \
-    model_path.model="models/mles__$SC_SUFFIX.p" \
+    model_path="models/mles__$SC_SUFFIX.p" \
+    --conf "conf/mles_params.hocon"
+
+python ../../pl_inference.py \
+    model_path="models/mles__$SC_SUFFIX.p" \
     output.path="data/emb__$SC_SUFFIX" \
-    --conf "conf/dataset.hocon" "conf/mles_params.json"
+    --conf "conf/mles_params.hocon"
 
 
 # DistanceWeightedPair
 export SC_SUFFIX="smpl_strategy_DistanceWeightedPair"
-python ../../metric_learning.py \
-    params.device="$SC_DEVICE" \
+python ../../pl_train_module.py \
+    logger_name=${SC_SUFFIX} \
     params.train.sampling_strategy="DistanceWeightedPair" \
     params.train.n_samples_from_class=5 \
-    model_path.model="models/mles__$SC_SUFFIX.p" \
-    --conf "conf/trx_dataset.hocon" "conf/mles_params.json"
-python ../../ml_inference.py \
-    params.device="$SC_DEVICE" \
-    model_path.model="models/mles__$SC_SUFFIX.p" \
+    model_path="models/mles__$SC_SUFFIX.p" \
+    --conf "conf/mles_params.hocon"
+python ../../pl_inference.py \
+    model_path="models/mles__$SC_SUFFIX.p" \
     output.path="data/emb__$SC_SUFFIX" \
-    --conf "conf/dataset.hocon" "conf/mles_params.json"
+    --conf "conf/mles_params.hocon"
 
 
 # Compare
-python -m scenario_bowl2019 compare_approaches --output_file "results/scenario_bowl2019__smpl_strategy.csv" \
-    --models 'lgb' --embedding_file_names \
-    "mles_embeddings.pickle"              \
-    "emb__smpl_strategy_HardNegativePair_neg_count_5.pickle" \
-    "emb__smpl_strategy_HardNegativePair_neg_count_9.pickle" \
-    "emb__smpl_strategy_HardNegativePair_neg_count_2.pickle" \
-    "emb__smpl_strategy_AllPositivePair.pickle"                     \
-    "emb__smpl_strategy_DistanceWeightedPair.pickle"
+rm results/scenario_bowl2019__smpl_strategy.txt
+
+
+python -m embeddings_validation \
+  --conf conf/embeddings_validation_short.hocon --workers 10 --total_cpu_count 20 --local_scheduler \
+  --conf_extra \
+    'report_file: "../results/scenario_bowl2019__smpl_strategy.txt",
+    auto_features: ["../data/emb__smpl_strategy_*.pickle"]'
