@@ -26,9 +26,15 @@ python ../../pl_inference.py --conf conf/mles_params.hocon
 
 # Fine tune the MeLES model in supervised mode and save scores to the file
 
-python ../../pl_train_module.py params.train.neg_count=5 model_path="models/mles_model_ft.p" --conf conf/mles_params.hocon
+python ../../pl_train_module.py \
+    params.train.neg_count=5 \
+    model_path="models/mles_model_ft.p" \
+    --conf conf/mles_params.hocon
 
-python ../../pl_fit_target.py params.pretrained.model_path="models/mles_model_ft.p" data_module.train.drop_last=true --conf conf/pl_fit_finetuning_mles.hocon
+python ../../pl_fit_target.py \
+    params.pretrained.model_path="models/mles_model_ft.p" \
+    data_module.train.drop_last=true \
+    --conf conf/pl_fit_finetuning_mles.hocon
 
 # Train the Contrastive Predictive Coding (CPC) model; inference
 python ../../pl_train_module.py --conf conf/cpc_params.hocon
