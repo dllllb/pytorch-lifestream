@@ -278,8 +278,6 @@ class DatasetConverter:
         # shuffle client list
         s_all_data_clients = set(cl[0] for cl in all_data.select(col_client_id).distinct().collect())
         s_clients = sorted(cl_id for cl_id in s_clients if cl_id in s_all_data_clients)
-        # s_clients = sorted(s_clients)
-        # s_clients = [cl_id for cl_id in s_clients]
         Random(salt).shuffle(s_clients)
 
         # split client list

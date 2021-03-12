@@ -1,11 +1,9 @@
 load_transactions      : Loaded 11341042 records from "train.csv"
 load_transactions      : Loaded 1156414 records from "test.csv"
-trx_to_features        : Feature collection in progress ...
-trx_to_features        : Prepared features for 18000 clients
-load_source_data       : Loaded 17690 rows from "/mnt/dnurlybay/bowl2019/experiments/scenario_bowl2019/data/train_labels.csv"
+load_source_data       : Loaded 17690 rows from "/mnt/dnurlybay/bowl_final/experiments/scenario_bowl2019/data/train_labels.csv"
 load_source_data       : Loaded 17690 rows in total
 split_dataset          : Train size: 15921 clients
 split_dataset          : Test size: 1769 clients
-save_features          : Saved to: "/mnt/dnurlybay/bowl2019/experiments/scenario_bowl2019/data/train_trx.parquet"
-save_features          : Saved to: "/mnt/dnurlybay/bowl2019/experiments/scenario_bowl2019/data/test_trx.parquet"
-run                    : Data collected in 505 sec (0:08:25.659353)
+save_features          : Saved to: "/mnt/dnurlybay/bowl_final/experiments/scenario_bowl2019/data/train_trx.parquet"
+save_features          : Saved to: "/mnt/dnurlybay/bowl_final/experiments/scenario_bowl2019/data/test_trx.parquet"
+run                    : Data collected in 420 sec (0:07:00.412665)

@@ -43,18 +43,17 @@ class LocalDatasetConverter(DatasetConverter):
         udf_function = udf(lambda x: str(json.loads(x).get('correct', 'None')), StringType())
         df = df.withColumn('correct', udf_function('event_data'))
         
-        # Delete useless columns
-        df = df.drop('event_data', 'event_count')
+        self.source_df = df
 
         return df
     
-    def load_target(self, source_df):
+    def load_target(self):
         df_target = self.load_source_data(self.config.target_files)
         df_target = df_target.select([self.config.col_client_id, self.config.col_target[0]])
         
         # Filter & Merge with source dataframe
         filtered_df = (
-            source_df
+            self.source_df
             .where((F.col('event_type') == 'Assessment') & (F.col('event_code') == 2000))
             .select(['installation_id', self.config.col_client_id, self.config.cols_event_time[0]])
         )
@@ -62,7 +61,21 @@ class LocalDatasetConverter(DatasetConverter):
         
         return df_target
 
-    def update_with_target(self, features, df_target):
+    def trx_to_features(self, df_data, print_dataset_info,
+                        col_client_id, cols_event_time, cols_category, cols_log_norm, max_trx_count):
+        encoders = {col: self.get_encoder(df_data, col) for col in cols_category}
+        for col in cols_category:
+            df_data = self.encode_col(df_data, col, encoders[col])
+
+        used_columns = cols_category + ['event_time', 'installation_id']
+        features = df_data.select(used_columns)
+        features = self.remove_long_trx(features, max_trx_count, 'installation_id')
+        features = self.collect_lists(features, 'installation_id')
+        features.persist()
+
+        return features
+    
+    def update_with_target(self, features, df_target, col_client_id, col_target):
         data = df_target.join(features, on=['installation_id'], how='left')
         
         # Find index for find last timestamp in event_time sequences
@@ -89,68 +102,6 @@ class LocalDatasetConverter(DatasetConverter):
         data = data.drop('index', self.config.cols_event_time[0])
 
         return data
-
-    def run(self):
-        _start = datetime.datetime.now()
-        self.parse_args()
-        spark = SparkSession.builder.getOrCreate()
-
-        self.logging_config()
-
-        # description
-        spark.sparkContext.setLocalProperty('callSite.short', 'load_source_data')
-        source_data = self.load_transactions()
-
-        # description
-        spark.sparkContext.setLocalProperty('callSite.short', 'trx_to_features')
-        client_features = self.trx_to_features(
-            df_data=source_data,
-            print_dataset_info=self.config.print_dataset_info,
-            col_client_id='installation_id',
-            cols_event_time=self.config.cols_event_time,
-            cols_category=self.config.cols_category,
-            cols_log_norm=self.config.cols_log_norm,
-            max_trx_count=self.config.max_trx_count,
-        )
-
-        # load target
-        df_target = self.load_target(source_data)
-        df_target.persist()
-        col_target = self.config.col_target[0]
-
-        # description
-        spark.sparkContext.setLocalProperty('callSite.short', 'update_with_target')
-        client_features = self.update_with_target(features=client_features, df_target=df_target)
-
-        # description
-        spark.sparkContext.setLocalProperty('callSite.short', 'split_dataset')
-        train, test, save_test_id = None, None, False
-        train, test = self.split_dataset(
-            all_data=client_features,
-            test_size=float(self.config.test_size),
-            df_target=df_target,
-            col_client_id=self.config.col_client_id,
-            salt=self.config.salt,
-        )
-        save_test_id = True
-
-        # description
-        spark.sparkContext.setLocalProperty('callSite.short', 'save_features')
-        self.save_features(
-            df_data=train,
-            save_path=self.config.output_train_path,
-        )
-
-        self.save_features(
-            df_data=test,
-            save_path=self.config.output_test_path,
-        )
-
-        test_ids = test.select(self.config.col_client_id).distinct().toPandas()
-        test_ids.to_csv(self.config.output_test_ids_path, index=False)
-
-        _duration = datetime.datetime.now() - _start
-        logger.info(f'Data collected in {_duration.seconds} sec ({_duration})')
 
 if __name__ == '__main__':
     LocalDatasetConverter().run()
