@@ -55,7 +55,7 @@ class DatasetConverter:
 
         ext = os.path.splitext(path)[1]
         if ext == '.csv':
-            return spark.read.csv(path, header=True)
+            return spark.read.option("escape", "\"").csv(path, header=True)
         elif ext == '.parquet':
             return spark.read.parquet(path)
         else:
@@ -172,6 +172,9 @@ class DatasetConverter:
         return df
 
     def remove_long_trx(self, df, max_trx_count, col_client_id):
+        """
+        This function select the last max_trx_count transactions
+        """
         df = df.withColumn('_cn', F.count(F.lit(1)).over(Window.partitionBy(col_client_id)))
         df = df.withColumn('_rn', F.row_number().over(
             Window.partitionBy(col_client_id).orderBy(F.col('event_time').desc())))
@@ -274,9 +277,7 @@ class DatasetConverter:
 
         # shuffle client list
         s_all_data_clients = set(cl[0] for cl in all_data.select(col_client_id).distinct().collect())
-        s_clients = (cl_id for cl_id in s_clients if cl_id in s_all_data_clients)
-        s_clients = sorted(s_clients)
-        s_clients = [cl_id for cl_id in s_clients]
+        s_clients = sorted(cl_id for cl_id in s_clients if cl_id in s_all_data_clients)
         Random(salt).shuffle(s_clients)
 
         # split client list

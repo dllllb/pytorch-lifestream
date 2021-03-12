@@ -1,0 +1,112 @@
+{
+  data_module: {
+    type: map
+    setup: {
+      col_id: game_session
+      dataset_files: {
+        data_path: "data/train_trx.parquet"
+      }
+      split_by: files
+      valid_size: 0.05
+      valid_split_seed: 42
+    }
+    train: {
+      min_seq_len: 25
+      augmentations: [
+        [DropoutTrx, {trx_dropout: 0.01}]
+        [SeqLenLimit, {max_seq_len: 2500}]
+      ]
+      split_strategy: {
+        split_strategy: "SampleSlices"
+        split_count: 5
+        cnt_min: 100
+        cnt_max: 500
+      }
+      num_workers: 16
+      batch_size: 256
+    }
+    valid: {
+      augmentations: [
+        [SeqLenLimit, {max_seq_len: 2500}]
+      ]
+      split_strategy: {
+        split_strategy: SampleSlices
+        split_count: 5
+        cnt_min: 100
+        cnt_max: 500
+      }
+      num_workers: 16
+      batch_size: 256
+    }
+  }
+
+  seed_everything: 42
+  trainer: {
+    gpus: 1
+    auto_select_gpus: false
+
+    max_epochs: 100
+
+    checkpoint_callback: false
+    deterministic: true
+  }
+  logger_name: mles_model
+
+  params: {
+    data_module_class: dltranz.data_load.data_module.coles_data_module.ColesDataModuleTrain
+    pl_module_class: dltranz.lightning_modules.coles_module.CoLESModule
+
+    validation_metric_params: {
+        K: 4
+        metric: cosine
+    }
+    encoder_type: rnn
+    rnn: {
+      type: gru
+      hidden_size: 100
+      bidir: false
+      trainable_starter: static
+    }
+
+    trx_encoder: {
+      norm_embeddings: false
+      embeddings_noise: 0.003
+      embeddings: {
+        event_id: {in: 500, out: 16}
+        event_code: {in: 50, out: 8}
+        event_type: {in: 6, out: 8}
+        title: {in: 50, out: 8}
+        world: {in: 6, out: 8}
+        correct: {in: 4, out: 2}
+      }
+      numeric_values: {}
+    }
+
+    head_layers: [
+      [NormEncoder, {}]
+    ]
+    
+    lr_scheduler: {
+      step_size: 30
+      step_gamma: 0.8
+    }
+
+    train: {
+      sampling_strategy: HardNegativePair
+      neg_count: 2
+      loss: ContrastiveLoss
+      margin: 0.5
+      lr: 0.002
+      weight_decay: 0.0
+    } 
+  }
+
+  model_path: "models/mles_model.p"
+
+  include "dataset_inference_file.hocon"
+
+  output: {
+    path: "data/mles_embeddings"
+    format: pickle
+  }
+}

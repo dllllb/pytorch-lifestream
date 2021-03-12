@@ -1,34 +1,35 @@
 # GRU encoder
 export SC_SUFFIX="encoder_gru"
-python ../../metric_learning.py \
-    params.device="$SC_DEVICE" \
+python ../../pl_train_module.py \
+    logger_name=${SC_SUFFIX} \
     params.rnn.type="gru" \
-    model_path.model="models/bowl2019_mlm__$SC_SUFFIX.p" \
-    --conf "conf/trx_dataset.hocon" "conf/mles_params.json"
-python ../../ml_inference.py \
-    params.device="$SC_DEVICE" \
-    model_path.model="models/bowl2019_mlm__$SC_SUFFIX.p" \
+    model_path="models/bowl2019_mlm__$SC_SUFFIX.p" \
+    --conf conf/mles_params.hocon
+
+python ../../pl_inference.py \
+    model_path="models/bowl2019_mlm__$SC_SUFFIX.p" \
     output.path="data/emb__$SC_SUFFIX" \
-    --conf "conf/dataset.hocon" "conf/mles_params.json"
+    --conf conf/mles_params.hocon
 
 # LSTM encoder
 export SC_SUFFIX="encoder_lstm"
-python ../../metric_learning.py \
-    params.device="$SC_DEVICE" \
+python ../../pl_train_module.py \
+    logger_name=${SC_SUFFIX} \
     params.rnn.type="lstm" \
-    model_path.model="models/bowl2019_mlm__$SC_SUFFIX.p" \
-    --conf "conf/trx_dataset.hocon" "conf/mles_params.json"
-python ../../ml_inference.py \
-    params.device="$SC_DEVICE" \
-    model_path.model="models/bowl2019_mlm__$SC_SUFFIX.p" \
+    model_path="models/bowl2019_mlm__$SC_SUFFIX.p" \
+    --conf conf/mles_params.hocon
+
+python ../../pl_inference.py \
+    model_path="models/bowl2019_mlm__$SC_SUFFIX.p" \
     output.path="data/emb__$SC_SUFFIX" \
-    --conf "conf/dataset.hocon" "conf/mles_params.json"
+    --conf conf/mles_params.hocon
 
 
 # Transformer encoder
 export SC_SUFFIX="encoder_transf_bs064_4head_64hs_4layers"
-python ../../metric_learning.py \
+python ../../pl_train_module.py \
     params.device="$SC_DEVICE" \
+    data_module.train.batch_size=32 \
     params.model_type="transf" \
     params.transf.n_heads=4 \
     params.transf.n_layers=4 \
@@ -38,19 +39,20 @@ python ../../metric_learning.py \
     params.train.split_strategy.cnt_max=200 \
     params.valid.split_strategy.cnt_min=50 \
     params.valid.split_strategy.cnt_max=200 \
-    model_path.model="models/bowl2019_mlm__$SC_SUFFIX.p" \
-    --conf "conf/trx_dataset.hocon" "conf/mles_params.json"
-python ../../ml_inference.py \
-    params.device="$SC_DEVICE" \
-    model_path.model="models/bowl2019_mlm__$SC_SUFFIX.p" \
-    params.valid.batch_size=32 \
+    model_path="models/bowl2019_mlm__$SC_SUFFIX.p" \
+    --conf conf/mles_params.hocon
+
+python ../../pl_inference.py \
+    model_path="models/bowl2019_mlm__$SC_SUFFIX.p" \
+    inference_dataloader.loader.batch_size=128 \
     output.path="data/emb__$SC_SUFFIX" \
-    --conf "conf/dataset.hocon" "conf/mles_params.json"
+    --conf conf/mles_params.hocon
 
 # Transformer encoder
 export SC_SUFFIX="encoder_transf_bs064_4head_64hs_8layers"
-python ../../metric_learning.py \
+python ../../pl_train_module.py \
     params.device="$SC_DEVICE" \
+    data_module.train.batch_size=32 \
     params.model_type="transf" \
     params.transf.n_heads=4 \
     params.transf.n_layers=8 \
@@ -60,23 +62,20 @@ python ../../metric_learning.py \
     params.train.split_strategy.cnt_max=200 \
     params.valid.split_strategy.cnt_min=50 \
     params.valid.split_strategy.cnt_max=200 \
-    model_path.model="models/bowl2019_mlm__$SC_SUFFIX.p" \
-    --conf "conf/trx_dataset.hocon" "conf/mles_params.json"
-python ../../ml_inference.py \
-    params.device="$SC_DEVICE" \
-    model_path.model="models/bowl2019_mlm__$SC_SUFFIX.p" \
+    model_path="models/bowl2019_mlm__$SC_SUFFIX.p" \
+    --conf conf/mles_params.hocon
+
+python ../../pl_inference.py \
+    model_path="models/bowl2019_mlm__$SC_SUFFIX.p" \
     params.valid.batch_size=32 \
     output.path="data/emb__$SC_SUFFIX" \
-    --conf "conf/dataset.hocon" "conf/mles_params.json"
+    --conf conf/mles_params.hocon
 
 # Compare
-python -m scenario_bowl2019 compare_approaches --models 'lgb' --output_file "results/scenario_bowl2019__encoder_types.csv" \
-    --embedding_file_names \
-    "mles_embeddings.pickle"              \
-    "emb__encoder_gru.pickle"                                \
-    "emb__encoder_lstm.pickle"                               \
-    "emb__encoder_transf_bs064_4head_64hs_4layers.pickle"         \
-    "emb__encoder_transf_bs064_4head_64hs_8layers.pickle"
-
-
-
+rm results/scenario_bowl2019__encoder_types.txt
+# rm -r conf/embeddings_validation.work/
+python -m embeddings_validation \
+    --conf conf/embeddings_validation_short.hocon --workers 10 --total_cpu_count 20 --local_scheduler\
+    --conf_extra \
+      'report_file: "../results/scenario_bowl2019__encoder_types.txt",
+      auto_features: ["../data/emb__encoder_*.pickle"]'

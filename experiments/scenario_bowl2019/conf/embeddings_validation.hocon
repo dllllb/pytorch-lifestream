@@ -4,10 +4,11 @@
     }
 
     target: {
-        file_name: "../data/train_labels.csv"
+        file_name: "../data/train_labels.csv" 
         cols_id: [game_session]
         cols_id_type: [str]
         col_target: accuracy_group
+        drop_duplicated_ids: true
     }
 
     split: {

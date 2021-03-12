@@ -1,0 +1,107 @@
+{
+  data_module: {
+    type: map
+
+    setup: {
+      dataset_files: {
+        train_data_path: "data/train_trx.parquet"
+        test_data_path: "data/test_trx.parquet"
+      }
+      col_id: game_session
+      col_id_dtype: str
+      col_target: accuracy_group
+
+      split_by: embeddings_validation
+      fold_info: "conf/embeddings_validation.work/folds/folds.json"
+    }
+
+    train: {
+        min_seq_len: 0
+        augmentations: [
+          [RandomSlice, {min_len: 180, max_len: 500}]
+          [DropoutTrx, {trx_dropout: 0.005}]
+        ]
+        num_workers: 16
+        batch_size: 64
+        
+    }
+
+    valid: {
+      augmentations: [
+        [SeqLenLimit, {max_seq_len: 5000}]
+      ]
+      num_workers: 8
+      batch_size: 64
+    }
+  }
+
+  embedding_validation_results: {
+    model_name: nn
+    feature_name: target_scores
+    output_path: "results/fit_target_results.json"
+  }
+
+  seed_everything: 42
+  trainer: {
+    gpus: 1
+    auto_select_gpus: false
+
+    max_epochs: 35
+
+    checkpoint_callback: false
+    deterministic: true
+  }
+  logger_name: target_scores
+
+  params: {
+    score_metric: accuracy
+
+    encoder_type: rnn
+    rnn: {
+      hidden_size: 32
+      type: gru
+      bidir: false
+      trainable_starter: static
+    }
+
+    trx_encoder: {
+      norm_embeddings: false
+      embeddings_noise: 0.003
+      embeddings: {
+        event_id: {in: 500, out: 16}
+        event_code: {in: 50, out: 8}
+        event_type: {in: 6, out: 8}
+        title: {in: 50, "out": 8}
+        world: {in: 6, out: 8}
+        correct: {in: 4, out: 2}
+      }
+      numeric_values: {}
+    }
+
+    head: {
+      pred_all_states: false
+      pred_all_states_mean: false
+      explicit_lengths: false
+      norm_input: false
+      num_classes: 4
+      use_batch_norm: false
+    }
+
+    head_layers: [
+      [Linear, {"in_features": "{seq_encoder.embedding_size}", "out_features": 4}]
+      [LogSoftmax, {dim: 1}]
+    ]
+
+    train: {
+      random_neg: false
+      loss: NLLLoss
+      lr: 0.01
+      weight_decay: 0.0
+    }
+
+    lr_scheduler: {
+      step_size: 5
+      step_gamma: 0.5
+    }
+  }
+}

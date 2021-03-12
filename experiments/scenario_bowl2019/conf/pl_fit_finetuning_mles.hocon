@@ -1,0 +1,85 @@
+{
+  data_module: {
+    type: map
+
+    setup: {
+      dataset_files: {
+        train_data_path: "data/train_trx.parquet"
+        test_data_path: "data/test_trx.parquet"
+      }
+      col_id: game_session
+      col_id_dtype: str
+      col_target: accuracy_group
+
+      split_by: embeddings_validation
+      fold_info: "conf/embeddings_validation.work/folds/folds.json"
+    }
+
+    train: {
+      min_seq_len: 0
+      augmentations: [
+        [RandomSlice, {min_len: 250, max_len: 500}]
+        [DropoutTrx, {trx_dropout: 0.005}]
+      ]
+      num_workers: 16
+      batch_size: 64
+    }
+
+    valid: {
+      augmentations: [
+        [SeqLenLimit, {max_seq_len: 5000}]
+      ]
+      num_workers: 8
+      batch_size: 512
+    }
+  }
+
+  embedding_validation_results: {
+    model_name: nn
+    feature_name: mles_finetuning
+    output_path: "results/mles_finetuning_results.json"
+  }
+
+  seed_everything: 42
+  trainer: {
+    gpus: 1
+    auto_select_gpus: false
+
+    max_epochs: 10
+
+    checkpoint_callback: false
+    deterministic: true
+  }
+  logger_name: mles_finetuning
+
+  params: {
+    score_metric: accuracy
+
+    encoder_type: pretrained
+    pretrained: {
+      pl_module_class: dltranz.lightning_modules.coles_module.CoLESModule
+      model_path: "models/mles_model_ft.p"
+      lr: 0.0001
+    }
+
+    head_layers: [
+      [BatchNorm1d, {num_features: "{seq_encoder.embedding_size}"}]
+      [Linear, {"in_features": "{seq_encoder.embedding_size}", "out_features": 4}]
+      [LogSoftmax, {dim: 1}]
+    ]
+
+
+    train: {
+      random_neg: false
+      loss: NLLLoss
+      lr: 0.001
+      weight_decay: 0.0
+    }
+
+    lr_scheduler: {
+      step_size: 4
+      step_gamma: 0.1
+    }
+  }
+}
+
