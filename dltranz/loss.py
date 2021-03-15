@@ -19,22 +19,6 @@ def mse_loss(pred, actual):
 def mape_metric(pred, actual):
     eps = 1
     device = pred.device
-
-    # if torch.sum(pred) > 0:
-    #     for ix, i in enumerate(pred):
-    #         print(ix, i)
-    #     print('===========================')
-    #     for ix, j in enumerate(actual):
-    #         print(ix, j)
-
-    #     print('======================================================================================')
-    #     ttt = (actual.to(device) - pred).abs() / (actual.to(device).abs() + eps)
-    #     for ix, i in enumerate(ttt):
-    #         print(ix, i)
-    #     print('=======================++++++++++++++++++++++++++++++++++++++++++=================')
-    #     print(torch.mean((actual.to(device) - pred).abs() / (actual.to(device).abs() + eps)))
-    #     exit()
-
     return torch.mean((actual.to(device) - pred).abs() / (actual.to(device).abs() + eps))
 
 def r_squared(pred, actual):
@@ -193,8 +177,8 @@ class UnsupervisedTabNetLoss(nn.Module):
 
 
 class DistributionTargetsLoss(nn.Module):
-    def __init__(self, ):
-        super().__init__(mult1=3, mult2=0.167, mult3=1, mult4=1)
+    def __init__(self, mult1=3, mult2=0.167, mult3=1, mult4=1):
+        super().__init__()
         self.mults = (mult1, mult2, mult3, mult4)
 
     def forward(self, pred, true):
