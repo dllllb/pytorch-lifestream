@@ -112,7 +112,7 @@ def freeze_layers(model):
 
 def create_head_layers(params, seq_encoder):
     from torch.nn import Linear, BatchNorm1d, ReLU, Sigmoid, LogSoftmax
-    from dltranz.custom_layers import Squeeze, DistributionTargetsHead, DummyHead
+    from dltranz.custom_layers import Squeeze, DistributionTargetsHeadFromRnn, DistributionTargetsHeadFromAggFeatures, DummyHead
     from dltranz.seq_encoder.utils import NormEncoder
     
     layers = []

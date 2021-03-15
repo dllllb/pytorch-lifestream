@@ -168,7 +168,7 @@ class EmbedderNetwork(nn.Module):
         return embedded_x, self.network(embedded_x)
 
 
-class DistributionTargetsHead(torch.nn.Module):
+class DistributionTargetsHeadFromRnn(torch.nn.Module):
     def __init__(self, in_size=48, num_distr_classes=6):
         super().__init__()
         self.dense1 = torch.nn.Linear(in_size, 256)
@@ -194,9 +194,8 @@ class DistributionTargetsHead(torch.nn.Module):
         self.relu = torch.nn.ReLU()
 
     def forward(self, x):
-        if type(x) is tuple:
-            device = x[0].device
-            x, neg_sum_logs, pos_sum_logs = x[0], torch.tensor(x[1][:, None], device=device), torch.tensor(x[2][:, None], device=device)
+        device = x[0].device
+        x, neg_sum_logs, pos_sum_logs = x[0], torch.tensor(x[1][:, None], device=device), torch.tensor(x[2][:, None], device=device)
 
         out1 = self.relu(self.dense1(x))
 
@@ -224,6 +223,37 @@ class DistributionTargetsHead(torch.nn.Module):
         out4_gate_pos = self.sigmoid(self.dense4_gate_pos(out3_gate_pos))
 
         return neg_sum_logs * out4_gate_neg + out4_sums_neg * (1 - out4_gate_neg), out3_distr_neg, pos_sum_logs * out4_gate_pos + out4_sums_pos * (1 - out4_gate_pos), out3_distr_pos
+
+
+class DistributionTargetsHeadFromAggFeatures(torch.nn.Module):
+    def __init__(self, in_size=48, num_distr_classes=6):
+        super().__init__()
+        self.dense1 = torch.nn.Linear(in_size, 512)
+
+        self.dense2_distributions = torch.nn.Linear(512, 128)
+        self.dense2_sums = torch.nn.Linear(512, 64)
+
+        self.dense3_distr_neg = torch.nn.Linear(128, num_distr_classes)
+        self.dense3_distr_pos = torch.nn.Linear(128, num_distr_classes)
+
+        self.dense3_sums_neg = torch.nn.Linear(64, 1)
+        self.dense3_sums_pos = torch.nn.Linear(64, 1)
+
+        self.relu = torch.nn.ReLU()
+
+    def forward(self, x):
+        out1 = self.relu(self.dense1(x))
+
+        out2_distr = self.relu(self.dense2_distributions(out1))
+        out2_sums = self.relu(self.dense2_sums(out1))
+
+        out3_distr_neg = self.dense3_distr_neg(out2_distr)
+        out3_distr_pos = self.dense3_distr_pos(out2_distr)
+
+        out3_sums_neg = self.dense3_sums_neg(out2_sums)
+        out3_sums_pos = self.dense3_sums_pos(out2_sums)
+
+        return out3_sums_neg, out3_distr_neg, out3_sums_pos, out3_distr_pos
 
 
 class DummyHead(torch.nn.Module):
