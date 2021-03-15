@@ -58,7 +58,7 @@ def test_usual_loss_first():
     loss = DistributionTargetsLoss()
     out = loss(prediction, label)
 
-    assert abs(out.item() - 12.138427734375) < eps
+    assert abs(out.item() - 12.138458251953125) < eps
     assert type(out) is torch.Tensor
 
 
@@ -78,7 +78,7 @@ def test_usual_loss_second():
     loss = DistributionTargetsLoss()
     out = loss(prediction, label)
 
-    assert abs(out.item() - 38.56253433227539) < eps
+    assert abs(out.item() - 38.563011169433594) < eps
     assert type(out) is torch.Tensor
 
     
@@ -98,5 +98,5 @@ def test_one_class():
     loss = DistributionTargetsLoss()
     out = loss(prediction, label)
 
-    assert abs(out.item() - 10.703119277954102) < eps
+    assert abs(out.item() - 10.703149795532227) < eps
     assert type(out) is torch.Tensor
