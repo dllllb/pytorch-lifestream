@@ -1,9 +1,11 @@
 from collections import OrderedDict
 
 import torch
+import numpy as np
 
 from dltranz.seq_encoder.abs_seq_encoder import AbsSeqEncoder
 from dltranz.trx_encoder import PaddedBatch
+from experiments.scenario_gender.distribution_target import top_tr_types, get_distributions
 
 
 class AggFeatureModel(torch.nn.Module):
@@ -14,6 +16,7 @@ class AggFeatureModel(torch.nn.Module):
         self.embeddings = OrderedDict(config['embeddings'].items())
         self.was_logified = config['was_logified']
         self.log_scale_factor = config['log_scale_factor']
+        self.distribution_targets_task = config.get('distribution_targets_task', False)
 
         self.eps = 1e-9
 
@@ -40,6 +43,7 @@ class AggFeatureModel(torch.nn.Module):
         :param x:
         :return:
         """
+
         feature_arrays = x.payload
         device = next(iter(feature_arrays.values())).device
         B, T = next(iter(feature_arrays.values())).size()
@@ -47,7 +51,7 @@ class AggFeatureModel(torch.nn.Module):
         # if (seq_lens == 0).any():
         #     raise Exception('seq_lens == 0')
 
-        processed = [seq_lens.unsqueeze(1)]  # count
+        processed = [torch.log(seq_lens.unsqueeze(1))]  # count
         cat_processed = []
 
         for col_num, options_num in self.numeric_values.items():
@@ -65,10 +69,27 @@ class AggFeatureModel(torch.nn.Module):
                 val_orig = torch.expm1(self.log_scale_factor * torch.abs(val_orig)) * torch.sign(val_orig)
 
             # trans_common_features
-            processed.append(val_orig.sum(dim=1).unsqueeze(1))  # sum
-            processed.append(val_orig.sum(dim=1).div(seq_lens + self.eps).unsqueeze(1))  # mean
+
+            sum_ = val_orig.sum(dim=1).unsqueeze(1)  # sum
             a = torch.clamp(val_orig.pow(2).sum(dim=1) - val_orig.sum(dim=1).pow(2).div(seq_lens + self.eps), min=0.0)
-            processed.append(a.div(torch.clamp(seq_lens - 1, min=0.0) + self.eps).pow(0.5).unsqueeze(1))  # std
+            mean_ = val_orig.sum(dim=1).div(seq_lens + self.eps).unsqueeze(1)  # mean
+            std_ = a.div(torch.clamp(seq_lens - 1, min=0.0) + self.eps).pow(0.5).unsqueeze(1)  # std
+   
+            if self.distribution_targets_task:
+                sum_pos = torch.clamp(val_orig, min=0).sum(dim=1).unsqueeze(1)
+                processed.append(torch.log(sum_pos + 1))  # log sum positive
+
+                sum_pos = torch.clamp(val_orig, max=0).sum(dim=1).unsqueeze(1)
+                processed.append(-1 * torch.log(-sum_pos + 1))  # log sum negative
+
+                mean_ = torch.log(torch.abs(mean_))
+            else:
+                processed.append(sum_)
+            
+            processed.append(mean_)
+
+            if not self.distribution_targets_task:
+                processed.append(std_)
 
             # TODO: percentiles
 
@@ -82,6 +103,7 @@ class AggFeatureModel(torch.nn.Module):
 
                 # counts over val_embed
                 mask = (1.0 - ohe[0]).unsqueeze(0)  # 0, 1, 1, 1, ..., 1
+
                 e_cnt = ohe_transform.sum(dim=1) * mask
                 if self.num_aggregators.get('count', False):
                     processed.append(e_cnt)
@@ -116,8 +138,9 @@ class AggFeatureModel(torch.nn.Module):
         for i, t in enumerate(processed):
             if torch.isnan(t).any():
                 raise Exception(f'nan in {i}')
-
+    
         out = torch.cat(processed + cat_processed, 1)
+
         return out
 
     @property

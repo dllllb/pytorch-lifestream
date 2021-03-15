@@ -2,6 +2,7 @@ import numpy as np
 import torch
 from torch import nn as nn
 
+from experiments.scenario_gender.distribution_target import top_tr_types, get_distributions, load_data_pq, transform_inv
 from dltranz.seq_encoder.abs_seq_encoder import AbsSeqEncoder
 from dltranz.seq_encoder.utils import LastStepEncoder
 from dltranz.trx_encoder import PaddedBatch, TrxEncoder
@@ -108,6 +109,29 @@ class RnnSeqEncoder(AbsSeqEncoder):
         if self.is_reduce_sequence:
             x = self.reducer(x)
         return x
+
+
+class RnnSeqEncoderDistributionTarget(RnnSeqEncoder):
+    def __init__(self, params, is_reduce_sequence):
+        super().__init__(params, is_reduce_sequence)
+        self.eps = 1e-7
+        
+    def forward(self, x):
+        amount_col = []
+        for i, row in enumerate(x.payload['amount']):
+            amount_col += [list(row[:x.seq_lens[i].item()].cpu().numpy())]
+        amount_col = np.array(amount_col, dtype=object)
+        neg_sums = []
+        pos_sums = []
+        for list_row in amount_col:
+            np_row = np.array(list_row)
+            neg_sums += [np.sum(transform_inv(np_row[np.where(np_row < 0)]))]
+            pos_sums += [np.sum(transform_inv(np_row[np.where(np_row >= 0)]))]
+        neg_sum_logs = np.log(np.abs(np.array(neg_sums)) + self.eps)
+        pos_sum_logs = np.log(np.array(pos_sums) + self.eps)
+
+        x = super().forward(x)
+        return x, neg_sum_logs, pos_sum_logs
 
 
 class SkipStepEncoder(nn.Module):

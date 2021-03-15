@@ -7,19 +7,40 @@ from dltranz.trx_encoder import PaddedBatch
 
 def cross_entropy(pred, soft_targets):
     logsoftmax = torch.nn.LogSoftmax()
-    return torch.mean(torch.sum(-soft_targets * logsoftmax(pred), 1))
+    device = pred.device
+    return torch.mean(torch.sum(-soft_targets.to(device) * logsoftmax(pred), 1))
 
 
 def mse_loss(pred, actual):
-    return torch.mean((pred - actual)**2)
+    device = pred.device
+    return torch.mean((pred - actual.to(device))**2)
 
 
 def mape_metric(pred, actual):
     eps = 1
-    return torch.mean((actual - pred).abs() / (actual.abs() + eps))
+    device = pred.device
+
+    # if torch.sum(pred) > 0:
+    #     for ix, i in enumerate(pred):
+    #         print(ix, i)
+    #     print('===========================')
+    #     for ix, j in enumerate(actual):
+    #         print(ix, j)
+
+    #     print('======================================================================================')
+    #     ttt = (actual.to(device) - pred).abs() / (actual.to(device).abs() + eps)
+    #     for ix, i in enumerate(ttt):
+    #         print(ix, i)
+    #     print('=======================++++++++++++++++++++++++++++++++++++++++++=================')
+    #     print(torch.mean((actual.to(device) - pred).abs() / (actual.to(device).abs() + eps)))
+    #     exit()
+
+    return torch.mean((actual.to(device) - pred).abs() / (actual.to(device).abs() + eps))
 
 def r_squared(pred, actual):
-    return 1 - torch.sum((actual - pred)**2) / torch.sum((actual - torch.mean(actual))**2)
+    device = pred.device
+    return 1 - torch.sum((actual.to(device) - pred)**2) \
+                         / torch.sum((actual.to(device) - torch.mean(actual.to(device)))**2)
 
 
 class PairwiseMarginRankingLoss(nn.Module):
@@ -172,8 +193,9 @@ class UnsupervisedTabNetLoss(nn.Module):
 
 
 class DistributionTargetsLoss(nn.Module):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, ):
+        super().__init__(mult1=3, mult2=0.167, mult3=1, mult4=1)
+        self.mults = (mult1, mult2, mult3, mult4)
 
     def forward(self, pred, true):
         log_minus_sum = np.log(np.abs(true[:, 0].astype(np.float)) + 1)[:, None]
@@ -192,7 +214,7 @@ class DistributionTargetsLoss(nn.Module):
         loss_minus_distr = cross_entropy(minus_distribution_hat, torch.tensor(minus_distribution, device=device))
         loss_plus_distr = cross_entropy(plus_distribution_hat, torch.tensor(plus_distribution, device=device))
 
-        loss = loss_minus_distr + loss_plus_distr + loss_minus_sum * 3 + loss_plus_sum / 6
+        loss = loss_minus_sum * self.mults[0] + loss_plus_sum * self.mults[1] + loss_minus_distr * self.mults[2] + loss_plus_distr * self.mults[3]
         return loss.float()
 
 

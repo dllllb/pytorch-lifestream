@@ -2,6 +2,8 @@ import numpy as np
 import torch
 import torch.nn as nn
 
+from experiments.scenario_gender.distribution_target import top_tr_types, get_distributions, load_data_pq, transform_inv
+
 
 class DropoutEncoder(nn.Module):
     def __init__(self, p):
@@ -169,29 +171,64 @@ class EmbedderNetwork(nn.Module):
 class DistributionTargetsHead(torch.nn.Module):
     def __init__(self, in_size=48, num_distr_classes=6):
         super().__init__()
-        self.dense1 = torch.nn.Linear(in_size, 512)
+        self.dense1 = torch.nn.Linear(in_size, 256)
 
-        self.dense2_distributions = torch.nn.Linear(512, 128)
-        self.dense2_sums = torch.nn.Linear(512, 64)
+        self.dense2_distributions = torch.nn.Linear(256, 128)
+        self.dense2_sums = torch.nn.Linear(256, 64)
+        self.dense2_gate = torch.nn.Linear(256, 64)
 
         self.dense3_distr_neg = torch.nn.Linear(128, num_distr_classes)
         self.dense3_distr_pos = torch.nn.Linear(128, num_distr_classes)
 
-        self.dense3_sums_neg = torch.nn.Linear(64, 1)
-        self.dense3_sums_pos = torch.nn.Linear(64, 1)
+        self.dense3_sums_neg = torch.nn.Linear(64, 15)
+        self.dense3_sums_pos = torch.nn.Linear(64, 15)
+        self.dense3_gate_neg = torch.nn.Linear(64, 15)
+        self.dense3_gate_pos = torch.nn.Linear(64, 15)
 
+        self.dense4_sums_neg = torch.nn.Linear(16, 1)
+        self.dense4_sums_pos = torch.nn.Linear(16, 1)
+        self.dense4_gate_neg = torch.nn.Linear(16, 1)
+        self.dense4_gate_pos = torch.nn.Linear(16, 1)
+        
+        self.sigmoid = torch.nn.Sigmoid()
         self.relu = torch.nn.ReLU()
 
     def forward(self, x):
+        if type(x) is tuple:
+            device = x[0].device
+            x, neg_sum_logs, pos_sum_logs = x[0], torch.tensor(x[1][:, None], device=device), torch.tensor(x[2][:, None], device=device)
+
         out1 = self.relu(self.dense1(x))
 
         out2_distr = self.relu(self.dense2_distributions(out1))
         out2_sums = self.relu(self.dense2_sums(out1))
+        out2_gate = self.relu(self.dense2_gate(out1))
+        out2_gate = out2_gate.detach()
 
         out3_distr_neg = self.dense3_distr_neg(out2_distr)
         out3_distr_pos = self.dense3_distr_pos(out2_distr)
 
-        out3_sums_neg = self.dense3_sums_neg(out2_sums)
-        out3_sums_pos = self.dense3_sums_pos(out2_sums)
+        out3_sums_neg = self.relu(self.dense3_sums_neg(out2_sums))
+        out3_sums_pos = self.relu(self.dense3_sums_pos(out2_sums))
+        out3_gate_neg = self.relu(self.dense3_gate_neg(out2_gate))
+        out3_gate_pos = self.relu(self.dense3_gate_pos(out2_gate))
 
-        return out3_sums_neg, out3_distr_neg, out3_sums_pos, out3_distr_pos
+        out3_sums_neg = torch.cat((out3_sums_neg, neg_sum_logs), dim=1).float()
+        out3_sums_pos = torch.cat((out3_sums_pos, pos_sum_logs), dim=1).float()
+        out3_gate_neg = torch.cat((out3_gate_neg, neg_sum_logs), dim=1).float()
+        out3_gate_pos = torch.cat((out3_gate_pos, pos_sum_logs), dim=1).float()
+
+        out4_sums_neg = self.dense4_sums_neg(out3_sums_neg)
+        out4_sums_pos = self.dense4_sums_pos(out3_sums_pos)
+        out4_gate_neg = self.sigmoid(self.dense4_gate_neg(out3_gate_neg))
+        out4_gate_pos = self.sigmoid(self.dense4_gate_pos(out3_gate_pos))
+
+        return neg_sum_logs * out4_gate_neg + out4_sums_neg * (1 - out4_gate_neg), out3_distr_neg, pos_sum_logs * out4_gate_pos + out4_sums_pos * (1 - out4_gate_pos), out3_distr_pos
+
+
+class DummyHead(torch.nn.Module):
+    def __init__(self):
+        super().__init__()
+
+    def forward(self, x):
+        return x[0], x[1], x[2], x[3]

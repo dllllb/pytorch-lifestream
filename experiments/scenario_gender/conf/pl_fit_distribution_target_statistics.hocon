@@ -35,14 +35,14 @@
             [SeqLenLimit, {max_seq_len: 1200}]
         ]
         num_workers: 8
-        batch_size: 64   # 512
+        batch_size: 512
         take_first_fraction: 0.5
     }
 
     test: {
         augmentations: []
         num_workers: 8
-        batch_size: 64
+        batch_size: 512
         take_first_fraction: 0.5
     }
   }
@@ -50,15 +50,15 @@
   embedding_validation_results: {
     model_name: nn
     feature_name: target_scores
-    output_path: "results/fit_target_distribution_results.json"
+    output_path: "results/fit_target_distribution_results_statistics.json"
   }
 
   seed_everything: 42
   trainer: {
-    gpus: 1
+    gpus: 0
     auto_select_gpus: false
 
-    max_epochs: 10
+    max_epochs: 0
 
     checkpoint_callback: false
     deterministic: True
@@ -66,16 +66,15 @@
   logger_name: target_scores
 
   params: {
-    distribution_targets_task : True
     score_metric: [R2n, R2p, MAPEn, MAPEp, CEn, CEp],
 
-    encoder_type: distribution_targets,
+    encoder_type: statistics,
     trx_encoder: {
+      distribution_targets_task : True
       norm_embeddings: false,
       embeddings_noise: 0.003,
       embeddings: {
-        mcc_code: {in: 200, out: 48},
-        tr_type: {in: 100, out: 24}
+        tr_type: {in: 100}
       },
       numeric_values: {
         amount: identity
@@ -83,15 +82,9 @@
       was_logified: true
       log_scale_factor: 1
     },
-    rnn: {
-      hidden_size: 48,
-      type: gru,
-      bidir: false,
-      trainable_starter: static
-    },
 
     head_layers: [
-        [DistributionTargetsHead, {in_size: "{seq_encoder.embedding_size}", num_distr_classes: 6}]
+      [DummyHead, {}]
     ]
 
     train: {

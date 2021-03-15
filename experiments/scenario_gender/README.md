@@ -140,4 +140,14 @@ python -m embeddings_validation \
 
 python ../../pl_fit_target.py --conf conf/pl_fit_distribution_target.hocon
 
+python ../../pl_fit_target.py --conf conf/pl_fit_distribution_target_agg_features.hocon
+
+python ../../pl_fit_target.py --conf conf/pl_fit_distribution_target_statistics.hocon
+
+rm results/gender_train_distribution_target.txt
+# rm -r conf/embeddings_validation.work/
+python -m embeddings_validation \
+    --conf conf/embeddings_validation_distribution_target.hocon --workers 10 --total_cpu_count 20
+
+
 ```
