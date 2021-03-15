@@ -1,6 +1,6 @@
 import torch
 
-from dltranz.custom_layers import DropoutEncoder, Squeeze, CatLayer, MLP, TabularRowEncoder, DistributionTargetsHead
+from dltranz.custom_layers import DropoutEncoder, Squeeze, CatLayer, MLP, TabularRowEncoder, DistributionTargetsHeadFromRnn
 
 
 class TrxEncoderTest(torch.nn.Module):
