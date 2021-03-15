@@ -80,9 +80,10 @@ def test_distribution_target_head():
         "in_size": 48,
         "num_distr_classes": 6
     }
-    
-    distr_target_head = DistributionTargetsHead(**distr_target_head_config)
+
+    distr_target_head = DistributionTargetsHeadFromRnn(**distr_target_head_config)
     x = torch.rand(64, 48)
+    x = (x, np.ones((64,)), np.ones((64,)))
     y = distr_target_head(x)
     assert type(y) == tuple and len(y) == 4
     assert y[0].shape == y[2].shape == (64, 1) and y[1].shape == y[3].shape == (64, 6)
