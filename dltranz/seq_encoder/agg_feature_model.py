@@ -5,7 +5,6 @@ import numpy as np
 
 from dltranz.seq_encoder.abs_seq_encoder import AbsSeqEncoder
 from dltranz.trx_encoder import PaddedBatch
-from experiments.scenario_gender.distribution_target import top_tr_types, get_distributions
 
 
 class AggFeatureModel(torch.nn.Module):
@@ -51,7 +50,10 @@ class AggFeatureModel(torch.nn.Module):
         # if (seq_lens == 0).any():
         #     raise Exception('seq_lens == 0')
 
-        processed = [torch.log(seq_lens.unsqueeze(1))]  # count
+        if (self.distribution_targets_task):
+            processed = [torch.log(seq_lens.unsqueeze(1))]  # count
+        else:
+            processed = [seq_lens.unsqueeze(1)]
         cat_processed = []
 
         for col_num, options_num in self.numeric_values.items():

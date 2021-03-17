@@ -11,6 +11,7 @@ def transform(x):
 def transform_inv(x):
     return np.sign(x) * (np.exp(np.abs(x)) - 1)
 
+
 def load_data_csv(file_name_in):
     df = pd.read_csv(file_name_in)
     grouped = df.groupby('customer_id')
@@ -48,11 +49,6 @@ def top_tr_types(np_data, tr_types_col, tr_amounts_col, f):
             positive_items += [pair[0]]
         else:
             negative_items += [pair[0]]
-
-#     with open('data/top_negative_items.pkl', 'wb') as f:
-#         pickle.dump(negative_items, f)
-#     with open('data/top_positive_items.pkl', 'wb') as f:
-#         pickle.dump(positive_items, f)
     
     return negative_items, positive_items
 
@@ -80,9 +76,10 @@ def get_distributions(np_data, tr_amounts_col, tr_types_col=None,
         pos_tr_amounts_target = {}
         others_pos_tr_amounts_target = 0
 
-        # create value counts for each top transaction type and create neg and pos sum for id        
+        # create value counts for each top transaction type and create neg and pos sum for id
+
         for ixx, el in enumerate(tr_type_target):
-            if el < 0:
+            if amount_target[ixx] < 0:
                 sums_of_negative_target[i] += amount_target[ixx]
             else:
                 sums_of_positive_target[i] += amount_target[ixx]
@@ -91,9 +88,9 @@ def get_distributions(np_data, tr_amounts_col, tr_types_col=None,
                 neg_tr_amounts_target[el] = neg_tr_amounts_target.get(el, 0) + amount_target[ixx]
             elif el in set_top_pos_types:
                 pos_tr_amounts_target[el] = pos_tr_amounts_target.get(el, 0) + amount_target[ixx]
-            elif el < 0:
+            elif amount_target[ixx] < 0:
                 others_neg_tr_amounts_target += amount_target[ixx]
-            elif el >= 0:
+            elif amount_target[ixx] >= 0:
                 others_pos_tr_amounts_target += amount_target[ixx]
             else:
                 assert False, "Should not be!"
@@ -126,10 +123,10 @@ def get_distributions(np_data, tr_amounts_col, tr_types_col=None,
 
 def write_target(filename_out, ids, sums_of_negative_target, sums_of_positive_target,
                  neg_distribution, pos_distribution):
-    data_to_write = list(ids, zip(sums_of_negative_target,
-                                                    neg_distribution,
-                                                    sums_of_positive_target,
-                                                    pos_distribution))
+    data_to_write = list(zip(ids, zip(sums_of_negative_target,
+                                      neg_distribution,
+                                      sums_of_positive_target,
+                                      pos_distribution)))
     output_data_df = pd.DataFrame(data=data_to_write, columns=['customer_id', 'gender'])
     output_data_df.to_csv(filename_out, index=False)
     
@@ -154,10 +151,10 @@ def create_new_targets_on_gender_train_csv(file_name_in, filename_out, TR_AMOUNT
 
     # load data to numpy
     np_data, columns = load_data_csv(file_name_in)
-    ids = np.data[:, columns.index('customer_id')]
+    ids = np_data[:, columns.index('customer_id')]
 
     # get top negative and positive types
-    negative_items, positive_items = top_tr_types(np_data, TR_TYPES_COL, TR_AMOUNTS_COL)
+    negative_items, positive_items = top_tr_types(np_data, TR_TYPES_COL, TR_AMOUNTS_COL, lambda x: x)
     
     # get distributions
     distr = get_distributions(np_data, TR_AMOUNTS_COL, TR_TYPES_COL,
