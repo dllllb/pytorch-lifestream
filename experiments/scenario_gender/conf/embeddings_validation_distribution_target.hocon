@@ -33,8 +33,9 @@
     }
 
     external_scores: {
-        baseline: "../results/fit_target_distribution_results.json",
-        distirbution_head: "../results/fit_target_distribution_results_agg_features.json"
+        nn: "../results/fit_target_distribution_results.json",
+        half_stats: "../results/fit_target_distribution_results_statistics.json"
+        agg_head: "../results/fit_target_distribution_results_agg_features.json"
     }
 
     report: {
@@ -43,7 +44,10 @@
         print_all_metrics: false
 
         metrics: {
-            R2n: {float_format: "{:.3f}", baseline_key=[], split_columns: true}
+            R2n: {float_format: "{:.3f}", split_columns: true},
+            R2p: {float_format: "{:.3f}", split_columns: true},
+            CEn: {float_format: "{:.3f}", split_columns: true},
+            CEp: {float_format: "{:.3f}", split_columns: true},
         }
     }
     

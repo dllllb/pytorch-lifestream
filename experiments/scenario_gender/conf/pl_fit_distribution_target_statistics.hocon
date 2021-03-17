@@ -48,7 +48,7 @@
   }
 
   embedding_validation_results: {
-    model_name: nn
+    model_name: stats
     feature_name: target_scores
     output_path: "results/fit_target_distribution_results_statistics.json"
   }

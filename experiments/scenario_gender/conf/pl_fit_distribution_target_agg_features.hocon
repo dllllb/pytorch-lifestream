@@ -46,7 +46,7 @@
   }
 
   embedding_validation_results: {
-    model_name: nn
+    model_name: agg_features
     feature_name: target_scores
     output_path: "results/fit_target_distribution_results_agg_features.json"
   }
