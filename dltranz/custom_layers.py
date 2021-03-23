@@ -1,6 +1,10 @@
 import numpy as np
 import torch
 import torch.nn as nn
+# import logging
+import pytorch_lightning as pl
+
+# logger = logging.getLogger(__name__)
 
 
 class DropoutEncoder(nn.Module):
@@ -166,29 +170,59 @@ class EmbedderNetwork(nn.Module):
         return embedded_x, self.network(embedded_x)
 
 
+class DistributionTargetsHeadFromRnn_distribution(torch.nn.Module):
+    def __init__(self, in_size=256, num_distr_classes=6):
+        super().__init__()
+        self.dense1 = torch.nn.Linear(in_size, 128)
+        self.dense2_neg = torch.nn.Linear(128, num_distr_classes)
+        self.dense2_pos = torch.nn.Linear(128, num_distr_classes)
+        self.sigmoid = torch.nn.Sigmoid()
+        self.relu = torch.nn.ReLU()
+
+    def forward(self, x):
+        out1 = self.relu(self.dense1(x))
+        out2_neg = self.dense2_neg(out1)
+        out2_pos = self.dense2_pos(out1)
+        return out2_neg, out2_pos
+
+
+class DistributionTargetsHeadFromRnn_regression(torch.nn.Module):
+    def __init__(self, in_size=256, gates=False):
+        super().__init__()
+        self.dense1 = torch.nn.Linear(in_size, 64)
+        self.dense2_neg = torch.nn.Linear(64, 15)
+        self.dense2_pos = torch.nn.Linear(64, 15)
+        self.dense3_neg = torch.nn.Linear(16, 1)
+        self.dense3_pos = torch.nn.Linear(16, 1)
+        self.sigmoid = torch.nn.Sigmoid()
+        self.relu = torch.nn.ReLU()
+        self.gates = gates
+
+    def forward(self, x, neg_sum_logs, pos_sum_logs):
+        out1 = self.relu(self.dense1(x))
+        if self.gates:
+            out1 = out1.detach()
+        out2_neg = self.relu(self.dense2_neg(out1))
+        out2_pos = self.relu(self.dense2_pos(out1))
+        out2_neg = torch.cat((out2_neg, neg_sum_logs), dim=1).float()
+        out2_pos = torch.cat((out2_pos, pos_sum_logs), dim=1).float()
+        out3_neg = self.dense3_neg(out2_neg)
+        out3_pos = self.dense3_pos(out2_pos)
+        if self.gates:
+            out3_neg = self.sigmoid(out3_neg)
+            out3_pos = self.sigmoid(out3_pos)
+        return out3_neg, out3_pos
+
+
 class DistributionTargetsHeadFromRnn(torch.nn.Module):
     def __init__(self, in_size=48, num_distr_classes=6):
         super().__init__()
         self.dense1 = torch.nn.Linear(in_size, 256)
 
-        self.dense2_distributions = torch.nn.Linear(256, 128)
-        self.dense2_sums = torch.nn.Linear(256, 64)
-        self.dense2_gate = torch.nn.Linear(256, 64)
+        self.distribution = DistributionTargetsHeadFromRnn_distribution(256, num_distr_classes)
+        self.regr_sums = DistributionTargetsHeadFromRnn_regression(256)
+        self.regr_gates = DistributionTargetsHeadFromRnn_regression(256, True)
 
-        self.dense3_distr_neg = torch.nn.Linear(128, num_distr_classes)
-        self.dense3_distr_pos = torch.nn.Linear(128, num_distr_classes)
-
-        self.dense3_sums_neg = torch.nn.Linear(64, 15)
-        self.dense3_sums_pos = torch.nn.Linear(64, 15)
-        self.dense3_gate_neg = torch.nn.Linear(64, 15)
-        self.dense3_gate_pos = torch.nn.Linear(64, 15)
-
-        self.dense4_sums_neg = torch.nn.Linear(16, 1)
-        self.dense4_sums_pos = torch.nn.Linear(16, 1)
-        self.dense4_gate_neg = torch.nn.Linear(16, 1)
-        self.dense4_gate_pos = torch.nn.Linear(16, 1)
-        
-        self.sigmoid = torch.nn.Sigmoid()
         self.relu = torch.nn.ReLU()
 
     def forward(self, x):
@@ -197,30 +231,12 @@ class DistributionTargetsHeadFromRnn(torch.nn.Module):
 
         out1 = self.relu(self.dense1(x))
 
-        out2_distr = self.relu(self.dense2_distributions(out1))
-        out2_sums = self.relu(self.dense2_sums(out1))
-        out2_gate = self.relu(self.dense2_gate(out1))
-        out2_gate = out2_gate.detach()
+        distr_neg, distr_pos = self.distribution(out1)
 
-        out3_distr_neg = self.dense3_distr_neg(out2_distr)
-        out3_distr_pos = self.dense3_distr_pos(out2_distr)
+        sums_neg, sums_pos = self.regr_sums(out1, neg_sum_logs, pos_sum_logs)
+        gate_neg, gate_pos = self.regr_sums(out1, neg_sum_logs, pos_sum_logs)
 
-        out3_sums_neg = self.relu(self.dense3_sums_neg(out2_sums))
-        out3_sums_pos = self.relu(self.dense3_sums_pos(out2_sums))
-        out3_gate_neg = self.relu(self.dense3_gate_neg(out2_gate))
-        out3_gate_pos = self.relu(self.dense3_gate_pos(out2_gate))
-
-        out3_sums_neg = torch.cat((out3_sums_neg, neg_sum_logs), dim=1).float()
-        out3_sums_pos = torch.cat((out3_sums_pos, pos_sum_logs), dim=1).float()
-        out3_gate_neg = torch.cat((out3_gate_neg, neg_sum_logs), dim=1).float()
-        out3_gate_pos = torch.cat((out3_gate_pos, pos_sum_logs), dim=1).float()
-
-        out4_sums_neg = self.dense4_sums_neg(out3_sums_neg)
-        out4_sums_pos = self.dense4_sums_pos(out3_sums_pos)
-        out4_gate_neg = self.sigmoid(self.dense4_gate_neg(out3_gate_neg))
-        out4_gate_pos = self.sigmoid(self.dense4_gate_pos(out3_gate_pos))
-
-        return neg_sum_logs * out4_gate_neg + out4_sums_neg * (1 - out4_gate_neg), out3_distr_neg, pos_sum_logs * out4_gate_pos + out4_sums_pos * (1 - out4_gate_pos), out3_distr_pos
+        return neg_sum_logs * gate_neg + sums_neg * (1 - gate_neg), distr_neg, pos_sum_logs * gate_pos + sums_pos * (1 - gate_pos), distr_pos
 
 
 class DistributionTargetsHeadFromAggFeatures(torch.nn.Module):
@@ -228,12 +244,9 @@ class DistributionTargetsHeadFromAggFeatures(torch.nn.Module):
         super().__init__()
         self.dense1 = torch.nn.Linear(in_size, 512)
 
-        self.dense2_distributions = torch.nn.Linear(512, 128)
+        self.distribution = DistributionTargetsHeadFromRnn_distribution(512, num_distr_classes)
+
         self.dense2_sums = torch.nn.Linear(512, 64)
-
-        self.dense3_distr_neg = torch.nn.Linear(128, num_distr_classes)
-        self.dense3_distr_pos = torch.nn.Linear(128, num_distr_classes)
-
         self.dense3_sums_neg = torch.nn.Linear(64, 1)
         self.dense3_sums_pos = torch.nn.Linear(64, 1)
 
@@ -242,16 +255,13 @@ class DistributionTargetsHeadFromAggFeatures(torch.nn.Module):
     def forward(self, x):
         out1 = self.relu(self.dense1(x))
 
-        out2_distr = self.relu(self.dense2_distributions(out1))
+        distr_neg, distr_pos = self.distribution(out1)
+
         out2_sums = self.relu(self.dense2_sums(out1))
-
-        out3_distr_neg = self.dense3_distr_neg(out2_distr)
-        out3_distr_pos = self.dense3_distr_pos(out2_distr)
-
         out3_sums_neg = self.dense3_sums_neg(out2_sums)
         out3_sums_pos = self.dense3_sums_pos(out2_sums)
 
-        return out3_sums_neg, out3_distr_neg, out3_sums_pos, out3_distr_pos
+        return out3_sums_neg, distr_neg, out3_sums_pos, distr_pos
 
 
 class DummyHead(torch.nn.Module):

@@ -69,6 +69,7 @@
     encoder_type: agg_features,
     trx_encoder: {
       distribution_targets_task : True
+      logify_sum_mean_seqlens : True
       norm_embeddings: false,
       embeddings_noise: 0.003,
       embeddings: {

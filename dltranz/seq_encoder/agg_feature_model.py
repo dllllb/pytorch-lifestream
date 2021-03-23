@@ -10,12 +10,13 @@ from dltranz.trx_encoder import PaddedBatch
 class AggFeatureModel(torch.nn.Module):
     def __init__(self, config):
         super().__init__()
-
+        
         self.numeric_values = OrderedDict(config['numeric_values'].items())
         self.embeddings = OrderedDict(config['embeddings'].items())
         self.was_logified = config['was_logified']
         self.log_scale_factor = config['log_scale_factor']
         self.distribution_targets_task = config.get('distribution_targets_task', False)
+        self.logify_sum_mean_seqlens = config.get('logify_sum_mean_seqlens', False)
 
         self.eps = 1e-9
 
@@ -50,7 +51,7 @@ class AggFeatureModel(torch.nn.Module):
         # if (seq_lens == 0).any():
         #     raise Exception('seq_lens == 0')
 
-        if (self.distribution_targets_task):
+        if (self.logify_sum_mean_seqlens):
             processed = [torch.log(seq_lens.unsqueeze(1))]  # count
         else:
             processed = [seq_lens.unsqueeze(1)]
@@ -81,13 +82,16 @@ class AggFeatureModel(torch.nn.Module):
                 sum_pos = torch.clamp(val_orig, min=0).sum(dim=1).unsqueeze(1)
                 processed.append(torch.log(sum_pos + 1))  # log sum positive
 
-                sum_pos = torch.clamp(val_orig, max=0).sum(dim=1).unsqueeze(1)
-                processed.append(-1 * torch.log(-sum_pos + 1))  # log sum negative
-
-                mean_ = torch.log(torch.abs(mean_))
+                sum_neg = torch.clamp(val_orig, max=0).sum(dim=1).unsqueeze(1)
+                processed.append(-1 * torch.log(-sum_neg + 1))  # log sum negative
+            elif self.logify_sum_mean_seqlens:
+                processed.append(torch.sign(sum_) * torch.log(torch.abs(sum_) + 1))
             else:
                 processed.append(sum_)
-            
+
+            if self.logify_sum_mean_seqlens:
+                mean_ = torch.sign(mean_) * torch.log(torch.abs(mean_) + 1)
+
             processed.append(mean_)
 
             if not self.distribution_targets_task:
