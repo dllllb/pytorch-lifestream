@@ -25,10 +25,14 @@ def test_shape():
 
     out = model(x)
     assert isinstance(out, tuple) and len(out) == 4
+    print('111111111111111111')
     assert (abs(out[0] -  torch.Tensor([[-16.1181],
                                         [-16.1181],
                                         [-16.1181],
                                         [-16.1181]])) < torch.zeros((4, 1)) + eps).all()
+    print('222222222222222222')      
     assert out[1].shape == torch.Size([4, 6]) and out[1][0][3] == 0 and out[1][3][1] == 0
+    print('333333333333333333')
     assert out[2].shape == torch.Size([4, 1]) and abs(out[2][0].item() - 3.3029549820009882) < eps
+    print('444444444444444444')
     assert out[3].shape == torch.Size([4, 6]) and abs(out[3][1][3].item() - 0.7310606456724159) < eps
