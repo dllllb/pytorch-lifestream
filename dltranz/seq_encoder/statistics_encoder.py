@@ -9,9 +9,8 @@ class StatisticsEncoder(torch.nn.Module):
     def __init__(self, config):
         super().__init__()
         self.dummy = torch.nn.Linear(1, 1)
-        self.data, self.columns = load_data_pq('data/train_trx.parquet')
-        self.negative_items, self.positive_items = top_tr_types(self.data, self.columns.index('tr_type'),
-                                                                self.columns.index('amount'), transform_inv)
+        self.negative_items = config['top_negative_trx']
+        self.positive_items = config['top_positive_trx']
 
     def forward(self, x: PaddedBatch):
         eps = 1e-7
