@@ -155,6 +155,10 @@ def create_new_targets_on_gender_train_csv(file_name_in, filename_out, TR_AMOUNT
 
     # get top negative and positive types
     negative_items, positive_items = top_tr_types(np_data, TR_TYPES_COL, TR_AMOUNTS_COL, lambda x: x)
+    with open('negative.pickle', 'wb') as neg:
+        pickle.dump(negative_items, neg)
+    with open('positive.pickle', 'wb') as pos:
+        pickle.dump(positive_items, pos)
     
     # get distributions
     distr = get_distributions(np_data, TR_AMOUNTS_COL, TR_TYPES_COL,
