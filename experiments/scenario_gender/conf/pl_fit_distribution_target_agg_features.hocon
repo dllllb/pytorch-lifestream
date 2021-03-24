@@ -82,7 +82,7 @@
     },
 
     head_layers: [
-      [DistributionTargetsHeadFromAggFeatures, {in_size: "{seq_encoder.embedding_size}", num_distr_classes:  6}]
+      [TargetHeadFromAggFeatures, {in_size: "{seq_encoder.embedding_size}", num_distr_classes:  6}]
     ]
 
     train: {

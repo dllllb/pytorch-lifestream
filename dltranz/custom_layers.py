@@ -1,10 +1,7 @@
 import numpy as np
 import torch
 import torch.nn as nn
-# import logging
 import pytorch_lightning as pl
-
-# logger = logging.getLogger(__name__)
 
 
 class DropoutEncoder(nn.Module):
@@ -170,7 +167,7 @@ class EmbedderNetwork(nn.Module):
         return embedded_x, self.network(embedded_x)
 
 
-class DistributionTargetsHeadFromRnn_distribution(torch.nn.Module):
+class DistributionTargetHead(torch.nn.Module):
     def __init__(self, in_size=256, num_distr_classes=6):
         super().__init__()
         self.dense1 = torch.nn.Linear(in_size, 128)
@@ -186,7 +183,7 @@ class DistributionTargetsHeadFromRnn_distribution(torch.nn.Module):
         return out2_neg, out2_pos
 
 
-class DistributionTargetsHeadFromRnn_regression(torch.nn.Module):
+class RegressionTargetHead(torch.nn.Module):
     def __init__(self, in_size=256, gates=False):
         super().__init__()
         self.dense1 = torch.nn.Linear(in_size, 64)
@@ -214,14 +211,14 @@ class DistributionTargetsHeadFromRnn_regression(torch.nn.Module):
         return out3_neg, out3_pos
 
 
-class DistributionTargetsHeadFromRnn(torch.nn.Module):
+class CombinedTargetHeadFromRnn(torch.nn.Module):
     def __init__(self, in_size=48, num_distr_classes=6):
         super().__init__()
         self.dense1 = torch.nn.Linear(in_size, 256)
 
-        self.distribution = DistributionTargetsHeadFromRnn_distribution(256, num_distr_classes)
-        self.regr_sums = DistributionTargetsHeadFromRnn_regression(256)
-        self.regr_gates = DistributionTargetsHeadFromRnn_regression(256, True)
+        self.distribution = DistributionTargetHead(256, num_distr_classes)
+        self.regr_sums = RegressionTargetHead(256)
+        self.regr_gates = RegressionTargetHead(256, True)
 
         self.relu = torch.nn.ReLU()
 
@@ -239,12 +236,12 @@ class DistributionTargetsHeadFromRnn(torch.nn.Module):
         return neg_sum_logs * gate_neg + sums_neg * (1 - gate_neg), distr_neg, pos_sum_logs * gate_pos + sums_pos * (1 - gate_pos), distr_pos
 
 
-class DistributionTargetsHeadFromAggFeatures(torch.nn.Module):
+class TargetHeadFromAggFeatures(torch.nn.Module):
     def __init__(self, in_size=48, num_distr_classes=6):
         super().__init__()
         self.dense1 = torch.nn.Linear(in_size, 512)
 
-        self.distribution = DistributionTargetsHeadFromRnn_distribution(512, num_distr_classes)
+        self.distribution = DistributionTargetHead(512, num_distr_classes)
 
         self.dense2_sums = torch.nn.Linear(512, 64)
         self.dense3_sums_neg = torch.nn.Linear(64, 1)

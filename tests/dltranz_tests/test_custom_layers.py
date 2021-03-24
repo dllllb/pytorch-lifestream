@@ -1,7 +1,7 @@
 import torch
 import numpy as np
 
-from dltranz.custom_layers import DropoutEncoder, Squeeze, CatLayer, MLP, TabularRowEncoder, DistributionTargetsHeadFromRnn
+from dltranz.custom_layers import DropoutEncoder, Squeeze, CatLayer, MLP, TabularRowEncoder, CombinedTargetHeadFromRnn
 
 
 class TrxEncoderTest(torch.nn.Module):
@@ -82,7 +82,7 @@ def test_distribution_target_head():
         "num_distr_classes": 6
     }
 
-    distr_target_head = DistributionTargetsHeadFromRnn(**distr_target_head_config)
+    distr_target_head = CombinedTargetHeadFromRnn(**distr_target_head_config)
     x = torch.rand(64, 48)
     x = (x, np.ones((64,)), np.ones((64,)))
     y = distr_target_head(x)
