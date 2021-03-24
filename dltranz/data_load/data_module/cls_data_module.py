@@ -2,6 +2,8 @@ import json
 import logging
 
 import pytorch_lightning as pl
+import numpy as np
+import ast
 from embeddings_validation.file_reader import TargetFile, ID_TYPE_MAPPING
 from torch.utils.data import DataLoader
 from tqdm.auto import tqdm
@@ -21,6 +23,7 @@ from dltranz.data_load.parquet_dataset import ParquetFiles, ParquetDataset
 logger = logging.getLogger(__name__)
 
 
+
 class ClsDataModuleTrain(pl.LightningDataModule):
     def __init__(self, conf, pl_module, fold_id):
         super().__init__()
@@ -29,6 +32,9 @@ class ClsDataModuleTrain(pl.LightningDataModule):
         self._type = conf['type']
         assert self._type in ('map', 'iterable')
 
+        self.distribution_targets_task = dict(conf).get('distribution_targets_task')
+        self.y_function = int if not self.distribution_targets_task else lambda x: \
+                                                    np.array(ast.literal_eval(x), dtype=object)
         self.setup_conf = conf['setup']
         self.train_conf = conf['train']
         self.valid_conf = conf['valid']
@@ -125,11 +131,11 @@ class ClsDataModuleTrain(pl.LightningDataModule):
             yield SeqLenFilter(min_seq_len=self.train_conf['min_seq_len'])
 
         if part == 'train':
-            yield TargetJoin(self.col_id, self._train_targets.df.set_index(self.col_id)[self.col_target].to_dict())
+            yield TargetJoin(self.col_id, self._train_targets.df.set_index(self.col_id)[self.col_target].to_dict(), self.y_function)
         elif part == 'valid':
-            yield TargetJoin(self.col_id, self._valid_targets.df.set_index(self.col_id)[self.col_target].to_dict())
+            yield TargetJoin(self.col_id, self._valid_targets.df.set_index(self.col_id)[self.col_target].to_dict(), self.y_function)
         elif part == 'test':
-            yield TargetJoin(self.col_id, self._test_targets.df.set_index(self.col_id)[self.col_target].to_dict())
+            yield TargetJoin(self.col_id, self._test_targets.df.set_index(self.col_id)[self.col_target].to_dict(), self.y_function)
         else:
             raise AttributeError(f'Unknown part: {part}')
 
@@ -197,4 +203,3 @@ class ClsDataModuleTrain(pl.LightningDataModule):
             num_workers=self.test_conf['num_workers'],
             batch_size=self.test_conf['batch_size'],
         )
-

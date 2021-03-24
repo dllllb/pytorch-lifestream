@@ -1,6 +1,7 @@
 import torch
+import numpy as np
 
-from dltranz.custom_layers import DropoutEncoder, Squeeze, CatLayer, MLP, TabularRowEncoder
+from dltranz.custom_layers import DropoutEncoder, Squeeze, CatLayer, MLP, TabularRowEncoder, CombinedTargetHeadFromRnn
 
 
 class TrxEncoderTest(torch.nn.Module):
@@ -73,3 +74,17 @@ def test_embedding_generator():
     y = tabular_row_encoder(x)
 
     assert y.shape == (256, 18)
+
+
+def test_distribution_target_head():
+    distr_target_head_config = {
+        "in_size": 48,
+        "num_distr_classes": 6
+    }
+
+    distr_target_head = CombinedTargetHeadFromRnn(**distr_target_head_config)
+    x = torch.rand(64, 48)
+    x = (x, np.ones((64,)), np.ones((64,)))
+    y = distr_target_head(x)
+    assert type(y) == tuple and len(y) == 4
+    assert y[0].shape == y[2].shape == (64, 1) and y[1].shape == y[3].shape == (64, 6)

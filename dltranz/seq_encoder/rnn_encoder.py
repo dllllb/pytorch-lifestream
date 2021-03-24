@@ -110,6 +110,35 @@ class RnnSeqEncoder(AbsSeqEncoder):
         return x
 
 
+class RnnSeqEncoderDistributionTarget(RnnSeqEncoder):
+    def transform(self, x):
+        return np.sign(x) * np.log(np.abs(x) + 1)
+
+    def transform_inv(self, x):
+        return np.sign(x) * (np.exp(np.abs(x)) - 1)
+
+    def __init__(self, params, is_reduce_sequence):
+        super().__init__(params, is_reduce_sequence)
+        self.eps = 1e-7
+
+    def forward(self, x):
+        amount_col = []
+        for i, row in enumerate(x.payload['amount']):
+            amount_col += [list(row[:x.seq_lens[i].item()].cpu().numpy())]
+        amount_col = np.array(amount_col, dtype=object)
+        neg_sums = []
+        pos_sums = []
+        for list_row in amount_col:
+            np_row = np.array(list_row)
+            neg_sums += [np.sum(self.transform_inv(np_row[np.where(np_row < 0)]))]
+            pos_sums += [np.sum(self.transform_inv(np_row[np.where(np_row >= 0)]))]
+        neg_sum_logs = np.log(np.abs(np.array(neg_sums)) + self.eps)
+        pos_sum_logs = np.log(np.array(pos_sums) + self.eps)
+
+        x = super().forward(x)
+        return x, neg_sum_logs, pos_sum_logs
+
+
 class SkipStepEncoder(nn.Module):
     def __init__(self, step_size):
         super().__init__()

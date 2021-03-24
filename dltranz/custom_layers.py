@@ -1,6 +1,7 @@
 import numpy as np
 import torch
 import torch.nn as nn
+import pytorch_lightning as pl
 
 
 class DropoutEncoder(nn.Module):
@@ -164,3 +165,105 @@ class EmbedderNetwork(nn.Module):
     def forward(self, x):
         embedded_x = self.embedder(x)
         return embedded_x, self.network(embedded_x)
+
+
+class DistributionTargetHead(torch.nn.Module):
+    def __init__(self, in_size=256, num_distr_classes=6):
+        super().__init__()
+        self.dense1 = torch.nn.Linear(in_size, 128)
+        self.dense2_neg = torch.nn.Linear(128, num_distr_classes)
+        self.dense2_pos = torch.nn.Linear(128, num_distr_classes)
+        self.sigmoid = torch.nn.Sigmoid()
+        self.relu = torch.nn.ReLU()
+
+    def forward(self, x):
+        out1 = self.relu(self.dense1(x))
+        out2_neg = self.dense2_neg(out1)
+        out2_pos = self.dense2_pos(out1)
+        return out2_neg, out2_pos
+
+
+class RegressionTargetHead(torch.nn.Module):
+    def __init__(self, in_size=256, gates=False):
+        super().__init__()
+        self.dense1 = torch.nn.Linear(in_size, 64)
+        self.dense2_neg = torch.nn.Linear(64, 15)
+        self.dense2_pos = torch.nn.Linear(64, 15)
+        self.dense3_neg = torch.nn.Linear(16, 1)
+        self.dense3_pos = torch.nn.Linear(16, 1)
+        self.sigmoid = torch.nn.Sigmoid()
+        self.relu = torch.nn.ReLU()
+        self.gates = gates
+
+    def forward(self, x, neg_sum_logs, pos_sum_logs):
+        out1 = self.relu(self.dense1(x))
+        if self.gates:
+            out1 = out1.detach()
+        out2_neg = self.relu(self.dense2_neg(out1))
+        out2_pos = self.relu(self.dense2_pos(out1))
+        out2_neg = torch.cat((out2_neg, neg_sum_logs), dim=1).float()
+        out2_pos = torch.cat((out2_pos, pos_sum_logs), dim=1).float()
+        out3_neg = self.dense3_neg(out2_neg)
+        out3_pos = self.dense3_pos(out2_pos)
+        if self.gates:
+            out3_neg = self.sigmoid(out3_neg)
+            out3_pos = self.sigmoid(out3_pos)
+        return out3_neg, out3_pos
+
+
+class CombinedTargetHeadFromRnn(torch.nn.Module):
+    def __init__(self, in_size=48, num_distr_classes=6):
+        super().__init__()
+        self.dense1 = torch.nn.Linear(in_size, 256)
+
+        self.distribution = DistributionTargetHead(256, num_distr_classes)
+        self.regr_sums = RegressionTargetHead(256)
+        self.regr_gates = RegressionTargetHead(256, True)
+
+        self.relu = torch.nn.ReLU()
+
+    def forward(self, x):
+        device = x[0].device
+        x, neg_sum_logs, pos_sum_logs = x[0], torch.tensor(x[1][:, None], device=device), torch.tensor(x[2][:, None], device=device)
+
+        out1 = self.relu(self.dense1(x))
+
+        distr_neg, distr_pos = self.distribution(out1)
+
+        sums_neg, sums_pos = self.regr_sums(out1, neg_sum_logs, pos_sum_logs)
+        gate_neg, gate_pos = self.regr_sums(out1, neg_sum_logs, pos_sum_logs)
+
+        return neg_sum_logs * gate_neg + sums_neg * (1 - gate_neg), distr_neg, pos_sum_logs * gate_pos + sums_pos * (1 - gate_pos), distr_pos
+
+
+class TargetHeadFromAggFeatures(torch.nn.Module):
+    def __init__(self, in_size=48, num_distr_classes=6):
+        super().__init__()
+        self.dense1 = torch.nn.Linear(in_size, 512)
+
+        self.distribution = DistributionTargetHead(512, num_distr_classes)
+
+        self.dense2_sums = torch.nn.Linear(512, 64)
+        self.dense3_sums_neg = torch.nn.Linear(64, 1)
+        self.dense3_sums_pos = torch.nn.Linear(64, 1)
+
+        self.relu = torch.nn.ReLU()
+
+    def forward(self, x):
+        out1 = self.relu(self.dense1(x))
+
+        distr_neg, distr_pos = self.distribution(out1)
+
+        out2_sums = self.relu(self.dense2_sums(out1))
+        out3_sums_neg = self.dense3_sums_neg(out2_sums)
+        out3_sums_pos = self.dense3_sums_pos(out2_sums)
+
+        return out3_sums_neg, distr_neg, out3_sums_pos, distr_pos
+
+
+class DummyHead(torch.nn.Module):
+    def __init__(self):
+        super().__init__()
+
+    def forward(self, x):
+        return x[0], x[1], x[2], x[3]

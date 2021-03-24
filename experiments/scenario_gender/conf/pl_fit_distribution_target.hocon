@@ -1,0 +1,108 @@
+{
+  include "dataset_inference_file.hocon"
+
+  data_module: {
+    distribution_targets_task : True
+
+    type: map
+
+    setup: {
+      dataset_files: {
+        train_data_path: "data/train_trx.parquet"
+        test_data_path: "data/test_trx.parquet"
+      }
+      col_id: customer_id
+      col_id_dtype: int
+      col_target: gender
+
+      split_by: embeddings_validation
+      fold_info: "conf/embeddings_validation.work/folds/folds.json"
+    }
+
+    train: {
+        min_seq_len: 0
+        augmentations: [
+            [RandomSlice, {min_len: 250, max_len: 350, rate_for_min: 0.9}]
+            [DropoutTrx, {trx_dropout: 0.01}]
+        ]
+        num_workers: 16
+        batch_size: 32
+        take_first_fraction: 0.5
+    }
+
+    valid: {
+        augmentations: [
+            [SeqLenLimit, {max_seq_len: 1200}]
+        ]
+        num_workers: 8
+        batch_size: 64   # 512
+        take_first_fraction: 0.5
+    }
+
+    test: {
+        augmentations: []
+        num_workers: 8
+        batch_size: 64
+        take_first_fraction: 0.5
+    }
+  }
+
+  embedding_validation_results: {
+    model_name: nn
+    feature_name: target_scores
+    output_path: "results/fit_target_distribution_results_Y.json"
+  }
+
+  seed_everything: 42
+  trainer: {
+    gpus: 1
+    auto_select_gpus: false
+
+    max_epochs: 10
+
+    checkpoint_callback: false
+    deterministic: True
+  }
+  logger_name: target_scores
+
+  params: {
+    distribution_targets_task : True
+    score_metric: [R2n, R2p, MAPEn, MAPEp, CEn, CEp],
+
+    encoder_type: distribution_targets,
+    trx_encoder: {
+      norm_embeddings: false,
+      embeddings_noise: 0.003,
+      embeddings: {
+        mcc_code: {in: 200, out: 48},
+        tr_type: {in: 100, out: 24}
+      },
+      numeric_values: {
+        amount: identity
+      }
+      was_logified: true
+      log_scale_factor: 1
+    },
+    rnn: {
+      hidden_size: 48,
+      type: gru,
+      bidir: false,
+      trainable_starter: static
+    },
+
+    head_layers: [
+        [CombinedTargetHeadFromRnn, {in_size: "{seq_encoder.embedding_size}", num_distr_classes: 6}]
+    ]
+
+    train: {
+      random_neg: false,
+      loss: distribution_targets,
+      lr: 0.005,
+      weight_decay: 0.0,
+    },
+    lr_scheduler: {
+      step_size: 1,
+      step_gamma: 0.90
+    }
+  }
+}

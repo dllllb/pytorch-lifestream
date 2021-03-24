@@ -91,7 +91,6 @@ def trellisnet_model(params):
     return m
 
 
-
 def model_by_type(model_type):
     model = {
         'avg': trx_avg_model,
@@ -112,9 +111,9 @@ def freeze_layers(model):
 
 def create_head_layers(params, seq_encoder):
     from torch.nn import Linear, BatchNorm1d, ReLU, Sigmoid, LogSoftmax
-    from dltranz.custom_layers import Squeeze
+    from dltranz.custom_layers import Squeeze, CombinedTargetHeadFromRnn, TargetHeadFromAggFeatures, DummyHead
     from dltranz.seq_encoder.utils import NormEncoder
-
+    
     layers = []
     _locals = locals()
     for l_name, l_params in params['head_layers']:

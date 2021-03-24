@@ -12,7 +12,6 @@ def create_new_targets_on_gender_train_csv(file_name_in, filename_out, TR_AMOUNT
                                            TR_TYPES_COL=4, top_THR=5, take_first_fraction=0.5):
     '''
     This function changes target to spending/income distribution and write it to `filename_out`.
-
     filename_in : parquet file name
     filename_out : `gender_train.csv`-like file name
     TR_AMOUNTS_COL : column index with amounts of value in transactions
@@ -23,7 +22,6 @@ def create_new_targets_on_gender_train_csv(file_name_in, filename_out, TR_AMOUNT
                          EXAMPLE: take_first_fraction=0.75 -> the last 0.25 of all user
                                   transactions will be chosen as user target distribution
                                   and therefore will be cutted off
-
     '''
 
     table = pq.read_table(file_name_in)
