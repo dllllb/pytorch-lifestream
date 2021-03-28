@@ -173,7 +173,6 @@ class DistributionTargetHead(torch.nn.Module):
         self.dense1 = torch.nn.Linear(in_size, 128)
         self.dense2_neg = torch.nn.Linear(128, num_distr_classes)
         self.dense2_pos = torch.nn.Linear(128, num_distr_classes)
-        self.sigmoid = torch.nn.Sigmoid()
         self.relu = torch.nn.ReLU()
 
     def forward(self, x):
@@ -214,7 +213,7 @@ class RegressionTargetHead(torch.nn.Module):
 class CombinedTargetHeadFromRnn(torch.nn.Module):
     def __init__(self, in_size=48, num_distr_classes=6):
         super().__init__()
-        self.dense1 = torch.nn.Linear(in_size, 256)
+        self.dense = torch.nn.Linear(in_size, 256)
 
         self.distribution = DistributionTargetHead(256, num_distr_classes)
         self.regr_sums = RegressionTargetHead(256)
@@ -226,12 +225,12 @@ class CombinedTargetHeadFromRnn(torch.nn.Module):
         device = x[0].device
         x, neg_sum_logs, pos_sum_logs = x[0], torch.tensor(x[1][:, None], device=device), torch.tensor(x[2][:, None], device=device)
 
-        out1 = self.relu(self.dense1(x))
+        out1 = self.relu(self.dense(x))
 
         distr_neg, distr_pos = self.distribution(out1)
 
         sums_neg, sums_pos = self.regr_sums(out1, neg_sum_logs, pos_sum_logs)
-        gate_neg, gate_pos = self.regr_sums(out1, neg_sum_logs, pos_sum_logs)
+        gate_neg, gate_pos = self.regr_gates(out1, neg_sum_logs, pos_sum_logs)
 
         return neg_sum_logs * gate_neg + sums_neg * (1 - gate_neg), distr_neg, pos_sum_logs * gate_pos + sums_pos * (1 - gate_pos), distr_pos
 

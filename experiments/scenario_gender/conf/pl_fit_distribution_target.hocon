@@ -46,11 +46,11 @@
         take_first_fraction: 0.5
     }
   }
-
+  
   embedding_validation_results: {
     model_name: nn
     feature_name: target_scores
-    output_path: "results/fit_target_distribution_results_Y.json"
+    output_path: "results/fit_target_distribution_results.json"
   }
 
   seed_everything: 42

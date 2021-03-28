@@ -123,7 +123,7 @@ python ../../pl_fit_target.py \
 
 ```sh
 cd experiments/scenario_gender
-export SC_DEVICE="cuda"        # define here one gpu device number
+export SC_DEVICE="cuda"
 export CUDA_VISIBLE_DEVICES=0  # define here one gpu device number
 
 [ -d data/ ] && rm -r data/
@@ -135,8 +135,7 @@ python distribution_target.py
 bin/make-datasets-distribution-target-spark.sh
 
 python -m embeddings_validation \
-    --conf conf/embeddings_validation_distribution_target.hocon --workers 10 --total_cpu_count 20 \
-    --split_only
+    --conf conf/embeddings_validation_distribution_target.hocon --workers 10 --total_cpu_count 20 --split_only --local_scheduler
 
 python ../../pl_fit_target.py --conf conf/pl_fit_distribution_target.hocon
 
@@ -144,10 +143,7 @@ python ../../pl_fit_target.py --conf conf/pl_fit_distribution_target_agg_feature
 
 python ../../pl_fit_target.py --conf conf/pl_fit_distribution_target_statistics.hocon
 
-rm results/gender_train_distribution_target.txt
-# rm -r conf/embeddings_validation.work/
 python -m embeddings_validation \
-    --conf conf/embeddings_validation_distribution_target.hocon --workers 10 --total_cpu_count 20
-
+    --conf conf/embeddings_validation_distribution_target.hocon --workers 10 --total_cpu_count 20 --local_scheduler
 
 ```

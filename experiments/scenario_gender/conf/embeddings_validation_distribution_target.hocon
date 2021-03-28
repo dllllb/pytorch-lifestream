@@ -27,14 +27,14 @@
 
     models: {}
 
-    report_file: "../results/scenario_gender_distibuted_targets.txt"
+    report_file: "../results/scenario_gender_distibution_target.txt"
 
     features: {
     }
 
     external_scores: {
         nn: "../results/fit_target_distribution_results.json",
-        half_stats: "../results/fit_target_distribution_results_statistics.json"
+        half_stats: "../results/fit_target_distribution_results_statistics.json",
         agg_head: "../results/fit_target_distribution_results_agg_features.json"
     }
 
