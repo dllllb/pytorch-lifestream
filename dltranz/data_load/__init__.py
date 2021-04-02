@@ -377,12 +377,20 @@ class ConvertingTrxDataset(Dataset):
 
 
 class ProcessDataset(Dataset):
-    def __init__(self, delegate, process_fun):
+    def __init__(self, delegate, process_fun, style='map'):
         self.delegate = delegate
         self.process_fun = process_fun
+        if hasattr(delegate, 'style'):
+            self.style = delegate.style
+        else:
+            self.style = style
 
     def __len__(self):
         return len(self.delegate)
+
+    def __iter__(self):
+        for rec in iter(self.delegate):
+            yield self._one_item(rec)
 
     def __getitem__(self, idx):
         item = self.delegate[idx]
