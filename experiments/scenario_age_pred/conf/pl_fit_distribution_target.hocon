@@ -67,7 +67,7 @@
 
   params: {
     pos: True, neg: False,
-    pass_samples: False,
+    pass_samples: True,
     columns_ix: {pos_sum: 0, 
                  pos_distribution: 1
                  neg_sum: 2,
