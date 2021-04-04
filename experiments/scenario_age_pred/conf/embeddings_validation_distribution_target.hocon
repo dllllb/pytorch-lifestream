@@ -33,7 +33,7 @@
     }
 
     external_scores: {
-        nn: "../results/fit_target_distribution_results_1.json",
+        nn: "../results/fit_target_distribution_results.json",
         stat: "../results/fit_target_distribution_results_statistics.json"
     }
 

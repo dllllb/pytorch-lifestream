@@ -50,7 +50,7 @@
   embedding_validation_results: {
     model_name: nn
     feature_name: target_scores
-    output_path: "results/fit_target_distribution_results_1.json"
+    output_path: "results/fit_target_distribution_results.json"
   }
 
   seed_everything: 42
@@ -67,6 +67,7 @@
 
   params: {
     pos: True, neg: False,
+    pass_samples: False,
     columns_ix: {pos_sum: 0, 
                  pos_distribution: 1
                  neg_sum: 2,
