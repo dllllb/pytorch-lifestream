@@ -168,72 +168,85 @@ class EmbedderNetwork(nn.Module):
 
 
 class DistributionTargetHead(torch.nn.Module):
-    def __init__(self, in_size=256, num_distr_classes=6):
+    def __init__(self, in_size=256, num_distr_classes=6, pos=True, neg=True):
         super().__init__()
+        self.pos, self.neg = pos, neg
         self.dense1 = torch.nn.Linear(in_size, 128)
-        self.dense2_neg = torch.nn.Linear(128, num_distr_classes)
-        self.dense2_pos = torch.nn.Linear(128, num_distr_classes)
+        self.dense2_neg = torch.nn.Linear(128, num_distr_classes) if self.neg else None
+        self.dense2_pos = torch.nn.Linear(128, num_distr_classes) if self.pos else None
         self.sigmoid = torch.nn.Sigmoid()
         self.relu = torch.nn.ReLU()
-
+        
     def forward(self, x):
         out1 = self.relu(self.dense1(x))
-        out2_neg = self.dense2_neg(out1)
-        out2_pos = self.dense2_pos(out1)
+        out2_pos = out2_neg = 0
+        if self.pos:
+            out2_pos = self.dense2_pos(out1)
+        if self.neg:
+            out2_neg = self.dense2_neg(out1)
         return out2_neg, out2_pos
 
 
 class RegressionTargetHead(torch.nn.Module):
-    def __init__(self, in_size=256, gates=False):
+    def __init__(self, in_size=256, gates=True, pos=True, neg=True):
         super().__init__()
+        self.pos, self.neg = pos, neg
         self.dense1 = torch.nn.Linear(in_size, 64)
-        self.dense2_neg = torch.nn.Linear(64, 15)
-        self.dense2_pos = torch.nn.Linear(64, 15)
-        self.dense3_neg = torch.nn.Linear(16, 1)
-        self.dense3_pos = torch.nn.Linear(16, 1)
+        self.dense2_neg = torch.nn.Linear(64, 15) if self.neg else None
+        self.dense2_pos = torch.nn.Linear(64, 15) if self.pos else None
+        self.dense3_neg = torch.nn.Linear(16, 1) if self.neg else None
+        self.dense3_pos = torch.nn.Linear(16, 1) if self.pos else None
         self.sigmoid = torch.nn.Sigmoid()
         self.relu = torch.nn.ReLU()
         self.gates = gates
 
-    def forward(self, x, neg_sum_logs, pos_sum_logs):
+    def forward(self, x, neg_sum_logs=None, pos_sum_logs=None):
         out1 = self.relu(self.dense1(x))
         if self.gates:
             out1 = out1.detach()
-        out2_neg = self.relu(self.dense2_neg(out1))
-        out2_pos = self.relu(self.dense2_pos(out1))
-        out2_neg = torch.cat((out2_neg, neg_sum_logs), dim=1).float()
-        out2_pos = torch.cat((out2_pos, pos_sum_logs), dim=1).float()
-        out3_neg = self.dense3_neg(out2_neg)
-        out3_pos = self.dense3_pos(out2_pos)
-        if self.gates:
-            out3_neg = self.sigmoid(out3_neg)
-            out3_pos = self.sigmoid(out3_pos)
+
+        out3_neg = out3_pos = 0
+        if self.pos:
+            out2_pos = self.relu(self.dense2_pos(out1))
+            out2_pos = torch.cat((out2_pos, pos_sum_logs), dim=1).float()
+            out3_pos = self.dense3_pos(out2_pos)
+            out3_pos = self.sigmoid(out3_pos) if self.gates else out3_pos
+        if self.neg:
+            out2_neg = self.relu(self.dense2_neg(out1))
+            out2_neg = torch.cat((out2_neg, neg_sum_logs), dim=1).float()
+            out3_neg = self.dense3_neg(out2_neg)
+            out3_neg = self.sigmoid(out3_neg) if self.gates else out3_neg
+
         return out3_neg, out3_pos
 
 
 class CombinedTargetHeadFromRnn(torch.nn.Module):
-    def __init__(self, in_size=48, num_distr_classes=6):
+    def __init__(self, in_size=48, num_distr_classes=6, pos=True, neg=True, pass_samples=True):
         super().__init__()
-        self.dense1 = torch.nn.Linear(in_size, 256)
-
-        self.distribution = DistributionTargetHead(256, num_distr_classes)
-        self.regr_sums = RegressionTargetHead(256)
-        self.regr_gates = RegressionTargetHead(256, True)
+        
+        self.pos, self.neg = pos, neg
+        self.pass_samples = pass_samples
+        self.dense = torch.nn.Linear(in_size, 256)
+        self.distribution = DistributionTargetHead(256, num_distr_classes, pos, neg)
+        self.regr_sums = RegressionTargetHead(256, False, pos, neg)
+        self.regr_gates = RegressionTargetHead(256, True, pos, neg) if self.pass_samples else None
 
         self.relu = torch.nn.ReLU()
 
     def forward(self, x):
-        device = x[0].device
-        x, neg_sum_logs, pos_sum_logs = x[0], torch.tensor(x[1][:, None], device=device), torch.tensor(x[2][:, None], device=device)
+        device = x[0].device if isinstance(x, tuple) else x.device
+        sum_logs2 = torch.tensor(x[2][:, None], device=device) if isinstance(x, tuple) and len(x) > 2 else 0
+        x, sum_logs1 = (x[0], torch.tensor(x[1][:, None], device=device)) if isinstance(x, tuple) else (x, 0)  # negative sum logs if len(x) == 3
+        if not self.neg and self.pos:
+            sum_logs1, sum_logs2 = sum_logs2, sum_logs1
 
-        out1 = self.relu(self.dense1(x))
-
+        out1 = self.relu(self.dense(x))
         distr_neg, distr_pos = self.distribution(out1)
 
-        sums_neg, sums_pos = self.regr_sums(out1, neg_sum_logs, pos_sum_logs)
-        gate_neg, gate_pos = self.regr_sums(out1, neg_sum_logs, pos_sum_logs)
-
-        return neg_sum_logs * gate_neg + sums_neg * (1 - gate_neg), distr_neg, pos_sum_logs * gate_pos + sums_pos * (1 - gate_pos), distr_pos
+        sums_neg, sums_pos = self.regr_sums(out1, sum_logs1, sum_logs2)
+        gate_neg, gate_pos = self.regr_gates(out1, sum_logs1, sum_logs2) if self.pass_samples else (0, 0)
+        
+        return sum_logs1 * gate_neg + sums_neg * (1 - gate_neg), distr_neg, sum_logs2 * gate_pos + sums_pos * (1 - gate_pos), distr_pos
 
 
 class TargetHeadFromAggFeatures(torch.nn.Module):

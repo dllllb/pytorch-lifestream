@@ -27,7 +27,7 @@
 
     models: {}
 
-    report_file: "../results/scenario_gender_distibuted_targets.txt"
+    report_file: "../results/scenario_gender_distibution_target.txt"
 
     features: {
     }

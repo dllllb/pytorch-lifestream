@@ -177,28 +177,34 @@ class UnsupervisedTabNetLoss(nn.Module):
 
 
 class DistributionTargetsLoss(nn.Module):
-    def __init__(self, mult1=3, mult2=0.167, mult3=1, mult4=1):
+    def __init__(self, pos=True, neg=True, mult1=3, mult2=0.167, mult3=1, mult4=1):
         super().__init__()
-        self.mults = (mult1, mult2, mult3, mult4)
+        self.mults = [mult1, mult2, mult3, mult4]
+        self.pos, self.neg = pos, neg
 
     def forward(self, pred, true):
-        log_minus_sum = np.log(np.abs(true[:, 0].astype(np.float)) + 1)[:, None]
-        minus_distribution = np.array(true[:, 1].tolist())
-        log_plus_sum = np.log(np.abs(true[:, 2].astype(np.float)) + 1)[:, None]
-        plus_distribution = np.array(true[:, 3].tolist())
+        log_sum_truth1 = np.log(np.abs(true[:, 0].astype(np.float)) + 1)[:, None]
+        distribution_truth1 = np.array(true[:, 1].tolist())
+        log_sum_truth2 = np.log(np.abs(true[:, 2].astype(np.float)) + 1)[:, None] if true.shape[1] > 2 else None
+        distribution_truth2 = np.array(true[:, 3].tolist()) if true.shape[1] > 2 else None
 
-        log_minus_sum_hat = pred[0]
-        minus_distribution_hat = pred[1]
-        log_plus_sum_hat = pred[2]
-        plus_distribution_hat = pred[3]
+        if self.neg and self.pos:
+            log_sum_hat1, distribution_hat1, log_sum_hat2, distribution_hat2 = pred[0], pred[1], pred[2], pred[3]
+        elif not self.neg and self.pos:
+            log_sum_hat1, distribution_hat1 = pred[2], pred[3]
+            self.mults[0], self.mults[2] = self.mults[1], self.mults[3]
+        elif not self.pos and self.neg:
+            log_sum_hat1, distribution_hat1 = pred[0], pred[1]
 
-        device = log_minus_sum_hat.device
-        loss_minus_sum = mse_loss(log_minus_sum_hat, torch.tensor(log_minus_sum, device=device).float())
-        loss_plus_sum = mse_loss(log_plus_sum_hat, torch.tensor(log_plus_sum, device=device).float())
-        loss_minus_distr = cross_entropy(minus_distribution_hat, torch.tensor(minus_distribution, device=device))
-        loss_plus_distr = cross_entropy(plus_distribution_hat, torch.tensor(plus_distribution, device=device))
+        device = log_sum_hat1.device
+        loss_sum1 = mse_loss(log_sum_hat1, torch.tensor(log_sum_truth1, device=device).float())
+        loss_distr1 = cross_entropy(distribution_hat1, torch.tensor(distribution_truth1, device=device))
+        if true.shape[1] > 2:
+            loss_sum2 = mse_loss(log_sum_hat2, torch.tensor(log_sum_truth2, device=device).float())
+            loss_distr2 = cross_entropy(distribution_hat2, torch.tensor(distribution_truth2, device=device))
 
-        loss = loss_minus_sum * self.mults[0] + loss_plus_sum * self.mults[1] + loss_minus_distr * self.mults[2] + loss_plus_distr * self.mults[3]
+        loss = loss_sum1 * self.mults[0] + loss_sum2 * self.mults[1] + loss_distr1 * self.mults[2] + loss_distr2 * self.mults[3] \
+                    if true.shape[1] > 2 else loss_sum1 * self.mults[0] + loss_distr1 * self.mults[2]
         return loss.float()
 
 
@@ -229,7 +235,7 @@ def get_loss(params):
             unlabeled_weight=params['unlabeled_weight']
         )
     elif loss_type == 'distribution_targets':
-        loss = DistributionTargetsLoss()
+        loss = DistributionTargetsLoss(dict(params).get('pos', True), dict(params).get('neg', True))
     else:
         raise Exception(f'unknown loss type: {loss_type}')
 
