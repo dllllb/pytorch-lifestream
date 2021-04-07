@@ -107,7 +107,7 @@ class SequenceClassify(pl.LightningModule):
     def __init__(self, params, pretrained_encoder=None):
         super().__init__()
         head_params = dict(params['head_layers']).get('CombinedTargetHeadFromRnn', None)
-        self.pos, self.neg = (head_params.get('pos', True), head_params.get('neg', True)) if head_params else 0, 0
+        self.pos, self.neg = (head_params.get('pos', True), head_params.get('neg', True)) if head_params else (0, 0)
         self.cols_ix = dict(params).get('columns_ix', {'neg_sum': 0,
                                                        'neg_distribution': 1,
                                                        'pos_sum': 2,

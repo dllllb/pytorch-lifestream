@@ -187,7 +187,7 @@ class DistributionTargetsLoss(nn.Module):
     def __init__(self, params, mult1=3, mult2=0.167, mult3=1, mult4=1):
         super().__init__()
         head_params = dict(params['head_layers']).get('CombinedTargetHeadFromRnn', None)
-        self.pos, self.neg = (head_params.get('pos', True), head_params.get('neg', True)) if head_params else 0, 0
+        self.pos, self.neg = (head_params.get('pos', True), head_params.get('neg', True)) if head_params else (0, 0)
         self.mults = [mult1, mult2, mult3, mult4]
 
     def forward(self, pred, true):
