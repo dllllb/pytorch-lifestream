@@ -6,19 +6,12 @@ import torch
 import numpy as np
 from pytorch_lightning.metrics.functional.classification import auroc
 
-from dltranz.loss import get_loss, cross_entropy, mape_metric, mse_loss, r_squared
+from dltranz.loss import get_loss, cross_entropy, kl, mape_metric, mse_loss, r_squared
 from dltranz.seq_encoder import create_encoder
 from dltranz.train import get_optimizer, get_lr_scheduler
 from dltranz.models import create_head_layers
 
 logger = logging.getLogger(__name__)
-
-
-# columns indexes for distribution targets task:
-COLUMNS_IX = {'neg_sum': 0,
-              'neg_distribution': 1, 
-              'pos_sum': 2, 
-              'pos_distribution': 3}
 
 
 class EpochAuroc(pl.metrics.Metric):
@@ -70,6 +63,16 @@ class CrossEntropy(DistributionTargets):
         return cross_entropy(y_hat, y)
 
 
+class KL(DistributionTargets):
+    def __init__(self, col_ix, pos, neg, neg_sum_col_ix):
+        super().__init__(col_ix, pos, neg, neg_sum_col_ix)
+
+    def compute(self):
+        y_hat = torch.cat(self.y_hat)
+        y = torch.cat(self.y)
+        return kl(y_hat, y)
+
+
 class MSE(DistributionTargets):
     def __init__(self, col_ix, pos, neg, neg_sum_col_ix):
         super().__init__(col_ix, pos, neg, neg_sum_col_ix)
@@ -103,11 +106,13 @@ class R_squared(DistributionTargets):
 class SequenceClassify(pl.LightningModule):
     def __init__(self, params, pretrained_encoder=None):
         super().__init__()
-        self.pos, self.neg = dict(params).get('pos', True), dict(params).get('neg', True)
+        head_params = dict(params['head_layers']).get('CombinedTargetHeadFromRnn', None)
+        self.pos, self.neg = (head_params.get('pos', True), head_params.get('neg', True)) if head_params else 0, 0
         self.cols_ix = dict(params).get('columns_ix', {'neg_sum': 0,
                                                        'neg_distribution': 1,
                                                        'pos_sum': 2,
                                                        'pos_distribution': 3})
+
         self.save_hyperparameters('params')
         self.loss = get_loss(params)
 
@@ -130,7 +135,9 @@ class SequenceClassify(pl.LightningModule):
             'MSEp': MSE(self.cols_ix['pos_sum'], self.pos, self.neg, self.cols_ix['neg_sum']),
             'MAPEp': MAPE(self.cols_ix['pos_sum'], self.pos, self.neg, self.cols_ix['neg_sum']),
             'CEn': CrossEntropy(self.cols_ix['neg_distribution'], self.pos, self.neg, self.cols_ix['neg_sum']),
-            'CEp': CrossEntropy(self.cols_ix['pos_distribution'], self.pos, self.neg, self.cols_ix['neg_sum'])
+            'CEp': CrossEntropy(self.cols_ix['pos_distribution'], self.pos, self.neg, self.cols_ix['neg_sum']),
+            'KLn': KL(self.cols_ix['neg_distribution'], self.pos, self.neg, self.cols_ix['neg_sum']),
+            'KLp': KL(self.cols_ix['pos_distribution'], self.pos, self.neg, self.cols_ix['neg_sum'])
         }
         params_score_metric = params['score_metric']
         if type(params_score_metric) is str:

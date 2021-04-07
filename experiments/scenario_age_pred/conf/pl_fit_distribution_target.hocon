@@ -48,7 +48,7 @@
   }
 
   embedding_validation_results: {
-    model_name: nn
+    model_name: dense_instead_gates
     feature_name: target_scores
     output_path: "results/fit_target_distribution_results.json"
   }
@@ -66,14 +66,12 @@
   logger_name: target_scores
 
   params: {
-    pos: True, neg: False,
-    pass_samples: True,
     columns_ix: {pos_sum: 0, 
                  pos_distribution: 1
                  neg_sum: 2,
                  neg_distribution: 3},
     distribution_targets_task : True,
-    score_metric: [R2p, MAPEp, CEp],
+    score_metric: [R2p, MAPEp, KLp, CEp],
 
     encoder_type: distribution_targets,
     trx_encoder: {
@@ -97,7 +95,7 @@
 
     head_layers: [
         [CombinedTargetHeadFromRnn, {in_size: "{seq_encoder.embedding_size}", num_distr_classes: 6,
-                                     pos: True, neg: False, pass_samples: True}]
+                                     pos: True, neg: False, use_gates: True, pass_samples: True}]
     ]
 
     train: {

@@ -11,6 +11,13 @@ def cross_entropy(pred, soft_targets):
     return torch.mean(torch.sum(-soft_targets.to(device) * logsoftmax(pred), 1))
 
 
+def kl(pred, soft_targets):
+    eps = 1e-7
+    softmax = torch.nn.Softmax()
+    device = pred.device
+    return torch.mean(torch.sum(soft_targets.to(device) * torch.log(soft_targets / (softmax(pred) + eps) + eps), 1))    
+
+
 def mse_loss(pred, actual):
     device = pred.device
     return torch.mean((pred - actual.to(device))**2)
@@ -177,10 +184,11 @@ class UnsupervisedTabNetLoss(nn.Module):
 
 
 class DistributionTargetsLoss(nn.Module):
-    def __init__(self, pos=True, neg=True, mult1=3, mult2=0.167, mult3=1, mult4=1):
+    def __init__(self, params, mult1=3, mult2=0.167, mult3=1, mult4=1):
         super().__init__()
+        head_params = dict(params['head_layers']).get('CombinedTargetHeadFromRnn', None)
+        self.pos, self.neg = (head_params.get('pos', True), head_params.get('neg', True)) if head_params else 0, 0
         self.mults = [mult1, mult2, mult3, mult4]
-        self.pos, self.neg = pos, neg
 
     def forward(self, pred, true):
         log_sum_truth1 = np.log(np.abs(true[:, 0].astype(np.float)) + 1)[:, None]
@@ -235,7 +243,7 @@ def get_loss(params):
             unlabeled_weight=params['unlabeled_weight']
         )
     elif loss_type == 'distribution_targets':
-        loss = DistributionTargetsLoss(dict(params).get('pos', True), dict(params).get('neg', True))
+        loss = DistributionTargetsLoss(params)
     else:
         raise Exception(f'unknown loss type: {loss_type}')
 

@@ -188,12 +188,17 @@ class DistributionTargetHead(torch.nn.Module):
 
 
 class RegressionTargetHead(torch.nn.Module):
-    def __init__(self, in_size=256, gates=True, pos=True, neg=True):
+    def __init__(self, in_size=256, gates=True, pos=True, neg=True, pass_samples=True):
         super().__init__()
         self.pos, self.neg = pos, neg
+        self.pass_samples = pass_samples
         self.dense1 = torch.nn.Linear(in_size, 64)
-        self.dense2_neg = torch.nn.Linear(64, 15) if self.neg else None
-        self.dense2_pos = torch.nn.Linear(64, 15) if self.pos else None
+        if pass_samples:
+            self.dense2_neg = torch.nn.Linear(64, 15) if self.neg else None
+            self.dense2_pos = torch.nn.Linear(64, 15) if self.pos else None
+        else:
+            self.dense2_neg = torch.nn.Linear(64, 16) if self.neg else None
+            self.dense2_pos = torch.nn.Linear(64, 16) if self.pos else None
         self.dense3_neg = torch.nn.Linear(16, 1) if self.neg else None
         self.dense3_pos = torch.nn.Linear(16, 1) if self.pos else None
         self.sigmoid = torch.nn.Sigmoid()
@@ -208,12 +213,14 @@ class RegressionTargetHead(torch.nn.Module):
         out3_neg = out3_pos = 0
         if self.pos:
             out2_pos = self.relu(self.dense2_pos(out1))
-            out2_pos = torch.cat((out2_pos, pos_sum_logs), dim=1).float()
+            if self.pass_samples:
+                out2_pos = torch.cat((out2_pos, pos_sum_logs), dim=1).float()
             out3_pos = self.dense3_pos(out2_pos)
             out3_pos = self.sigmoid(out3_pos) if self.gates else out3_pos
         if self.neg:
             out2_neg = self.relu(self.dense2_neg(out1))
-            out2_neg = torch.cat((out2_neg, neg_sum_logs), dim=1).float()
+            if self.pass_samples:
+                out2_neg = torch.cat((out2_neg, neg_sum_logs), dim=1).float()
             out3_neg = self.dense3_neg(out2_neg)
             out3_neg = self.sigmoid(out3_neg) if self.gates else out3_neg
 
@@ -221,15 +228,15 @@ class RegressionTargetHead(torch.nn.Module):
 
 
 class CombinedTargetHeadFromRnn(torch.nn.Module):
-    def __init__(self, in_size=48, num_distr_classes=6, pos=True, neg=True, pass_samples=True):
+    def __init__(self, in_size=48, num_distr_classes=6, pos=True, neg=True, use_gates=True, pass_samples=True):
         super().__init__()
-        
+
         self.pos, self.neg = pos, neg
-        self.pass_samples = pass_samples
+        self.use_gates = use_gates
         self.dense = torch.nn.Linear(in_size, 256)
         self.distribution = DistributionTargetHead(256, num_distr_classes, pos, neg)
-        self.regr_sums = RegressionTargetHead(256, False, pos, neg)
-        self.regr_gates = RegressionTargetHead(256, True, pos, neg) if self.pass_samples else None
+        self.regr_sums = RegressionTargetHead(256, False, pos, neg, pass_samples)
+        self.regr_gates = RegressionTargetHead(256, True, pos, neg, pass_samples) if self.use_gates else None
 
         self.relu = torch.nn.ReLU()
 
@@ -244,7 +251,7 @@ class CombinedTargetHeadFromRnn(torch.nn.Module):
         distr_neg, distr_pos = self.distribution(out1)
 
         sums_neg, sums_pos = self.regr_sums(out1, sum_logs1, sum_logs2)
-        gate_neg, gate_pos = self.regr_gates(out1, sum_logs1, sum_logs2) if self.pass_samples else (0, 0)
+        gate_neg, gate_pos = self.regr_gates(out1, sum_logs1, sum_logs2) if self.use_gates else (0, 0)
         
         return sum_logs1 * gate_neg + sums_neg * (1 - gate_neg), distr_neg, sum_logs2 * gate_pos + sums_pos * (1 - gate_pos), distr_pos
 

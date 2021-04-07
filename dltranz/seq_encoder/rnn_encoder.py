@@ -119,8 +119,9 @@ class RnnSeqEncoderDistributionTarget(RnnSeqEncoder):
 
     def __init__(self, params, is_reduce_sequence):
         super().__init__(params, is_reduce_sequence)
+        head_params = dict(params['head_layers']).get('CombinedTargetHeadFromRnn', None)
         self.numeric_name = list(params['trx_encoder']['numeric_values'].keys())[0]
-        self.collect_pos, self.collect_neg = dict(params).get('pos', True), dict(params).get('neg', True)
+        self.collect_pos, self.collect_neg = (head_params.get('pos', True), head_params.get('neg', True)) if head_params else 0, 0
         self.eps = 1e-7
 
     def forward(self, x):
