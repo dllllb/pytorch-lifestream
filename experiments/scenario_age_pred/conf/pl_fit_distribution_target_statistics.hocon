@@ -85,7 +85,7 @@
                        182, 60, 126, 191, 157, 185, 184, 118, 164, 187, 128, 195, 159, 186,
                        198, 152, 193, 192, 183, 189, 196, 175, 188, 202, 200, 197, 203, 199],
   
-    score_metric: [R2p, MAPEp, CEp],
+    score_metric: [R2p, MAPEp, KLp, CEp],
 
     category_names: [small_group],
     category_max_size: {small_group: 1000},

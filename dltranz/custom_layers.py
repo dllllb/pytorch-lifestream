@@ -253,7 +253,10 @@ class CombinedTargetHeadFromRnn(torch.nn.Module):
         sums_neg, sums_pos = self.regr_sums(out1, sum_logs1, sum_logs2)
         gate_neg, gate_pos = self.regr_gates(out1, sum_logs1, sum_logs2) if self.use_gates else (0, 0)
         
-        return sum_logs1 * gate_neg + sums_neg * (1 - gate_neg), distr_neg, sum_logs2 * gate_pos + sums_pos * (1 - gate_pos), distr_pos
+        return {'neg_sum': sum_logs1 * gate_neg + sums_neg * (1 - gate_neg),
+                'neg_distribution': distr_neg,
+                'pos_sum': sum_logs2 * gate_pos + sums_pos * (1 - gate_pos),
+                'pos_distribution': distr_pos}
 
 
 class TargetHeadFromAggFeatures(torch.nn.Module):
@@ -278,7 +281,10 @@ class TargetHeadFromAggFeatures(torch.nn.Module):
         out3_sums_neg = self.dense3_sums_neg(out2_sums)
         out3_sums_pos = self.dense3_sums_pos(out2_sums)
 
-        return out3_sums_neg, distr_neg, out3_sums_pos, distr_pos
+        return {'neg_sum': out3_sums_neg,
+                'neg_distribution': distr_neg,
+                'pos_sum': out3_sums_pos,
+                'pos_distribution': distr_pos}
 
 
 class DummyHead(torch.nn.Module):
@@ -286,4 +292,7 @@ class DummyHead(torch.nn.Module):
         super().__init__()
 
     def forward(self, x):
-        return x[0], x[1], x[2], x[3]
+        return {'neg_sum': x[0],
+                'neg_distribution': x[1],
+                'pos_sum': x[2],
+                'pos_distribution': x[3]}

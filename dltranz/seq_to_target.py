@@ -11,6 +11,7 @@ from dltranz.seq_encoder import create_encoder
 from dltranz.train import get_optimizer, get_lr_scheduler
 from dltranz.models import create_head_layers
 
+
 logger = logging.getLogger(__name__)
 
 
@@ -32,30 +33,25 @@ class EpochAuroc(pl.metrics.Metric):
 
 
 class DistributionTargets(pl.metrics.Metric):
-    def __init__(self, col_ix, pos, neg, neg_sum_col_ix):
+    def __init__(self, col_name):
         super().__init__(compute_on_step=False)
 
-        self.pos, self.neg = pos, neg
         self.add_state('y_hat', default=[])
         self.add_state('y', default=[])
-        self.col_ix = col_ix
-        self.sign = -1 if self.col_ix == neg_sum_col_ix else 1
+        self.col_name = col_name
+        self.sign = -1 if self.col_name == 'neg_sum' else 1
 
     def update(self, y_hat, y):
-        if not self.neg and self.pos:
-            y_hat = y_hat[2], y_hat[3]
-        if not self.pos and self.neg:
-            y_hat = y_hat[0], y_hat[1]
+        y_hat = y_hat[self.col_name]
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        y = torch.tensor(np.array(y[:, self.col_ix].tolist()), device=device)
-        y_hat = y_hat[self.col_ix]
+        y = torch.tensor(np.array(y[self.col_name].tolist()), device=device)
         self.y_hat.append(y_hat)
         self.y.append(y)
 
 
 class CrossEntropy(DistributionTargets):
-    def __init__(self, col_ix, pos, neg, neg_sum_col_ix):
-        super().__init__(col_ix, pos, neg, neg_sum_col_ix)
+    def __init__(self, col_name):
+        super().__init__(col_name)
 
     def compute(self):
         y_hat = torch.cat(self.y_hat)
@@ -64,8 +60,8 @@ class CrossEntropy(DistributionTargets):
 
 
 class KL(DistributionTargets):
-    def __init__(self, col_ix, pos, neg, neg_sum_col_ix):
-        super().__init__(col_ix, pos, neg, neg_sum_col_ix)
+    def __init__(self, col_name):
+        super().__init__(col_name)
 
     def compute(self):
         y_hat = torch.cat(self.y_hat)
@@ -74,8 +70,8 @@ class KL(DistributionTargets):
 
 
 class MSE(DistributionTargets):
-    def __init__(self, col_ix, pos, neg, neg_sum_col_ix):
-        super().__init__(col_ix, pos, neg, neg_sum_col_ix)
+    def __init__(self, col_name):
+        super().__init__(col_name)
 
     def compute(self):
         y_hat = torch.cat(self.y_hat)
@@ -84,8 +80,8 @@ class MSE(DistributionTargets):
 
 
 class MAPE(DistributionTargets):
-    def __init__(self, col_ix, pos, neg, neg_sum_col_ix):
-        super().__init__(col_ix, pos, neg, neg_sum_col_ix)
+    def __init__(self, col_name):
+        super().__init__(col_name)
 
     def compute(self):
         y_hat = torch.cat(self.y_hat)
@@ -94,8 +90,8 @@ class MAPE(DistributionTargets):
 
 
 class R_squared(DistributionTargets):
-    def __init__(self, col_ix, pos, neg, neg_sum_col_ix):
-        super().__init__(col_ix, pos, neg, neg_sum_col_ix)
+    def __init__(self, col_name):
+        super().__init__(col_name)
 
     def compute(self):
         y_hat = torch.cat(self.y_hat)
@@ -103,15 +99,15 @@ class R_squared(DistributionTargets):
         return r_squared(self.sign * torch.exp(y_hat - 1), y[:, None])
 
 
-class SequenceClassify(pl.LightningModule):
+class SequenceToTarget(pl.LightningModule):
     def __init__(self, params, pretrained_encoder=None):
         super().__init__()
         head_params = dict(params['head_layers']).get('CombinedTargetHeadFromRnn', None)
         self.pos, self.neg = (head_params.get('pos', True), head_params.get('neg', True)) if head_params else (0, 0)
-        self.cols_ix = dict(params).get('columns_ix', {'neg_sum': 0,
-                                                       'neg_distribution': 1,
-                                                       'pos_sum': 2,
-                                                       'pos_distribution': 3})
+        self.cols_ix = params.get('columns_ix', {'neg_sum': 0,
+                                                 'neg_distribution': 1,
+                                                 'pos_sum': 2,
+                                                 'pos_distribution': 3})
 
         self.save_hyperparameters('params')
         self.loss = get_loss(params)
@@ -128,16 +124,16 @@ class SequenceClassify(pl.LightningModule):
         d_metrics = {
             'auroc': EpochAuroc(),
             'accuracy': pl.metrics.Accuracy(),
-            'R2n': R_squared(self.cols_ix['neg_sum'], self.pos, self.neg, self.cols_ix['neg_sum']),
-            'MSEn': MSE(self.cols_ix['neg_sum'], self.pos, self.neg, self.cols_ix['neg_sum']),
-            'MAPEn': MAPE(self.cols_ix['neg_sum'], self.pos, self.neg, self.cols_ix['neg_sum']),
-            'R2p': R_squared(self.cols_ix['pos_sum'], self.pos, self.neg, self.cols_ix['neg_sum']),
-            'MSEp': MSE(self.cols_ix['pos_sum'], self.pos, self.neg, self.cols_ix['neg_sum']),
-            'MAPEp': MAPE(self.cols_ix['pos_sum'], self.pos, self.neg, self.cols_ix['neg_sum']),
-            'CEn': CrossEntropy(self.cols_ix['neg_distribution'], self.pos, self.neg, self.cols_ix['neg_sum']),
-            'CEp': CrossEntropy(self.cols_ix['pos_distribution'], self.pos, self.neg, self.cols_ix['neg_sum']),
-            'KLn': KL(self.cols_ix['neg_distribution'], self.pos, self.neg, self.cols_ix['neg_sum']),
-            'KLp': KL(self.cols_ix['pos_distribution'], self.pos, self.neg, self.cols_ix['neg_sum'])
+            'R2n': R_squared('neg_sum'),
+            'MSEn': MSE('neg_sum'),
+            'MAPEn': MAPE('neg_sum'),
+            'R2p': R_squared('pos_sum'),
+            'MSEp': MSE('pos_sum'),
+            'MAPEp': MAPE('pos_sum'),
+            'CEn': CrossEntropy('neg_distribution'),
+            'CEp': CrossEntropy('pos_distribution'),
+            'KLn': KL('neg_distribution'),
+            'KLp': KL('pos_distribution')
         }
         params_score_metric = params['score_metric']
         if type(params_score_metric) is str:

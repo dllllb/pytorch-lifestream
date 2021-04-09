@@ -8,14 +8,14 @@ from dltranz.trx_encoder import PaddedBatch
 class StatisticsEncoder(torch.nn.Module):
     def __init__(self, config):
         super().__init__()
-        self.collect_pos, self.collect_neg = dict(config).get('pos', True), dict(config).get('neg', True)
+        self.collect_pos, self.collect_neg = config.get('pos', True), config.get('neg', True)
         self.dummy = torch.nn.Linear(1, 1)
-        self.negative_items = dict(config).get('top_negative_trx', [])
-        self.positive_items = dict(config).get('top_positive_trx', [])
+        self.negative_items = config.get('top_negative_trx', [])
+        self.positive_items = config.get('top_positive_trx', [])
 
-        self.cat_names = dict(config).get('category_names', ['mcc_code', 'tr_type'])
-        self.num_values = dict(config).get('numeric_values', ['amount'])
-        self.cat_max_size = dict(config).get('category_max_size', {'mcc_code': 200, 'tr_type': 100})
+        self.cat_names = list(config.get('category_names'))
+        self.num_values = list(config.get('numeric_values'))
+        self.cat_max_size = config.get('category_max_size')
 
     def forward(self, x: PaddedBatch):
         eps = 1e-7

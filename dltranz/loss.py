@@ -15,7 +15,7 @@ def kl(pred, soft_targets):
     eps = 1e-7
     softmax = torch.nn.Softmax()
     device = pred.device
-    return torch.mean(torch.sum(soft_targets.to(device) * torch.log(soft_targets / (softmax(pred) + eps) + eps), 1))    
+    return torch.mean(torch.sum(soft_targets.to(device) * torch.log(soft_targets.to(device) / (softmax(pred) + eps) + eps), 1))    
 
 
 def mse_loss(pred, actual):
@@ -184,35 +184,28 @@ class UnsupervisedTabNetLoss(nn.Module):
 
 
 class DistributionTargetsLoss(nn.Module):
-    def __init__(self, params, mult1=3, mult2=0.167, mult3=1, mult4=1):
+    def __init__(self, mult1=3, mult2=0.167, mult3=1, mult4=1):
         super().__init__()
-        head_params = dict(params['head_layers']).get('CombinedTargetHeadFromRnn', None)
-        self.pos, self.neg = (head_params.get('pos', True), head_params.get('neg', True)) if head_params else (0, 0)
         self.mults = [mult1, mult2, mult3, mult4]
 
     def forward(self, pred, true):
-        log_sum_truth1 = np.log(np.abs(true[:, 0].astype(np.float)) + 1)[:, None]
-        distribution_truth1 = np.array(true[:, 1].tolist())
-        log_sum_truth2 = np.log(np.abs(true[:, 2].astype(np.float)) + 1)[:, None] if true.shape[1] > 2 else None
-        distribution_truth2 = np.array(true[:, 3].tolist()) if true.shape[1] > 2 else None
+        log_sum_truth_neg = np.log(np.abs(true['neg_sum'].astype(np.float)) + 1)[:, None] if isinstance(true['neg_sum'], np.ndarray) else 0
+        distribution_truth_neg = np.array(true['neg_distribution'].tolist()) if isinstance(true['neg_sum'], np.ndarray) else 0
+        log_sum_truth_pos = np.log(np.abs(true['pos_sum'].astype(np.float)) + 1)[:, None]
+        distribution_truth_pos = np.array(true['pos_distribution'].tolist())
 
-        if self.neg and self.pos:
-            log_sum_hat1, distribution_hat1, log_sum_hat2, distribution_hat2 = pred[0], pred[1], pred[2], pred[3]
-        elif not self.neg and self.pos:
-            log_sum_hat1, distribution_hat1 = pred[2], pred[3]
-            self.mults[0], self.mults[2] = self.mults[1], self.mults[3]
-        elif not self.pos and self.neg:
-            log_sum_hat1, distribution_hat1 = pred[0], pred[1]
+        log_sum_hat_neg, distribution_hat_neg = pred['neg_sum'], pred['neg_distribution']
+        log_sum_hat_pos, distribution_hat_pos = pred['pos_sum'], pred['pos_distribution']
 
-        device = log_sum_hat1.device
-        loss_sum1 = mse_loss(log_sum_hat1, torch.tensor(log_sum_truth1, device=device).float())
-        loss_distr1 = cross_entropy(distribution_hat1, torch.tensor(distribution_truth1, device=device))
-        if true.shape[1] > 2:
-            loss_sum2 = mse_loss(log_sum_hat2, torch.tensor(log_sum_truth2, device=device).float())
-            loss_distr2 = cross_entropy(distribution_hat2, torch.tensor(distribution_truth2, device=device))
+        device = log_sum_hat_pos.device
+        loss_sum_pos = mse_loss(log_sum_hat_pos, torch.tensor(log_sum_truth_pos, device=device).float())
+        loss_distr_pos = cross_entropy(distribution_hat_pos, torch.tensor(distribution_truth_pos, device=device))
+        if isinstance(true['neg_sum'], np.ndarray):
+            loss_sum_neg = mse_loss(log_sum_hat_neg, torch.tensor(log_sum_truth_neg, device=device).float())
+            loss_distr_neg = cross_entropy(distribution_hat_neg, torch.tensor(distribution_truth_neg, device=device))
 
-        loss = loss_sum1 * self.mults[0] + loss_sum2 * self.mults[1] + loss_distr1 * self.mults[2] + loss_distr2 * self.mults[3] \
-                    if true.shape[1] > 2 else loss_sum1 * self.mults[0] + loss_distr1 * self.mults[2]
+        loss = loss_sum_neg * self.mults[0] + loss_sum_pos * self.mults[1] + loss_distr_neg * self.mults[2] + loss_distr_pos * self.mults[3] \
+                    if isinstance(true['neg_sum'], np.ndarray) else loss_sum_pos * self.mults[1] + loss_distr_pos * self.mults[3]
         return loss.float()
 
 
@@ -243,7 +236,7 @@ def get_loss(params):
             unlabeled_weight=params['unlabeled_weight']
         )
     elif loss_type == 'distribution_targets':
-        loss = DistributionTargetsLoss(params)
+        loss = DistributionTargetsLoss()
     else:
         raise Exception(f'unknown loss type: {loss_type}')
 

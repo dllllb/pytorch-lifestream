@@ -48,7 +48,7 @@
   }
 
   embedding_validation_results: {
-    model_name: dense_instead_gates
+    model_name: nn
     feature_name: target_scores
     output_path: "results/fit_target_distribution_results.json"
   }
@@ -82,6 +82,11 @@
       },
       numeric_values: {
         amount_rur: identity
+      }
+      category_names: [mcc_code, tr_type]
+      category_max_size : {
+        mcc_code: 200,
+        tr_type: 100
       }
       was_logified: false
       log_scale_factor: 1

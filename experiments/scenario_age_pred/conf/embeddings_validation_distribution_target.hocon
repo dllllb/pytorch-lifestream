@@ -34,8 +34,6 @@
 
     external_scores: {
         nn: "../results/fit_target_distribution_results.json",
-        nogates: "../results/fit_target_distribution_results_no_gates.json",
-        nopass: "../results/fit_target_distribution_results_no_pass_samples.json",
         stat: "../results/fit_target_distribution_results_statistics.json"
     }
 
@@ -47,6 +45,7 @@
         metrics: {
             R2p: {float_format: "{:.3f}", split_columns: true},
             CEp: {float_format: "{:.3f}", split_columns: true},
+            KLp: {float_format: "{:.3f}", split_columns: true},
         }
     }
   
