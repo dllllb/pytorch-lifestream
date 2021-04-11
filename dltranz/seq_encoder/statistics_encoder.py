@@ -45,6 +45,9 @@ class StatisticsEncoder(torch.nn.Module):
         elif self.collect_neg:
             return log_neg_sum, neg_distribution, 0, 0
         elif self.collect_pos:
+            print(pos_distribution)
+            print(pos_distribution.shape)
+            exit()
             return 0, 0, log_pos_sum, pos_distribution
 
     @property

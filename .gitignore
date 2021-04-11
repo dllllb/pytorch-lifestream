@@ -14,3 +14,9 @@ experiments/*/models
 lightning_logs
 experiments/*/conf/embeddings_validation*.work
 .coverage
+
+_*
+*.log
+*.code-workspace
+.gitignore
+
