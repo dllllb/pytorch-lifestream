@@ -434,9 +434,9 @@ def padded_collate_distribution_target(batch):
     keys = ['neg_sum', 'neg_distribution', 'pos_sum', 'pos_distribution']
 
     if new_y.shape[1] > 2:
-        new_y = {keys[i] : new_y[:, i] for i in range(len(keys))}
+        new_y = {key : new_y[:, i] for i, key in enumerate(keys)}
     else:
-        new_y = {keys[i] : (new_y[:, i - 2] if i > 1 else 0) for i in range(len(keys))}
+        new_y = {key : (new_y[:, i - 2] if i > 1 else 0) for i, key in enumerate(keys)}
 
     return padded_batch, new_y
 
