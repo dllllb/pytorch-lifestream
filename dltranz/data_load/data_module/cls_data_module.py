@@ -8,7 +8,7 @@ from embeddings_validation.file_reader import TargetFile, ID_TYPE_MAPPING
 from torch.utils.data import DataLoader
 from tqdm.auto import tqdm
 
-from dltranz.data_load import padded_collate, IterableChain, IterableAugmentations
+from dltranz.data_load import padded_collate, padded_collate_distribution_target, IterableChain, IterableAugmentations
 from dltranz.data_load.augmentations.build_augmentations import build_augmentations
 from dltranz.data_load.data_module.map_augmentation_dataset import MapAugmentationDataset
 from dltranz.data_load.iterable_processing.category_size_clip import CategorySizeClip
@@ -20,8 +20,8 @@ from dltranz.data_load.iterable_processing.seq_len_filter import SeqLenFilter
 from dltranz.data_load.iterable_processing.target_join import TargetJoin
 from dltranz.data_load.parquet_dataset import ParquetFiles, ParquetDataset
 
-logger = logging.getLogger(__name__)
 
+logger = logging.getLogger(__name__)
 
 
 class ClsDataModuleTrain(pl.LightningDataModule):
@@ -160,7 +160,7 @@ class ClsDataModuleTrain(pl.LightningDataModule):
     def train_dataloader(self):
         return DataLoader(
             dataset=self.train_dataset,
-            collate_fn=padded_collate,
+            collate_fn=padded_collate_distribution_target if self.distribution_targets_task else padded_collate,
             shuffle=False if self._type == 'iterable' else True,
             num_workers=self.train_conf['num_workers'],
             batch_size=self.train_conf['batch_size'],
@@ -191,7 +191,7 @@ class ClsDataModuleTrain(pl.LightningDataModule):
     def val_dataloader(self):
         return DataLoader(
             dataset=self.valid_dataset,
-            collate_fn=padded_collate,
+            collate_fn=padded_collate_distribution_target if self.distribution_targets_task else padded_collate,
             num_workers=self.valid_conf['num_workers'],
             batch_size=self.valid_conf['batch_size'],
         )
@@ -199,7 +199,7 @@ class ClsDataModuleTrain(pl.LightningDataModule):
     def test_dataloader(self):
         return DataLoader(
             dataset=self.test_dataset,
-            collate_fn=padded_collate,
+            collate_fn=padded_collate_distribution_target if self.distribution_targets_task else padded_collate,
             num_workers=self.test_conf['num_workers'],
             batch_size=self.test_conf['batch_size'],
         )

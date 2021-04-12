@@ -1,5 +1,5 @@
 import pytorch_lightning as pl
-from dltranz.seq_cls import SequenceClassify
+from dltranz.seq_to_target import SequenceToTarget
 from .test_data_load import RandomEventData
 from pyhocon import ConfigFactory
 
@@ -93,7 +93,7 @@ def tst_params_transf():
 def test_train_loop_rnn():
     params = tst_params_rnn()
 
-    model = SequenceClassify(params)
+    model = SequenceToTarget(params)
     dl = RandomEventData(params['data_module'])
     trainer = pl.Trainer(max_epochs=1, logger=None, checkpoint_callback=False)
     trainer.fit(model, dl)
@@ -101,7 +101,7 @@ def test_train_loop_rnn():
 def test_train_loop_transf():
     params = tst_params_transf()
 
-    model = SequenceClassify(params)
+    model = SequenceToTarget(params)
     dl = RandomEventData(params['data_module'])
     trainer = pl.Trainer(max_epochs=1, logger=None, checkpoint_callback=False)
     trainer.fit(model, dl)

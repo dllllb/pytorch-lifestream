@@ -112,3 +112,30 @@ python -m scenario_age_pred compare_approaches --n_workers 5 \
     --output_file "results/scenario_age_pred__complex_learning.csv" \
     --embedding_file_names "complex_embeddings.pickle"
 ```
+
+# Distribution targets scenario
+
+```sh
+cd experiments/scenario_age_pred
+export SC_DEVICE="cuda"
+export CUDA_VISIBLE_DEVICES=0  # define here one gpu device number
+
+[ -d data/ ] && rm -r data/
+[ -d conf/embeddings_validation.work/ ] && rm -r conf/embeddings_validation.work/
+[ -d lightning_logs/ ] && rm -r lightning_logs/
+
+bin/get-data.sh
+python distribution_target.py
+bin/make_datasets_spark_file.sh
+
+python -m embeddings_validation \
+    --conf conf/embeddings_validation_distribution_target.hocon --workers 10 --total_cpu_count 20 --split_only --local_scheduler
+
+python ../../pl_fit_target.py --conf conf/pl_fit_distribution_target.hocon
+
+python ../../pl_fit_target.py --conf conf/pl_fit_distribution_target_statistics.hocon
+
+python -m embeddings_validation \
+    --conf conf/embeddings_validation_distribution_target.hocon --workers 10 --total_cpu_count 20 --local_scheduler
+
+```

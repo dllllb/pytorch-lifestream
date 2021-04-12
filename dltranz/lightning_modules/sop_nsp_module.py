@@ -2,7 +2,7 @@ import torch
 from torch.nn import BCELoss
 
 from dltranz.lightning_modules.AbsModule import ABSModule
-from dltranz.seq_cls import EpochAuroc
+from dltranz.seq_to_target import EpochAuroc
 
 
 class SentencePairsHead(torch.nn.Module):

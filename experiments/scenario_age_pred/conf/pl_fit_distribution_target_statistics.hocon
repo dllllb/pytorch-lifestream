@@ -8,12 +8,12 @@
 
     setup: {
       dataset_files: {
-        train_data_path: "data/train_trx.parquet"
-        test_data_path: "data/test_trx.parquet"
+        train_data_path: "data/train_trx_file.parquet"
+        test_data_path: "data/test_trx_file.parquet"
       }
-      col_id: customer_id
+      col_id: client_id
       col_id_dtype: int
-      col_target: gender
+      col_target: distribution
 
       split_by: embeddings_validation
       fold_info: "conf/embeddings_validation.work/folds/folds.json"
@@ -66,25 +66,30 @@
   logger_name: target_scores
 
   params: {
-    top_negative_trx: [2010, 2370, 1010, 1110, 2330, 2371, 2011, 2020, 2331, 1100, 1030, 
-                       1200, 1210, 2210, 2021, 2110, 2340, 2440, 2460, 2320, 4010, 4071,
-                       2341, 2456, 4051, 1310, 1410, 4110, 2100, 2200, 4011, 1000, 4210,
-                       2446, 1510, 4020, 4500, 4041, 4090, 4031, 4021, 4097, 4100, 4061,
-                       2000, 4200, 4096, 4045, 4035],
-    top_positive_trx: [7070, 7010, 7030, 7071, 7020, 7021, 7031, 7011, 6110, 7014, 7074,
-                       7040, 7034, 7041, 6210, 6010, 7024, 6100, 7075, 6200, 7035, 7015,
-                       7025, 6000, 8100, 8145, 7044, 8146],
+    pos: True, neg: False,
+    columns_ix: {pos_sum: 0,
+                 pos_distribution: 1
+                 neg_sum: 2,
+                 neg_distribution: 3},
+    top_positive_trx: [1, 24, 11, 5, 2, 18, 3, 9, 4, 28, 13, 15, 36, 46, 21, 23, 14, 39,
+                       64, 80, 12, 25, 55, 20, 43, 16, 8, 26, 34, 109, 32, 57, 54, 61, 7,
+                       22, 44, 50, 72, 0, 40, 10, 29, 37, 82, 52, 35, 33, 75, 31, 53, 62,
+                       17, 83, 45, 6, 66, 112, 59, 19, 91, 67, 65, 147, 86, 79, 63, 81, 69,
+                       106, 77, 48, 30, 78, 105, 42, 98, 87, 27, 58, 141, 92, 102, 76, 121,
+                       103, 137, 70, 123, 38, 74, 97, 49, 95, 47, 96, 73, 101, 151, 68, 51,
+                       125, 41, 156, 56, 139, 115, 122, 113, 89, 144, 170, 140, 110, 120, 154,
+                       153, 111, 161, 104, 90, 114, 84, 131, 100, 88, 143, 130, 166, 124, 174,
+                       158, 107, 150, 146, 173, 142, 138, 71, 94, 132, 99, 135, 117, 160, 181,
+                       127, 169, 133, 116, 171, 148, 162, 163, 134, 129, 136, 178, 172, 85,
+                       179, 176, 149, 177, 145, 155, 119, 190, 168, 165, 167, 93, 108, 180,
+                       182, 60, 126, 191, 157, 185, 184, 118, 164, 187, 128, 195, 159, 186,
+                       198, 152, 193, 192, 183, 189, 196, 175, 188, 202, 200, 197, 203, 199],
   
-    score_metric: [R2n, R2p, MAPEn, MAPEp, KLn, KLp, CEn, CEp],
+    score_metric: [R2p, MAPEp, KLp, CEp],
 
-    category_names: [mcc_code, tr_type]
-    category_max_size : {
-      mcc_code: 200,
-      tr_type: 100
-    }
-    numeric_values: {
-      amount: identity
-    }
+    category_names: [small_group],
+    category_max_size: {small_group: 1000},
+    numeric_values: [amount_rur],
 
     encoder_type: statistics,
     trx_encoder: {
@@ -94,7 +99,9 @@
       embeddings: {
         tr_type: {in: 100}
       },
-
+      numeric_values: {
+        amount: identity
+      }
       was_logified: true
       log_scale_factor: 1
     },

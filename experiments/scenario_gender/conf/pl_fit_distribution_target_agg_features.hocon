@@ -64,7 +64,7 @@
   logger_name: target_scores
 
   params: {
-    score_metric: [R2n, R2p, MAPEn, MAPEp, CEn, CEp],
+    score_metric: [R2n, R2p, MAPEn, MAPEp, KLn, KLp, CEn, CEp],
 
     encoder_type: agg_features,
     trx_encoder: {

@@ -6,7 +6,7 @@ from pytorch_lightning.loggers import TensorBoardLogger
 from dltranz.data_load.data_module.cls_data_module import ClsDataModuleTrain
 import pytorch_lightning as pl
 
-from dltranz.seq_cls import SequenceClassify
+from dltranz.seq_to_target import SequenceToTarget
 from dltranz.util import get_conf, get_cls
 
 logger = logging.getLogger(__name__)
@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 
 def fold_fit_test(conf, fold_id, pretrained_module=None):
     pretrained_encoder = None if pretrained_module is None else pretrained_module.seq_encoder
-    model = SequenceClassify(conf['params'], pretrained_encoder)
+    model = SequenceToTarget(conf['params'], pretrained_encoder)
     dm = ClsDataModuleTrain(conf['data_module'], model, fold_id)
 
     _trainer_params = conf['trainer']

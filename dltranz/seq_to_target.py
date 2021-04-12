@@ -6,19 +6,13 @@ import torch
 import numpy as np
 from pytorch_lightning.metrics.functional.classification import auroc
 
-from dltranz.loss import get_loss, cross_entropy, mape_metric, mse_loss, r_squared
+from dltranz.loss import get_loss, cross_entropy, kl, mape_metric, mse_loss, r_squared
 from dltranz.seq_encoder import create_encoder
 from dltranz.train import get_optimizer, get_lr_scheduler
 from dltranz.models import create_head_layers
 
+
 logger = logging.getLogger(__name__)
-
-
-# columns indexes for distribution targets task:
-COLUMNS_IX = {'neg_sum': 0,
-              'neg_distribution': 1, 
-              'pos_sum': 2, 
-              'pos_distribution': 3}
 
 
 class EpochAuroc(pl.metrics.Metric):
@@ -39,25 +33,25 @@ class EpochAuroc(pl.metrics.Metric):
 
 
 class DistributionTargets(pl.metrics.Metric):
-    def __init__(self, col_ix):
+    def __init__(self, col_name):
         super().__init__(compute_on_step=False)
 
         self.add_state('y_hat', default=[])
         self.add_state('y', default=[])
-        self.col_ix = col_ix
-        self.sign = -1 if self.col_ix == COLUMNS_IX['neg_sum'] else 1
+        self.col_name = col_name
+        self.sign = -1 if self.col_name == 'neg_sum' else 1
 
     def update(self, y_hat, y):
+        y_hat = y_hat[self.col_name]
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        y = torch.tensor(np.array(y[:, self.col_ix].tolist()), device=device)
-        y_hat = y_hat[self.col_ix]
+        y = torch.tensor(np.array(y[self.col_name].tolist()), device=device)
         self.y_hat.append(y_hat)
         self.y.append(y)
 
 
 class CrossEntropy(DistributionTargets):
-    def __init__(self, col_ix):
-        super().__init__(col_ix)
+    def __init__(self, col_name):
+        super().__init__(col_name)
 
     def compute(self):
         y_hat = torch.cat(self.y_hat)
@@ -65,9 +59,19 @@ class CrossEntropy(DistributionTargets):
         return cross_entropy(y_hat, y)
 
 
+class KL(DistributionTargets):
+    def __init__(self, col_name):
+        super().__init__(col_name)
+
+    def compute(self):
+        y_hat = torch.cat(self.y_hat)
+        y = torch.cat(self.y)
+        return kl(y_hat, y)
+
+
 class MSE(DistributionTargets):
-    def __init__(self, col_ix):
-        super().__init__(col_ix)
+    def __init__(self, col_name):
+        super().__init__(col_name)
 
     def compute(self):
         y_hat = torch.cat(self.y_hat)
@@ -76,8 +80,8 @@ class MSE(DistributionTargets):
 
 
 class MAPE(DistributionTargets):
-    def __init__(self, col_ix):
-        super().__init__(col_ix)
+    def __init__(self, col_name):
+        super().__init__(col_name)
 
     def compute(self):
         y_hat = torch.cat(self.y_hat)
@@ -86,8 +90,8 @@ class MAPE(DistributionTargets):
 
 
 class R_squared(DistributionTargets):
-    def __init__(self, col_ix):
-        super().__init__(col_ix)
+    def __init__(self, col_name):
+        super().__init__(col_name)
 
     def compute(self):
         y_hat = torch.cat(self.y_hat)
@@ -95,11 +99,17 @@ class R_squared(DistributionTargets):
         return r_squared(self.sign * torch.exp(y_hat - 1), y[:, None])
 
 
-class SequenceClassify(pl.LightningModule):
+class SequenceToTarget(pl.LightningModule):
     def __init__(self, params, pretrained_encoder=None):
         super().__init__()
-        self.save_hyperparameters('params')
+        head_params = dict(params['head_layers']).get('CombinedTargetHeadFromRnn', None)
+        self.pos, self.neg = (head_params.get('pos', True), head_params.get('neg', True)) if head_params else (0, 0)
+        self.cols_ix = params.get('columns_ix', {'neg_sum': 0,
+                                                 'neg_distribution': 1,
+                                                 'pos_sum': 2,
+                                                 'pos_distribution': 3})
 
+        self.save_hyperparameters('params')
         self.loss = get_loss(params)
 
         if pretrained_encoder is not None:
@@ -114,14 +124,16 @@ class SequenceClassify(pl.LightningModule):
         d_metrics = {
             'auroc': EpochAuroc(),
             'accuracy': pl.metrics.Accuracy(),
-            'R2n': R_squared(COLUMNS_IX['neg_sum']),
-            'MSEn': MSE(COLUMNS_IX['neg_sum']),
-            'MAPEn': MAPE(COLUMNS_IX['neg_sum']),
-            'R2p': R_squared(COLUMNS_IX['pos_sum']),
-            'MSEp': MSE(COLUMNS_IX['pos_sum']),
-            'MAPEp': MAPE(COLUMNS_IX['pos_sum']),
-            'CEn': CrossEntropy(COLUMNS_IX['neg_distribution']),
-            'CEp': CrossEntropy(COLUMNS_IX['pos_distribution'])
+            'R2n': R_squared('neg_sum'),
+            'MSEn': MSE('neg_sum'),
+            'MAPEn': MAPE('neg_sum'),
+            'R2p': R_squared('pos_sum'),
+            'MSEp': MSE('pos_sum'),
+            'MAPEp': MAPE('pos_sum'),
+            'CEn': CrossEntropy('neg_distribution'),
+            'CEp': CrossEntropy('pos_distribution'),
+            'KLn': KL('neg_distribution'),
+            'KLp': KL('pos_distribution')
         }
         params_score_metric = params['score_metric']
         if type(params_score_metric) is str:
@@ -151,7 +163,7 @@ class SequenceClassify(pl.LightningModule):
 
     def validation_step(self, batch, _):
         x, y = batch
-        y_h = self(x)    
+        y_h = self(x)
         for name, mf in self.valid_metrics.items():
             mf(y_h, y)
 

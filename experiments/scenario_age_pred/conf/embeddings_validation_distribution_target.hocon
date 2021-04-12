@@ -4,20 +4,20 @@
     }
 
     target: {
-        file_name: "../data/gender_train_distribution_target.csv"
-        cols_id: [customer_id]
+        file_name: "../data/age_train_distribution_target.csv"
+        cols_id: [client_id]
         cols_id_type: [int]
-        col_target: gender
+        col_target: distribution
     }
 
     split: {
         fit_ids: true
 
         train_id: {
-            file_name: "../data/gender_train_distribution_target.csv"
+            file_name: "../data/age_train_distribution_target.csv"
         }
         test_id: {
-            file_name: "../data/test_ids.csv"
+            file_name: "../data/test_ids_file.csv"
         }
 
         cv_split_count: 5
@@ -27,15 +27,14 @@
 
     models: {}
 
-    report_file: "../results/scenario_gender_distibution_target.txt"
+    report_file: "../results/scenario_age_distibution_target.txt"
 
     features: {
     }
 
     external_scores: {
         nn: "../results/fit_target_distribution_results.json",
-        half_stats: "../results/fit_target_distribution_results_statistics.json",
-        agg_head: "../results/fit_target_distribution_results_agg_features.json"
+        stat: "../results/fit_target_distribution_results_statistics.json"
     }
 
     report: {
@@ -44,14 +43,10 @@
         print_all_metrics: false
 
         metrics: {
-            R2n: {float_format: "{:.3f}", split_columns: true},
             R2p: {float_format: "{:.3f}", split_columns: true},
-            CEn: {float_format: "{:.3f}", split_columns: true},
             CEp: {float_format: "{:.3f}", split_columns: true},
-            KLn: {float_format: "{:.3f}", split_columns: true},
             KLp: {float_format: "{:.3f}", split_columns: true},
-
         }
     }
-    
+  
 }

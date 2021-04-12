@@ -41,7 +41,17 @@ def test_shape():
             'hidden_size': 48,
             'type': 'gru',
             'bidir': False,
-            'trainable_starter': 'static',
+            'trainable_starter': 'static'
+        },
+        'head_layers': {
+            'CombinedTargetHeadFromRnn': {
+                'in_size': 48,
+                'num_distr_classes': 6,
+                'pos': True,
+                'neg': True,
+                'use_gates': True,
+                'pass_samples': True
+            }
         }
     }
 

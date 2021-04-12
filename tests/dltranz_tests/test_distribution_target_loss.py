@@ -7,15 +7,15 @@ from dltranz.loss import DistributionTargetsLoss
 def test_best_loss():
     eps = 1e-7
 
-    prediction = (torch.tensor([[np.log(10 + 1)]]), 
-                  torch.tensor([[100., 0., 0., 0., 0., 0.]]),
-                  torch.tensor([[0]]),
-                  torch.tensor([[0., 100., 0., 0., 0., 0.]]))
+    prediction = {'neg_sum': torch.tensor([[np.log(10 + 1)]]), 
+                  'neg_distribution': torch.tensor([[100., 0., 0., 0., 0., 0.]]),
+                  'pos_sum': torch.tensor([[0]]),
+                  'pos_distribution': torch.tensor([[0., 100., 0., 0., 0., 0.]])}
 
-    label = np.array([[10,
-                       list([1., 0., 0., 0., 0., 0.]),
-                       0,
-                       list([0., 1., 0., 0., 0., 0.])]])
+    label = {'neg_sum': np.array([[10]]),
+             'neg_distribution': np.array([[1., 0., 0., 0., 0., 0.]]),
+             'pos_sum': np.array([[0]]),
+             'pos_distribution': np.array([[0., 1., 0., 0., 0., 0.]])}
 
     loss = DistributionTargetsLoss()
     out = loss(prediction, label)
@@ -25,16 +25,16 @@ def test_best_loss():
 
 def test_loss_300():
     eps = 1e-7
+    
+    prediction = {'neg_sum': torch.tensor([[10]]), 
+                  'neg_distribution': torch.tensor([[100., 0., 0., 0., 0., 0.]]),
+                  'pos_sum': torch.tensor([[0]]),
+                  'pos_distribution': torch.tensor([[0., 100., 0., 0., 0., 0.]])}
 
-    prediction = (torch.tensor([[10]]), 
-                  torch.tensor([[100., 0., 0., 0., 0., 0.]]),
-                  torch.tensor([[0]]),
-                  torch.tensor([[0., 100., 0., 0., 0., 0.]]))
-
-    label = np.array([[0,
-                       list([1., 0., 0., 0., 0., 0.]),
-                       0,
-                       list([0., 1., 0., 0., 0., 0.])]])
+    label = {'neg_sum': np.array([[0]]),
+             'neg_distribution': np.array([[1., 0., 0., 0., 0., 0.]]),
+             'pos_sum': np.array([[0]]),
+             'pos_distribution': np.array([[0., 1., 0., 0., 0., 0.]])}
 
     loss = DistributionTargetsLoss()
     out = loss(prediction, label)
@@ -45,15 +45,15 @@ def test_loss_300():
 def test_usual_loss_first():
     eps = 1e-7
 
-    prediction = (torch.tensor([[-1.]]), 
-                  torch.tensor([[0.1, 0.2, 0.1, 0.1, 0.3, 0.2]]),
-                  torch.tensor([[ 1.]]),
-                  torch.tensor([[0.1, 0.2, 0.1, 0.1, 0.3, 0.2]]))
+    prediction = {'neg_sum': torch.tensor([[-1.]]), 
+                  'neg_distribution': torch.tensor([[0.1, 0.2, 0.1, 0.1, 0.3, 0.2]]),
+                  'pos_sum': torch.tensor([[ 1.]]),
+                  'pos_distribution': torch.tensor([[0.1, 0.2, 0.1, 0.1, 0.3, 0.2]])}
 
-    label = np.array([[-1.,
-                       list([0.1, 0.2, 0.1, 0.1, 0.3, 0.2]),
-                       1.,
-                       list([0.1, 0.2, 0.1, 0.1, 0.3, 0.2])]])
+    label = {'neg_sum': np.array([[-1.]]),
+             'neg_distribution': np.array([[0.1, 0.2, 0.1, 0.1, 0.3, 0.2]]),
+             'pos_sum': np.array([[1.]]),
+             'pos_distribution': np.array([[0.1, 0.2, 0.1, 0.1, 0.3, 0.2]])}
 
     loss = DistributionTargetsLoss()
     out = loss(prediction, label)
@@ -64,16 +64,16 @@ def test_usual_loss_first():
 
 def test_usual_loss_second():
     eps = 1e-7
+    
+    prediction = {'neg_sum': torch.tensor([[-1.]]), 
+                  'neg_distribution': torch.tensor([[0.1, 0.2, 0.1, 0.1, 0.3, 0.2]]),
+                  'pos_sum': torch.tensor([[ 1.]]),
+                  'pos_distribution': torch.tensor([[0.3, 0.5, 0., 0.1, 0.1, 0.0]])}
 
-    prediction = (torch.tensor([[-1.]]), 
-                  torch.tensor([[0.1, 0.2, 0.1, 0.1, 0.3, 0.2]]),
-                  torch.tensor([[ 1.]]),
-                  torch.tensor([[0.3, 0.5, 0., 0.1, 0.1, 0.0]]))
-
-    label = np.array([[-10.,
-                       list([0.5, 0.5, 0.0, 0.0, 0.0, 0.0]),
-                       8.,
-                       list([0.1, 0.1, 0.1, 0.1, 0.1, 0.5])]])
+    label = {'neg_sum': np.array([[-10.]]),
+             'neg_distribution': np.array([[0.5, 0.5, 0.0, 0.0, 0.0, 0.0]]),
+             'pos_sum': np.array([[8.]]),
+             'pos_distribution': np.array([[0.1, 0.1, 0.1, 0.1, 0.1, 0.5]])}
 
     loss = DistributionTargetsLoss()
     out = loss(prediction, label)
@@ -85,15 +85,15 @@ def test_usual_loss_second():
 def test_one_class():
     eps = 1e-7
 
-    prediction = (torch.tensor([[-1.]]), 
-                  torch.tensor([[1., 0., 0., 0., 0., 0.]]),
-                  torch.tensor([[ 1.]]),
-                  torch.tensor([[0., 1., 0., 0., 0., 0.]]))
+    prediction = {'neg_sum': torch.tensor([[-1.]]), 
+                  'neg_distribution': torch.tensor([[1., 0., 0., 0., 0., 0.]]),
+                  'pos_sum': torch.tensor([[ 1.]]),
+                  'pos_distribution': torch.tensor([[0., 1., 0., 0., 0., 0.]])}
 
-    label = np.array([[-1.,
-                       list([1., 0., 0., 0., 0., 0.]),
-                       1.,
-                       list([0., 1., 0., 0., 0., 0.])]])
+    label = {'neg_sum': np.array([[-1.]]),
+             'neg_distribution': np.array([[1., 0., 0., 0., 0., 0.]]),
+             'pos_sum': np.array([[1.]]),
+             'pos_distribution': np.array([[0., 1., 0., 0., 0., 0.]])}
 
     loss = DistributionTargetsLoss()
     out = loss(prediction, label)

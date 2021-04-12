@@ -11,6 +11,13 @@ def cross_entropy(pred, soft_targets):
     return torch.mean(torch.sum(-soft_targets.to(device) * logsoftmax(pred), 1))
 
 
+def kl(pred, soft_targets):
+    eps = 1e-7
+    softmax = torch.nn.Softmax()
+    device = pred.device
+    return torch.mean(torch.sum(soft_targets.to(device) * torch.log(soft_targets.to(device) / (softmax(pred) + eps) + eps), 1))    
+
+
 def mse_loss(pred, actual):
     device = pred.device
     return torch.mean((pred - actual.to(device))**2)
@@ -179,26 +186,26 @@ class UnsupervisedTabNetLoss(nn.Module):
 class DistributionTargetsLoss(nn.Module):
     def __init__(self, mult1=3, mult2=0.167, mult3=1, mult4=1):
         super().__init__()
-        self.mults = (mult1, mult2, mult3, mult4)
+        self.mults = [mult1, mult2, mult3, mult4]
 
     def forward(self, pred, true):
-        log_minus_sum = np.log(np.abs(true[:, 0].astype(np.float)) + 1)[:, None]
-        minus_distribution = np.array(true[:, 1].tolist())
-        log_plus_sum = np.log(np.abs(true[:, 2].astype(np.float)) + 1)[:, None]
-        plus_distribution = np.array(true[:, 3].tolist())
+        log_sum_truth_neg = np.log(np.abs(true['neg_sum'].astype(np.float)) + 1)[:, None] if isinstance(true['neg_sum'], np.ndarray) else 0
+        distribution_truth_neg = np.array(true['neg_distribution'].tolist()) if isinstance(true['neg_sum'], np.ndarray) else 0
+        log_sum_truth_pos = np.log(np.abs(true['pos_sum'].astype(np.float)) + 1)[:, None]
+        distribution_truth_pos = np.array(true['pos_distribution'].tolist())
 
-        log_minus_sum_hat = pred[0]
-        minus_distribution_hat = pred[1]
-        log_plus_sum_hat = pred[2]
-        plus_distribution_hat = pred[3]
+        log_sum_hat_neg, distribution_hat_neg = pred['neg_sum'], pred['neg_distribution']
+        log_sum_hat_pos, distribution_hat_pos = pred['pos_sum'], pred['pos_distribution']
 
-        device = log_minus_sum_hat.device
-        loss_minus_sum = mse_loss(log_minus_sum_hat, torch.tensor(log_minus_sum, device=device).float())
-        loss_plus_sum = mse_loss(log_plus_sum_hat, torch.tensor(log_plus_sum, device=device).float())
-        loss_minus_distr = cross_entropy(minus_distribution_hat, torch.tensor(minus_distribution, device=device))
-        loss_plus_distr = cross_entropy(plus_distribution_hat, torch.tensor(plus_distribution, device=device))
+        device = log_sum_hat_pos.device
+        loss_sum_pos = mse_loss(log_sum_hat_pos, torch.tensor(log_sum_truth_pos, device=device).float())
+        loss_distr_pos = cross_entropy(distribution_hat_pos, torch.tensor(distribution_truth_pos, device=device))
+        if isinstance(true['neg_sum'], np.ndarray):
+            loss_sum_neg = mse_loss(log_sum_hat_neg, torch.tensor(log_sum_truth_neg, device=device).float())
+            loss_distr_neg = cross_entropy(distribution_hat_neg, torch.tensor(distribution_truth_neg, device=device))
 
-        loss = loss_minus_sum * self.mults[0] + loss_plus_sum * self.mults[1] + loss_minus_distr * self.mults[2] + loss_plus_distr * self.mults[3]
+        loss = loss_sum_neg * self.mults[0] + loss_sum_pos * self.mults[1] + loss_distr_neg * self.mults[2] + loss_distr_pos * self.mults[3] \
+                    if isinstance(true['neg_sum'], np.ndarray) else loss_sum_pos * self.mults[1] + loss_distr_pos * self.mults[3]
         return loss.float()
 
 
