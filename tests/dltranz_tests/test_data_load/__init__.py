@@ -1,6 +1,8 @@
+import numpy as np
 import torch
 import pytorch_lightning as pl
 from dltranz.data_load import create_train_loader, create_validation_loader, TrxDataset
+
 
 def gen_trx_data(lengths, target_share=.5):
     n = len(lengths)
@@ -23,11 +25,11 @@ class RandomEventData(pl.LightningDataModule):
         self.hparams = params
 
     def train_dataloader(self):
-        test_data = TrxDataset(gen_trx_data((torch.rand(1000)*60+1).long()))
+        test_data = TrxDataset(gen_trx_data((torch.rand(1000)*60+1).long()), y_dtype=np.int64)
         train_loader = create_train_loader(test_data, self.hparams['train'])
         return train_loader
 
     def val_dataloader(self):
-        test_data = TrxDataset(gen_trx_data((torch.rand(100)*60+1).long()))
+        test_data = TrxDataset(gen_trx_data((torch.rand(100)*60+1).long()), y_dtype=np.int64)
         train_loader = create_validation_loader(test_data, self.hparams['valid'])
         return train_loader
