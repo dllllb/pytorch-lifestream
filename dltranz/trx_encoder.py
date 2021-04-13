@@ -51,7 +51,7 @@ class NoisyEmbedding(nn.Embedding):
 
         super().__init__(num_embeddings, embedding_dim, padding_idx, max_norm,
                          norm_type, scale_grad_by_freq, sparse, _weight)
-        self.noise = torch.distributions.Normal(0, noise_scale)
+        self.noise = torch.distributions.Normal(0, noise_scale) if noise_scale > 0 else None
         self.scale = noise_scale
         self.dropout = nn.Dropout(dropout)
 
