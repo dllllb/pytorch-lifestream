@@ -10,4 +10,4 @@ split_dataset          : Train size: 13500 clients
 split_dataset          : Test size: 1500 clients
 save_features          : Saved to: "/mnt/mikheev/pytorch-lifestream/experiments/scenario_gender/data/train_trx.parquet"
 save_features          : Saved to: "/mnt/mikheev/pytorch-lifestream/experiments/scenario_gender/data/test_trx.parquet"
-run                    : Data collected in 72 sec (0:01:12.979094)
+run                    : Data collected in 73 sec (0:01:13.524434)
