@@ -172,8 +172,10 @@ class DistributionTargetHead(torch.nn.Module):
         super().__init__()
         self.pos, self.neg = pos, neg
         self.dense1 = torch.nn.Linear(in_size, 128)
+
         self.dense2_neg = torch.nn.Linear(128, num_distr_classes) if self.neg else None
         self.dense2_pos = torch.nn.Linear(128, num_distr_classes) if self.pos else None
+        
         self.sigmoid = torch.nn.Sigmoid()
         self.relu = torch.nn.ReLU()
         
@@ -246,6 +248,7 @@ class CombinedTargetHeadFromRnn(torch.nn.Module):
         x, sum_logs1 = (x[0], torch.tensor(x[1][:, None], device=device)) if isinstance(x, tuple) else (x, 0)  # negative sum logs if len(x) == 3
         if not self.neg and self.pos:
             sum_logs1, sum_logs2 = sum_logs2, sum_logs1
+
 
         out1 = self.relu(self.dense(x))
         distr_neg, distr_pos = self.distribution(out1)

@@ -46,7 +46,7 @@
         take_first_fraction: 0.5
     }
   }
-
+  
   embedding_validation_results: {
     model_name: nn
     feature_name: target_scores
