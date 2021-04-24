@@ -33,38 +33,38 @@
 
   params: {
     data_module_class: dltranz.data_load.data_module.cpc_data_module.CpcDataModuleTrain
-    pl_module_name: dltranz.lightning_modules.cpc_module.CpcModule
+    pl_module_class: dltranz.lightning_modules.cpc_module.CpcModule
 
-    encoder_type: rnn,
+    encoder_type: rnn
     trx_encoder: {
-      norm_embeddings: false,
-      embeddings_noise: 0.003,
+      norm_embeddings: false
+      embeddings_noise: 0.003
       embeddings: {
-        mcc_code: {in: 200, out: 128},
+        mcc_code: {in: 200, out: 128}
         tr_type: {in: 100, out: 127}
-      },
+      }
       numeric_values: {
         amount: identity
       }
-    },
+    }
     rnn: {
-      type: gru,
-      hidden_size: 256,
-      bidir: false,
+      type: gru
+      hidden_size: 256
+      bidir: false
       trainable_starter: static
-    },
+    }
     cpc: {
-      n_forward_steps: 6,
+      n_forward_steps: 6
       n_negatives: 40
     }
 
     lr_scheduler: {
       step_size: 5,
       step_gamma: 0.5
-    },
+    }
     train: {
-      lr: 0.001,
-      weight_decay: 0.0,
+      lr: 0.001
+      weight_decay: 0.0
     }
   }
 
@@ -73,7 +73,7 @@
   include "dataset_inference_file.hocon"
 
   output: {
-    path: data/cpc_embeddings,
-    format: pickle,
+    path: data/cpc_embeddings
+    format: pickle
   }
 }

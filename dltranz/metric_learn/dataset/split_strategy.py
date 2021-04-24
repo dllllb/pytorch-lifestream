@@ -147,7 +147,23 @@ class SampleUniform(AbsSplit):
         start_pos = np.linspace(0, date_len - self.seq_len, self.split_count).round().astype(int)
         return [date_range[s:s + self.seq_len] for s in start_pos]
 
+class SampleUniformBySplitCount(AbsSplit):
+    """
+    Split into n sections:
+    |---------------------|       main sequence
+    |------|              |        sub seq 1
+    |       |------|      |        sub seq 2
+    |              |------|        sub seq 3
+    There is no random factor in this splitter, so sub sequences are the same every time
+    Can be used during inference as test time augmentation
+    """
+    def __init__(self, split_count, **_):
+        self.split_count = split_count
 
+    def split(self, dates):
+        date_range = np.arange(dates.shape[0])
+        return np.array_split(date_range, self.split_count)
+        
 class CutByDays(AbsSplit):
     def __init__(self, first_date, last_date):
         self.days_arange = np.arange(first_date, last_date+1)

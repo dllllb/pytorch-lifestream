@@ -19,6 +19,10 @@ class PaddedBatch:
     def seq_lens(self):
         return self._length
 
+    @property
+    def device(self):
+        return self._length.device
+    
     def __len__(self):
         return len(self._length)
 

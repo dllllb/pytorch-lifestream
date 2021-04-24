@@ -1,13 +1,85 @@
-load_source_data       : Loaded 6849346 rows from "/mnt/mikheev/pytorch-lifestream/experiments/scenario_gender/data/transactions.csv"
+load_source_data       : Loaded 6849346 rows from "/mnt/dnurlybay/pytorch-lifestream/experiments/scenario_gender/data/transactions.csv"
 load_source_data       : Loaded 6849346 rows in total
 _td_gender             : Gender-dataset-like time transformation
+trx_to_features        : Found 15000 unique clients
+trx_to_features        : Encoder stat for "amount":
+codes | trx_count
+                    cnt  % of total
+amount                             
+[-18.8, -15.0)     9829    0.001435
+[-15.0, -11.3)   697742    0.101870
+[-11.3, -7.5)   4135020    0.603710
+[-7.5, -3.8)     690286    0.100781
+[-3.8, 0.0)        8791    0.001283
+[0.0, 3.8)         2542    0.000371
+[3.8, 7.5)        60071    0.008770
+[7.5, 11.3)      882874    0.128899
+[11.3, 15.0)     355244    0.051865
+[15.0, 18.8)       6947    0.001014
+trx_to_features        : Encoder stat for "mcc_code":
+codes | trx_count
+               cnt  % of total
+mcc_code                      
+[2, 9)     5519939    0.805907
+[9, 17)     649423    0.094815
+[17, 25)    209331    0.030562
+[25, 33)    137575    0.020086
+[33, 40)     85070    0.012420
+[40, 48)     71396    0.010424
+[48, 56)     51442    0.007510
+[56, 64)     33366    0.004871
+[64, 72)     23030    0.003362
+[72, 186)    68774    0.010041
+trx_to_features        : Encoder stat for "tr_type":
+codes | trx_count
+              cnt  % of total
+tr_type                      
+[2, 4)    2630447    0.384044
+[4, 7)    2591044    0.378291
+[7, 10)    789809    0.115312
+[10, 12)   214016    0.031246
+[12, 15)   226184    0.033023
+[15, 18)   163609    0.023887
+[18, 20)    53399    0.007796
+[20, 23)    61529    0.008983
+[23, 26)    39901    0.005826
+[26, 79)    79408    0.011594
+trx_to_features        : Encoder stat for "term_id":
+codes | trx_count
+                      cnt  % of total
+term_id                              
+[2, 41318)        5536099    0.808267
+[41318, 82634)     449323    0.065601
+[82634, 123950)    258546    0.037748
+[123950, 165266)   174429    0.025467
+[165266, 206582)   123177    0.017984
+[206582, 247898)    82632    0.012064
+[247898, 289214)    74013    0.010806
+[289214, 330530)    41316    0.006032
+[330530, 371846)    41316    0.006032
+[371846, 440341)    68495    0.010000
+trx_to_features        : Trx count per clients:
+len(trx_list) | client_count
+                cnt  % of total
+trx_count                      
+[1, 215)       5085    0.339000
+[215, 429)     4259    0.283933
+[429, 643)     2736    0.182400
+[643, 857)     1409    0.093933
+[857, 1072)     724    0.048267
+[1072, 1286)    319    0.021267
+[1286, 1500)    172    0.011467
+[1500, 1714)     90    0.006000
+[1714, 1929)     55    0.003667
+[1929, 88782)   151    0.010067
 trx_to_features        : Feature collection in progress ...
+trx_to_features        : Feature names: ['customer_id', 'amount', 'event_time', 'mcc_code', 'tr_type', 'term_id', 'trx_count']
 trx_to_features        : Prepared features for 15000 clients
-load_source_data       : Loaded 15000 rows from "/mnt/mikheev/pytorch-lifestream/experiments/scenario_gender/data/gender_train_distribution_target.csv"
-load_source_data       : Loaded 15000 rows in total
+load_source_data       : Loaded 8400 rows from "/mnt/dnurlybay/pytorch-lifestream/experiments/scenario_gender/data/gender_train.csv"
+load_source_data       : Loaded 8400 rows in total
 update_with_target     : Target updated for 15000 clients
-split_dataset          : Train size: 13500 clients
-split_dataset          : Test size: 1500 clients
-save_features          : Saved to: "/mnt/mikheev/pytorch-lifestream/experiments/scenario_gender/data/train_trx.parquet"
-save_features          : Saved to: "/mnt/mikheev/pytorch-lifestream/experiments/scenario_gender/data/test_trx.parquet"
-run                    : Data collected in 72 sec (0:01:12.979094)
+split_dataset          : Train size: 14160 clients
+split_dataset          : Test size: 840 clients
+save_features          : Saved to: "/mnt/dnurlybay/pytorch-lifestream/experiments/scenario_gender/data/train_trx.parquet"
+save_features          : Saved to: "/mnt/dnurlybay/pytorch-lifestream/experiments/scenario_gender/data/test_trx.parquet"
+run                    : Data collected in 119 sec (0:01:59.270621)

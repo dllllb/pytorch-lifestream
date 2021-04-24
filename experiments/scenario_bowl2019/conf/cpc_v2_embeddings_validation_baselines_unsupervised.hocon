@@ -2,13 +2,15 @@
     environment: {
         work_dir: "embeddings_validation.work"
     }
-    report_file: "../results/scenario_bowl2019_short.txt"
+
+    report_file: "../results/scenario_bowl_baselines_unsupervised_cpc_v2.txt"
 
     target: {
-        file_name: "../data/train_labels.csv"
+        file_name: "../data/train_labels.csv" 
         cols_id: [game_session]
         cols_id_type: [str]
         col_target: accuracy_group
+        drop_duplicated_ids: true
     }
 
     split: {
@@ -24,14 +26,6 @@
         cv_split_count: 5
         is_stratify: true
         random_state: 42
-    }
-
-    features: {
-        mles_embeddings: {
-            enabled: true
-            read_params: {file_name: ../data/mles_embeddings.pickle}
-            target_options: {}
-        }
     }
 
     external_scores: {
@@ -73,13 +67,24 @@
         }
     }
 
+    features: {
+        baseline: {
+            enabled: true
+            read_params: {file_name: ../data/agg_feat_embed.pickle}
+            target_options: {}
+        }
+    }
+
+    external_scores: {
+    }
+
     report: {
         is_check_train: false
         error_handling: fail
         print_all_metrics: false
 
         metrics: {
-            accuracy: {float_format: "{:.3f}", baseline_key=["lgbm", "mles_embeddings"], split_columns: true}
+            accuracy: {float_format: "{:.3f}", baseline_key=["lgbm", "baseline"], split_columns: true}
         }
     }
 }

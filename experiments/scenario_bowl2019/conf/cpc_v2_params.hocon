@@ -1,0 +1,113 @@
+{
+  data_module: {
+    type: map
+    setup: {
+      col_id: game_session
+      dataset_files: {
+        data_path: "data/train_trx.parquet"
+      }
+      split_by: files
+      valid_size: 0.05
+      valid_split_seed: 42
+    }
+    
+    train: {
+      min_seq_len: 200  # split_count * 5
+      augmentations: [
+        [SeqLenLimit, {max_seq_len: 1200}]
+      ]
+      split_strategy: {
+        split_strategy: "SampleUniformBySplitCount"
+        split_count: 40
+      }
+      num_workers: 16
+      batch_size: 128
+    }
+
+    valid: {
+      min_seq_len: 200  # split_count * 5
+      augmentations: [
+        [SeqLenLimit, {max_seq_len: 1200}]
+      ]
+      split_strategy: {
+        split_strategy: "SampleUniformBySplitCount"
+        split_count: 40
+      }
+      num_workers: 16
+      batch_size: 128
+    }
+  }
+
+  seed_everything: 42
+  trainer: {
+    gpus: 1
+    auto_select_gpus: false
+
+    max_epochs: 30
+
+    checkpoint_callback: false
+    deterministic: true
+    # profiler: simple
+  }
+  logger_name: cpc_v2_model
+
+  params: {
+    data_module_class: dltranz.data_load.data_module.cpc_v2_data_module.CpcV2DataModuleTrain
+    pl_module_class: dltranz.lightning_modules.cpc_v2_module.CpcV2Module
+
+    encoder_type: rnn
+    rnn: {
+      type: gru
+      hidden_size: 512
+      bidir: false
+      trainable_starter: static
+    }
+
+    rnn_agg: {
+      type: gru
+      hidden_size: 256
+      bidir: false
+      trainable_starter: static
+    }
+
+
+    trx_encoder: {
+      norm_embeddings: false
+      embeddings_noise: 0.003
+      embeddings: {
+        event_id: {in: 500, out: 16}
+        event_code: {in: 50, out: 8}
+        event_type: {in: 6, out: 8}
+        title: {in: 50, out: 8}
+        world: {in: 6, out: 8}
+        correct: {in: 4, out: 2}
+      }
+      numeric_values: {}
+    }
+
+    cpc: {
+      n_forward_steps: 6
+      n_negatives: 30
+    }
+
+    lr_scheduler: {
+      step_size: 10
+      step_gamma: 0.9525
+    }
+
+    train: {
+      lr: 0.0005
+      weight_decay: 0.0
+    }
+    
+  }
+
+  model_path: "models/cpc_v2_model.p"
+
+  include "dataset_inference_file.hocon"
+
+  output: {
+    path: data/cpc_v2_embeddings
+    format: pickle
+  }
+}
