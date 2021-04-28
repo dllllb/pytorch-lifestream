@@ -436,7 +436,6 @@ def padded_collate(batch):
 
 
 def padded_collate_distribution_target(batch):
-
     padded_batch, new_y = padded_collate(batch)
 
     keys = ['neg_sum', 'neg_distribution', 'pos_sum', 'pos_distribution']
@@ -445,8 +444,35 @@ def padded_collate_distribution_target(batch):
         new_y = {key : new_y[:, i] for i, key in enumerate(keys)}
     else:
         new_y = {key : (new_y[:, i - 2] if i > 1 else 0) for i, key in enumerate(keys)}
-
     return padded_batch, new_y
+
+
+def padded_collate_emb_valid(batch):
+    x = batch[0]['prev_embeds'][None, :]
+    neg_sum = []
+    pos_sum = []
+    neg_distribution = []
+    pos_distribution = []
+    for d in batch:
+        neg_sum += [d['sum_n']]
+        pos_sum += [d['sum_p']]
+        neg_distribution += [d['share_n'].tolist()]
+        pos_distribution += [d['share_p'].tolist()]
+        x = torch.cat([x, d['prev_embeds'][None, :]])
+    x = x[1:]
+    neg_distribution += [[]]
+    pos_distribution += [[]]
+    neg_distribution = np.array(neg_distribution, dtype=object)
+    pos_distribution = np.array(pos_distribution, dtype=object)
+    neg_distribution = neg_distribution[:-1]
+    pos_distribution = pos_distribution[:-1]
+    neg_sum = np.array(neg_sum)
+    pos_sum = np.array(pos_sum)
+    y = {'neg_sum': neg_sum,
+         'pos_sum': pos_sum,
+         'neg_distribution': neg_distribution,
+         'pos_distribution': pos_distribution}
+    return x.float(), y
 
 
 def padded_collate_wo_target(batch):

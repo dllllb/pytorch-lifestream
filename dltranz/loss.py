@@ -6,14 +6,14 @@ from dltranz.trx_encoder import PaddedBatch
 
 
 def cross_entropy(pred, soft_targets):
-    logsoftmax = torch.nn.LogSoftmax()
+    logsoftmax = torch.nn.LogSoftmax(dim=1)
     device = pred.device
     return torch.mean(torch.sum(-soft_targets.to(device) * logsoftmax(pred), 1))
 
 
 def kl(pred, soft_targets):
     eps = 1e-7
-    softmax = torch.nn.Softmax()
+    softmax = torch.nn.Softmax(dim=1)
     device = pred.device
     return torch.mean(torch.sum(soft_targets.to(device) * torch.log(soft_targets.to(device) / (softmax(pred) + eps) + eps), 1))    
 

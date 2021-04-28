@@ -10,6 +10,7 @@ from dltranz.loss import get_loss, cross_entropy, kl, mape_metric, mse_loss, r_s
 from dltranz.seq_encoder import create_encoder
 from dltranz.train import get_optimizer, get_lr_scheduler
 from dltranz.models import create_head_layers
+from dltranz.trx_encoder import PaddedBatch
 
 
 logger = logging.getLogger(__name__)
@@ -44,7 +45,7 @@ class DistributionTargets(pl.metrics.Metric):
     def update(self, y_hat, y):
         y_hat = y_hat[self.col_name]
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        y = torch.tensor(np.array(y[self.col_name].tolist()), device=device)
+        y = torch.tensor(np.array(y[self.col_name].tolist(), dtype='float64'), device=device)
         self.y_hat.append(y_hat)
         self.y.append(y)
 
@@ -158,7 +159,8 @@ class SequenceToTarget(pl.LightningModule):
         y_h = self(x)
         loss = self.loss(y_h, y)
         self.log('loss', loss)
-        self.log('seq_len', x.seq_lens.float().mean(), prog_bar=True)
+        if isinstance(x, PaddedBatch):
+            self.log('seq_len', x.seq_lens.float().mean(), prog_bar=True)
         return loss
 
     def validation_step(self, batch, _):

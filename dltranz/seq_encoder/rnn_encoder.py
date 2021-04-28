@@ -120,6 +120,7 @@ class RnnSeqEncoderDistributionTarget(RnnSeqEncoder):
     def __init__(self, params, is_reduce_sequence):
         super().__init__(params, is_reduce_sequence)
         head_params = dict(params['head_layers']).get('CombinedTargetHeadFromRnn', None)
+        self.pass_samples = head_params.get('pass_samples', True)
         self.numeric_name = list(params['trx_encoder']['numeric_values'].keys())[0]
         self.collect_pos, self.collect_neg = (head_params.get('pos', True), head_params.get('neg', True)) if head_params else (0, 0)
         self.eps = 1e-7
@@ -141,6 +142,8 @@ class RnnSeqEncoderDistributionTarget(RnnSeqEncoder):
         pos_sum_logs = np.log(np.array(pos_sums) + self.eps)
 
         x = super().forward(x)
+        if (not self.pass_samples):
+            return x
         if self.collect_neg and self.collect_pos:
             return x, neg_sum_logs, pos_sum_logs
         elif self.collect_neg:

@@ -4,12 +4,12 @@
   data_module: {
     distribution_targets_task : True
 
-    type: map
+    type: iterable
 
     setup: {
       dataset_files: {
-        train_data_path: "data/train_trx.parquet"
-        test_data_path: "data/test_trx.parquet"
+        train_data_path: "data/embed_val.parquet"
+        test_data_path: "data/embed_val.parquet"
       }
       col_id: customer_id
       col_id_dtype: int
@@ -46,7 +46,7 @@
         take_first_fraction: 0.5
     }
   }
-  
+
   embedding_validation_results: {
     model_name: nn
     feature_name: target_scores
@@ -66,14 +66,13 @@
   logger_name: target_scores
 
   params: {
-    distribution_targets_task : True
     columns_ix: {neg_sum: 0,
                  neg_distribution: 1, 
                  pos_sum: 2, 
                  pos_distribution: 3},
     score_metric: [R2n, R2p, MAPEn, MAPEp, CEn, CEp, KLn, KLp], 
 
-    encoder_type: distribution_targets,
+    encoder_type: emb_valid,
     trx_encoder: {
       norm_embeddings: false,
       embeddings_noise: 0.003,
@@ -100,8 +99,8 @@
     },
 
     head_layers: [
-        [CombinedTargetHeadFromRnn, {in_size: "{seq_encoder.embedding_size}", num_distr_classes: 6,
-                          pos: True, neg: True, use_gates: True, pass_samples: True}]
+        [CombinedTargetHeadFromRnn, {in_size: 256, num_distr_classes: 10, pos: True,
+                                     neg: True, use_gates: False, pass_samples: False}]
     ]
 
     train: {

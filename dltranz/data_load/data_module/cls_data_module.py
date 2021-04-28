@@ -92,7 +92,7 @@ class ClsDataModuleTrain(pl.LightningDataModule):
                 post_processing=IterableChain(*self.build_iterable_processing('test')),
                 shuffle_files=False,
             )
-
+            
         else:
             raise AttributeError(f'Unknown split strategy: {self.setup_conf.split_by}')
 
