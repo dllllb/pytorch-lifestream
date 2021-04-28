@@ -25,7 +25,6 @@ xgboost = ">=0.90"
 fastai = {version = ">=1.0.6", sys_platform = "!= 'darwin'"}
 pyarrow = ">=1"
 pytorch-lightning = ">=1.0.3"
-pytorch-tabnet = ">=3"
 
 [requires]
 python_version = "3.8"
