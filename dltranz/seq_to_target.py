@@ -10,6 +10,7 @@ from dltranz.loss import get_loss, cross_entropy, kl, mape_metric, mse_loss, r_s
 from dltranz.seq_encoder import create_encoder
 from dltranz.train import get_optimizer, get_lr_scheduler
 from dltranz.models import create_head_layers
+from dltranz.trx_encoder import PaddedBatch
 
 
 logger = logging.getLogger(__name__)
@@ -158,7 +159,7 @@ class SequenceToTarget(pl.LightningModule):
         y_h = self(x)
         loss = self.loss(y_h, y)
         self.log('loss', loss)
-        if not isinstance(x, torch.Tensor):
+        if isinstance(x, PaddedBatch):
             self.log('seq_len', x.seq_lens.float().mean(), prog_bar=True)
         return loss
 

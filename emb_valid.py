@@ -51,18 +51,16 @@ class CheckpointEveryNSteps(pl.Callback):
         if 'model_path' in self.conf and global_step % self.save_step_frequency == 0:
             trainer.save_checkpoint(self.conf['model_path'], weights_only=True)
             logger.info(f'Model weights saved to "{self.conf.model_path}"')
-        if global_step % self.validation_frequency == 0:
-            trainer.test(test_dataloaders=self.dm.val_dataloader(), ckpt_path=None, verbose=False)
-            valid_metrics = {name: float(mf.compute().item()) for name, mf in self.model.valid_metrics.items()}
-            print(', '.join([f'valid_{name}: {v:.4f}' for name, v in valid_metrics.items()]))
-            for name, v in valid_metrics.items():
-                self.model.log(f'valid_{name}', v, prog_bar=True)
         if global_step % self.test_frequency == 0:
-            trainer.test(test_dataloaders=self.dm.test_dataloader(), ckpt_path=None, verbose=False)
+            trainer.test(test_dataloaders=self.dm.test_dataloader(), ckpt_path=None, verbose=True)
             test_metrics = {name: float(mf.compute().item()) for name, mf in self.model.test_metrics.items()}
+            train_metrics = {name: float(mf.compute().item()) for name, mf in self.model.valid_metrics.items()}  # valid == train
             print(', '.join([f' test_{name}: {v:.4f}' for name, v in test_metrics.items()]))
+            print(', '.join([f'train_{name}: {v:.4f}' for name, v in train_metrics.items()]))
             for name, v in test_metrics.items():
                 self.model.log(f'test_{name}', v, prog_bar=True)
+            for name, v in train_metrics.items():
+                self.model.log(f'train_{name}', v, prog_bar=True)
 
 
 def main(args=None):

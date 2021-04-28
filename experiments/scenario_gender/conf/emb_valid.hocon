@@ -4,7 +4,7 @@
   data_module: {
     distribution_targets_task : True
 
-    type: map
+    type: iterable
 
     setup: {
       dataset_files: {

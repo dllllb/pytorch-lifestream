@@ -8,15 +8,6 @@ from torch.utils.data import DataLoader
 from tqdm.auto import tqdm
 
 from dltranz.data_load import padded_collate_emb_valid, IterableChain, IterableAugmentations
-from dltranz.data_load.augmentations.build_augmentations import build_augmentations
-from dltranz.data_load.data_module.map_augmentation_dataset import MapAugmentationDataset
-from dltranz.data_load.iterable_processing.category_size_clip import CategorySizeClip
-from dltranz.data_load.iterable_processing.feature_filter import FeatureFilter
-from dltranz.data_load.iterable_processing.feature_type_cast import FeatureTypeCast
-from dltranz.data_load.iterable_processing.id_filter import IdFilter
-from dltranz.data_load.iterable_processing.iterable_shuffle import IterableShuffle
-from dltranz.data_load.iterable_processing.seq_len_filter import SeqLenFilter
-from dltranz.data_load.iterable_processing.target_join import TargetJoin
 from dltranz.data_load.parquet_dataset import ParquetFiles, ParquetDataset
 
 
@@ -62,25 +53,21 @@ class EmbValidDataModule(pl.LightningDataModule):
         else:
             raise AttributeError(f'Missing dataset definition. One of `dataset_parts` or `dataset_files` expected')
 
-        if self._type == 'map':
-            self.setup_map()
-
     def setup_iterable_files(self):
        train_data_files = ParquetFiles(self.setup_conf['dataset_files.train_data_path']).data_files
        test_data_files = ParquetFiles(self.setup_conf['dataset_files.test_data_path']).data_files
 
        self.train_dataset = ParquetDataset(
            train_data_files,
-           shuffle_files=True if self._type == 'iterable' else False,
-       )
-       self.valid_dataset = ParquetDataset(
-           train_data_files,
-           shuffle_files=False,
+           shuffle_files=True if self._type == 'iterable' else False
        )
        self.test_dataset = ParquetDataset(
            test_data_files,
-           shuffle_files=False,
+           shuffle_files=False
        )
+       self.test_dataset = list(tqdm(iter(self.test_dataset)))
+       logger.info(f'Loaded {len(self.test_dataset)} for test')
+
 
     def train_dataloader(self):
         return DataLoader(
@@ -92,36 +79,10 @@ class EmbValidDataModule(pl.LightningDataModule):
             drop_last=self.train_conf.get('drop_last', False)
         )
 
-    def setup_map(self):
-        self.train_dataset = list(tqdm(iter(self.train_dataset)))
-        logger.info(f'Loaded {len(self.train_dataset)} for train')
-        self.valid_dataset = list(tqdm(iter(self.valid_dataset)))
-        logger.info(f'Loaded {len(self.valid_dataset)} for valid')
-        self.test_dataset = list(tqdm(iter(self.test_dataset)))
-        logger.info(f'Loaded {len(self.test_dataset)} for test')
-
-        self.train_dataset = MapAugmentationDataset(
-            base_dataset=self.train_dataset,
-        )
-        self.valid_dataset = MapAugmentationDataset(
-            base_dataset=self.valid_dataset,
-        )
-        self.test_dataset = MapAugmentationDataset(
-            base_dataset=self.test_dataset,
-        )
-
-    def val_dataloader(self):
-        return DataLoader(
-            dataset=self.valid_dataset,
-            collate_fn=padded_collate_emb_valid,
-            num_workers=self.valid_conf['num_workers'],
-            batch_size=self.valid_conf['batch_size'],
-        )
-
     def test_dataloader(self):
-        return DataLoader(
-            dataset=self.test_dataset,
-            collate_fn=padded_collate_emb_valid,
-            num_workers=self.test_conf['num_workers'],
-            batch_size=self.test_conf['batch_size'],
-        )
+         return DataLoader(
+             dataset=self.test_dataset,
+             collate_fn=padded_collate_emb_valid,
+             num_workers=self.test_conf['num_workers'],
+             batch_size=self.test_conf['batch_size'],
+         )
