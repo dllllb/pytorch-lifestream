@@ -11,6 +11,7 @@ from dltranz.seq_encoder import create_encoder
 from dltranz.train import get_optimizer, get_lr_scheduler
 from dltranz.models import create_head_layers
 from dltranz.trx_encoder import PaddedBatch
+from collections import defaultdict
 
 
 logger = logging.getLogger(__name__)
@@ -103,6 +104,9 @@ class R_squared(DistributionTargets):
 class SequenceToTarget(pl.LightningModule):
     def __init__(self, params, pretrained_encoder=None):
         super().__init__()
+        self.train_update_n_steps = params.get('train_update_n_steps', None)
+        self.metrics_test = defaultdict(list)
+        self.metrics_train = defaultdict(list)
         head_params = dict(params['head_layers']).get('CombinedTargetHeadFromRnn', None)
         self.pos, self.neg = (head_params.get('pos', True), head_params.get('neg', True)) if head_params else (0, 0)
         self.cols_ix = params.get('columns_ix', {'neg_sum': 0,
@@ -141,8 +145,9 @@ class SequenceToTarget(pl.LightningModule):
             params_score_metric = [params_score_metric]
         metric_cls = [(name, d_metrics[name]) for name in params_score_metric]
 
-        self.valid_metrics = torch.nn.ModuleDict([(name, mc) for name, mc in metric_cls])
-        self.test_metrics = torch.nn.ModuleDict([(name, mc) for name, mc in metric_cls])
+        self.train_metrics = torch.nn.ModuleDict([(name, mc) for name, mc in metric_cls])
+        self.valid_metrics = torch.nn.ModuleDict([(name, mc) for name, mc in deepcopy(metric_cls)])
+        self.test_metrics = torch.nn.ModuleDict([(name, mc) for name, mc in deepcopy(metric_cls)])
 
 
     @property
@@ -161,6 +166,9 @@ class SequenceToTarget(pl.LightningModule):
         self.log('loss', loss)
         if isinstance(x, PaddedBatch):
             self.log('seq_len', x.seq_lens.float().mean(), prog_bar=True)
+        if self.train_update_n_steps and self.global_step % self.train_update_n_steps == 0:
+            for name, mf in self.train_metrics.items():
+                mf(y_h, y)
         return loss
 
     def validation_step(self, batch, _):
@@ -181,7 +189,9 @@ class SequenceToTarget(pl.LightningModule):
 
     def test_epoch_end(self, outputs):
         for name, mf in self.test_metrics.items():
-            self.log(f'test_{name}', mf.compute())
+            val = mf.compute().item()
+            self.log(f'test_{name}', val, prog_bar=True)
+            self.metrics_test[name] += [val]
 
     def configure_optimizers(self):
         params = self.hparams.params
