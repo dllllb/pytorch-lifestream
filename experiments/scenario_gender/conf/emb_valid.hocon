@@ -66,11 +66,15 @@
   logger_name: target_scores
 
   params: {
+    test_frequency: 5,
+    ckpts_path: "models",
+    save_step_frequency: 5,
+    train_update_n_steps: 5,
     columns_ix: {neg_sum: 0,
                  neg_distribution: 1, 
                  pos_sum: 2, 
                  pos_distribution: 3},
-    score_metric: [R2n, R2p, MAPEn, MAPEp, CEn, CEp, KLn, KLp], 
+    score_metric: [R2n, R2p, KLn, KLp], 
 
     encoder_type: emb_valid,
     trx_encoder: {
