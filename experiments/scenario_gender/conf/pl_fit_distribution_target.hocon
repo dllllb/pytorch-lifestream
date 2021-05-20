@@ -7,7 +7,7 @@
     type: map
 
     setup: {
-      use_files_partially: True
+      use_files_partially: False
       train_part: 0.5
       test_part: 0.25
       same_file_for_test: True
