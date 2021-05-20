@@ -7,6 +7,9 @@
     type: map
 
     setup: {
+      split_train_test: False
+      train_part: 0.5
+      test_part: 0.25
       dataset_files: {
         train_data_path: "data/train_trx.parquet"
         test_data_path: "data/test_trx.parquet"
@@ -58,7 +61,7 @@
     gpus: 1
     auto_select_gpus: false
 
-    max_epochs: 10
+    max_epochs: 1
 
     checkpoint_callback: false
     deterministic: True
