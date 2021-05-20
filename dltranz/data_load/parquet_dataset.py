@@ -13,10 +13,12 @@ logger = logging.getLogger(__name__)
 
 
 class ParquetFiles:
-    def __init__(self, file_path):
+    def __init__(self, file_path, take_ixes=None):
         if os.path.splitext(file_path)[1] == '.parquet':
             file_path = os.path.join(file_path, '*.parquet')
         self._data_files = glob(file_path)
+        if (take_ixes):
+            self._data_files = np.array(self._data_files)[take_ixes].tolist()
 
     @property
     def data_files(self):
