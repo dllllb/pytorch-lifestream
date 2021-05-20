@@ -27,7 +27,6 @@ fastai = {version = ">=1.0.6", sys_platform = "!= 'darwin'"}
 pyarrow = ">=1"
 pytorch-lightning = ">=1.0.3"
 luigi = ">=2.0.0"
-embeddings-validation = {git = "git@github.com:sberbank-ai-lab/embeddings-valid.git", ref = "0.0.1"}
 
 [requires]
 python_version = "3.8"
