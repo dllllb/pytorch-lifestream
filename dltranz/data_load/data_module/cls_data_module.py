@@ -7,6 +7,9 @@ import ast
 from embeddings_validation.file_reader import TargetFile, ID_TYPE_MAPPING
 from torch.utils.data import DataLoader
 from tqdm.auto import tqdm
+from sklearn.model_selection import train_test_split
+import random
+import glob
 
 from dltranz.data_load import padded_collate, padded_collate_distribution_target, IterableChain, IterableAugmentations
 from dltranz.data_load.augmentations.build_augmentations import build_augmentations
@@ -72,8 +75,21 @@ class ClsDataModuleTrain(pl.LightningDataModule):
 
     def setup_iterable_files(self):
         if self.setup_conf['split_by'] == 'embeddings_validation':
-            train_data_files = ParquetFiles(self.setup_conf['dataset_files.train_data_path']).data_files
-            test_data_files = ParquetFiles(self.setup_conf['dataset_files.test_data_path']).data_files
+            if (self.setup_conf['use_files_partially']):
+                n_train = len(glob.glob(self.setup_conf['dataset_files.train_data_path'] + "/*.parquet"))
+                ixes = list(range(n_train))
+                train_ixes, test_ixes = train_test_split(ixes, test_size=int(n_train * (1 - self.setup_conf['train_part'])), shuffle=True)
+                train_data_files = ParquetFiles(self.setup_conf['dataset_files.train_data_path'], train_ixes).data_files
+                if self.setup_conf['same_file_for_test']:
+                    test_ixes = random.sample(test_ixes, int(n_train * self.setup_conf['test_part']))
+                    test_data_files = ParquetFiles(self.setup_conf['dataset_files.train_data_path'], test_ixes).data_files
+                else:
+                    n_test = len(glob.glob(self.setup_conf['dataset_files.test_data_path'] + "/*.parquet"))
+                    test_ixes = random.sample(ixes, int(n_test * self.setup_conf['test_part']))
+                    test_data_files = ParquetFiles(self.setup_conf['dataset_files.test_data_path'], test_ixes).data_files                   
+            else:
+                train_data_files = ParquetFiles(self.setup_conf['dataset_files.train_data_path']).data_files
+                test_data_files = ParquetFiles(self.setup_conf['dataset_files.test_data_path']).data_files
 
             self.read_external_splits()
 
