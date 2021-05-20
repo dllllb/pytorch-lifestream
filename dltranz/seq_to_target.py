@@ -105,8 +105,10 @@ class SequenceToTarget(pl.LightningModule):
     def __init__(self, params, pretrained_encoder=None):
         super().__init__()
         self.train_update_n_steps = params.get('train_update_n_steps', None)
+
         self.metrics_test = defaultdict(list)  # here we accumulate metrics on each test end
         self.metrics_train = defaultdict(list)  # here we accumulate metrics on some train bathes (called outside)
+    
         head_params = dict(params['head_layers']).get('CombinedTargetHeadFromRnn', None)
         self.pos, self.neg = (head_params.get('pos', True), head_params.get('neg', True)) if head_params else (0, 0)
         self.cols_ix = params.get('columns_ix', {'neg_sum': 0,
@@ -191,7 +193,7 @@ class SequenceToTarget(pl.LightningModule):
         for name, mf in self.test_metrics.items():
             value = mf.compute().item()
             self.log(f'test_{name}', value, prog_bar=True)
-            self.metrics_test[name] += [value.item()]
+            self.metrics_test[name] += [value]
 
     def configure_optimizers(self):
         params = self.hparams.params
