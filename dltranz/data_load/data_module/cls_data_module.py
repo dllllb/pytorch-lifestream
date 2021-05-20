@@ -75,13 +75,18 @@ class ClsDataModuleTrain(pl.LightningDataModule):
 
     def setup_iterable_files(self):
         if self.setup_conf['split_by'] == 'embeddings_validation':
-            if (self.setup_conf['split_train_test']):
-                n = len(glob.glob(self.setup_conf['dataset_files.train_data_path'] + "/*.parquet"))
-                ixes = list(range(n))
-                train_ixes, test_ixes = train_test_split(ixes, test_size=int(n*(1-self.setup_conf['train_part'])), shuffle=True)
-                test_ixes = random.sample(test_ixes, int(n*self.setup_conf['test_part']))
+            if (self.setup_conf['use_files_partially']):
+                n_train = len(glob.glob(self.setup_conf['dataset_files.train_data_path'] + "/*.parquet"))
+                ixes = list(range(n_train))
+                train_ixes, test_ixes = train_test_split(ixes, test_size=int(n_train * (1 - self.setup_conf['train_part'])), shuffle=True)
                 train_data_files = ParquetFiles(self.setup_conf['dataset_files.train_data_path'], train_ixes).data_files
-                test_data_files = ParquetFiles(self.setup_conf['dataset_files.test_data_path'], test_ixes).data_files
+                if self.setup_conf['same_file_for_test']:
+                    test_ixes = random.sample(test_ixes, int(n_train * self.setup_conf['test_part']))
+                    test_data_files = ParquetFiles(self.setup_conf['dataset_files.train_data_path'], test_ixes).data_files
+                else:
+                    n_test = len(glob.glob(self.setup_conf['dataset_files.test_data_path'] + "/*.parquet"))
+                    test_ixes = random.sample(ixes, int(n_test * self.setup_conf['test_part']))
+                    test_data_files = ParquetFiles(self.setup_conf['dataset_files.test_data_path'], test_ixes).data_files                   
             else:
                 train_data_files = ParquetFiles(self.setup_conf['dataset_files.train_data_path']).data_files
                 test_data_files = ParquetFiles(self.setup_conf['dataset_files.test_data_path']).data_files

@@ -7,9 +7,10 @@
     type: map
 
     setup: {
-      split_train_test: False
+      use_files_partially: True
       train_part: 0.5
       test_part: 0.25
+      same_file_for_test: True
       dataset_files: {
         train_data_path: "data/train_trx.parquet"
         test_data_path: "data/test_trx.parquet"
