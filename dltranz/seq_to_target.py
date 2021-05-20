@@ -189,9 +189,9 @@ class SequenceToTarget(pl.LightningModule):
 
     def test_epoch_end(self, outputs):
         for name, mf in self.test_metrics.items():
-            value = mf.compute().item()
-            self.log(f'test_{name}', value, prog_bar=True)
-            self.metrics_test[name] += [value.item()]
+            v = mf.compute().item()
+            self.log(f'test_{name}', v, prog_bar=True)
+            self.metrics_test[name] += [v.item()]
 
     def configure_optimizers(self):
         params = self.hparams.params
