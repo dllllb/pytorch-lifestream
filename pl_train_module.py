@@ -28,10 +28,10 @@ def main(args=None):
     if _use_best_epoch:
         checkpoint_callback = ModelCheckpoint(monitor=model.metric_name, mode='max')
         logger.info(f'Create ModelCheckpoint callback with monitor="{model.metric_name}"')
-        if 'checkpoint_callback' in _trainer_params:
-            logger.warning(f'Overwrite `trainer.checkpoint_callback`, was "{_trainer_params.checkpoint_callback}". '
+        if 'callbacks' in _trainer_params:
+            logger.warning(f'Overwrite `trainer.callbacks`, was "{_trainer_params.checkpoint_callback}". '
                            f'New value is ModelCheckpoint callback')
-        _trainer_params['checkpoint_callback'] = checkpoint_callback
+        _trainer_params['callbacks'] = [checkpoint_callback]
 
     if 'logger_name' in conf:
         _trainer_params['logger'] = TensorBoardLogger(

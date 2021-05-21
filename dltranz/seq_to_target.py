@@ -31,7 +31,7 @@ class EpochAuroc(pl.metrics.Metric):
     def compute(self):
         y_hat = torch.cat(self.y_hat)
         y = torch.cat(self.y)
-        return auroc(y_hat, y)
+        return auroc(y_hat, y.long())
 
 
 class DistributionTargets(pl.metrics.Metric):

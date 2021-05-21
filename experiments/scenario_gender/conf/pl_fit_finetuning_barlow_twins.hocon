@@ -36,8 +36,8 @@
 
   embedding_validation_results: {
     model_name: nn
-    feature_name: cpc_finetuning
-    output_path: "results/cpc_finetuning_results.json"
+    feature_name: barlow_twins_finetuning
+    output_path: "results/barlow_twins_finetuning_results.json"
   }
 
   seed_everything: 42
@@ -45,27 +45,27 @@
     gpus: 1
     auto_select_gpus: false
 
-    max_epochs: 5
+    max_epochs: 8
     log_every_n_steps: 10
 
     checkpoint_callback: false
     deterministic: True
   }
-  logger_name: cpc_finetuning
+  logger_name: barlow_twins_finetuning
 
   params: {
     score_metric: [auroc, accuracy]
 
     encoder_type: pretrained,
     pretrained: {
-        pl_module_class: dltranz.lightning_modules.cpc_module.CpcModule
-        model_path: "models/cpc_model.p"
+        pl_module_class: dltranz.lightning_modules.coles_module.CoLESModule
+        model_path: "models/barlow_twins_model_for_finetuning.p"
         lr: 0.0001
         # lr: freeze
     }
 
     head_layers: [
-        # [BatchNorm1d, {num_features: "{seq_encoder.embedding_size}"}]
+        [BatchNorm1d, {num_features: "{seq_encoder.embedding_size}"}]
         [Linear, {"in_features": "{seq_encoder.embedding_size}", "out_features": 1}]
         [Sigmoid, {}]
         [Squeeze, {}]

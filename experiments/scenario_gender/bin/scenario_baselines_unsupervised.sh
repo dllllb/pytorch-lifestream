@@ -25,6 +25,10 @@ python ../../pl_inference.py    --conf conf/nsp_params.hocon
 python ../../pl_train_module.py --conf conf/rtd_params.hocon
 python ../../pl_inference.py    --conf conf/rtd_params.hocon
 
+# Train the Contrastive Predictive Coding (CPC) model; inference
+python ../../pl_train_module.py --conf conf/barlow_twins_params.hocon
+python ../../pl_inference.py    --conf conf/barlow_twins_params.hocon
+
 # Compare
 rm results/scenario_gender_baselines_unsupervised.txt
 # rm -r conf/embeddings_validation.work/

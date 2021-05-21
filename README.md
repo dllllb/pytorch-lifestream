@@ -34,6 +34,7 @@ sudo apt install python3.8 python3-venv
 pip3 install pipenv
 
 pipenv install --dev
+pipenv install "git+ssh://git@github.com/sberbank-ai-lab/embeddings-valid.git#ref=0.0.1&egg=embeddings-validation"
 
 pipenv shell
 
