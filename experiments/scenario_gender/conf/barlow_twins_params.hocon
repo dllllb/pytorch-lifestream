@@ -42,8 +42,7 @@
     gpus: 1
     auto_select_gpus: false
 
-    max_epochs: 15000
-    max_steps: 15000
+    max_epochs: 150
 
     checkpoint_callback: false
     deterministic: True
@@ -83,14 +82,14 @@
 
     lr_scheduler: {
       step_size: 10,
-      step_gamma: 0.7
+      step_gamma: 0.9025
     },
     train: {
       sampling_strategy: HardNegativePair,
       neg_count: 5,
       loss: BarlowTwinsLoss,
-      lambd: 0.01,
-      lr: 0.001,
+      lambd: 0.04,
+      lr: 0.002,
       weight_decay: 0.0
     }
   },
