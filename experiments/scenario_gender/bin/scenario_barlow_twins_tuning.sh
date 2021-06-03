@@ -1,22 +1,3 @@
-# Check COLEs with split_count=2
-python ../../pl_train_module.py \
-    data_module.train.split_strategy.split_count=2 \
-    data_module.valid.split_strategy.split_count=2 \
-    params.validation_metric_params.K=1 \
-    model_path="models/mles_model2.p" \
-    --conf conf/mles_params.hocon
-python ../../pl_inference.py    \
-    model_path="models/mles_model2.p" \
-    output.path="data/emb__bt_mles2" \
-    --conf conf/mles_params.hocon
-rm results/res_bt_mles.txt
-# rm -r conf/embeddings_validation.work/
-python -m embeddings_validation \
-    --conf conf/embeddings_validation_short.hocon --workers 10 --total_cpu_count 20 \
-    --conf_extra \
-      'report_file: "../results/res_bt_mles.txt",
-      auto_features: ["../data/emb__bt_mles*.pickle", "../data/barlow_twins_embeddings.pickle"]'
-less -S results/res_bt_mles.txt
 
 
 # Lambda in loss

@@ -76,15 +76,6 @@
       }
     }
 
-     head: {
-      pred_all_states: false
-      pred_all_states_mean: false
-      explicit_lengths: false
-      norm_input: false
-      num_classes: 4
-      use_batch_norm: false
-    }
-
     head_layers: [
       # [BatchNorm1d, {num_features: "{seq_encoder.embedding_size}"}]
       [Linear, {"in_features": "{seq_encoder.embedding_size}", "out_features": 4}]

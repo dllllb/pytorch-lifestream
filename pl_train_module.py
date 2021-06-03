@@ -33,6 +33,16 @@ def main(args=None):
                            f'New value is ModelCheckpoint callback')
         _trainer_params['callbacks'] = [checkpoint_callback]
 
+    if conf['params.train'].get('checkpoints_every_n_val_epochs', False):
+        every_n_val_epochs = conf['params.train.checkpoints_every_n_val_epochs']
+        checkpoint_callback = ModelCheckpoint(every_n_val_epochs=every_n_val_epochs, save_top_k=-1)
+        logger.info(f'Create ModelCheckpoint callback every_n_val_epochs ="{every_n_val_epochs}"')
+        if 'callbacks' in _trainer_params:
+            logger.warning(f'Overwrite `trainer.callbacks`, was "{_trainer_params.checkpoint_callback}". '
+                           f'New value is ModelCheckpoint callback')
+        _trainer_params['callbacks'] = [checkpoint_callback]
+
+
     if 'logger_name' in conf:
         _trainer_params['logger'] = TensorBoardLogger(
             save_dir='lightning_logs',

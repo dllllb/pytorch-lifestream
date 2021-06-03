@@ -2,6 +2,9 @@ import pytorch_lightning as pl
 from dltranz.seq_to_target import SequenceToTarget
 from .test_data_load import RandomEventData
 from pyhocon import ConfigFactory
+from dltranz.seq_to_target import LogAccuracy
+import torch
+
 
 def tst_params_rnn():
     params = {
@@ -105,3 +108,25 @@ def test_train_loop_transf():
     dl = RandomEventData(params['data_module'])
     trainer = pl.Trainer(max_epochs=1, logger=None, checkpoint_callback=False)
     trainer.fit(model, dl)
+
+
+def test_accuracy_bin():
+    acc = LogAccuracy()
+    y_hat = torch.tensor([0.1, 0.4, 0.6, 0.8, 0.9])
+    y = torch.tensor([0, 1, 0, 1, 0])
+    acc(y_hat, y)
+    assert acc.compute() == 0.4
+
+
+def test_accuracy_mul():
+    acc = LogAccuracy()
+    y_hat = torch.log_softmax(torch.tensor([
+        [-1, 2, 1],
+        [1, 2, -1],
+        [1, -2, 0],
+        [1, 1, 2],
+        [1, 1, 2],
+    ]).float(), dim=1)
+    y = torch.tensor([0, 1, 1, 2, 2])
+    acc(y_hat, y)
+    assert acc.compute() == 0.6

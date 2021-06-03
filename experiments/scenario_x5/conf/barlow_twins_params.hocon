@@ -1,0 +1,126 @@
+{
+  data_module: {
+    type: map
+    setup: {
+      col_id: client_id
+      dataset_files: {
+        data_path: "data/train_trx.parquet"
+      }
+      split_by: files
+      valid_size: 0.05
+      valid_split_seed: 42
+    }
+    train: {
+      min_seq_len: 30
+      split_strategy: {
+        split_strategy: "SampleSlices"
+        split_count: 2
+        cnt_min: 30
+        cnt_max: 180
+      }
+      augmentations: [
+        [AllTimeShuffle, {}]
+        [DropoutTrx, {trx_dropout: 0.01}]
+      ]
+      num_workers: 8
+      batch_size: 256
+    }
+    valid: {
+      split_strategy: {
+        split_strategy: SampleSlices
+        split_count: 2
+        cnt_min: 30
+        cnt_max: 180
+      }
+      augmentations: []
+      num_workers: 16
+      batch_size: 256
+    }
+  }
+
+  seed_everything: 42
+  trainer: {
+    gpus: 1
+    auto_select_gpus: false
+
+    max_epochs: 45
+
+    checkpoint_callback: false
+    deterministic: True
+  }
+  logger_name: barlow_twins_model
+
+  params: {
+    data_module_class: dltranz.data_load.data_module.coles_data_module.ColesDataModuleTrain
+    pl_module_class: dltranz.lightning_modules.coles_module.CoLESModule
+
+    validation_metric_params: {
+        K: 1
+        metric: cosine
+    }
+
+    encoder_type: rnn,
+    trx_encoder: {
+      norm_embeddings: false,
+      embeddings_noise: 0.003,
+      embeddings: {
+        level_3: {in: 200, out: 16},
+        level_4: {in: 800, out: 16},
+        segment_id: {in: 120, out: 16}
+      },
+      numeric_values: {
+        trn_sum_from_iss: identity,
+        netto: identity,
+        regular_points_received: identity
+      }
+    },
+    rnn: {
+      type: gru,
+      hidden_size: 800,
+      bidir: false,
+      trainable_starter: static
+    },
+    head_layers: [
+        [Linear, {in_features: "{seq_encoder.embedding_size}", out_features: 256, bias: false}]
+        [BatchNorm1d, {num_features: 256}]
+        [ReLU, {}]
+        [Linear, {in_features: 256, out_features: 256, bias: false}]
+        [BatchNorm1d, {num_features: 256, affine: False}]
+    ]
+    transf: {
+      train_starter: true,
+      shared_layers: false,
+      input_size: 16,
+      n_heads: 4,
+      dim_hidden: 64,
+      dropout: 0.01,
+      n_layers: 4,
+      use_positional_encoding: false,
+      max_seq_len: 800,
+      use_after_mask: false,
+      use_src_key_padding_mask: false
+    },
+    lr_scheduler: {
+      step_size: 3,
+      step_gamma: 0.9025
+    },
+    train: {
+      sampling_strategy: HardNegativePair,
+      neg_count: 9,
+      loss: BarlowTwinsLoss,
+      lambd: 0.04,
+      lr: 0.002,
+      weight_decay: 0.0
+    }
+    norm_scores: false
+  },
+
+  model_path: "models/barlow_twins_model.p"
+
+  include "dataset_inference_file.hocon"
+
+  output: {
+    path: "data/barlow_twins_embeddings"
+    format: pickle
+  }
+}

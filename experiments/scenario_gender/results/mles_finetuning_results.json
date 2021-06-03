@@ -4,12 +4,12 @@
     "model_name": "nn",
     "feature_name": "mles_finetuning",
     "scores_valid": {
-      "auroc": 0.8830327391624451,
-      "accuracy": 0.8015872836112976
+      "auroc": 0.875636875629425,
+      "accuracy": 0.7909031510353088
     },
     "scores_test": {
-      "auroc": 0.8755263686180115,
-      "accuracy": 0.7869047522544861
+      "auroc": 0.8716567158699036,
+      "accuracy": 0.7845237851142883
     }
   },
   {
@@ -17,12 +17,12 @@
     "model_name": "nn",
     "feature_name": "mles_finetuning",
     "scores_valid": {
-      "auroc": 0.8793227672576904,
-      "accuracy": 0.8062169551849365
+      "auroc": 0.8738756775856018,
+      "accuracy": 0.7936027646064758
     },
     "scores_test": {
-      "auroc": 0.874980092048645,
-      "accuracy": 0.7916666865348816
+      "auroc": 0.871525764465332,
+      "accuracy": 0.788095235824585
     }
   },
   {
@@ -30,12 +30,12 @@
     "model_name": "nn",
     "feature_name": "mles_finetuning",
     "scores_valid": {
-      "auroc": 0.8604299426078796,
-      "accuracy": 0.7685185074806213
+      "auroc": 0.8573686480522156,
+      "accuracy": 0.769797146320343
     },
     "scores_test": {
-      "auroc": 0.8721091151237488,
-      "accuracy": 0.7797619104385376
+      "auroc": 0.8712241649627686,
+      "accuracy": 0.7809523940086365
     }
   },
   {
@@ -43,12 +43,12 @@
     "model_name": "nn",
     "feature_name": "mles_finetuning",
     "scores_valid": {
-      "auroc": 0.875713050365448,
-      "accuracy": 0.7910053133964539
+      "auroc": 0.864276111125946,
+      "accuracy": 0.778550386428833
     },
     "scores_test": {
-      "auroc": 0.871884286403656,
-      "accuracy": 0.7857142686843872
+      "auroc": 0.868412971496582,
+      "accuracy": 0.7809523940086365
     }
   },
   {
@@ -56,12 +56,12 @@
     "model_name": "nn",
     "feature_name": "mles_finetuning",
     "scores_valid": {
-      "auroc": 0.8697677850723267,
-      "accuracy": 0.7883597612380981
+      "auroc": 0.8639657497406006,
+      "accuracy": 0.7777323126792908
     },
     "scores_test": {
-      "auroc": 0.878380298614502,
-      "accuracy": 0.7821428775787354
+      "auroc": 0.8722883462905884,
+      "accuracy": 0.788095235824585
     }
   }
 ]

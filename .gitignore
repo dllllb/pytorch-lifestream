@@ -8,7 +8,6 @@ opends/logs
 deb.env
 .ipynb_checkpoints
 experiments/*/runs
-experiments/*/models
 *.egg-info
 .DS_Store
 lightning_logs

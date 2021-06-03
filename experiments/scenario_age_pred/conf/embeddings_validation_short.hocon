@@ -38,6 +38,15 @@
     }
 
     models: {
+        linear: {
+            enabled: false
+            cls_name: sklearn.linear_model.LogisticRegression
+            params: {},
+            cpu_count: 1
+            preprocessing: [
+                [sklearn.preprocessing.MaxAbsScaler, {}]
+            ]
+        }
         lgbm: {
             enabled: true
             cls_name: lightgbm.LGBMClassifier,

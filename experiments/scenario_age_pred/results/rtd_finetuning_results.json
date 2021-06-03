@@ -1,1 +1,57 @@
-[{"fold_id": 0, "model_name": "nn", "feature_name": "rtd_finetuning", "scores_valid": {"accuracy": 0.6483333333333333, "cnt_samples": 5400, "cnt_features": 160}, "scores_test": {"accuracy": 0.6433333333333333, "cnt_samples": 3000, "cnt_features": 160}}, {"fold_id": 1, "model_name": "nn", "feature_name": "rtd_finetuning", "scores_valid": {"accuracy": 0.6312962962962962, "cnt_samples": 5400, "cnt_features": 160}, "scores_test": {"accuracy": 0.6326666666666667, "cnt_samples": 3000, "cnt_features": 160}}, {"fold_id": 2, "model_name": "nn", "feature_name": "rtd_finetuning", "scores_valid": {"accuracy": 0.6464814814814814, "cnt_samples": 5400, "cnt_features": 160}, "scores_test": {"accuracy": 0.6386666666666667, "cnt_samples": 3000, "cnt_features": 160}}, {"fold_id": 3, "model_name": "nn", "feature_name": "rtd_finetuning", "scores_valid": {"accuracy": 0.6427777777777778, "cnt_samples": 5400, "cnt_features": 160}, "scores_test": {"accuracy": 0.632, "cnt_samples": 3000, "cnt_features": 160}}, {"fold_id": 4, "model_name": "nn", "feature_name": "rtd_finetuning", "scores_valid": {"accuracy": 0.6281481481481481, "cnt_samples": 5400, "cnt_features": 160}, "scores_test": {"accuracy": 0.628, "cnt_samples": 3000, "cnt_features": 160}}]
+[
+  {
+    "fold_id": "0",
+    "model_name": "nn",
+    "feature_name": "rtd_finetuning",
+    "scores_valid": {
+      "accuracy": 0.594153642654419
+    },
+    "scores_test": {
+      "accuracy": 0.5926666855812073
+    }
+  },
+  {
+    "fold_id": "1",
+    "model_name": "nn",
+    "feature_name": "rtd_finetuning",
+    "scores_valid": {
+      "accuracy": 0.6015809178352356
+    },
+    "scores_test": {
+      "accuracy": 0.5989999771118164
+    }
+  },
+  {
+    "fold_id": "2",
+    "model_name": "nn",
+    "feature_name": "rtd_finetuning",
+    "scores_valid": {
+      "accuracy": 0.5984499454498291
+    },
+    "scores_test": {
+      "accuracy": 0.5873333215713501
+    }
+  },
+  {
+    "fold_id": "3",
+    "model_name": "nn",
+    "feature_name": "rtd_finetuning",
+    "scores_valid": {
+      "accuracy": 0.5932691097259521
+    },
+    "scores_test": {
+      "accuracy": 0.5920000076293945
+    }
+  },
+  {
+    "fold_id": "4",
+    "model_name": "nn",
+    "feature_name": "rtd_finetuning",
+    "scores_valid": {
+      "accuracy": 0.5926653742790222
+    },
+    "scores_test": {
+      "accuracy": 0.5833333134651184
+    }
+  }
+]

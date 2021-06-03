@@ -19,6 +19,15 @@ python ../../pl_fit_target.py --conf conf/pl_fit_finetuning_cpc.hocon
 python ../../pl_fit_target.py --conf conf/pl_fit_finetuning_nsp.hocon
 python ../../pl_fit_target.py --conf conf/pl_fit_finetuning_rtd.hocon
 
+#cp "models/barlow_twins_model.p" "models/barlow_twins_model_for_finetuning.p"
+python ../../pl_train_module.py \
+  params.rnn.type="gru" params.rnn.hidden_size=512 \
+  model_path="models/barlow_twins_model_for_finetuning.p" \
+  trainer.max_epochs=50 \
+  --conf conf/barlow_twins_params.hocon
+python ../../pl_fit_target.py --conf conf/pl_fit_finetuning_barlow_twins.hocon
+
+
 # Compare
 rm results/scenario_rosbank_baselines_supervised.txt
 # rm -r conf/embeddings_validation.work/

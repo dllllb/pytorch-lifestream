@@ -14,14 +14,14 @@
       min_seq_len: 25
       augmentations: [
         [DropoutTrx, {trx_dropout: 0.01}]
-        [SeqLenLimit, {max_seq_len: 1200}]
+        [RandomSlice, {min_len: 600, max_len: 600}]
       ]
       num_workers: 16
       batch_size: 64
     }
     valid: {
       augmentations: [
-        [SeqLenLimit, {max_seq_len: 1200}]
+        [RandomSlice, {min_len: 600, max_len: 600}]
       ]
       num_workers: 16
       batch_size: 512

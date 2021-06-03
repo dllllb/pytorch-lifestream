@@ -75,10 +75,6 @@
       loss: bce
       lr: 0.003
       weight_decay: 0.0
-      optimiser_params: {
-        0.: {lr: 0.0001}
-        1.: {lr: 0.0001}
-      }
     }
 
     lr_scheduler: {

@@ -20,7 +20,7 @@ python ../../pl_fit_target.py --conf conf/pl_fit_finetuning_rtd.hocon
 python ../../pl_train_module.py \
   params.rnn.hidden_size=256 \
   model_path="models/barlow_twins_model_for_finetuning.p" \
-  --conf conf/mles_params.hocon
+  --conf conf/barlow_twins_params.hocon
 # Fine tune the RTD model in supervised mode and save scores to the file
 python ../../pl_fit_target.py --conf conf/pl_fit_finetuning_barlow_twins.hocon
 
