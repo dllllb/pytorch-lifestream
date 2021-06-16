@@ -1,7 +1,7 @@
 import numpy as np
 import torch
 
-from experiments.scenario_gender.distribution_target import top_tr_types, get_distributions, load_data_pq, transform_inv
+from utils import top_tr_types, get_distributions, load_data_pq, transform_inv
 from dltranz.trx_encoder import PaddedBatch
 
 
