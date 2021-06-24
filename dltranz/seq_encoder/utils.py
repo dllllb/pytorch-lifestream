@@ -1,3 +1,5 @@
+import numpy as np
+import pyarrow.parquet as pq
 import torch
 from torch import nn as nn
 from torch.nn import functional as tf
