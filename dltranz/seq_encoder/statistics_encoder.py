@@ -1,7 +1,7 @@
 import numpy as np
 import torch
 
-from utils import top_tr_types, get_distributions, load_data_pq, transform_inv
+from dltranz.seq_encoder.utils import top_tr_types, get_distributions, load_data_pq, transform_inv
 from dltranz.trx_encoder import PaddedBatch
 
 

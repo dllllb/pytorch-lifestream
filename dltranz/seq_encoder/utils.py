@@ -199,16 +199,6 @@ def transform_inv(x):
     return np.sign(x) * (np.exp(np.abs(x)) - 1)
 
 
-def load_data_csv(file_name_in):
-    df = pd.read_csv(file_name_in)
-    grouped = df.groupby('customer_id')
-    res = {}
-    res['tr_type'] = grouped['tr_type'].apply(list)
-    res['amount'] = grouped['amount'].apply(list)
-    df = pd.concat(res, axis = 1).reset_index()
-    return df.to_numpy(), list(df.columns)
-
-
 def load_data_pq(file_name_in):
     table = pq.read_table(file_name_in)
     df = table.to_pandas()
@@ -306,56 +296,3 @@ def get_distributions(np_data, tr_amounts_col, tr_types_col=None,
             pos_distribution[i] += [0.]
     
     return sums_of_negative_target, sums_of_positive_target, neg_distribution, pos_distribution
-
-
-def write_target(filename_out, ids, sums_of_negative_target, sums_of_positive_target,
-                 neg_distribution, pos_distribution):
-    data_to_write = list(zip(ids, zip(sums_of_negative_target,
-                                      neg_distribution,
-                                      sums_of_positive_target,
-                                      pos_distribution)))
-    output_data_df = pd.DataFrame(data=data_to_write, columns=['customer_id', 'gender'])
-    output_data_df.to_csv(filename_out, index=False)
-    
-
-def create_new_targets_on_gender_train_csv(file_name_in, filename_out, TR_AMOUNTS_COL=2,
-                                           TR_TYPES_COL=1, top_THR=5, take_first_fraction=0.5):
-    '''
-    This function changes target to spending/income distribution and write it to `filename_out`.
-
-    filename_in : parquet file name
-    filename_out : `gender_train.csv`-like file name
-    TR_AMOUNTS_COL : column index with amounts of value in transactions
-    TR_TYPES_COL : column index with types of transactions
-    top_THR : number of the most valuable transactions chosen to create classes for target,
-              total number of classes equal to `top_THR` + 1 (the last class for others)
-    take_first_fraction: control the fraction of transactions to keep
-                         EXAMPLE: take_first_fraction=0.75 -> the last 0.25 of all user
-                                  transactions will be chosen as user target distribution
-                                  and therefore will be cutted off
-
-    '''
-
-    # load data to numpy
-    np_data, columns = load_data_csv(file_name_in)
-    ids = np_data[:, columns.index('customer_id')]
-
-    # get top negative and positive types
-    negative_items, positive_items = top_tr_types(np_data, TR_TYPES_COL, TR_AMOUNTS_COL, lambda x: x)
-    with open('negative.pickle', 'wb') as neg:
-        pickle.dump(negative_items, neg)
-    with open('positive.pickle', 'wb') as pos:
-        pickle.dump(positive_items, pos)
-    
-    # get distributions
-    distr = get_distributions(np_data, TR_AMOUNTS_COL, TR_TYPES_COL,
-                              negative_items, positive_items, top_THR, take_first_fraction)
-
-    sums_of_negative_target, sums_of_positive_target = distr[0], distr[1]
-    neg_distribution, pos_distribution = distr[2], distr[3]
-    
-    #write target
-    write_target(filename_out, ids, sums_of_negative_target, sums_of_positive_target,
-                 neg_distribution, pos_distribution)
-
-    return sums_of_negative_target, neg_distribution, sums_of_positive_target, pos_distribution

@@ -44,7 +44,7 @@ def default_preprocess(data, conf, drop_unknown=True):
 
         min_seq_len = rec.get('min_seq_len', 0)
 
-        tranz_dates = rec['trans_time']
+        tranz_dates = rec['event_time']
         n_tranz = len(tranz_dates)
         if n_tranz < min_seq_len:
             continue
@@ -66,7 +66,7 @@ def default_preprocess(data, conf, drop_unknown=True):
                 for k, arr in feature_arrays.items()
             }
             rec['feature_arrays'] = feature_arrays_tl
-            rec['trans_time'] = tranz_dates[window_start_pos:app_date_pos]
+            rec['event_time'] = tranz_dates[window_start_pos:app_date_pos]
 
         yield rec
 
@@ -128,15 +128,13 @@ def read_pyarrow_file(path, use_threads=True):
                 rec = {}
                 for n, a in zip(col_indexes, row):
                     if n == 'trans_time': 
-                        date_batch = pd.DatetimeIndex(np.array(a).astype('datetime64[s]'))
-                        day = date_batch.day
-                        month = date_batch.month
-                        weekday = date_batch.weekday
-                        hour = date_batch.hour
-                        rec['local_day'] = np.array(day)
-                        rec['local_month'] = np.array(month)
-                        rec['local_weekday'] = np.array(weekday)
-                        rec['hour'] = np.array(hour)
+                        date_batch = np.array(a).astype('datetime64[s]')
+                        rec['local_day'] = (np.array(date_batch).astype('datetime64[D]') - np.array(date_batch)\
+                                                    .astype('datetime64[M]')).astype(np.int16) + 1
+                        rec['local_month'] = date_batch.astype('datetime[M]').astype(np.int16) % 12 + 1
+                        rec['local_weekday'] = (date_batch.astype('datetime[D]').astype(np.int16) + 3) / 7
+                        rec['hour'] = ((date_batch - date_batch.astype('datetime[D]')).astype(np.int32) // 3600 + 1)\
+                                                                                .astype(np.int16)
                     rec[n] = np.array(a) if isinstance(a, np.ndarray) else a
                 yield rec
 
@@ -203,9 +201,9 @@ class DropoutTrxDataset(Dataset):
 class AllTimeShuffleDataset(Dataset):
     """Shuffle all transactions in event sequence
     """
-    def __init__(self, dataset, trans_time_name='trans_time'):
+    def __init__(self, dataset, event_time_name='event_time'):
         self.dataset = dataset
-        self.shuffler = AllTimeShuffle(trans_time_name)
+        self.shuffler = AllTimeShuffle(event_time_name)
         self.style = dataset.style
 
     def __len__(self):
@@ -220,9 +218,9 @@ class AllTimeShuffleDataset(Dataset):
 class AllTimeShuffleMLDataset(Dataset):
     """Shuffle all transactions in event sequence
     """
-    def __init__(self, dataset, trans_time_name='trans_time'):
+    def __init__(self, dataset, event_time_name='event_time'):
         self.core_dataset = dataset
-        self.shuffler = AllTimeShuffle(trans_time_name)
+        self.shuffler = AllTimeShuffle(event_time_name)
         self.style = dataset.style
 
     def __len__(self):
@@ -244,19 +242,19 @@ class AllTimeShuffleMLDataset(Dataset):
 class SameTimeShuffleDataset(Dataset):
     """Split sequences on intervals with equal event times. Shuffle events in each split independently
     """
-    def __init__(self, dataset, trans_time_name='trans_time'):
+    def __init__(self, dataset, event_time_name='event_time'):
         self.dataset = dataset
-        self.trans_time_name = trans_time_name
+        self.event_time_name = event_time_name
 
     def __len__(self):
         return len(self.dataset)
 
     @staticmethod
-    def get_perm_ix(trans_time):
+    def get_perm_ix(event_time):
         ix = []
         pos = 0
-        for time in torch.unique(trans_time, sorted=True):
-            mask = trans_time == time
+        for time in torch.unique(event_time, sorted=True):
+            mask = event_time == time
             n = mask.sum()
             _ix = torch.randperm(n)
             ix.append(_ix + pos)
@@ -265,7 +263,7 @@ class SameTimeShuffleDataset(Dataset):
 
     def __getitem__(self, item):
         x, y = self.dataset[item]
-        ix = self.get_perm_ix(x[self.trans_time_name])
+        ix = self.get_perm_ix(x[self.event_time_name])
         new_x = {k: v[ix] for k, v in x.items()}
         return new_x, y
 
@@ -273,24 +271,24 @@ class SameTimeShuffleDataset(Dataset):
 class DropDayDataset(Dataset):
     """Split sequences on intervals with equal event times. Shuffle events in each split independently
     """
-    def __init__(self, dataset, trans_time_name='trans_time'):
+    def __init__(self, dataset, event_time_name='event_time'):
         self.dataset = dataset
-        self.trans_time_name = trans_time_name
+        self.event_time_name = event_time_name
         self.style = dataset.style
 
     def __len__(self):
         return len(self.dataset)
 
     @staticmethod
-    def get_perm_ix(trans_time):
-        days = torch.unique(trans_time, sorted=True)
+    def get_perm_ix(event_time):
+        days = torch.unique(event_time, sorted=True)
         ix = np.random.choice(len(days), 1)[0]
-        mask = trans_time != days[ix]
+        mask = event_time != days[ix]
         return mask
 
     def __getitem__(self, item):
         x, y = self.dataset[item]
-        mask = self.get_perm_ix(x[self.trans_time_name])
+        mask = self.get_perm_ix(x[self.event_time_name])
         new_x = {k: v[mask] for k, v in x.items()}
         return new_x, y
 
