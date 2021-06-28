@@ -1,4 +1,5 @@
 import numpy as np
+import torch
 
 from dltranz.data_load.iterable_processing_dataset import IterableProcessingDataset
 
@@ -30,4 +31,4 @@ class CategorySizeClip(IterableProcessingDataset):
         if self._replace_value == 'max':
             return values.clip(0, max_size - 1)
         else:
-            return np.where((0 <= values) & (values < max_size), values, self._replace_value)
+            return torch.from_numpy(np.where((0 <= values) & (values < max_size), values, self._replace_value))

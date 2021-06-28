@@ -5,8 +5,10 @@ import random
 from functools import partial
 from collections import defaultdict
 from multiprocessing.pool import Pool
+from datetime import datetime
 
 import numpy as np
+import pandas as pd
 import pyarrow.parquet as pq
 import torch
 from torch.utils.data import WeightedRandomSampler, Sampler, Dataset
@@ -113,7 +115,7 @@ def read_pyarrow_file(path, use_threads=True):
         source=path,
         use_threads=use_threads,
     )
-
+    
     col_indexes = [n for n in p_table.column_names]
 
     def get_records():
@@ -122,7 +124,18 @@ def read_pyarrow_file(path, use_threads=True):
             col_arrays = [a.to_numpy(zero_copy_only=False) for a in col_arrays]
             for row in zip(*col_arrays):
                 # np.array(a) makes `a` writable for future usage
-                rec = {n: np.array(a) if isinstance(a, np.ndarray) else a for n, a in zip(col_indexes, row)}
+                # rec = {n: np.array(a) if isinstance(a, np.ndarray) else a for n, a in zip(col_indexes, row)}
+                rec = {}
+                for n, a in zip(col_indexes, row):
+                    if n == 'trans_time': 
+                        date_batch = np.array(a).astype('datetime64[s]')
+                        rec['local_day'] = (np.array(date_batch).astype('datetime64[D]') - np.array(date_batch)\
+                                                    .astype('datetime64[M]')).astype(np.int16) + 1
+                        rec['local_month'] = date_batch.astype('datetime[M]').astype(np.int16) % 12 + 1
+                        rec['local_weekday'] = (date_batch.astype('datetime[D]').astype(np.int16) + 3) / 7
+                        rec['hour'] = ((date_batch - date_batch.astype('datetime[D]')).astype(np.int32) // 3600 + 1)\
+                                                                                .astype(np.int16)
+                    rec[n] = np.array(a) if isinstance(a, np.ndarray) else a
                 yield rec
 
     return get_records()

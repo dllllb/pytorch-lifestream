@@ -110,6 +110,24 @@ class RnnSeqEncoder(AbsSeqEncoder):
         return x
 
 
+class RnnInference(torch.nn.Module):
+    def __init__(self, model: RnnSeqEncoder):
+        super().__init__()
+
+        self.hidden_size = hidden_size
+        self.is_reduce_sequence = model.seq_encoder.is_reduce_sequence
+        self.p = model.seq_encoder.model[0]
+        self.e = model.seq_encoder.model[1]
+        self.reducer = model.seq_encoder.reducer
+
+def forward(self, x, h_0=None):
+        x_ = self.p(x)
+        x = self.e(x_, h_0)
+        if self.is_reduce_sequence:
+            x = self.reducer(x)
+        return x
+
+
 class RnnSeqEncoderDistributionTarget(RnnSeqEncoder):
     def transform(self, x):
         return np.sign(x) * np.log(np.abs(x) + 1)
