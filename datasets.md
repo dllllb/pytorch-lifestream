@@ -1,0 +1,2 @@
+- https://www.kaggle.com/c/home-credit-default-risk/
+- https://www.kaggle.com/c/optiver-realized-volatility-prediction/
