@@ -1,5 +1,6 @@
 import logging
 
+import glob
 import pandas as pd
 import pytorch_lightning as pl
 from torch.utils.data import ChainDataset
@@ -18,7 +19,7 @@ from dltranz.util import get_conf, get_cls
 logger = logging.getLogger(__name__)
 
 
-def create_inference_dataloader(conf, pl_module):
+def create_inference_dataloader(conf, pl_module, ):
     """This is inference dataloader for `experiments`
     """
     post_processing = IterableChain(
@@ -29,13 +30,20 @@ def create_inference_dataloader(conf, pl_module):
             SeqLenLimit(**conf['SeqLenLimit']),
         )
     )
-    l_dataset = [
-        ParquetDataset(
-            ParquetFiles(path).data_files,
+        data_path = conf['dataset_parts']['data_path']
+        data_files = PartitionedDataFiles(**conf['dataset_parts'])
+        dataset = PartitionedDataset(
+            data_files.data_path, data_files.dt_parts, list(map(lambda h_name: data_path + h_name, glob.glob(data_path))), col_id=conf['col_id'],
             post_processing=post_processing,
-            shuffle_files=False,
-        ) for path in conf['dataset_files']]
-    dataset = ChainDataset(l_dataset)
+            shuffle_files=True if self._type == 'iterable' else False,
+        )
+#     l_dataset = [
+#         ParquetDataset(
+#             ParquetFiles(path).data_files,
+#             post_processing=post_processing,
+#             shuffle_files=False,
+#         ) for path in conf['dataset_files']]
+#     dataset = ChainDataset(l_dataset)
     return DataLoader(
         dataset=dataset,
         collate_fn=padded_collate,

@@ -127,7 +127,7 @@ class SequenceToTarget(pl.LightningModule):
 
         self.metrics_test = defaultdict(list)  # here we accumulate metrics on each test end
         self.metrics_train = defaultdict(list)  # here we accumulate metrics on some train bathes (called outside)
-    
+
         head_params = dict(params['head_layers']).get('CombinedTargetHeadFromRnn', None)
         self.pos, self.neg = (head_params.get('pos', True), head_params.get('neg', True)) if head_params else (0, 0)
         self.cols_ix = params.get('columns_ix', {'neg_sum': 0,

@@ -133,9 +133,8 @@ class ColesDataModuleTrain(pl.LightningDataModule):
     def build_iterable_processing(self, part):
         if part == 'train':
             yield SeqLenFilter(min_seq_len=self.train_conf['min_seq_len'])
-
         yield FeatureFilter(keep_feature_names=self.category_names)
-        yield CategorySizeClip(self.category_max_size)
+        yield CategorySizeClip(self.category_max_size, 1)
 
         if self._type == 'iterable':
             # all processing in single chain

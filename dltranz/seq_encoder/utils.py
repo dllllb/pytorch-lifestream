@@ -228,7 +228,6 @@ def top_tr_types(np_data, tr_types_col, tr_amounts_col, f):
             positive_items += [pair[0]]
         else:
             negative_items += [pair[0]]
-    
     return negative_items, positive_items
 
 
@@ -296,5 +295,6 @@ def get_distributions(np_data, tr_amounts_col, tr_types_col=None,
             pos_distribution[i] += [others_pos_tr_amounts_target / sums_of_positive_target[i]]
         else:
             pos_distribution[i] += [0.]
-    
+
     return sums_of_negative_target, sums_of_positive_target, neg_distribution, pos_distribution
+

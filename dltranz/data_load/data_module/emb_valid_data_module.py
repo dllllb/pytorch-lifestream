@@ -47,6 +47,7 @@ class EmbValidDataModule(pl.LightningDataModule):
         self._test_targets = None
 
         self._fold_info = None
+        self.conf = conf
 
     def prepare_data(self):
         if 'dataset_files' in self.setup_conf:
@@ -68,7 +69,7 @@ class EmbValidDataModule(pl.LightningDataModule):
            else:
                n_test = len(glob.glob(self.setup_conf['dataset_files.test_data_path'] + "/*.parquet"))
                test_ixes = random.sample(ixes, int(n_test * self.setup_conf['test_part']))
-               test_data_files = ParquetFiles(self.setup_conf['dataset_files.test_data_path'], test_ixes).data_files                   
+               test_data_files = ParquetFiles(self.setup_conf['dataset_files.test_data_path'], test_ixes).data_files
        else:
            train_data_files = ParquetFiles(self.setup_conf['dataset_files.train_data_path']).data_files
            test_data_files = ParquetFiles(self.setup_conf['dataset_files.test_data_path']).data_files

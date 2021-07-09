@@ -175,6 +175,7 @@ class PartitionedDataset(torch.utils.data.IterableDataset):
         self._init_worker()
 
         my_hashes = self._get_my_hashes()
+
         if self.shuffle_files:
             rs = np.random.RandomState(self._shuffle_seed % 2**32)
             rs.shuffle(my_hashes)

@@ -24,7 +24,6 @@ class CategorySizeClip(IterableProcessingDataset):
             # clip embeddings dictionary by max value
             for name, max_size in self._category_max_size.items():
                 features[name] = self._smart_clip(features[name], max_size)
-
             yield rec
 
     def _smart_clip(self, values, max_size):

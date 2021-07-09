@@ -120,7 +120,7 @@ class RnnInference(torch.nn.Module):
         self.e = model.seq_encoder.model[1]
         self.reducer = model.seq_encoder.reducer
 
-def forward(self, x, h_0=None):
+    def forward(self, x, h_0=None):
         x_ = self.p(x)
         x = self.e(x_, h_0)
         if self.is_reduce_sequence:

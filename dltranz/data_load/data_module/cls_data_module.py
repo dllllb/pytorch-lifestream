@@ -75,6 +75,7 @@ class ClsDataModuleTrain(pl.LightningDataModule):
 
     def setup_iterable_files(self):
         if self.setup_conf.get('split_by', None) == 'embeddings_validation':
+          
             if (self.setup_conf.get('use_files_partially', None)):
                 n_train = len(glob.glob(self.setup_conf['dataset_files.train_data_path'] + "/*.parquet"))
                 ixes = list(range(n_train))
@@ -86,7 +87,7 @@ class ClsDataModuleTrain(pl.LightningDataModule):
                 else:
                     n_test = len(glob.glob(self.setup_conf['dataset_files.test_data_path'] + "/*.parquet"))
                     test_ixes = random.sample(ixes, int(n_test * self.setup_conf['test_part']))
-                    test_data_files = ParquetFiles(self.setup_conf['dataset_files.test_data_path'], test_ixes).data_files                   
+                    test_data_files = ParquetFiles(self.setup_conf['dataset_files.test_data_path'], test_ixes).data_files
             else:
                 train_data_files = ParquetFiles(self.setup_conf['dataset_files.train_data_path']).data_files
                 test_data_files = ParquetFiles(self.setup_conf['dataset_files.test_data_path']).data_files
@@ -107,7 +108,7 @@ class ClsDataModuleTrain(pl.LightningDataModule):
                 post_processing=IterableChain(*self.build_iterable_processing('test')),
                 shuffle_files=False,
             )
-            
+
         else:
             raise AttributeError(f'Unknown split strategy: {self.setup_conf.split_by}')
 
