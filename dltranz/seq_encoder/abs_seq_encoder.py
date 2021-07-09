@@ -27,3 +27,7 @@ class AbsSeqEncoder(torch.nn.Module):
     @property
     def embedding_size(self):
         raise NotImplementedError()
+
+    def freeze(self):
+        for p in self.parameters():
+            p.requires_grad = False

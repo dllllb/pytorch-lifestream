@@ -228,7 +228,6 @@ def top_tr_types(np_data, tr_types_col, tr_amounts_col, f):
             positive_items += [pair[0]]
         else:
             negative_items += [pair[0]]
-
     return negative_items, positive_items
 
 

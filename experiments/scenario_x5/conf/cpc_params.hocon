@@ -44,7 +44,7 @@
 
   params: {
     data_module_class: dltranz.data_load.data_module.cpc_data_module.CpcDataModuleTrain
-    pl_module_name: dltranz.lightning_modules.cpc_module.CpcModule
+    pl_module_class: dltranz.lightning_modules.cpc_module.CpcModule
 
     encoder_type: rnn,
     trx_encoder: {

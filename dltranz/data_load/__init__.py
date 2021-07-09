@@ -5,8 +5,10 @@ import random
 from functools import partial
 from collections import defaultdict
 from multiprocessing.pool import Pool
+from datetime import datetime
 
 import numpy as np
+import pandas as pd
 import pyarrow.parquet as pq
 import torch
 from torch.utils.data import WeightedRandomSampler, Sampler, Dataset
@@ -125,6 +127,7 @@ def read_pyarrow_file(path, use_threads=True):
                 # rec = {n: np.array(a) if isinstance(a, np.ndarray) else a for n, a in zip(col_indexes, row)}
                 rec = {}
                 for n, a in zip(col_indexes, row):
+
                     if n == 'trans_time':
                         date_batch = np.array(a).astype('datetime64[s]')
                         rec['local_day'] = (np.array(date_batch).astype('datetime64[D]') - np.array(date_batch))\

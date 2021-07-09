@@ -39,6 +39,16 @@
             read_params: {file_name: ../data/rtd_embeddings.pickle}
             target_options: {}
         }
+        mles2_embeddings: {
+            enabled: true
+            read_params: {file_name: ../data/mles2_embeddings.pickle}
+            target_options: {}
+        }
+        barlow_twins_embeddings: {
+            enabled: true
+            read_params: {file_name: ../data/barlow_twins_embeddings.pickle}
+            target_options: {}
+        }
     }
 
     external_scores: {

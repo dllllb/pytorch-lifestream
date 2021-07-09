@@ -1,0 +1,87 @@
+{
+  data_module: {
+    type: map
+
+    setup: {
+      dataset_files: {
+        train_data_path: "data/train_trx.parquet"
+        test_data_path: "data/test_trx.parquet"
+      }
+      col_id: cl_id
+      col_id_dtype: int
+      col_target: target_flag
+
+      split_by: embeddings_validation
+      fold_info: "conf/embeddings_validation.work/folds/folds.json"
+    }
+
+    train: {
+      min_seq_len: 0
+      augmentations: [
+        [RandomSlice, {min_len: 250, max_len: 350, rate_for_min: 0.9}]
+        [DropoutTrx, {trx_dropout: 0.01}]
+      ]
+      num_workers: 16
+      batch_size: 32
+    }
+
+    valid: {
+      augmentations: [
+        [SeqLenLimit, {max_seq_len: 1200}]
+      ]
+      num_workers: 8
+      batch_size: 512
+    }
+  }
+
+  embedding_validation_results: {
+    model_name: nn
+    feature_name: barlow_twins_finetuning
+    output_path: "results/barlow_twins_finetuning_results.json"
+  }
+
+  seed_everything: 42
+  trainer: {
+    gpus: 1
+    auto_select_gpus: false
+
+    max_epochs: 8
+    log_every_n_steps: 10
+
+    checkpoint_callback: false
+    deterministic: true
+  }
+  logger_name: barlow_twins_finetuning
+
+  params: {
+    score_metric: auroc
+
+    encoder_type: pretrained
+    pretrained: {
+        pl_module_class: dltranz.lightning_modules.coles_module.CoLESModule
+        model_path: "models/barlow_twins_model_for_finetuning.p"
+        lr: 0.00001
+    }
+
+    head_layers: [
+      [Linear, {"in_features": "{seq_encoder.embedding_size}", "out_features": 64}]
+      [BatchNorm1d, {num_features: 64}]
+      [ReLU, {}]
+      [Linear, {"in_features": "64", "out_features": 1}]
+      [Sigmoid, {}]
+      [Squeeze, {}]
+    ]
+
+    train: {
+      random_neg: false
+      loss: bce
+      lr: 0.003
+      weight_decay: 0.0
+    }
+
+    lr_scheduler: {
+      step_size: 1
+      step_gamma: 0.40
+    }
+  }
+}

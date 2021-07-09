@@ -31,7 +31,7 @@ class EpochAuroc(pl.metrics.Metric):
     def compute(self):
         y_hat = torch.cat(self.y_hat)
         y = torch.cat(self.y)
-        return auroc(y_hat, y)
+        return auroc(y_hat, y.long())
 
 
 class DistributionTargets(pl.metrics.Metric):
@@ -91,6 +91,25 @@ class MAPE(DistributionTargets):
         return mape_metric(self.sign * torch.exp(y_hat - 1), y[:, None])
 
 
+class LogAccuracy(pl.metrics.Accuracy):
+    def __init__(self, **params):
+        super().__init__(**params)
+
+        self.add_state('correct', default=torch.tensor([0.0]))
+        self.add_state('total', default=torch.tensor([0.0]))
+
+    def update(self, preds, target):
+        if len(preds.shape) == 1:
+            preds = (preds > 0.5).to(dtype=target.dtype)
+        else:
+            preds = torch.argmax(preds, dim=1)
+        self.correct += torch.sum(preds == target)
+        self.total += target.numel()
+
+    def compute(self):
+        return self.correct / self.total
+
+
 class R_squared(DistributionTargets):
     def __init__(self, col_name):
         super().__init__(col_name)
@@ -130,7 +149,7 @@ class SequenceToTarget(pl.LightningModule):
         # metrics
         d_metrics = {
             'auroc': EpochAuroc(),
-            'accuracy': pl.metrics.Accuracy(),
+            'accuracy': LogAccuracy(),
             'R2n': R_squared('neg_sum'),
             'MSEn': MSE('neg_sum'),
             'MAPEn': MAPE('neg_sum'),

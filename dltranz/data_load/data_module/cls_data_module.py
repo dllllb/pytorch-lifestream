@@ -75,7 +75,8 @@ class ClsDataModuleTrain(pl.LightningDataModule):
 
     def setup_iterable_files(self):
         if self.setup_conf.get('split_by', None) == 'embeddings_validation':
-            if (self.setup_conf['use_files_partially']):
+          
+            if (self.setup_conf.get('use_files_partially', None)):
                 n_train = len(glob.glob(self.setup_conf['dataset_files.train_data_path'] + "/*.parquet"))
                 ixes = list(range(n_train))
                 train_ixes, test_ixes = train_test_split(ixes, test_size=int(n_train * (1 - self.setup_conf['train_part'])), shuffle=True)

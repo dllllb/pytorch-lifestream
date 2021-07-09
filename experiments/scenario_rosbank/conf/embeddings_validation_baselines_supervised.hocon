@@ -12,6 +12,7 @@
         cpc_finetuning: "../results/cpc_finetuning_results.json"
         nsp_finetuning: "../results/nsp_finetuning_results.json"
         rtd_finetuning: "../results/rtd_finetuning_results.json"
+        barlow_twins_finetuning: "../results/barlow_twins_finetuning_results.json"
     }
 
     report: {
