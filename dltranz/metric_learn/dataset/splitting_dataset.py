@@ -1,5 +1,6 @@
 # coding: utf-8
 import logging
+import torch
 
 from torch.utils.data import Dataset, IterableDataset
 
@@ -44,15 +45,16 @@ class MapSplittingDataset(Dataset):
 
 
 class IterableSplittingDataset(IterableProcessingDataset):
-    def __init__(self, splitter, a_chain):
+    def __init__(self, splitter, a_chain, col_time):
         super().__init__()
 
         self.splitter = splitter
         self.a_chain = a_chain
+        self.col_time = col_time
 
     def __iter__(self):
         for row in self._src:
-            local_date = row['event_time']
+            local_date = row[self.col_time]
             yield [self.a_chain({k: v[ix] for k, v in row.items()}) for ix in self.splitter.split(local_date)]
 
 

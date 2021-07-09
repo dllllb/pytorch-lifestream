@@ -55,8 +55,9 @@ class ColesDataModuleTrain(pl.LightningDataModule):
         self.valid_conf = conf['valid']
 
         self.col_id = self.setup_conf['col_id']
+        self.col_time = self.setup_conf.get('col_time', 'event_time')
         self.category_names = pl_module.seq_encoder.category_names
-        self.category_names.add('event_time')
+        self.category_names.add(self.col_time)
         self.category_max_size = pl_module.seq_encoder.category_max_size
 
         self.train_dataset = None
@@ -132,9 +133,8 @@ class ColesDataModuleTrain(pl.LightningDataModule):
     def build_iterable_processing(self, part):
         if part == 'train':
             yield SeqLenFilter(min_seq_len=self.train_conf['min_seq_len'])
-
         yield FeatureFilter(keep_feature_names=self.category_names)
-        yield CategorySizeClip(self.category_max_size)
+        yield CategorySizeClip(self.category_max_size, 1)
 
         if self._type == 'iterable':
             # all processing in single chain
@@ -145,7 +145,7 @@ class ColesDataModuleTrain(pl.LightningDataModule):
                 split_strategy_conf = self.train_conf['split_strategy']
             else:
                 split_strategy_conf = self.valid_conf['split_strategy']
-            yield IterableSplittingDataset(split_strategy.create(**split_strategy_conf), self.build_augmentations(part))
+            yield IterableSplittingDataset(split_strategy.create(**split_strategy_conf), self.build_augmentations(part), self.col_time)
 
     def build_augmentations(self, part):
         if part == 'train':

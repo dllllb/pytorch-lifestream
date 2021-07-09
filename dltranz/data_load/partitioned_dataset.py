@@ -9,6 +9,8 @@ from torch.utils.data import DataLoader
 
 from dltranz.data_load import read_pyarrow_file
 
+from pydoc import locate
+
 logger = logging.getLogger(__name__)
 
 
@@ -47,9 +49,9 @@ class PartitionedDataFiles:
     we should calculate `hash_id = H` and get data from all month from `hash_id=H` subpartitions.
     """
 
-    def __init__(self, data_path, dt_start=None, dt_end=None, dt_dtype='datetime64[D]'):
+    def __init__(self, data_path, dt_start=None, dt_end=None, dt_dtype='datetime64'):
         self._data_path = data_path
-        self.to_dtype = np.dtype(dt_dtype)
+        self.to_dtype = locate(dt_dtype)
         self.dt_start = self.to_dtype(dt_start) if dt_start else None
         self.dt_end = self.to_dtype(dt_end) if dt_end else None
 
@@ -173,6 +175,7 @@ class PartitionedDataset(torch.utils.data.IterableDataset):
         self._init_worker()
 
         my_hashes = self._get_my_hashes()
+
         if self.shuffle_files:
             rs = np.random.RandomState(self._shuffle_seed % 2**32)
             rs.shuffle(my_hashes)

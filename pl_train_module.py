@@ -5,8 +5,40 @@ from pytorch_lightning.callbacks import ModelCheckpoint
 from pytorch_lightning.loggers import TensorBoardLogger
 
 from dltranz.util import get_conf, get_cls
+from pytorch_lightning.callbacks import LearningRateMonitor
 
 logger = logging.getLogger(__name__)
+
+
+class CheckpointEveryNSteps(pl.Callback):
+    """
+    Save a checkpoint every N steps, instead of Lightning's default that checkpoints
+    based on validation loss.
+    """
+
+    def __init__(
+        self,
+        model,
+        dm,
+        conf
+    ):
+        """
+        Args:
+            save_step_frequency: how often to save model in steps
+        """
+        self.conf = conf
+        self.save_step_frequency = self.conf.get('params').get('save_step_frequency', 200)
+        self.ckpts_path = self.conf.get('params').get('ckpts_path', 'ckpts3/') 
+        self.model = model
+        self.dm = dm
+        self.conf = conf
+
+    def on_batch_end(self, trainer: pl.Trainer, _):
+        """ Check if we should save a checkpoint after every train batch """
+        epoch = trainer.current_epoch
+        global_step = trainer.global_step
+        if self.save_step_frequency and global_step % self.save_step_frequency == 0:
+            trainer.save_checkpoint(self.ckpts_path + f'{global_step}')
 
 
 def main(args=None):
@@ -19,7 +51,8 @@ def main(args=None):
 
     pl_module = get_cls(conf['params.pl_module_class'])
 
-    model = pl_module(conf['params'])
+    model = pl_module.load_from_checkpoint('ckpts/9600')
+#    model = pl_module(conf['params'])
     dm = data_module(conf['data_module'], model)
 
     _trainer_params = conf['trainer']
@@ -39,7 +72,8 @@ def main(args=None):
             name=conf.get('logger_name'),
         )
 
-    trainer = pl.Trainer(**_trainer_params)
+    lr_monitor = LearningRateMonitor(logging_interval='step')
+    trainer = pl.Trainer(callbacks=[lr_monitor, CheckpointEveryNSteps(model, dm, conf)], **_trainer_params)
     trainer.fit(model, dm)
 
     if 'model_path' in conf:

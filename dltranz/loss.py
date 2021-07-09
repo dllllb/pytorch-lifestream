@@ -15,7 +15,7 @@ def kl(pred, soft_targets):
     eps = 1e-7
     softmax = torch.nn.Softmax(dim=1)
     device = pred.device
-    return torch.mean(torch.sum(soft_targets.to(device) * torch.log(soft_targets.to(device) / (softmax(pred) + eps) + eps), 1))    
+    return torch.mean(torch.sum(soft_targets.to(device) * torch.log(soft_targets.to(device) / (softmax(pred) + eps) + eps), 1))
 
 
 def mse_loss(pred, actual):
@@ -244,3 +244,4 @@ def get_loss(params):
         loss = AllStateLoss(loss)
 
     return loss
+

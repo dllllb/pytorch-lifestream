@@ -1,4 +1,5 @@
 import numpy as np
+import torch
 
 from dltranz.data_load.iterable_processing_dataset import IterableProcessingDataset
 
@@ -23,11 +24,10 @@ class CategorySizeClip(IterableProcessingDataset):
             # clip embeddings dictionary by max value
             for name, max_size in self._category_max_size.items():
                 features[name] = self._smart_clip(features[name], max_size)
-
             yield rec
 
     def _smart_clip(self, values, max_size):
         if self._replace_value == 'max':
             return values.clip(0, max_size - 1)
         else:
-            return np.where((0 <= values) & (values < max_size), values, self._replace_value)
+            return torch.from_numpy(np.where((0 <= values) & (values < max_size), values, self._replace_value))

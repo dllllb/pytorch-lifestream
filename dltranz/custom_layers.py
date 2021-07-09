@@ -175,10 +175,10 @@ class DistributionTargetHead(torch.nn.Module):
 
         self.dense2_neg = torch.nn.Linear(128, num_distr_classes) if self.neg else None
         self.dense2_pos = torch.nn.Linear(128, num_distr_classes) if self.pos else None
-        
+
         self.sigmoid = torch.nn.Sigmoid()
         self.relu = torch.nn.ReLU()
-        
+
     def forward(self, x):
         out1 = self.relu(self.dense1(x))
         out2_pos = out2_neg = 0
@@ -255,7 +255,7 @@ class CombinedTargetHeadFromRnn(torch.nn.Module):
 
         sums_neg, sums_pos = self.regr_sums(out1, sum_logs1, sum_logs2)
         gate_neg, gate_pos = self.regr_gates(out1, sum_logs1, sum_logs2) if self.use_gates else (0, 0)
-        
+
         return {'neg_sum': sum_logs1 * gate_neg + sums_neg * (1 - gate_neg),
                 'neg_distribution': distr_neg,
                 'pos_sum': sum_logs2 * gate_pos + sums_pos * (1 - gate_pos),
@@ -299,3 +299,4 @@ class DummyHead(torch.nn.Module):
                 'neg_distribution': x[1],
                 'pos_sum': x[2],
                 'pos_distribution': x[3]}
+

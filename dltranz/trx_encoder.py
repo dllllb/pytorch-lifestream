@@ -22,7 +22,7 @@ class PaddedBatch:
     @property
     def device(self):
         return self._length.device
-    
+
     def __len__(self):
         return len(self._length)
 
