@@ -27,6 +27,7 @@ fastai = {version = ">=1.0.6", sys_platform = "!= 'darwin'"}
 pyarrow = ">=1"
 pytorch-lightning = ">=1.0.3"
 luigi = ">=2.0.0"
+pytorch-lifestream = {editable = true, path = "."}
 
 [requires]
 python_version = "3.8"
