@@ -26,13 +26,13 @@ class InputNorm(torch.nn.Module):
 
 class StreamEncoder(pl.LightningModule):
     def __init__(self,
-                 train_batch_size, history_size, predict_size,
+                 history_size, predict_size,
                  in_channels, clip_range,
                  z_channels,
                  c_channels,
-                 var_gamma,
+                 var_gamma_z, var_gamma_c,
                  lr, weight_decay, step_size, gamma,
-                 cpc_w, cov_w, var_w,
+                 cpc_w, cov_z_w, var_z_w, cov_c_w, var_c_w,
                  plot_samples=[],
                  ):
         super().__init__()
@@ -56,7 +56,8 @@ class StreamEncoder(pl.LightningModule):
             torch.nn.Linear(c_channels, z_channels) for _ in range(predict_size)
         ])
 
-        self.reg_bn = torch.nn.BatchNorm1d(c_channels, affine=False)
+        self.reg_bn_z = torch.nn.BatchNorm1d(z_channels, affine=False)
+        self.reg_bn_c = torch.nn.BatchNorm1d(c_channels, affine=False)
 
     def get_train_dataloader(self, data, batch_size, num_workers):
         def gen_batches(data):
@@ -106,19 +107,27 @@ class StreamEncoder(pl.LightningModule):
         zx, zy = z[:, :self.hparams.history_size], z[:, self.hparams.history_size:]
 
         cpc_loss, cx = self.cpc_loss(zx, zy)
-        cov_loss = self.cov_loss(cx)
-        var_loss = self.var_loss(cx)
+        cov_z_loss = self.cov_z_loss(zx)
+        var_z_loss = self.var_z_loss(zx)
+        cov_c_loss = self.cov_c_loss(cx)
+        var_c_loss = self.var_c_loss(cx)
         loss = 0.0
         if self.hparams.cpc_w > 0:
             loss += self.hparams.cpc_w * cpc_loss
-        if self.hparams.cov_w > 0:
-            loss += self.hparams.cov_w * cov_loss
-        if self.hparams.var_w > 0:
-            loss += self.hparams.var_w * var_loss
+        if self.hparams.cov_c_w > 0:
+            loss += self.hparams.cov_c_w * cov_c_loss
+        if self.hparams.var_c_w > 0:
+            loss += self.hparams.var_c_w * var_c_loss
+        if self.hparams.cov_z_w > 0:
+            loss += self.hparams.cov_z_w * cov_z_loss
+        if self.hparams.var_z_w > 0:
+            loss += self.hparams.var_z_w * var_z_loss
 
         self.log('cpc_loss', cpc_loss, prog_bar=True)
-        self.log('cov_loss', cov_loss, prog_bar=True)
-        self.log('var_loss', var_loss, prog_bar=True)
+        self.log('cov_c_loss', cov_c_loss, prog_bar=True)
+        self.log('var_c_loss', var_c_loss, prog_bar=True)
+        self.log('cov_z_loss', cov_z_loss, prog_bar=True)
+        self.log('var_z_loss', var_z_loss, prog_bar=True)
         self.log('loss', loss)
 
         return loss
@@ -131,7 +140,7 @@ class StreamEncoder(pl.LightningModule):
             "hp/ce_cor": 0,
         })
 
-    def plot_xzc(self, x, z, c):
+    def plot_xzc(self, x, z, c, log=True):
         x = x[0, :500].detach().cpu().numpy()
         z = z[0, :500].detach().cpu().numpy()
         c = c[0, :500].detach().cpu().numpy()
@@ -145,7 +154,10 @@ class StreamEncoder(pl.LightningModule):
         axs[2].plot(c)
         axs[2].set_title('c signal')
         plt.suptitle('embedding signals')
-        self.logger.experiment.add_figure('Signals', fig, global_step=self.global_step)
+        if log:
+            self.logger.experiment.add_figure('Signals', fig, global_step=self.global_step)
+        else:
+            plt.show()
 
         # plot spectrum
         fig, axs = plt.subplots(3, 1, figsize=(12, 3 * 12 * x.shape[1] / x[0, :500].shape[0]))
@@ -155,21 +167,24 @@ class StreamEncoder(pl.LightningModule):
         axs[1].set_title('z spectrum')
         axs[2].imshow(c.T)
         axs[2].set_title('c spectrum')
-        self.logger.experiment.add_figure('Spectrum', fig, global_step=self.global_step)
+        if log:
+            self.logger.experiment.add_figure('Spectrum', fig, global_step=self.global_step)
+        else:
+            plt.show()
 
     def validation_step(self, batch, batch_idx):
         x, z, c = self.forward(batch[0])
 
         z = z - z.mean(dim=1, keepdim=True)
-        z = z / z.std(dim=1, keepdim=True)
+        z = z / (z.std(dim=1, keepdim=True) + 1e6)
         c = c - c.mean(dim=1, keepdim=True)
-        c = c / c.std(dim=1, keepdim=True)
+        c = c / (c.std(dim=1, keepdim=True) + 1e6)
 
-        m = (torch.bmm(x.transpose(1, 2), z) / x.size(1)).abs()
+        m = (torch.bmm(x.transpose(1, 2), z) / x.size(1)).abs()  # B, x, z
         self.log('hp/zf_cor', m.max(dim=2).values.mean())
         self.log('hp/ze_cor', m.max(dim=1).values.mean())
 
-        m = (torch.bmm(x.transpose(1, 2), c) / x.size(1)).abs()
+        m = (torch.bmm(x.transpose(1, 2), c) / x.size(1)).abs()  # B, x, c
         self.log('hp/cf_cor', m.max(dim=2).values.mean())
         self.log('hp/ce_cor', m.max(dim=1).values.mean())
 
@@ -185,15 +200,29 @@ class StreamEncoder(pl.LightningModule):
 
         return loss / self.hparams.predict_size, c
 
-    def cov_loss(self, x):
+    def cov_z_loss(self, x):
+        B, T, C = x.size()
+        x = self.reg_bn_z(x.reshape(B * T, C)).reshape(B, T, C)
+        m = torch.bmm(x.transpose(1, 2), x) / T  # B, C, C
+        off_diag_ix = (1 - torch.eye(C, device=x.device)).bool().view(-1)
+        loss = m.view(B, C * C)[:, off_diag_ix].pow(2).mean()
+        return loss
+
+    def var_z_loss(self, x):
+        B, T, C = x.size()
+        v = (torch.var(x, dim=1) + 1e-6).pow(0.5)
+        loss = torch.relu(self.hparams.var_gamma_z - v).mean()
+        return loss
+
+    def cov_c_loss(self, x):
         B, C = x.size()
-        x = self.reg_bn(x)
+        x = self.reg_bn_c(x)
         m = torch.mm(x.T, x) / B  # C, C
         off_diag_ix = (1 - torch.eye(C, device=x.device)).bool().view(-1)
         loss = m.view(C * C)[off_diag_ix].pow(2).mean()
         return loss
 
-    def var_loss(self, x):
+    def var_c_loss(self, x):
         v = (torch.var(x, dim=0) + 1e-6).pow(0.5)
-        loss = torch.relu(self.hparams.var_gamma - v).mean()
+        loss = torch.relu(self.hparams.var_gamma_c - v).mean()
         return loss
