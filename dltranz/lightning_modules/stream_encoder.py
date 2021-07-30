@@ -59,31 +59,6 @@ class StreamEncoder(pl.LightningModule):
         self.reg_bn_z = torch.nn.BatchNorm1d(z_channels, affine=False)
         self.reg_bn_c = torch.nn.BatchNorm1d(c_channels, affine=False)
 
-    def get_train_dataloader(self, data, batch_size, num_workers):
-        def gen_batches(data):
-            B, T, C = data.size()
-            sample_len = self.hparams.history_size + self.hparams.predict_size
-            for b in range(B):
-                for i in range(0, T - sample_len):
-                    yield data[b, i:i + sample_len]
-
-        all_batches = torch.stack(list(gen_batches(data)))
-
-        return torch.utils.data.DataLoader(
-            torch.utils.data.TensorDataset(all_batches),
-            shuffle=True,
-            batch_size=batch_size,
-            persistent_workers=True,
-            num_workers=num_workers,
-        )
-
-    def get_valid_dataloader(self, data, batch_size, num_workers):
-        return torch.utils.data.DataLoader(
-            torch.utils.data.TensorDataset(data),
-            batch_size=batch_size,
-            num_workers=num_workers,
-        )
-
     def configure_optimizers(self):
         optimisers = [torch.optim.Adam(self.parameters(),
                                        lr=self.hparams.lr,
@@ -123,17 +98,21 @@ class StreamEncoder(pl.LightningModule):
         if self.hparams.var_z_w > 0:
             loss += self.hparams.var_z_w * var_z_loss
 
-        self.log('cpc_loss', cpc_loss, prog_bar=True)
-        self.log('cov_c_loss', cov_c_loss, prog_bar=True)
-        self.log('var_c_loss', var_c_loss, prog_bar=True)
-        self.log('cov_z_loss', cov_z_loss, prog_bar=True)
-        self.log('var_z_loss', var_z_loss, prog_bar=True)
-        self.log('loss', loss)
+        self.log('loss/cpc', cpc_loss, prog_bar=True)
+        self.log('loss/cov_c', cov_c_loss, prog_bar=True)
+        self.log('loss/var_c', var_c_loss, prog_bar=True)
+        self.log('loss/cov_z', cov_z_loss, prog_bar=True)
+        self.log('loss/var_z', var_z_loss, prog_bar=True)
+        self.log('loss/loss', loss)
 
         return loss
 
     def on_train_start(self):
         self.logger.log_hyperparams(self.hparams, {
+            'hp/z_std': 0,
+            'hp/dtr': 0,
+            'hp/dtt': 0,
+            'hp/dlift': 0,
             "hp/zf_cor": 0,
             "hp/ze_cor": 0,
             "hp/cf_cor": 0,
@@ -175,10 +154,32 @@ class StreamEncoder(pl.LightningModule):
     def validation_step(self, batch, batch_idx):
         x, z, c = self.forward(batch[0])
 
+        z_std = z.std(dim=1).mean()
+
+        t = torch.randn(10000, 1).repeat(1, z.size(2)) * z_std
+        t = t[1:] - t[:-1]
+        dtr = t.pow(2).sum(dim=1).pow(0.5).mean()
+
+        history_size = self.hparams.history_size
+        dtt = 0.0
+        for i, l in enumerate(self.lin_predictors):
+            t = z[:, history_size + i:, :]
+
+            p = l(c[:, history_size : z.size(1) - i, :])
+            dtt += (p - t).pow(2).sum(dim=1).pow(0.5).mean()
+        dtt /= len(self.lin_predictors)
+
+        self.log('hp/z_std', z_std)
+        self.log('hp/dtr', dtr)
+        self.log('hp/dtt', dtt)
+        self.log('hp/dlift', (dtr - dtt) / (dtr + 1e-6))
+
+        x = x - x.mean(dim=1, keepdim=True)
+        x = x / (x.std(dim=1, keepdim=True) + 1e-6)
         z = z - z.mean(dim=1, keepdim=True)
-        z = z / (z.std(dim=1, keepdim=True) + 1e6)
+        z = z / (z.std(dim=1, keepdim=True) + 1e-6)
         c = c - c.mean(dim=1, keepdim=True)
-        c = c / (c.std(dim=1, keepdim=True) + 1e6)
+        c = c / (c.std(dim=1, keepdim=True) + 1e-6)
 
         m = (torch.bmm(x.transpose(1, 2), z) / x.size(1)).abs()  # B, x, z
         self.log('hp/zf_cor', m.max(dim=2).values.mean())
@@ -190,7 +191,7 @@ class StreamEncoder(pl.LightningModule):
 
     def cpc_loss(self, x, y):
         out, h = self.ar_rnn(x)
-        c = h[0]  # B, Hc
+        c = out[:, -1, :]  # B, Hc
 
         loss = 0.0
         for i, l in enumerate(self.lin_predictors):
@@ -226,3 +227,30 @@ class StreamEncoder(pl.LightningModule):
         v = (torch.var(x, dim=0) + 1e-6).pow(0.5)
         loss = torch.relu(self.hparams.var_gamma_c - v).mean()
         return loss
+
+
+def get_train_dataloader(se, data, batch_size, num_workers):
+    def gen_batches(data):
+        B, T, C = data.size()
+        sample_len = se.hparams.history_size + se.hparams.predict_size
+        for b in range(B):
+            for i in range(0, T - sample_len):
+                yield data[b, i:i + sample_len]
+
+    all_batches = torch.stack(list(gen_batches(data)))
+
+    return torch.utils.data.DataLoader(
+        torch.utils.data.TensorDataset(all_batches),
+        shuffle=True,
+        batch_size=batch_size,
+        persistent_workers=True,
+        num_workers=num_workers,
+    )
+
+
+def get_valid_dataloader(data, batch_size, num_workers):
+    return torch.utils.data.DataLoader(
+        torch.utils.data.TensorDataset(data),
+        batch_size=batch_size,
+        num_workers=num_workers,
+    )
