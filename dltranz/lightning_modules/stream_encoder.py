@@ -1,8 +1,8 @@
-import pickle
-import numpy as np
-import torch
-import pytorch_lightning as pl
 import matplotlib.pyplot as plt
+import numpy as np
+import pytorch_lightning as pl
+import torch
+from tqdm import tqdm
 
 
 class TBatchNorm(torch.nn.BatchNorm1d):
@@ -117,6 +117,8 @@ class StreamEncoder(pl.LightningModule):
             "hp/ze_cor": 0,
             "hp/cf_cor": 0,
             "hp/ce_cor": 0,
+            'hp/selfcorr_z': 0,
+            'hp/selfcorr_c': 0,
         })
 
     def plot_xzc(self, x, z, c, log=True):
@@ -156,7 +158,7 @@ class StreamEncoder(pl.LightningModule):
 
         z_std = z.std(dim=1).mean()
 
-        t = torch.randn(10000, 1).repeat(1, z.size(2)) * z_std
+        t = torch.randn(10000, 1, device=x.device).repeat(1, z.size(2)) * z_std
         t = t[1:] - t[:-1]
         dtr = t.pow(2).sum(dim=1).pow(0.5).mean()
 
@@ -166,7 +168,7 @@ class StreamEncoder(pl.LightningModule):
             t = z[:, history_size + i:, :]
 
             p = l(c[:, history_size : z.size(1) - i, :])
-            dtt += (p - t).pow(2).sum(dim=1).pow(0.5).mean()
+            dtt += (p - t).pow(2).sum(dim=2).pow(0.5).mean()
         dtt /= len(self.lin_predictors)
 
         self.log('hp/z_std', z_std)
@@ -188,6 +190,18 @@ class StreamEncoder(pl.LightningModule):
         m = (torch.bmm(x.transpose(1, 2), c) / x.size(1)).abs()  # B, x, c
         self.log('hp/cf_cor', m.max(dim=2).values.mean())
         self.log('hp/ce_cor', m.max(dim=1).values.mean())
+
+        m = (torch.bmm(z.transpose(1, 2), z) / z.size(1)).abs()  # B, z, z
+        Cz = m.size(1)
+        off_diag_ix = (1 - torch.eye(Cz, device=x.device)).bool().view(-1)
+        m = m.view(-1, Cz * Cz)[:, off_diag_ix].abs().mean()
+        self.log('hp/selfcorr_z', m)
+
+        m = (torch.bmm(c.transpose(1, 2), c) / c.size(1)).abs()  # B, z, z
+        Cc = m.size(1)
+        off_diag_ix = (1 - torch.eye(Cc, device=x.device)).bool().view(-1)
+        m = m.view(-1, Cc * Cc)[:, off_diag_ix].abs().mean()
+        self.log('hp/selfcorr_c', m)
 
     def cpc_loss(self, x, y):
         out, h = self.ar_rnn(x)
@@ -229,28 +243,85 @@ class StreamEncoder(pl.LightningModule):
         return loss
 
 
-def get_train_dataloader(se, data, batch_size, num_workers):
-    def gen_batches(data):
-        B, T, C = data.size()
-        sample_len = se.hparams.history_size + se.hparams.predict_size
-        for b in range(B):
-            for i in range(0, T - sample_len):
-                yield data[b, i:i + sample_len]
+class Loader3DTensor:
+    """Expected 3D tensor Batch x Time x Channels
+    Data should be normalized along Time axis for each individual sample in batch
+    """
+    def __init__(self, stream_encoder):
+        self.history_size = stream_encoder.hparams.history_size
+        self.predict_size = stream_encoder.hparams.predict_size
 
-    all_batches = torch.stack(list(gen_batches(data)))
+    def get_train_dataloader(self, data, batch_size, num_workers):
+        def gen_batches(data):
+            B, T, C = data.size()
+            sample_len = self.history_size + self.predict_size
+            for b in range(B):
+                for i in range(0, T - sample_len):
+                    yield data[b, i:i + sample_len]
 
-    return torch.utils.data.DataLoader(
-        torch.utils.data.TensorDataset(all_batches),
-        shuffle=True,
-        batch_size=batch_size,
-        persistent_workers=True,
-        num_workers=num_workers,
-    )
+        all_batches = torch.stack(list(gen_batches(data)))
+
+        return torch.utils.data.DataLoader(
+            torch.utils.data.TensorDataset(all_batches),
+            shuffle=True,
+            batch_size=batch_size,
+            persistent_workers=True,
+            num_workers=num_workers,
+        )
+
+    @staticmethod
+    def get_valid_dataloader(data, batch_size, num_workers):
+        return torch.utils.data.DataLoader(
+            torch.utils.data.TensorDataset(data),
+            batch_size=batch_size,
+            num_workers=num_workers,
+        )
 
 
-def get_valid_dataloader(data, batch_size, num_workers):
-    return torch.utils.data.DataLoader(
-        torch.utils.data.TensorDataset(data),
-        batch_size=batch_size,
-        num_workers=num_workers,
-    )
+class LoaderMultiIndexPandas:
+    """
+    Expected pandas dataframe vhere values is a features, and index is (region, date)
+    date is sorted and regular (with missing dates restored)
+    Data should be normalized along Time axis for each individual region
+    """
+    def __init__(self, stream_encoder):
+        self.history_size = stream_encoder.hparams.history_size
+        self.predict_size = stream_encoder.hparams.predict_size
+
+    def get_train_dataloader(self, data, batch_size, num_workers):
+        def gen_batches(data):
+            index_name = data.index.names[0]
+            sample_len = self.history_size + self.predict_size
+            for batch_ix in tqdm(data.reset_index(index_name)[index_name].drop_duplicates().values):
+                df = data.loc[batch_ix].values
+                T, C = df.shape
+                for i in range(0, T - sample_len):
+                    yield torch.from_numpy(df[i:i + sample_len].astype(np.float32))
+
+        all_batches = torch.stack(list(gen_batches(data)))
+
+        return torch.utils.data.DataLoader(
+            torch.utils.data.TensorDataset(all_batches),
+            shuffle=True,
+            batch_size=batch_size,
+            persistent_workers=False,
+            num_workers=num_workers,
+        )
+
+    @staticmethod
+    def get_valid_dataloader(data, batch_size, num_workers):
+        def gen_batches(data):
+            index_name = data.index.names[0]
+            for batch_ix in tqdm(data.reset_index(index_name)[index_name].drop_duplicates().values):
+                df = data.loc[batch_ix].values
+                yield torch.from_numpy(df.astype(np.float32))
+
+        all_batches = list(gen_batches(data))
+        all_lenghts = [len(t) for t in all_batches]
+        all_batches = torch.nn.utils.rnn.pad_sequence(all_batches, batch_first=True)
+
+        return torch.utils.data.DataLoader(
+            torch.utils.data.TensorDataset(all_batches),
+            batch_size=batch_size,
+            num_workers=num_workers,
+        ), all_lenghts
