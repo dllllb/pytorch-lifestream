@@ -25,7 +25,7 @@ class InputNorm(torch.nn.Module):
 
 class StreamEncoder(pl.LightningModule):
     def __init__(self,
-                 history_size, predict_size,
+                 history_size, predict_size, predict_lag,
                  in_channels, clip_range,
                  h_channels, p_dropout, z_channels,
                  c_channels,
@@ -54,7 +54,7 @@ class StreamEncoder(pl.LightningModule):
         )
 
         self.lin_predictors_c2p = torch.nn.ModuleList([
-            torch.nn.Linear(c_channels, z_channels) for _ in range(predict_size)
+            torch.nn.Linear(c_channels, z_channels) for _ in range(predict_lag, predict_size)
         ])
 
         self.reg_bn_z = torch.nn.BatchNorm1d(z_channels, affine=False)
@@ -136,12 +136,13 @@ class StreamEncoder(pl.LightningModule):
         dtr = t.pow(2).sum(dim=1).pow(0.5).mean()
 
         history_size = self.hparams.history_size
+        predict_lag = self.hparams.predict_lag
         dtt = 0.0
         r2_score = 0
         for i, l in enumerate(self.lin_predictors_c2p):
-            t = z[:, history_size + i:, :]
+            t = z[:, history_size + (predict_lag + i):, :]
 
-            p = l(c[:, history_size : z.size(1) - i, :])
+            p = l(c[:, history_size : z.size(1) - (predict_lag + i), :])
             dtt += (p - t).pow(2).sum(dim=2).pow(0.5).mean()
 
             r2_s = torch.where(
@@ -193,7 +194,7 @@ class StreamEncoder(pl.LightningModule):
         loss = 0.0
         for i, l in enumerate(self.lin_predictors_c2p):
             p = l(c)
-            t = y[:, i]
+            t = y[:, self.hparams.predict_lag + i]
             loss += (p - t).pow(2).sum(dim=1).mean()
 
         return loss / self.hparams.predict_size, c
