@@ -10,44 +10,53 @@ class TBatchNorm(torch.nn.BatchNorm1d):
         return super().forward(x.view(B * T, C)).view(B, T, C)
 
 
-class InputNorm(torch.nn.Module):
-    def __init__(self, num_channels, clip_range):
+class TDropout(torch.nn.Module):
+    def __init__(self, p, one_for_batch=False):
         super().__init__()
-        self.bn = TBatchNorm(num_channels)
+        self.p = p
+        self.one_for_batch = one_for_batch
+
+    def forward(self, x):
+        if not self.training:
+            return x
+        if self.p > 0:
+            B = 1 if self.one_for_batch else x.size(0)
+            x_mask = torch.bernoulli(torch.ones(B, 1, x.size(2), device=x.device) * self.p)
+            x_mask /= 1 - self.p
+            x = x * x_mask
+        return x
+
+
+class ClipRange(torch.nn.Module):
+    def __init__(self, clip_range):
+        super().__init__()
         self.clip_range = clip_range
 
     def forward(self, x):
-        B, T, C = x.size()
-        x = self.bn(x)
         x = torch.clamp(x, *self.clip_range)
         return x
 
 
+class DummyLayer(torch.nn.Module):
+    def forward(self, x):
+        return x
+
+
 class StreamEncoder(pl.LightningModule):
-    def __init__(self,
+    def __init__(self, encoder_x2z,
                  history_size, predict_size, predict_lag,
-                 in_channels, clip_range,
-                 h_channels, p_dropout, z_channels,
-                 c_channels,
+                 z_channels, c_channels,
                  var_gamma_z, var_gamma_c,
                  lr, weight_decay, step_size, gamma,
                  cpc_w, cov_z_w, var_z_w, cov_c_w, var_c_w,
                  ):
         super().__init__()
 
-        self.save_hyperparameters()
+        self.save_hyperparameters()  # ignore='encoder_x2z'
 
-        self.input_norm = InputNorm(in_channels, clip_range)
+        self.encoder_x2z = encoder_x2z
 
-        self.encoder_x2z = torch.nn.Sequential(
-            torch.nn.Linear(in_channels, h_channels),
-            TBatchNorm(h_channels),
-            torch.nn.ReLU(),
-            torch.nn.Dropout(p_dropout),
-            torch.nn.Linear(h_channels, z_channels),
-        )
-
-        self.ar_rnn_z2c = torch.nn.GRU(
+        self.ar_rnn_z2c = torch.nn.RNN(
             input_size=z_channels,
             hidden_size=c_channels,
             batch_first=True,
@@ -71,13 +80,12 @@ class StreamEncoder(pl.LightningModule):
         return optimisers, schedulers
 
     def forward(self, x):
-        x = self.input_norm(x)
         z = self.encoder_x2z(x)
         c, h = self.ar_rnn_z2c(z)
-        return x, z, c
+        return z, c
 
     def training_step(self, batch, batch_idx):
-        x = self.input_norm(batch[0])
+        x = batch[0]
         z = self.encoder_x2z(x)
 
         zx, zy = z[:, :self.hparams.history_size], z[:, self.hparams.history_size:]
@@ -127,11 +135,12 @@ class StreamEncoder(pl.LightningModule):
         })
 
     def validation_step(self, batch, batch_idx):
-        x, z, c = self.forward(batch[0])
+        x = batch[0]
+        z, c = self.forward(x)
 
         z_std = z.std(dim=1).mean()
 
-        t = torch.randn(10000, 1, device=x.device).repeat(1, z.size(2)) * z_std
+        t = torch.randn(10000, 1, device=z.device).repeat(1, z.size(2)) * z_std
         t = t[1:] - t[:-1]
         dtr = t.pow(2).sum(dim=1).pow(0.5).mean()
 
@@ -142,7 +151,7 @@ class StreamEncoder(pl.LightningModule):
         for i, l in enumerate(self.lin_predictors_c2p):
             t = z[:, history_size + (predict_lag + i):, :]
 
-            p = l(c[:, history_size : z.size(1) - (predict_lag + i), :])
+            p = l(c[:, history_size - 1 : z.size(1) - (predict_lag + i + 1), :])
             dtt += (p - t).pow(2).sum(dim=2).pow(0.5).mean()
 
             r2_s = torch.where(
@@ -175,16 +184,16 @@ class StreamEncoder(pl.LightningModule):
         mz = (torch.bmm(z.transpose(1, 2), z) / z.size(1)).abs()  # B, z, z
         Cz = mz.size(1)
         off_diag_ix = (1 - torch.eye(Cz, device=x.device)).bool().view(-1)
-        m = mz.view(-1, Cz * Cz)[:, off_diag_ix].mean()
-        self.log('hp/z_self_corr', m)
+        m = mz.view(-1, Cz * Cz)[:, off_diag_ix]
+        self.log('hp/z_self_corr', 0.0 if Cz == 1 else m.mean())
         self.log('hp/z_unique_features', 1 / (mz.mean() + 1e-3))
         self.log('hp/cpc_pow', cpc_r2 / (mz.mean() + 1e-3))
 
         mc = (torch.bmm(c.transpose(1, 2), c) / c.size(1)).abs()  # B, z, z
         Cc = mc.size(1)
         off_diag_ix = (1 - torch.eye(Cc, device=x.device)).bool().view(-1)
-        m = mc.view(-1, Cc * Cc)[:, off_diag_ix].mean()
-        self.log('hp/c_self_corr', m)
+        m = mc.view(-1, Cc * Cc)[:, off_diag_ix]
+        self.log('hp/c_self_corr', 0.0 if Cz == 1 else m.mean())
         self.log('hp/c_unique_features', 1 / (mc.mean() + 1e-3))
 
     def cpc_loss(self, x, y):
@@ -201,6 +210,8 @@ class StreamEncoder(pl.LightningModule):
 
     def cov_z_loss(self, x):
         B, T, C = x.size()
+        if C == 1:
+            return torch.zeros(1, dtype=x.dtype, device=x.device).mean()
         x = self.reg_bn_z(x.reshape(B * T, C)).reshape(B, T, C)
         m = torch.bmm(x.transpose(1, 2), x) / T  # B, C, C
         off_diag_ix = (1 - torch.eye(C, device=x.device)).bool().view(-1)
@@ -215,6 +226,8 @@ class StreamEncoder(pl.LightningModule):
 
     def cov_c_loss(self, x):
         B, C = x.size()
+        if C == 1:
+            return torch.zeros(1, dtype=x.dtype, device=x.device).mean()
         x = self.reg_bn_c(x)
         m = torch.mm(x.T, x) / B  # C, C
         off_diag_ix = (1 - torch.eye(C, device=x.device)).bool().view(-1)
