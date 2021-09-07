@@ -44,7 +44,7 @@ class DummyLayer(torch.nn.Module):
 
 class StreamEncoder(pl.LightningModule):
     def __init__(self, encoder_x2z,
-                 history_size, predict_size, predict_lag,
+                 history_size, predict_range,
                  z_channels, c_channels,
                  var_gamma_z, var_gamma_c,
                  lr, weight_decay, step_size, gamma,
@@ -63,7 +63,7 @@ class StreamEncoder(pl.LightningModule):
         )
 
         self.lin_predictors_c2p = torch.nn.ModuleList([
-            torch.nn.Linear(c_channels, z_channels) for _ in range(predict_lag, predict_size)
+            torch.nn.Linear(c_channels, z_channels) for _ in predict_range
         ])
 
         self.reg_bn_z = torch.nn.BatchNorm1d(z_channels, affine=False)
@@ -124,10 +124,10 @@ class StreamEncoder(pl.LightningModule):
             'hp/cpc_d_lift': 0,
             'hp/cpc_r2': 0,
             'hp/cpc_pow': 0,
-            "hp/zf_cor": 0,
-            "hp/ze_cor": 0,
-            "hp/cf_cor": 0,
-            "hp/ce_cor": 0,
+            # "hp/zf_cor": 0,
+            # "hp/ze_cor": 0,
+            # "hp/cf_cor": 0,
+            # "hp/ce_cor": 0,
             'hp/z_self_corr': 0,
             'hp/z_unique_features': 0,
             'hp/c_self_corr': 0,
@@ -145,13 +145,12 @@ class StreamEncoder(pl.LightningModule):
         dtr = t.pow(2).sum(dim=1).pow(0.5).mean()
 
         history_size = self.hparams.history_size
-        predict_lag = self.hparams.predict_lag
         dtt = 0.0
         r2_score = 0
-        for i, l in enumerate(self.lin_predictors_c2p):
-            t = z[:, history_size + (predict_lag + i):, :]
+        for i, l in zip(self.hparams.predict_range, self.lin_predictors_c2p):
+            t = z[:, history_size + i:, :]
 
-            p = l(c[:, history_size - 1 : z.size(1) - (predict_lag + i + 1), :])
+            p = l(c[:, history_size - 1 : z.size(1) - (i + 1), :])
             dtt += (p - t).pow(2).sum(dim=2).pow(0.5).mean()
 
             r2_s = torch.where(
@@ -173,13 +172,13 @@ class StreamEncoder(pl.LightningModule):
         z = (z - z.mean(dim=1, keepdim=True)) / (z.std(dim=1, keepdim=True) + 1e-6)
         c = (c - c.mean(dim=1, keepdim=True)) / (c.std(dim=1, keepdim=True) + 1e-6)
 
-        m = (torch.bmm(x.transpose(1, 2), z) / x.size(1)).abs()  # B, x, z
-        self.log('hp/zf_cor', m.max(dim=2).values.mean())
-        self.log('hp/ze_cor', m.max(dim=1).values.mean())
-
-        m = (torch.bmm(x.transpose(1, 2), c) / x.size(1)).abs()  # B, x, c
-        self.log('hp/cf_cor', m.max(dim=2).values.mean())
-        self.log('hp/ce_cor', m.max(dim=1).values.mean())
+        # m = (torch.bmm(x.transpose(1, 2), z) / x.size(1)).abs()  # B, x, z
+        # self.log('hp/zf_cor', m.max(dim=2).values.mean())
+        # self.log('hp/ze_cor', m.max(dim=1).values.mean())
+        #
+        # m = (torch.bmm(x.transpose(1, 2), c) / x.size(1)).abs()  # B, x, c
+        # self.log('hp/cf_cor', m.max(dim=2).values.mean())
+        # self.log('hp/ce_cor', m.max(dim=1).values.mean())
 
         mz = (torch.bmm(z.transpose(1, 2), z) / z.size(1)).abs()  # B, z, z
         Cz = mz.size(1)
@@ -201,12 +200,12 @@ class StreamEncoder(pl.LightningModule):
         c = out[:, -1, :]  # B, Hc
 
         loss = 0.0
-        for i, l in enumerate(self.lin_predictors_c2p):
+        for i, l in zip(self.hparams.predict_range, self.lin_predictors_c2p):
             p = l(c)
-            t = y[:, self.hparams.predict_lag + i]
+            t = y[:, i]
             loss += (p - t).pow(2).sum(dim=1).mean()
 
-        return loss / self.hparams.predict_size, c
+        return loss / len(self.lin_predictors_c2p), c
 
     def cov_z_loss(self, x):
         B, T, C = x.size()
@@ -246,14 +245,14 @@ class Loader3DTensor:
     """
     def __init__(self, stream_encoder):
         self.history_size = stream_encoder.hparams.history_size
-        self.predict_size = stream_encoder.hparams.predict_size
+        self.predict_size = max(stream_encoder.hparams.predict_range) + 1
 
     def get_train_dataloader(self, data, batch_size, num_workers):
         def gen_batches(data):
             B, T, C = data.size()
             sample_len = self.history_size + self.predict_size
-            for b in range(B):
-                for i in range(0, T - sample_len):
+            for b in tqdm(range(B)):
+                for i in tqdm(range(0, T - sample_len)):
                     yield data[b, i:i + sample_len]
 
         all_batches = torch.stack(list(gen_batches(data)))
@@ -283,7 +282,7 @@ class LoaderMultiIndexPandas:
     """
     def __init__(self, stream_encoder):
         self.history_size = stream_encoder.hparams.history_size
-        self.predict_size = stream_encoder.hparams.predict_size
+        self.predict_size = max(stream_encoder.hparams.predict_range) + 1
 
     def get_train_dataloader(self, data, batch_size, num_workers):
         def gen_batches(data):
