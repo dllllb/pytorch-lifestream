@@ -44,7 +44,7 @@ class DummyLayer(torch.nn.Module):
 
 class StreamEncoder(pl.LightningModule):
     def __init__(self, encoder_x2z,
-                 history_size, predict_range,
+                 history_size, predict_range, predict_w,
                  z_channels, c_channels,
                  var_gamma_z, var_gamma_c,
                  lr, weight_decay, step_size, gamma,
@@ -56,7 +56,7 @@ class StreamEncoder(pl.LightningModule):
 
         self.encoder_x2z = encoder_x2z
 
-        self.ar_rnn_z2c = torch.nn.RNN(
+        self.ar_rnn_z2c = torch.nn.GRU(
             input_size=z_channels,
             hidden_size=c_channels,
             batch_first=True,
@@ -70,7 +70,7 @@ class StreamEncoder(pl.LightningModule):
         self.reg_bn_c = torch.nn.BatchNorm1d(c_channels, affine=False)
 
     def configure_optimizers(self):
-        optimisers = [torch.optim.Adam(self.parameters(),
+        optimisers = [torch.optim.RMSprop(self.parameters(),
                                        lr=self.hparams.lr,
                                        weight_decay=self.hparams.weight_decay,
                                        )]
@@ -108,10 +108,10 @@ class StreamEncoder(pl.LightningModule):
             loss += self.hparams.var_z_w * var_z_loss
 
         self.log('loss/cpc', cpc_loss, prog_bar=True)
-        self.log('loss/c_cov', cov_c_loss, prog_bar=True)
-        self.log('loss/c_var', var_c_loss, prog_bar=True)
-        self.log('loss/z_cov', cov_z_loss, prog_bar=True)
-        self.log('loss/z_var', var_z_loss, prog_bar=True)
+        self.log('loss/c_cov', cov_c_loss, prog_bar=False)
+        self.log('loss/c_var', var_c_loss, prog_bar=False)
+        self.log('loss/z_cov', cov_z_loss, prog_bar=False)
+        self.log('loss/z_var', var_z_loss, prog_bar=False)
         self.log('loss/loss', loss)
 
         return loss
@@ -147,7 +147,7 @@ class StreamEncoder(pl.LightningModule):
         history_size = self.hparams.history_size
         dtt = 0.0
         r2_score = 0
-        for i, l in zip(self.hparams.predict_range, self.lin_predictors_c2p):
+        for i, w, l in zip(self.hparams.predict_range, self.hparams.predict_w, self.lin_predictors_c2p):
             t = z[:, history_size + i:, :]
 
             p = l(c[:, history_size - 1 : z.size(1) - (i + 1), :])
@@ -158,15 +158,16 @@ class StreamEncoder(pl.LightningModule):
                 1 - (p - t).pow(2).mean(dim=1) / t.var(dim=1),
                 torch.tensor([0.0], device=x.device),
             )
-            r2_score += r2_s.mean()
+            self.log(f'r2/horizon_{i:03d}', r2_s.mean())
+            r2_score += r2_s.mean() * w
         dtt /= len(self.lin_predictors_c2p)
-        cpc_r2 = r2_score / len(self.lin_predictors_c2p)
+        cpc_r2 = r2_score
 
         self.log('hp/z_std', z_std)
         self.log('hp/cpc_dtr', dtr)
         self.log('hp/cpc_dtt', dtt)
         self.log('hp/cpc_d_lift', (dtr - dtt) / (dtr + 1e-6))
-        self.log('hp/cpc_r2', cpc_r2)
+        self.log('hp/cpc_r2', cpc_r2, prog_bar=True)
 
         x = (x - x.mean(dim=1, keepdim=True)) / (x.std(dim=1, keepdim=True) + 1e-6)
         z = (z - z.mean(dim=1, keepdim=True)) / (z.std(dim=1, keepdim=True) + 1e-6)
@@ -185,7 +186,7 @@ class StreamEncoder(pl.LightningModule):
         off_diag_ix = (1 - torch.eye(Cz, device=x.device)).bool().view(-1)
         m = mz.view(-1, Cz * Cz)[:, off_diag_ix]
         self.log('hp/z_self_corr', 0.0 if Cz == 1 else m.mean())
-        self.log('hp/z_unique_features', 1 / (mz.mean() + 1e-3))
+        self.log('hp/z_unique_features', 1 / (mz.mean() + 1e-3), prog_bar=True)
         self.log('hp/cpc_pow', cpc_r2 / (mz.mean() + 1e-3))
 
         mc = (torch.bmm(c.transpose(1, 2), c) / c.size(1)).abs()  # B, z, z
@@ -200,12 +201,12 @@ class StreamEncoder(pl.LightningModule):
         c = out[:, -1, :]  # B, Hc
 
         loss = 0.0
-        for i, l in zip(self.hparams.predict_range, self.lin_predictors_c2p):
+        for i, w, l in zip(self.hparams.predict_range, self.hparams.predict_w, self.lin_predictors_c2p):
             p = l(c)
             t = y[:, i]
-            loss += (p - t).pow(2).sum(dim=1).mean()
+            loss += (p - t).pow(2).sum(dim=1).mean() * w
 
-        return loss / len(self.lin_predictors_c2p), c
+        return loss, c
 
     def cov_z_loss(self, x):
         B, T, C = x.size()
@@ -247,10 +248,10 @@ class Loader3DTensor:
         self.history_size = stream_encoder.hparams.history_size
         self.predict_size = max(stream_encoder.hparams.predict_range) + 1
 
-    def get_train_dataloader(self, data, batch_size, num_workers):
+    def get_train_dataloader(self, data, batch_size, num_workers, compress_factor=1):
         def gen_batches(data):
             B, T, C = data.size()
-            sample_len = self.history_size + self.predict_size
+            sample_len = (self.history_size + self.predict_size) * compress_factor
             for b in tqdm(range(B)):
                 for i in tqdm(range(0, T - sample_len)):
                     yield data[b, i:i + sample_len]
@@ -284,10 +285,10 @@ class LoaderMultiIndexPandas:
         self.history_size = stream_encoder.hparams.history_size
         self.predict_size = max(stream_encoder.hparams.predict_range) + 1
 
-    def get_train_dataloader(self, data, batch_size, num_workers):
+    def get_train_dataloader(self, data, batch_size, num_workers, compress_factor=1):
         def gen_batches(data):
             index_name = data.index.names[0]
-            sample_len = self.history_size + self.predict_size
+            sample_len = (self.history_size + self.predict_size) * compress_factor
             for batch_ix in tqdm(data.reset_index(index_name)[index_name].drop_duplicates().values):
                 df = data.loc[batch_ix].values
                 T, C = df.shape
