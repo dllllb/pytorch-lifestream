@@ -239,6 +239,22 @@ class StreamEncoder(pl.LightningModule):
         loss = torch.relu(self.hparams.var_gamma_c - v).mean()
         return loss
 
+class Dataset3DTensor(torch.utils.data.Dataset):
+    def __init__(self, data, sample_len):
+        super().__init__()
+
+        self.data = data
+        self.sample_len = sample_len
+        self.start_pos_available = data.size(1) - sample_len + 1
+
+    def __len__(self):
+        return self.data.size(0) * self.start_pos_available
+
+    def __getitem__(self, item):
+        b = item // self.start_pos_available
+        p = item % self.start_pos_available
+        return self.data[b, p + torch.arange(self.sample_len)],
+
 
 class Loader3DTensor:
     """Expected 3D tensor Batch x Time x Channels
@@ -249,18 +265,13 @@ class Loader3DTensor:
         self.predict_size = max(stream_encoder.hparams.predict_range) + 1
 
     def get_train_dataloader(self, data, batch_size, num_workers, compress_factor=1):
-        def gen_batches(data):
-            B, T, C = data.size()
-            sample_len = (self.history_size + self.predict_size) * compress_factor
-            for b in tqdm(range(B)):
-                for i in tqdm(range(0, T - sample_len)):
-                    yield data[b, i:i + sample_len]
-
-        all_batches = torch.stack(list(gen_batches(data)))
+        sample_len = (self.history_size + self.predict_size) * compress_factor
 
         return torch.utils.data.DataLoader(
-            torch.utils.data.TensorDataset(all_batches),
+            # torch.utils.data.TensorDataset(data[ix_b, ix_p + torch.arange(sample_len).view(1, -1)]),
+            Dataset3DTensor(data, sample_len),
             shuffle=True,
+            drop_last=bool((data.size(1) - sample_len + 1) % batch_size <= 1),
             batch_size=batch_size,
             persistent_workers=True,
             num_workers=num_workers,
