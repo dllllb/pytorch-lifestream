@@ -168,13 +168,13 @@ class EmbedderNetwork(nn.Module):
 
 
 class DistributionTargetHead(torch.nn.Module):
-    def __init__(self, in_size=256, num_distr_classes=6, pos=True, neg=True):
+    def __init__(self, in_size=256, num_distr_classes_pos=4, num_distr_classes_neg=14, pos=True, neg=True):
         super().__init__()
         self.pos, self.neg = pos, neg
         self.dense1 = torch.nn.Linear(in_size, 128)
 
-        self.dense2_neg = torch.nn.Linear(128, num_distr_classes) if self.neg else None
-        self.dense2_pos = torch.nn.Linear(128, num_distr_classes) if self.pos else None
+        self.dense2_neg = torch.nn.Linear(128, num_distr_classes_neg) if self.neg else None
+        self.dense2_pos = torch.nn.Linear(128, num_distr_classes_pos) if self.pos else None
 
         self.sigmoid = torch.nn.Sigmoid()
         self.relu = torch.nn.ReLU()
@@ -230,13 +230,13 @@ class RegressionTargetHead(torch.nn.Module):
 
 
 class CombinedTargetHeadFromRnn(torch.nn.Module):
-    def __init__(self, in_size=48, num_distr_classes=6, pos=True, neg=True, use_gates=True, pass_samples=True):
+    def __init__(self, in_size=48, num_distr_classes_pos=4, num_distr_classes_neg=14, pos=True, neg=True, use_gates=True, pass_samples=True):
         super().__init__()
 
         self.pos, self.neg = pos, neg
         self.use_gates = use_gates
         self.dense = torch.nn.Linear(in_size, 256)
-        self.distribution = DistributionTargetHead(256, num_distr_classes, pos, neg)
+        self.distribution = DistributionTargetHead(256, num_distr_classes_pos, num_distr_classes_neg, pos, neg)
         self.regr_sums = RegressionTargetHead(256, False, pos, neg, pass_samples)
         self.regr_gates = RegressionTargetHead(256, True, pos, neg, pass_samples) if self.use_gates else None
 
