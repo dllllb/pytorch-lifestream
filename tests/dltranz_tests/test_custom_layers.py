@@ -79,7 +79,8 @@ def test_embedding_generator():
 def test_distribution_target_head():
     distr_target_head_config = {
         "in_size": 48,
-        "num_distr_classes": 6,
+        "num_distr_classes_pos": 4,
+        "num_distr_classes_neg": 14,
         'use_gates': False,
         'pass_samples': False
     }
@@ -90,4 +91,4 @@ def test_distribution_target_head():
     y = distr_target_head(x)
     assert type(y) == dict and len(y) == 4
     assert y['neg_sum'].shape == y['pos_sum'].shape == (64, 1) and \
-                    y['neg_distribution'].shape == y['pos_distribution'].shape == (64, 6)
+                    y['neg_distribution'].shape == (64, 14) and y['pos_distribution'].shape == (64, 4)
