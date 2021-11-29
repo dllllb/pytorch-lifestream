@@ -13,13 +13,13 @@ from dltranz.data_load.iterable_processing.feature_filter import FeatureFilter
 from dltranz.data_load.iterable_processing.target_extractor import TargetExtractor
 from dltranz.data_load.parquet_dataset import ParquetDataset, ParquetFiles
 from dltranz.metric_learn.inference_tools import save_scores
-from dltranz.train import score_model2
+from dltranz.train import score_model
 from dltranz.util import get_conf, get_cls
 
 logger = logging.getLogger(__name__)
 
 
-def create_inference_dataloader(conf, pl_module, ):
+def create_inference_dataloader(conf, pl_module):
     """This is inference dataloader for `experiments`
     """
     post_processing = IterableChain(
@@ -30,20 +30,13 @@ def create_inference_dataloader(conf, pl_module, ):
             SeqLenLimit(**conf['SeqLenLimit']),
         )
     )
-        data_path = conf['dataset_parts']['data_path']
-        data_files = PartitionedDataFiles(**conf['dataset_parts'])
-        dataset = PartitionedDataset(
-            data_files.data_path, data_files.dt_parts, list(map(lambda h_name: data_path + h_name, glob.glob(data_path))), col_id=conf['col_id'],
+    l_dataset = [
+        ParquetDataset(
+            ParquetFiles(path).data_files,
             post_processing=post_processing,
-            shuffle_files=True if self._type == 'iterable' else False,
-        )
-#     l_dataset = [
-#         ParquetDataset(
-#             ParquetFiles(path).data_files,
-#             post_processing=post_processing,
-#             shuffle_files=False,
-#         ) for path in conf['dataset_files']]
-#     dataset = ChainDataset(l_dataset)
+            shuffle_files=False,
+        ) for path in conf['dataset_files']]
+    dataset = ChainDataset(l_dataset)
     return DataLoader(
         dataset=dataset,
         collate_fn=padded_collate,
@@ -69,7 +62,7 @@ def main(args=None):
 
     dl = create_inference_dataloader(conf['inference_dataloader'], model)
 
-    pred, ids = score_model2(model, dl, conf['params'])
+    pred, ids = score_model(model, dl, conf['params'])
 
     df_scores_cols = [f'v{i:003d}' for i in range(pred.shape[1])]
     col_id = conf['inference_dataloader.col_id']

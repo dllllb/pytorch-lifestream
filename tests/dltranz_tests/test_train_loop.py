@@ -4,10 +4,9 @@ from pyhocon import ConfigFactory
 from sklearn.metrics import roc_auc_score
 
 from dltranz.data_load import create_validation_loader, TrxDataset
-from dltranz.experiment import run_experiment
 from dltranz.models import rnn_model
 from .test_data_load import gen_trx_data
-from dltranz.train import score_model, score_model2
+from dltranz.train import score_model, score_model
 
 
 def tst_params():
@@ -127,13 +126,6 @@ def tst_loaders():
     return train_ds, valid_ds
 
 
-def test_train_loop_rnn():
-    params = tst_params()
-    train_ds, valid_ds = tst_loaders()
-    res = run_experiment(train_ds, valid_ds, {'params': params}, rnn_model)
-    print(res)
-
-
 def test_score_model():
     params = tst_params()
 
@@ -141,7 +133,7 @@ def test_score_model():
     valid_loader = create_validation_loader(TrxDataset(test_data), params['valid'])
 
     pred, true = score_model(rnn_model(params), valid_loader, params)
-    print(roc_auc_score(pred, true))
+    print(roc_auc_score(true, pred))
 
 
 def test_score_model_mult1():
@@ -150,7 +142,7 @@ def test_score_model_mult1():
     test_data = gen_trx_data((torch.rand(1000)*60+1).long())
     valid_loader = create_validation_loader(TrxDataset(test_data), params['valid'])
 
-    pred, true = score_model2(rnn_model(params), valid_loader, params)
+    pred, true = score_model(rnn_model(params), valid_loader, params)
     print(roc_auc_score(true, pred))
 
 
@@ -162,31 +154,10 @@ def test_score_model_mult2():
         (torch.rand(1, 16), np.arange(1), np.arange(1).astype(str)),
     ]
 
-    pred, id1, id2 = score_model2(model, valid_loader, {'device': 'cpu'})
+    pred, id1, id2 = score_model(model, valid_loader, {'device': 'cpu'})
     assert pred.shape == (7, 2)
     assert id1.shape == (7,)
     assert id2.shape == (7,)
 
     np.testing.assert_array_almost_equal(id1, np.array([0, 1, 2, 3, 0, 1, 0]))
     assert id2.tolist() == ['0', '1', '2', '3', '0', '1', '0']
-
-
-def test_train_loop_skip_rnn():
-    params = tst_params_skip_rnn()
-    train_ds, valid_ds = tst_loaders()
-    res = run_experiment(train_ds, valid_ds, {'params': params}, rnn_model)
-    print(res)
-
-
-def test_train_loop_transf():
-    params = tst_params_transf()
-    train_ds, valid_ds = tst_loaders()
-    res = run_experiment(train_ds, valid_ds, {'params': params}, rnn_model)
-    print(res)
-
-
-def test_train_loop_swa():
-    params = tst_params_swa()
-    train_ds, valid_ds = tst_loaders()
-    res = run_experiment(train_ds, valid_ds, {'params': params}, rnn_model)
-    print(res)

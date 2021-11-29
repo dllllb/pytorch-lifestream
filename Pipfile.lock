@@ -179,15 +179,6 @@
             "markers": "python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3, 3.4'",
             "version": "==0.17.1"
         },
-        "fastai": {
-            "hashes": [
-                "sha256:25dddc5c8503302095bc13886ac82870d13628e2d05b2b5fa37aefc81873fbde",
-                "sha256:29f15c10f242cbdf9686403c78161379e29fea060c811a5377624c413aade146"
-            ],
-            "index": "pypi",
-            "markers": "sys_platform != 'darwin'",
-            "version": "==2.4.1"
-        },
         "fastcore": {
             "hashes": [
                 "sha256:084ff680813f09cc85883b05bb616bdee09d214245840c6fb52fb16c71b1aced",
@@ -847,15 +838,6 @@
             ],
             "markers": "python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3'",
             "version": "==2.8.2"
-        },
-        "pytorch-ignite": {
-            "hashes": [
-                "sha256:4afa06ace01a1c8918db1770364e7a0bbb1fdd77240c068727d882bc984aeaf4",
-                "sha256:88ef5d7d082212699720f3700a7ca2af550b7b424a4ea7ed4b6d91a24fc42e1e",
-                "sha256:d39b736b2b2d1c1d2ca7221a61bc141a142e40b1f1a4f469b02a99f918a1d4c5"
-            ],
-            "index": "pypi",
-            "version": "==0.4.0.post1"
         },
         "pytorch-lifestream": {
             "editable": true,
@@ -1572,6 +1554,10 @@
             ],
             "markers": "python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3, 3.4'",
             "version": "==0.7.1"
+        },
+        "embeddings-validation": {
+            "path": "embeddings_validation_src/.",
+            "version": "==0.0.1"
         },
         "entrypoints": {
             "hashes": [

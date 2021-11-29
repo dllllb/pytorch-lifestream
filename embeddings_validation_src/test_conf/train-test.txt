@@ -1,0 +1,190 @@
+------------------------------------------------------------------------------------------------------------------------
+Vector testing report
+Params:
+    conf: "test_conf/train-test.hocon"
+
+Collected 62 files with 0 errors
+
+------------------------------------------------------------------------------------------------------------------------
+Metric: "auroc"
+                                     scores_train                                        scores_valid                                        scores_test                                       
+                                             mean  t_pm                           values         mean  t_pm                           values        mean  t_pm                           values
+model_name     feature_name                                                                                                                                                                    
+fit_finetuning mles and transactions          nan   nan                    [nan nan nan]        0.803 0.038              [0.820 0.800 0.790]       0.827 0.038              [0.830 0.840 0.810]
+fit_target     raw_transactions               nan   nan                    [nan nan nan]        0.790 0.025              [0.800 0.790 0.780]       0.817 0.014              [0.810 0.820 0.820]
+lgbm           01_baseline                  0.961 0.000  [0.961 0.961 0.961 0.961 0.961]        0.708 0.000  [0.708 0.708 0.708 0.708 0.708]       0.724 0.000  [0.724 0.724 0.724 0.724 0.724]
+               01_baseline_50               1.000 0.000  [1.000 1.000 1.000 1.000 1.000]        0.665 0.000  [0.665 0.665 0.665 0.665 0.665]       0.682 0.000  [0.682 0.682 0.682 0.682 0.682]
+               02_embeddings                0.987 0.000  [0.987 0.987 0.987 0.987 0.987]        0.834 0.000  [0.834 0.834 0.834 0.834 0.834]       0.829 0.000  [0.829 0.829 0.829 0.829 0.829]
+               03_both                      0.997 0.000  [0.997 0.997 0.997 0.997 0.997]        0.916 0.000  [0.916 0.916 0.916 0.916 0.916]       0.903 0.000  [0.903 0.903 0.903 0.903 0.903]
+linear         01_baseline                  0.759 0.000  [0.759 0.759 0.759 0.759 0.759]        0.731 0.000  [0.731 0.731 0.731 0.731 0.731]       0.746 0.000  [0.746 0.746 0.746 0.746 0.746]
+               01_baseline_50               0.756 0.000  [0.756 0.756 0.756 0.756 0.756]        0.720 0.000  [0.720 0.720 0.720 0.720 0.720]       0.731 0.000  [0.731 0.731 0.731 0.731 0.731]
+               02_embeddings                0.838 0.000  [0.838 0.838 0.838 0.838 0.838]        0.854 0.000  [0.854 0.854 0.854 0.854 0.854]       0.845 0.000  [0.845 0.845 0.845 0.845 0.845]
+               03_both                      0.923 0.000  [0.923 0.923 0.923 0.923 0.923]        0.922 0.000  [0.922 0.922 0.922 0.922 0.922]       0.915 0.000  [0.915 0.915 0.915 0.915 0.915]
+linear2        01_baseline                  0.759 0.000  [0.759 0.759 0.759 0.759 0.759]        0.731 0.000  [0.731 0.731 0.731 0.731 0.731]       0.746 0.000  [0.746 0.746 0.746 0.746 0.746]
+               01_baseline_50               0.756 0.000  [0.756 0.756 0.756 0.756 0.756]        0.720 0.000  [0.720 0.720 0.720 0.720 0.720]       0.731 0.000  [0.731 0.731 0.731 0.731 0.731]
+               02_embeddings                0.838 0.000  [0.838 0.838 0.838 0.838 0.838]        0.854 0.000  [0.854 0.854 0.854 0.854 0.854]       0.845 0.000  [0.845 0.845 0.845 0.845 0.845]
+               03_both                      0.923 0.000  [0.923 0.923 0.923 0.923 0.923]        0.922 0.000  [0.922 0.922 0.922 0.922 0.922]       0.915 0.000  [0.915 0.915 0.915 0.915 0.915]
+
+------------------------------------------------------------------------------------------------------------------------
+Metric: "cnt_features"
+                                     scores_train scores_valid scores_test
+                                             mean         mean        mean
+model_name     feature_name                                               
+fit_finetuning mles and transactions          nan            2           2
+fit_target     raw_transactions               nan            2           2
+lgbm           01_baseline                     10           10          10
+               01_baseline_50                  10           10          10
+               02_embeddings                   20           20          20
+               03_both                         30           30          30
+linear         01_baseline                     10           10          10
+               01_baseline_50                  10           10          10
+               02_embeddings                   20           20          20
+               03_both                         30           30          30
+linear2        01_baseline                     10           10          10
+               01_baseline_50                  10           10          10
+               02_embeddings                   20           20          20
+               03_both                         30           30          30
+
+------------------------------------------------------------------------------------------------------------------------
+Metric: "cnt_samples"
+                                     scores_train scores_valid scores_test
+                                             mean         mean        mean
+model_name     feature_name                                               
+fit_finetuning mles and transactions          nan       11,999       6,467
+fit_target     raw_transactions               nan       11,997       6,467
+lgbm           01_baseline                 10,000        1,000       1,000
+               01_baseline_50               1,000        1,000       1,000
+               02_embeddings               10,000        1,000       1,000
+               03_both                     10,000        1,000       1,000
+linear         01_baseline                 10,000        1,000       1,000
+               01_baseline_50               1,000        1,000       1,000
+               02_embeddings               10,000        1,000       1,000
+               03_both                     10,000        1,000       1,000
+linear2        01_baseline                 10,000        1,000       1,000
+               01_baseline_50               1,000        1,000       1,000
+               02_embeddings               10,000        1,000       1,000
+               03_both                     10,000        1,000       1,000
+
+------------------------------------------------------------------------------------------------------------------------
+Metric: "feature_load_time"
+                                     process_info                                                
+                                             mean t_pm t_int_l t_int_h std                 values
+model_name     feature_name                                                                      
+fit_finetuning mles and transactions          nan  nan     nan     nan nan          [nan nan nan]
+fit_target     raw_transactions               nan  nan     nan     nan nan          [nan nan nan]
+lgbm           01_baseline                    0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]
+               01_baseline_50                 0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]
+               02_embeddings                  0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]
+               03_both                        0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]
+linear         01_baseline                    0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]
+               01_baseline_50                 0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]
+               02_embeddings                  0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]
+               03_both                        0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]
+linear2        01_baseline                    0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]
+               01_baseline_50                 0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]
+               02_embeddings                  0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]
+               03_both                        0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]
+
+------------------------------------------------------------------------------------------------------------------------
+Metric: "train_fit_transform_time"
+                                     process_info                                                
+                                             mean t_pm t_int_l t_int_h std                 values
+model_name     feature_name                                                                      
+fit_finetuning mles and transactions          nan  nan     nan     nan nan          [nan nan nan]
+fit_target     raw_transactions               nan  nan     nan     nan nan          [nan nan nan]
+lgbm           01_baseline                    0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]
+               01_baseline_50                 0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]
+               02_embeddings                  0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]
+               03_both                        0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]
+linear         01_baseline                    0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]
+               01_baseline_50                 0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]
+               02_embeddings                  0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]
+               03_both                        0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]
+linear2        01_baseline                    0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]
+               01_baseline_50                 0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]
+               02_embeddings                  0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]
+               03_both                        0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]
+
+------------------------------------------------------------------------------------------------------------------------
+Metric: "feature_transform_time"
+                                     scores_train                                                 scores_valid                                                 scores_test                                                
+                                             mean t_pm t_int_l t_int_h std                 values         mean t_pm t_int_l t_int_h std                 values        mean t_pm t_int_l t_int_h std                 values
+model_name     feature_name                                                                                                                                                                                               
+fit_finetuning mles and transactions          nan  nan     nan     nan nan          [nan nan nan]          nan  nan     nan     nan nan          [nan nan nan]         nan  nan     nan     nan nan          [nan nan nan]
+fit_target     raw_transactions               nan  nan     nan     nan nan          [nan nan nan]          nan  nan     nan     nan nan          [nan nan nan]         nan  nan     nan     nan nan          [nan nan nan]
+lgbm           01_baseline                    nan  nan     nan     nan nan  [nan nan nan nan nan]          0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]         0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]
+               01_baseline_50                 nan  nan     nan     nan nan  [nan nan nan nan nan]          0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]         0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]
+               02_embeddings                  nan  nan     nan     nan nan  [nan nan nan nan nan]          0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]         0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]
+               03_both                        nan  nan     nan     nan nan  [nan nan nan nan nan]          0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]         0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]
+linear         01_baseline                    nan  nan     nan     nan nan  [nan nan nan nan nan]          0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]         0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]
+               01_baseline_50                 nan  nan     nan     nan nan  [nan nan nan nan nan]          0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]         0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]
+               02_embeddings                  nan  nan     nan     nan nan  [nan nan nan nan nan]          0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]         0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]
+               03_both                        nan  nan     nan     nan nan  [nan nan nan nan nan]          0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]         0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]
+linear2        01_baseline                    nan  nan     nan     nan nan  [nan nan nan nan nan]          0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]         0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]
+               01_baseline_50                 nan  nan     nan     nan nan  [nan nan nan nan nan]          0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]         0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]
+               02_embeddings                  nan  nan     nan     nan nan  [nan nan nan nan nan]          0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]         0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]
+               03_both                        nan  nan     nan     nan nan  [nan nan nan nan nan]          0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]         0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]
+
+------------------------------------------------------------------------------------------------------------------------
+Metric: "train_time"
+                                     process_info                                                
+                                             mean t_pm t_int_l t_int_h std                 values
+model_name     feature_name                                                                      
+fit_finetuning mles and transactions          nan  nan     nan     nan nan          [nan nan nan]
+fit_target     raw_transactions               nan  nan     nan     nan nan          [nan nan nan]
+lgbm           01_baseline                    0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]
+               01_baseline_50                 0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]
+               02_embeddings                  0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]
+               03_both                        0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]
+linear         01_baseline                    0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]
+               01_baseline_50                 0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]
+               02_embeddings                  0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]
+               03_both                        0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]
+linear2        01_baseline                    0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]
+               01_baseline_50                 0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]
+               02_embeddings                  0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]
+               03_both                        0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]
+
+------------------------------------------------------------------------------------------------------------------------
+Metric: "auroc_score_time"
+                                     scores_train                                                 scores_valid                                                 scores_test                                                
+                                             mean t_pm t_int_l t_int_h std                 values         mean t_pm t_int_l t_int_h std                 values        mean t_pm t_int_l t_int_h std                 values
+model_name     feature_name                                                                                                                                                                                               
+fit_finetuning mles and transactions          nan  nan     nan     nan nan          [nan nan nan]          nan  nan     nan     nan nan          [nan nan nan]         nan  nan     nan     nan nan          [nan nan nan]
+fit_target     raw_transactions               nan  nan     nan     nan nan          [nan nan nan]          nan  nan     nan     nan nan          [nan nan nan]         nan  nan     nan     nan nan          [nan nan nan]
+lgbm           01_baseline                    0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]          0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]         0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]
+               01_baseline_50                 0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]          0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]         0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]
+               02_embeddings                  0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]          0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]         0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]
+               03_both                        0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]          0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]         0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]
+linear         01_baseline                    0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]          0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]         0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]
+               01_baseline_50                 0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]          0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]         0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]
+               02_embeddings                  0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]          0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]         0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]
+               03_both                        0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]          0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]         0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]
+linear2        01_baseline                    0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]          0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]         0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]
+               01_baseline_50                 0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]          0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]         0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]
+               02_embeddings                  0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]          0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]         0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]
+               03_both                        0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]          0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]         0.0  0.0    -0.0     0.0 0.0  [0.0 0.0 0.0 0.0 0.0]
+
+------------------------------------------------------------------------------------------------------------------------
+Metric: "feature_fit_info"
+                                     process_info
+                                            first
+model_name     feature_name                      
+fit_finetuning mles and transactions          nan
+fit_target     raw_transactions               nan
+lgbm           01_baseline                    nan
+               01_baseline_50                 nan
+               02_embeddings                  nan
+               03_both                        nan
+linear         01_baseline                    nan
+               01_baseline_50                 nan
+               02_embeddings                  nan
+               03_both                        nan
+linear2        01_baseline                    nan
+               01_baseline_50                 nan
+               02_embeddings                  nan
+               03_both                        nan
+
+------------------------------------------------------------------------------------------------------------------------
+End of report.     Current time: 2021-09-24 08:02:27
+------------------------------------------------------------------------------------------------------------------------

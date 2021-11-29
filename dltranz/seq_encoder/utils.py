@@ -5,7 +5,6 @@ from torch import nn as nn
 from torch.nn import functional as tf
 
 from dltranz.custom_layers import Squeeze
-from dltranz.neural_automl import neural_automl_models as node
 from dltranz.trx_encoder import PaddedBatch
 
 

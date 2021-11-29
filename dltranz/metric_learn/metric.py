@@ -2,12 +2,7 @@ import logging
 
 import torch
 import numpy as np
-import ignite.metrics
 
-from functools import partial
-from ignite.exceptions import NotComputableError
-from ignite.metrics import EpochMetric, Metric
-from ignite.metrics.metric import sync_all_reduce, reinit__is_reduced
 import pytorch_lightning as pl
 
 
@@ -124,35 +119,6 @@ def metric_Recall_top_K(X, y, K, metric='cosine'):
     return np.sum(res) / len(y) / K
 
 
-class BatchRecallTop(Metric):
-    def __init__(self, k, metric='cosine'):
-        super().__init__(output_transform=lambda x: x)
-
-        self.num_value = 0.0
-        self.denum_value = 0
-
-        self.k = k
-        self.metric = metric
-
-    def reset(self):
-        self.num_value = 0.0
-        self.denum_value = 0
-
-        super().reset()
-
-    def update(self, output):
-        x, y = output
-        value = metric_Recall_top_K(x, y, self.k, self.metric)
-
-        self.num_value += value
-        self.denum_value += 1
-
-    def compute(self):
-        if self.denum_value == 0:
-            return 0.0
-        return self.num_value / self.denum_value
-
-
 class BatchRecallTopPL(pl.metrics.Metric):
     def __init__(self, K, metric='cosine'):
         super().__init__(compute_on_step=False)
@@ -169,98 +135,3 @@ class BatchRecallTopPL(pl.metrics.Metric):
 
     def compute(self):
         return self.recall_top_k / self.batch_count.float()
-
-
-class SpendPredictMetric(ignite.metrics.Metric):
-    def __init__(self, ignored_class=None, output_transform=lambda x: x):
-        self._relative_error = None
-        super(SpendPredictMetric, self).__init__(output_transform=output_transform)
-
-    @reinit__is_reduced
-    def reset(self):
-        self._relative_error = []
-        super(SpendPredictMetric, self).reset()
-
-    @reinit__is_reduced
-    def update(self, output):
-        y_pred, y = output
-        delta = torch.abs(y_pred[:, 0] - y[:, 0])
-        rel_delta = 100 * delta / torch.max(y[:, 0], torch.exp(y[:, 0] - y[:, 0]))
-        self._relative_error += [torch.mean(rel_delta).item()]
-
-    @sync_all_reduce("_relative_error")
-    def compute(self):
-        if self._relative_error == 0:
-            raise NotComputableError('CustomAccuracy must have at least one example before it can be computed.')
-        return sum(self._relative_error) / len(self._relative_error)
-
-
-class PercentPredictMetric(ignite.metrics.Metric):
-    """
-    cosine similarity between prediction and ground truth
-    from 0 to 1, the lower is better
-    sum(y_pred)=1 sum(y)=1
-
-    """
-
-    def __init__(self, n_variables_to_predict, ignored_class=None, output_transform=lambda x: x):
-        self._relative_error = None
-        self.softmax = torch.nn.Softmax(dim=1)
-        super(PercentPredictMetric, self).__init__(output_transform=output_transform)
-        self.n_variables_to_predict = n_variables_to_predict
-
-    @reinit__is_reduced
-    def reset(self):
-        self._relative_error = []
-        super(PercentPredictMetric, self).reset()
-
-    @reinit__is_reduced
-    def update(self, output):
-        y_pred, y = output
-        soft_pred = self.softmax(y_pred[:, 1:self.n_variables_to_predict])
-        delta = torch.nn.functional.cosine_similarity(soft_pred, y[:, 1:self.n_variables_to_predict], dim=1)
-        rel_delta = -torch.mean(delta) + 1  # from 0 to 1, low is better
-        self._relative_error += [rel_delta.item()]
-
-    @sync_all_reduce("_relative_error")
-    def compute(self):
-        if self._relative_error == 0:
-            raise NotComputableError('CustomAccuracy must have at least one example before it can be computed.')
-        return sum(self._relative_error) / len(self._relative_error)
-
-
-class PercentR2Metric(ignite.metrics.Metric):
-    """
-    R2 metric
-    sum(y_pred)=1 sum(y)=1
-    if metric > 0 it means, that the prediction is better than mean value, max value 1
-
-    """
-
-    def __init__(self, n_variables_to_predict, ignored_class=None, output_transform=lambda x: x):
-        self._relative_error = None
-        self.softmax = torch.nn.Softmax(dim=1)
-        super(PercentR2Metric, self).__init__(output_transform=output_transform)
-        self.n_variables_to_predict = n_variables_to_predict
-
-    @reinit__is_reduced
-    def reset(self):
-        self._relative_error = []
-        super(PercentR2Metric, self).reset()
-
-    @reinit__is_reduced
-    def update(self, output):
-        y_pred, y = output
-        soft_pred = self.softmax(y_pred[:, 1:self.n_variables_to_predict])
-        rss = torch.norm(soft_pred - y[:, 1:self.n_variables_to_predict], p=1, dim=1) ** 2
-        apriori_mean = y[:, 1:self.n_variables_to_predict].mean(dim=0)
-        apriori_mean = apriori_mean.repeat(y_pred.shape[0], 1)
-        tss = torch.norm(soft_pred - apriori_mean, p=1, dim=1) ** 2
-        r2 = 1 - rss / tss
-        self._relative_error += [r2.mean().item()]
-
-    @sync_all_reduce("_relative_error")
-    def compute(self):
-        if self._relative_error == 0:
-            raise NotComputableError('CustomAccuracy must have at least one example before it can be computed.')
-        return sum(self._relative_error) / len(self._relative_error)

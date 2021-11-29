@@ -11,7 +11,6 @@ import pandas as pd
 import numpy as np
 
 from sklearn.metrics import cohen_kappa_score
-from ignite.metrics import Metric
 
 import warnings
 import functools
@@ -281,32 +280,6 @@ def eval_kappa_regression(y_true, y_pred):
     ).reshape(y_true.shape)
 
     return cohen_kappa_score(y_true, y_pred, weights='quadratic')
-
-
-class CustomMetric(Metric):
-    def __init__(self, func):
-        super().__init__(output_transform=lambda x: x)
-        self.func = func
-        self.num_value = 0.0
-        self.denum_value = 0
-
-    def reset(self):
-        self.num_value = 0.0
-        self.denum_value = 0
-
-        super().reset()
-
-    def update(self, output):
-        x, y = output
-        value = self.func(x, y)
-
-        self.num_value += value
-        self.denum_value += 1
-
-    def compute(self):
-        if self.denum_value == 0:
-            return 0.0
-        return self.num_value / self.denum_value
 
 
 def switch_reproducibility_on():

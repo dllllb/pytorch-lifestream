@@ -1,0 +1,172 @@
+------------------------------------------------------------------------------------------------------------------------
+Vector testing report
+Params:
+    conf: "test_conf/train-valid-1iter.hocon"
+
+Collected 12 files with 0 errors
+
+------------------------------------------------------------------------------------------------------------------------
+Metric: "auroc"
+                          scores_train               scores_valid              
+                                  mean t_pm   values         mean t_pm   values
+model_name feature_name                                                        
+lgbm       01_baseline           0.961  nan  [0.961]        0.724  nan  [0.724]
+           01_baseline_50        1.000  nan  [1.000]        0.688  nan  [0.688]
+           02_embeddings         0.987  nan  [0.987]        0.829  nan  [0.829]
+           03_both               0.997  nan  [0.997]        0.903  nan  [0.903]
+linear     01_baseline           0.759  nan  [0.759]        0.746  nan  [0.746]
+           01_baseline_50        0.778  nan  [0.778]        0.740  nan  [0.740]
+           02_embeddings         0.838  nan  [0.838]        0.845  nan  [0.845]
+           03_both               0.923  nan  [0.923]        0.915  nan  [0.915]
+linear2    01_baseline           0.759  nan  [0.759]        0.746  nan  [0.746]
+           01_baseline_50        0.777  nan  [0.777]        0.740  nan  [0.740]
+           02_embeddings         0.838  nan  [0.838]        0.845  nan  [0.845]
+           03_both               0.923  nan  [0.923]        0.915  nan  [0.915]
+
+------------------------------------------------------------------------------------------------------------------------
+Metric: "cnt_features"
+                          scores_train scores_valid
+                                  mean         mean
+model_name feature_name                            
+lgbm       01_baseline              10           10
+           01_baseline_50           10           10
+           02_embeddings            20           20
+           03_both                  30           30
+linear     01_baseline              10           10
+           01_baseline_50           10           10
+           02_embeddings            20           20
+           03_both                  30           30
+linear2    01_baseline              10           10
+           01_baseline_50           10           10
+           02_embeddings            20           20
+           03_both                  30           30
+
+------------------------------------------------------------------------------------------------------------------------
+Metric: "cnt_samples"
+                          scores_train scores_valid
+                                  mean         mean
+model_name feature_name                            
+lgbm       01_baseline          10,000        1,000
+           01_baseline_50        1,000        1,000
+           02_embeddings        10,000        1,000
+           03_both              10,000        1,000
+linear     01_baseline          10,000        1,000
+           01_baseline_50        1,000        1,000
+           02_embeddings        10,000        1,000
+           03_both              10,000        1,000
+linear2    01_baseline          10,000        1,000
+           01_baseline_50        1,000        1,000
+           02_embeddings        10,000        1,000
+           03_both              10,000        1,000
+
+------------------------------------------------------------------------------------------------------------------------
+Metric: "feature_load_time"
+                          process_info                                
+                                  mean t_pm t_int_l t_int_h std values
+model_name feature_name                                               
+lgbm       01_baseline             0.0  nan     nan     nan nan  [0.0]
+           01_baseline_50          0.0  nan     nan     nan nan  [0.0]
+           02_embeddings           0.0  nan     nan     nan nan  [0.0]
+           03_both                 0.0  nan     nan     nan nan  [0.0]
+linear     01_baseline             0.0  nan     nan     nan nan  [0.0]
+           01_baseline_50          0.0  nan     nan     nan nan  [0.0]
+           02_embeddings           0.0  nan     nan     nan nan  [0.0]
+           03_both                 0.0  nan     nan     nan nan  [0.0]
+linear2    01_baseline             0.0  nan     nan     nan nan  [0.0]
+           01_baseline_50          0.0  nan     nan     nan nan  [0.0]
+           02_embeddings           0.0  nan     nan     nan nan  [0.0]
+           03_both                 0.0  nan     nan     nan nan  [0.0]
+
+------------------------------------------------------------------------------------------------------------------------
+Metric: "train_fit_transform_time"
+                          process_info                                
+                                  mean t_pm t_int_l t_int_h std values
+model_name feature_name                                               
+lgbm       01_baseline             0.0  nan     nan     nan nan  [0.0]
+           01_baseline_50          0.0  nan     nan     nan nan  [0.0]
+           02_embeddings           0.0  nan     nan     nan nan  [0.0]
+           03_both                 0.0  nan     nan     nan nan  [0.0]
+linear     01_baseline             0.0  nan     nan     nan nan  [0.0]
+           01_baseline_50          0.0  nan     nan     nan nan  [0.0]
+           02_embeddings           0.0  nan     nan     nan nan  [0.0]
+           03_both                 0.0  nan     nan     nan nan  [0.0]
+linear2    01_baseline             0.0  nan     nan     nan nan  [0.0]
+           01_baseline_50          0.0  nan     nan     nan nan  [0.0]
+           02_embeddings           0.0  nan     nan     nan nan  [0.0]
+           03_both                 0.0  nan     nan     nan nan  [0.0]
+
+------------------------------------------------------------------------------------------------------------------------
+Metric: "feature_transform_time"
+                          scores_train                                 scores_valid                                
+                                  mean t_pm t_int_l t_int_h std values         mean t_pm t_int_l t_int_h std values
+model_name feature_name                                                                                            
+lgbm       01_baseline             nan  nan     nan     nan nan  [nan]          0.0  nan     nan     nan nan  [0.0]
+           01_baseline_50          nan  nan     nan     nan nan  [nan]          0.0  nan     nan     nan nan  [0.0]
+           02_embeddings           nan  nan     nan     nan nan  [nan]          0.0  nan     nan     nan nan  [0.0]
+           03_both                 nan  nan     nan     nan nan  [nan]          0.0  nan     nan     nan nan  [0.0]
+linear     01_baseline             nan  nan     nan     nan nan  [nan]          0.0  nan     nan     nan nan  [0.0]
+           01_baseline_50          nan  nan     nan     nan nan  [nan]          0.0  nan     nan     nan nan  [0.0]
+           02_embeddings           nan  nan     nan     nan nan  [nan]          0.0  nan     nan     nan nan  [0.0]
+           03_both                 nan  nan     nan     nan nan  [nan]          0.0  nan     nan     nan nan  [0.0]
+linear2    01_baseline             nan  nan     nan     nan nan  [nan]          0.0  nan     nan     nan nan  [0.0]
+           01_baseline_50          nan  nan     nan     nan nan  [nan]          0.0  nan     nan     nan nan  [0.0]
+           02_embeddings           nan  nan     nan     nan nan  [nan]          0.0  nan     nan     nan nan  [0.0]
+           03_both                 nan  nan     nan     nan nan  [nan]          0.0  nan     nan     nan nan  [0.0]
+
+------------------------------------------------------------------------------------------------------------------------
+Metric: "train_time"
+                          process_info                                
+                                  mean t_pm t_int_l t_int_h std values
+model_name feature_name                                               
+lgbm       01_baseline             0.0  nan     nan     nan nan  [0.0]
+           01_baseline_50          0.0  nan     nan     nan nan  [0.0]
+           02_embeddings           0.0  nan     nan     nan nan  [0.0]
+           03_both                 0.0  nan     nan     nan nan  [0.0]
+linear     01_baseline             0.0  nan     nan     nan nan  [0.0]
+           01_baseline_50          0.0  nan     nan     nan nan  [0.0]
+           02_embeddings           0.0  nan     nan     nan nan  [0.0]
+           03_both                 0.0  nan     nan     nan nan  [0.0]
+linear2    01_baseline             0.0  nan     nan     nan nan  [0.0]
+           01_baseline_50          0.0  nan     nan     nan nan  [0.0]
+           02_embeddings           0.0  nan     nan     nan nan  [0.0]
+           03_both                 0.0  nan     nan     nan nan  [0.0]
+
+------------------------------------------------------------------------------------------------------------------------
+Metric: "auroc_score_time"
+                          scores_train                                 scores_valid                                
+                                  mean t_pm t_int_l t_int_h std values         mean t_pm t_int_l t_int_h std values
+model_name feature_name                                                                                            
+lgbm       01_baseline             0.0  nan     nan     nan nan  [0.0]          0.0  nan     nan     nan nan  [0.0]
+           01_baseline_50          0.0  nan     nan     nan nan  [0.0]          0.0  nan     nan     nan nan  [0.0]
+           02_embeddings           0.0  nan     nan     nan nan  [0.0]          0.0  nan     nan     nan nan  [0.0]
+           03_both                 0.0  nan     nan     nan nan  [0.0]          0.0  nan     nan     nan nan  [0.0]
+linear     01_baseline             0.0  nan     nan     nan nan  [0.0]          0.0  nan     nan     nan nan  [0.0]
+           01_baseline_50          0.0  nan     nan     nan nan  [0.0]          0.0  nan     nan     nan nan  [0.0]
+           02_embeddings           0.0  nan     nan     nan nan  [0.0]          0.0  nan     nan     nan nan  [0.0]
+           03_both                 0.0  nan     nan     nan nan  [0.0]          0.0  nan     nan     nan nan  [0.0]
+linear2    01_baseline             0.0  nan     nan     nan nan  [0.0]          0.0  nan     nan     nan nan  [0.0]
+           01_baseline_50          0.0  nan     nan     nan nan  [0.0]          0.0  nan     nan     nan nan  [0.0]
+           02_embeddings           0.0  nan     nan     nan nan  [0.0]          0.0  nan     nan     nan nan  [0.0]
+           03_both                 0.0  nan     nan     nan nan  [0.0]          0.0  nan     nan     nan nan  [0.0]
+
+------------------------------------------------------------------------------------------------------------------------
+Metric: "feature_fit_info"
+                          process_info
+                                 first
+model_name feature_name               
+lgbm       01_baseline             nan
+           01_baseline_50          nan
+           02_embeddings           nan
+           03_both                 nan
+linear     01_baseline             nan
+           01_baseline_50          nan
+           02_embeddings           nan
+           03_both                 nan
+linear2    01_baseline             nan
+           01_baseline_50          nan
+           02_embeddings           nan
+           03_both                 nan
+
+------------------------------------------------------------------------------------------------------------------------
+End of report.     Current time: 2021-09-24 08:12:50
+------------------------------------------------------------------------------------------------------------------------

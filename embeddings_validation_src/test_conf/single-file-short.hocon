@@ -1,0 +1,107 @@
+{
+    environment: {
+        work_dir: "single-file-short.work"
+    }
+    report_file: "single-file-short.txt"
+
+    target: {
+        file_name: "../test_data/baseline.csv"
+        cols_id: [uid]
+        cols_id_type: [str]
+        col_target: target
+    }
+
+    split: {
+        fit_ids: false
+
+        train_id: {
+            file_name: "../test_data/baseline.csv"
+        }
+
+        cv_split_count: 5
+        is_stratify: true
+        random_state: 42
+    }
+
+    features: {
+        baseline: {
+            enabled: true
+            read_params: {file_name: "../test_data/baseline.csv", drop_cols: "target"}
+            target_options: {}
+        }
+        embeddings: {
+            enabled: true
+            read_params: {file_name: "../test_data/embeddings.csv"}
+            target_options: {}
+        }
+        both: {
+            enabled: true
+            read_params: [
+                {file_name: "../test_data/baseline.csv", drop_cols: "target"}
+                {file_name: "../test_data/embeddings.csv"}
+            ]
+            target_options: {}
+        }
+    }
+
+    external_scores: {}
+
+    models: {
+        linear: {
+            enabled: true
+            cls_name: sklearn.linear_model.LogisticRegression
+            params: {
+                C: 0.1
+            },
+            cpu_count: 1
+            preprocessing: [
+                [embeddings_validation.preprocessing.category_encoder.CategoryEncoder, {}]
+                [sklearn.impute.SimpleImputer, {strategy: median}]
+            ]
+        }
+        lgbm: {
+            enabled: true
+            cls_name: lightgbm.LGBMClassifier,
+            params: {
+                n_jobs: 6
+            },
+            cpu_count: 6
+            preprocessing: [
+                [embeddings_validation.preprocessing.category_encoder.CategoryEncoder, {}]
+            ]
+        }
+        xgb: {
+            enabled: true
+            cls_name: xgboost.XGBClassifier,
+            params: {
+                n_jobs: 4
+            },
+            cpu_count: 4
+            preprocessing: [
+                [embeddings_validation.preprocessing.category_encoder.CategoryEncoder, {}]
+            ]
+        }
+    }
+
+    metrics: {
+        auroc: {
+            enabled: true
+            score_func: sklearn.metrics.roc_auc_score
+            scorer_params: {needs_proba: true}
+
+        }
+    }
+
+    report: {
+        is_check_train: false
+        error_handling: fail
+        print_all_metrics: false
+
+        metrics: {
+            auroc: {float_format: "{:.3f}", keep_columns: ["mean", "t_pm", values], baseline_key=["lgbm", "baseline"]}
+
+            cnt_features: {float_format: "{:.0f}", keep_columns: ["mean"]}
+            cnt_samples: {float_format: "{:9,.0f}", keep_columns: ["mean"]}
+        }
+    }
+}

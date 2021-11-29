@@ -1,4 +1,0 @@
-                               oof_accuracy                                                         test_accuracy                                                        
-                                       mean t_int_l t_int_h    std                           values          mean t_int_l t_int_h    std                           values
-name                                                                                                                                                                     
-scores: mles_finetuning_scores       0.7588  0.7546  0.7630 0.0034  [0.754 0.758 0.758 0.761 0.763]        0.7588  0.7542  0.7634 0.0037  [0.755 0.756 0.757 0.761 0.764]

@@ -1,0 +1,47 @@
+[
+  {
+    "fold_id": 0,
+    "model_name": "fit_target",
+    "feature_name": "raw_transactions",
+    "scores_valid": {
+      "auroc": 0.80,
+      "cnt_samples": 12000,
+      "cnt_features": 2
+    },
+    "scores_test": {
+      "auroc": 0.81,
+      "cnt_samples": 6500,
+      "cnt_features": 2
+    }
+  },
+  {
+    "fold_id": 1,
+    "model_name": "fit_target",
+    "feature_name": "raw_transactions",
+    "scores_valid": {
+      "auroc": 0.79,
+      "cnt_samples": 12010,
+      "cnt_features": 2
+    },
+    "scores_test": {
+      "auroc": 0.82,
+      "cnt_samples": 6500,
+      "cnt_features": 2
+    }
+  },
+  {
+    "fold_id": 2,
+    "model_name": "fit_target",
+    "feature_name": "raw_transactions",
+    "scores_valid": {
+      "auroc": 0.78,
+      "cnt_samples": 11980,
+      "cnt_features": 2
+    },
+    "scores_test": {
+      "auroc": 0.82,
+      "cnt_samples": 6400,
+      "cnt_features": 2
+    }
+  }
+]

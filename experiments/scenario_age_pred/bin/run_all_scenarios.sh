@@ -7,7 +7,7 @@ python -m embeddings_validation \
     --conf conf/embeddings_validation_baselines_supervised.hocon --workers 10 --total_cpu_count 20 \
     --split_only
 
-echo "==== Device ${SC_DEVICE} will be used"
+echo "==== Device cuda:${CUDA_VISIBLE_DEVICES} will be used"
 
 echo ""
 echo "==== Main track"

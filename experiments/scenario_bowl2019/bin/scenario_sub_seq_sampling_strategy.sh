@@ -7,7 +7,6 @@ python ../../pl_train_module.py \
     model_path="models/bowl2019_mlm__$SC_SUFFIX.p" \
     --conf "conf/mles_params.hocon"
 python ../../pl_inference.py \
-    params.device="$SC_DEVICE" \
     model_path="models/bowl2019_mlm__$SC_SUFFIX.p" \
     output.path="data/emb__$SC_SUFFIX" \
     --conf "conf/mles_params.hocon"

@@ -1,0 +1,122 @@
+{
+    environment: {
+        work_dir: "train-test.work"
+    }
+    report_file: "train-test.txt"
+
+    target: {
+        file_name: "../test_data/target.csv"
+        cols_id: [id]
+        cols_id_type: [int]
+        col_target: y
+    }
+
+    split: {
+        fit_ids: false
+
+        train_id: {
+            file_name: "../test_data/id_train.csv"
+        }
+        valid_id: {
+            file_name: "../test_data/id_valid.csv"
+        }
+        test_id: {
+            file_name: "../test_data/id_test.csv"
+        }
+        row_order_shuffle_seed: 42
+
+        n_iteration: 5
+        train_shuffle_random_states: [1, 2, 3, 4, 5]
+    }
+
+    features: {
+        01_baseline: {
+            enabled: true
+            read_params: {file_name: "../test_data/features_0.csv", rename_cols: {uid: id}}
+            target_options: {}
+        }
+        01_baseline_50: {
+            enabled: true
+            read_params: {file_name: "../test_data/features_0.csv", rename_cols: {uid: id}}
+            target_options: {labeled_amount: 0.1}
+        }
+        02_embeddings: {
+            enabled: true
+            read_params: {file_name: "../test_data/features_1.csv"}
+            target_options: {}
+        }
+        03_both: {
+            enabled: true
+            read_params: [
+                {file_name: "../test_data/features_0.csv", rename_cols: {uid: id}}
+                {file_name: "../test_data/features_1.csv"}
+            ]
+            target_options: {}
+        }
+    }
+
+    external_scores: {
+        0: "nn_target.json"
+        1: "nn_finetuning.json"
+    }
+
+    models: {
+        linear: {
+            enabled: true
+            cls_name: sklearn.linear_model.LogisticRegression
+            params: {
+                C: 0.1
+            },
+            cpu_count: 1
+            preprocessing: []
+        },
+        linear2: {
+            enabled: true
+            cls_name: sklearn.linear_model.LogisticRegression
+            params: {
+                C: 1.0
+            },
+            cpu_count: 1
+            preprocessing: []
+        },
+        lgbm: {
+            enabled: true
+            cls_name: lightgbm.LGBMClassifier,
+            params: {
+                n_jobs: 6
+            },
+            cpu_count: 6
+            preprocessing: []
+        }
+    }
+
+    metrics: {
+        auroc: {
+            enabled: true
+            score_func: sklearn.metrics.roc_auc_score
+            scorer_params: {needs_proba: true}
+
+        }
+    }
+
+    report: {
+        is_check_train: true
+        error_handling: fail
+        print_all_metrics: true
+
+        metrics: {
+            auroc: {float_format: "{:.3f}", keep_columns: ["mean", "t_pm", values]}
+
+            cnt_features: {float_format: "{:.0f}", keep_columns: ["mean"]}
+            cnt_samples: {float_format: "{:9,.0f}", keep_columns: ["mean"]}
+
+            feature_load_time: {float_format: "{:,.1f}"}
+            train_fit_transform_time: {float_format: "{:,.1f}"}
+            feature_transform_time: {float_format: "{:,.1f}"}
+            train_time: {float_format: "{:,.1f}"}
+            auroc_score_time {float_format: "{:,.1f}"}
+
+            feature_fit_info: {keep_columns: ["first"]}
+        }
+    }
+}

@@ -10,7 +10,7 @@ setuptools.setup(
     version='0.1.1',
     author='Dmitri Babaev',
     author_email='dmitri.babaev@gmail.com',
-    description='Llifestream data anaysis with PyTorch',
+    description='Lifestream data analysis with PyTorch',
     long_description=long_description,
     long_description_content_type="text/markdown",
     packages=setuptools.find_packages(),

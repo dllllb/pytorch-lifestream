@@ -1,33 +1,32 @@
 # LSTM encoder
 export SC_SUFFIX="encoder_lstm"
-python ../../metric_learning.py \
-    params.device="$SC_DEVICE" \
+python ../../pl_train_module.py \
+    logger_name=${SC_SUFFIX} \
     params.rnn.type="lstm" \
-    model_path.model="models/mles__$SC_SUFFIX.p" \
-    --conf "conf/dataset.hocon" "conf/mles_params.json"
-python ../../ml_inference.py \
-    params.device="$SC_DEVICE" \
-    model_path.model="models/mles__$SC_SUFFIX.p" \
-    output.path="data/emb__$SC_SUFFIX" \
-    --conf "conf/dataset.hocon" "conf/mles_params.json"
+    model_path="models/mles__$SC_SUFFIX.p" \
+    --conf conf/mles_params.hocon
+python ../../pl_inference.py \
+    model_path="models/mles__$SC_SUFFIX.p" \
+    output.path="data/emb_mles__$SC_SUFFIX" \
+    --conf conf/mles_params.hocon
 
 # Transformer encoder
 export SC_SUFFIX="encoder_transf"
-python ../../metric_learning.py \
-    params.device="$SC_DEVICE" \
+python ../../pl_train_module.py \
+    logger_name=${SC_SUFFIX} \
     params.model_type="transf" \
-    model_path.model="models/mles__$SC_SUFFIX.p" \
-    --conf "conf/dataset.hocon" "conf/mles_params.json"
-python ../../ml_inference.py \
-    params.device="$SC_DEVICE" \
-    model_path.model="models/mles__$SC_SUFFIX.p" \
-    params.valid.batch_size=128 \
-    output.path="data/emb__$SC_SUFFIX" \
-    --conf "conf/dataset.hocon" "conf/mles_params.json"
+    model_path="models/mles__$SC_SUFFIX.p" \
+    --conf conf/mles_params.hocon
+python ../../pl_inference.py \
+    model_path="models/mles__$SC_SUFFIX.p" \
+    output.path="data/emb_mles__$SC_SUFFIX" \
+    --conf conf/mles_params.hocon
 
 # Compare
-python -m scenario_x5 compare_approaches --output_file "results/scenario_x5__encoder_types.csv" \
-    --n_workers 3 --models lgb --embedding_file_names \
-    "mles_embeddings.pickle"         \
-    "emb__encoder_lstm.pickle" \
-    "emb__encoder_transf.pickle"
+rm results/scenario_x5__encoder_types.txt
+# rm -r conf/embeddings_validation.work/
+python -m embeddings_validation \
+    --conf conf/embeddings_validation_short.hocon --workers 10 --total_cpu_count 20 \
+    --conf_extra \
+      'report_file: "../results/scenario_x5__encoder_types.txt",
+      auto_features: ["../data/emb__encoder_*.pickle"]'

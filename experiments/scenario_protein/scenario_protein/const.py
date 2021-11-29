@@ -1,6 +1,0 @@
-DEFAULT_DATA_PATH = 'data/'
-DEFAULT_RESULT_FILE = 'results/scenario.csv'
-TEST_IDS_FILE = 'test_ids.csv'
-DATASET_FILE = 'target.csv'
-COL_ID = 'uid'
-COL_TARGET = 'y'

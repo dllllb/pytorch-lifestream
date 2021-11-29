@@ -28,8 +28,7 @@ python ../../pl_inference.py \
 # Transformer encoder
 export SC_SUFFIX="encoder_transf_bs064_4head_64hs_4layers"
 python ../../pl_train_module.py \
-    params.device="$SC_DEVICE" \
-    data_module.train.batch_size=32 \
+    ata_module.train.batch_size=32 \
     params.model_type="transf" \
     params.transf.n_heads=4 \
     params.transf.n_layers=4 \
@@ -51,7 +50,6 @@ python ../../pl_inference.py \
 # Transformer encoder
 export SC_SUFFIX="encoder_transf_bs064_4head_64hs_8layers"
 python ../../pl_train_module.py \
-    params.device="$SC_DEVICE" \
     data_module.train.batch_size=32 \
     params.model_type="transf" \
     params.transf.n_heads=4 \

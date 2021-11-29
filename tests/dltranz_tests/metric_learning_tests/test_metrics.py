@@ -2,7 +2,7 @@ import math
 import torch
 
 from dltranz.metric_learn.metric import outer_cosine_similarity, outer_pairwise_distance, metric_Recall_top_K, \
-    BatchRecallTop
+    BatchRecallTopPL
 
 
 def test_outer_cosine_similarity1():
@@ -71,8 +71,8 @@ def test_metric_recall_top_k():
 
 def test_batch_recall_top():
     x, y = get_ml_data()
-    metric = BatchRecallTop(k=2, metric='euclidean')
-    metric.update((x, y))
+    metric = BatchRecallTopPL(K=2, metric='euclidean')
+    metric(x, y)
     res = metric.compute()
     true_value = 1 / 3
     assert abs(res - true_value) < 1e-6

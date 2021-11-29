@@ -3,7 +3,6 @@ import torch.nn as nn
 import torch.nn.functional as F
 from numpy.testing import assert_almost_equal
 
-from dltranz.baselines.cpc import CPCLossV2
 from .metric import outer_cosine_similarity
 
 
@@ -297,7 +296,6 @@ def get_loss(params, sampling_strategy, kw_params=None):
             'linear_predictor': kw_params['linear_predictor'],
         }
         kwargs = {k: v for k, v in kwargs.items() if v is not None}
-        loss_fn = CPCLossV2(**kwargs)
     elif params['train.loss'] == 'BarlowTwinsLoss':
         kwargs = {
             'lambd': params.get('train.lambd', None),

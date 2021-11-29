@@ -1,6 +1,6 @@
 ## start with working directory: experiments/scenario_gender
 ## dataset should be prepared before this script
-echo "==== Device ${SC_DEVICE} will be used"
+echo "==== Device cuda:${CUDA_VISIBLE_DEVICES} will be used"
 
 
 echo ""

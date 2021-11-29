@@ -110,42 +110,12 @@ def agg_feature_model(params):
     return m
 
 
-class CPC_Ecoder(nn.Module):
-    def __init__(self, trx_encoder, seq_encoder, linear_size, conf):
-        super().__init__()
-        self.trx_encoder = trx_encoder
-        self.seq_encoder = seq_encoder
-        embedding_size = seq_encoder.hidden_size
-        linear_size = linear_size
-        self.linears = nn.ModuleList([nn.Linear(embedding_size, linear_size) for i in range(conf['n_forward_steps'])])
-
-    def forward(self, x: PaddedBatch):
-        base_embeddings = self.trx_encoder(x)
-        context_embeddings = self.seq_encoder(base_embeddings)
-
-        me = []
-        for l in self.linears:
-            me.append(l(context_embeddings.payload))
-        mapped_ctx_embeddings = PaddedBatch(torch.stack(me, dim=3), context_embeddings.seq_lens)
-
-        return base_embeddings, context_embeddings, mapped_ctx_embeddings
-
-
-def cpc_model(params):
-    trx_e = TrxEncoder(params['trx_encoder'])
-    trx_e_out_size = trx_e.output_size
-    rnn_e = RnnEncoder(trx_e_out_size, params['rnn'])
-    cpc_e = CPC_Ecoder(trx_e, rnn_e, trx_e_out_size, params['cpc'])
-    return cpc_e
-
-
 @Deprecated('Use dltranz.seq_mel.SequenceMetricLearning to manage model')
 def ml_model_by_type(model_type):
     model = {
         'rnn': rnn_model,
         'transf': transformer_model,
         'agg_features': agg_feature_model,
-        'cpc_model': cpc_model,
     }[model_type]
     return model
 
