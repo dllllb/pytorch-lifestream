@@ -30,7 +30,7 @@ python ../../pl_train_module.py \
     --conf conf/mles_params.hocon
 python ../../pl_inference.py \
     model_path="models/gender_mlm__$SC_SUFFIX.p" \
-    inference_dataloader.loader.batch_size=64 \
+    inference_dataloader.loader.batch_size=32 \
     output.path="data/emb__$SC_SUFFIX" \
     --conf conf/mles_params.hocon
 

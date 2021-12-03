@@ -47,7 +47,7 @@ class SplitRandom(AbsSplit):
         date_range = np.arange(date_len)
 
         split_indexes = np.random.randint(0, self.split_count, date_len)
-        return [date_range[split_indexes == i] for i in range(self.split_count)]
+        return [date_range[split_indexes == i][:self.cnt_max] for i in range(self.split_count)]
 
 
 class SplitByWeeks(AbsSplit):

@@ -1,6 +1,17 @@
 {
   include "dataset_map_file.hocon"
 
+  data_module: {
+    train: {
+      augmentations: [
+        [DropoutTrx, {trx_dropout: 0.01}]
+      ]
+    }
+    valid: {
+      augmentations: []
+    }
+  }
+
   seed_everything: 42
   trainer: {
     gpus: 1

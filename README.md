@@ -12,8 +12,12 @@ pytest
 
 # run luigi server
 luigid
-
 # check embedding validation progress at `http://localhost:8082/`
+
+# use tensorboard for metrics exploration
+tensorboard --logdir lightning_logs/ 
+# check tensorboard metrics at `http://localhost:6006/`
+
 ```
 
 # Run scenario

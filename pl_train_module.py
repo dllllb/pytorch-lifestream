@@ -50,30 +50,26 @@ def main(args=None):
     data_module = get_cls(conf['params.data_module_class'])
 
     pl_module = get_cls(conf['params.pl_module_class'])
-
-    model = pl_module.load_from_checkpoint('ckpts/9600')
-#    model = pl_module(conf['params'])
+    model = pl_module(conf['params'])
     dm = data_module(conf['data_module'], model)
 
     _trainer_params = conf['trainer']
     _use_best_epoch = conf['params.train'].get('use_best_epoch', False)
 
+    if 'callbacks' in _trainer_params:
+        logger.warning(f'Overwrite `trainer.callbacks`, was "{_trainer_params.checkpoint_callback}"')
+    _trainer_params['callbacks'] = []
+
     if _use_best_epoch:
         checkpoint_callback = ModelCheckpoint(monitor=model.metric_name, mode='max')
         logger.info(f'Create ModelCheckpoint callback with monitor="{model.metric_name}"')
-        if 'callbacks' in _trainer_params:
-            logger.warning(f'Overwrite `trainer.callbacks`, was "{_trainer_params.checkpoint_callback}". '
-                           f'New value is ModelCheckpoint callback')
-        _trainer_params['callbacks'] = [checkpoint_callback]
+        _trainer_params['callbacks'].append(checkpoint_callback)
 
     if conf['params.train'].get('checkpoints_every_n_val_epochs', False):
         every_n_val_epochs = conf['params.train.checkpoints_every_n_val_epochs']
         checkpoint_callback = ModelCheckpoint(every_n_val_epochs=every_n_val_epochs, save_top_k=-1)
         logger.info(f'Create ModelCheckpoint callback every_n_val_epochs ="{every_n_val_epochs}"')
-        if 'callbacks' in _trainer_params:
-            logger.warning(f'Overwrite `trainer.callbacks`, was "{_trainer_params.checkpoint_callback}". '
-                           f'New value is ModelCheckpoint callback')
-        _trainer_params['callbacks'] = [checkpoint_callback]
+        _trainer_params['callbacks'].extend([every_n_val_epochs, checkpoint_callback])
 
 
     if 'logger_name' in conf:
@@ -83,7 +79,13 @@ def main(args=None):
         )
 
     lr_monitor = LearningRateMonitor(logging_interval='step')
-    trainer = pl.Trainer(callbacks=[lr_monitor, CheckpointEveryNSteps(model, dm, conf)], **_trainer_params)
+    _trainer_params['callbacks'].append(lr_monitor)
+    if 'ckpts_path' in conf:
+        _trainer_params['callbacks'].append(CheckpointEveryNSteps(model, dm, conf))
+
+    if len(_trainer_params['callbacks']) == 0:
+        del _trainer_params['callbacks']
+    trainer = pl.Trainer(**_trainer_params)
     trainer.fit(model, dm)
 
     if 'model_path' in conf:

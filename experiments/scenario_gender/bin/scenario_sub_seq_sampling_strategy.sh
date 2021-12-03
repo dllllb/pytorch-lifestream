@@ -16,8 +16,8 @@ export SC_SUFFIX="subseq_smpl_SplitRandom"
 export SC_STRATEGY="SplitRandom"
 python ../../pl_train_module.py \
     logger_name=${SC_SUFFIX} \
-    data_module.train.max_seq_len=300 \
-    data_module.valid.max_seq_len=300 \
+    data_module.train.split_strategy.cnt_max=300 \
+    data_module.valid.split_strategy.cnt_max=300 \
     data_module.valid.batch_size=512 \
     data_module.train.split_strategy.split_strategy=$SC_STRATEGY \
     data_module.valid.split_strategy.split_strategy=$SC_STRATEGY \

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-spark-submit \
+SPARK_LOCAL_IP="127.0.0.1" spark-submit \
     --master local[8] \
     --name "Age Make Dataset" \
     --driver-memory 16G \
