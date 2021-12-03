@@ -35,6 +35,17 @@ Here are the copy of them.
 
 Unsupervised learned embeddings with LightGBM model downstream evaluations:
                          |     mean \pm std      |
+    Gender auroc:
+        baseline         |    0.877 \pm 0.003    |
+        cpc_embeddings   |    0.850 \pm 0.004    |
+        mles2_embeddings |    0.885 \pm 0.003    |
+        mles_embeddings  |    0.884 \pm 0.003    |
+        nsp_embeddings   |    0.857 \pm 0.003    |
+        random_encoder   |    0.589 \pm 0.008    |
+        rtd_embeddings   |    0.860 \pm 0.003    |
+        sop_embeddings   |    0.776 \pm 0.007    |                         
+        barlow_twins     |    0.858 \pm 0.002    |
+                         
     Age group (age_pred) accuracy:
         baseline         |    0.631 \pm 0.003    |
         cpc_embeddings   |    0.594 \pm 0.002    |
@@ -70,6 +81,13 @@ Unsupervised learned embeddings with LightGBM model downstream evaluations:
 
 Supervised finetuned encoder with MLP head evaluation:
                          |     mean \pm std      |
+    Gender auroc:
+        barlow_twins     |    0.853 \pm 0.003    |
+        cpc_finetuning   |    0.865 \pm 0.002    |
+        mles_finetuning  |    0.871 \pm 0.003    |
+        rtd_finetuning   |    0.869 \pm 0.003    |
+        target_scores    |    0.858 \pm 0.005    |
+
     Age group (age_pred) accuracy:
         cpc_finetuning   |    0.615 \pm 0.009    |
         mles_finetuning  |    0.644 \pm 0.004    |
