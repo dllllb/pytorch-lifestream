@@ -46,11 +46,3 @@ def get_hparams(path, progress=False):
             hp = pd.DataFrame([hp], index=[version_name])
             df_list.append(hp)
     return pd.concat(df_list, axis=0)
-
-
-if __name__ == '__main__':
-    root_path = '/mnt2/kireev/pycharm-deploy/pytorch-lifestream/experiments/sensors/lightning_logs/vic/'
-    df_scalars = get_last_scalars(root_path)
-    hparams = get_hparams(root_path)
-    print(df_scalars)
-    print(hparams)

@@ -6,8 +6,8 @@ with open("README.md", "r") as fh:
 setuptools.setup(
     name="embeddings-validation",
     version="0.0.3",
-    author="Ivan Kireev",
-    author_email="ivkireev@yandex.ru",
+    author="",
+    author_email="",
     description="Estimate your feature vector quality on downstream task",
     long_description=long_description,
     long_description_content_type="text/markdown",

@@ -10,11 +10,6 @@ class SWA(Optimizer):
         r"""Implements Stochastic Weight Averaging (SWA).
         BASED on oficial impementation from package torchcontrib
 
-        Stochastic Weight Averaging was proposed in `Averaging Weights Leads to
-        Wider Optima and Better Generalization`_ by Pavel Izmailov, Dmitrii
-        Podoprikhin, Timur Garipov, Dmitry Vetrov and Andrew Gordon Wilson
-        (UAI 2018).
-
         SWA is implemented as a wrapper class taking optimizer instance as input
         and applying SWA on top of that optimizer.
 

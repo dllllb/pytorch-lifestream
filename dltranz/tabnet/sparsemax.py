@@ -111,7 +111,7 @@ class Sparsemax(nn.Module):
 
 class Entmax15Function(Function):
     """
-    An implementation of exact Entmax with alpha=1.5 (B. Peters, V. Niculae, A. Martins). See
+    See
     :cite:`https://arxiv.org/abs/1905.05702 for detailed description.
     Source: https://github.com/deep-spin/entmax
     """

@@ -1,4 +1,4 @@
-load_source_data       : Loaded 6849346 rows from "/mnt2/kireev/pycharm-deploy/pytorch-lifestream/experiments/scenario_gender/data/transactions.csv"
+load_source_data       : Loaded 6849346 rows from "pytorch-lifestream/experiments/scenario_gender/data/transactions.csv"
 load_source_data       : Loaded 6849346 rows in total
 _td_gender             : Gender-dataset-like time transformation
 trx_to_features        : Found 15000 unique clients
@@ -75,11 +75,11 @@ trx_count
 trx_to_features        : Feature collection in progress ...
 trx_to_features        : Feature names: ['customer_id', 'amount', 'event_time', 'mcc_code', 'tr_type', 'term_id', 'trx_count']
 trx_to_features        : Prepared features for 15000 clients
-load_source_data       : Loaded 8400 rows from "/mnt2/kireev/pycharm-deploy/pytorch-lifestream/experiments/scenario_gender/data/gender_train.csv"
+load_source_data       : Loaded 8400 rows from "experiments/scenario_gender/data/gender_train.csv"
 load_source_data       : Loaded 8400 rows in total
 update_with_target     : Target updated for 15000 clients
 split_dataset          : Train size: 14160 clients
 split_dataset          : Test size: 840 clients
-save_features          : Saved to: "/mnt2/kireev/pycharm-deploy/pytorch-lifestream/experiments/scenario_gender/data/train_trx.parquet"
-save_features          : Saved to: "/mnt2/kireev/pycharm-deploy/pytorch-lifestream/experiments/scenario_gender/data/test_trx.parquet"
+save_features          : Saved to: "experiments/scenario_gender/data/train_trx.parquet"
+save_features          : Saved to: "experiments/scenario_gender/data/test_trx.parquet"
 run                    : Data collected in 172 sec (0:02:52.117716)

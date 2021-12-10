@@ -8,8 +8,8 @@ with open("README.md", "r") as fh:
 setuptools.setup(
     name='pytorch-lifestream',
     version='0.1.1',
-    author='Dmitri Babaev',
-    author_email='dmitri.babaev@gmail.com',
+    author='',
+    author_email='',
     description='Lifestream data analysis with PyTorch',
     long_description=long_description,
     long_description_content_type="text/markdown",
