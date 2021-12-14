@@ -4,10 +4,10 @@
     "model_name": "nn",
     "feature_name": "barlow_twins_finetuning",
     "scores_valid": {
-      "accuracy": 0.5983516573905945
+      "accuracy": 0.5931568145751953
     },
     "scores_test": {
-      "accuracy": 0.6306666731834412
+      "accuracy": 0.6140000224113464
     }
   },
   {
@@ -15,10 +15,10 @@
     "model_name": "nn",
     "feature_name": "barlow_twins_finetuning",
     "scores_valid": {
-      "accuracy": 0.6082780957221985
+      "accuracy": 0.6028586030006409
     },
     "scores_test": {
-      "accuracy": 0.6106666922569275
+      "accuracy": 0.6136666536331177
     }
   },
   {
@@ -26,10 +26,10 @@
     "model_name": "nn",
     "feature_name": "barlow_twins_finetuning",
     "scores_valid": {
-      "accuracy": 0.6061860918998718
+      "accuracy": 0.6013001203536987
     },
     "scores_test": {
-      "accuracy": 0.628333330154419
+      "accuracy": 0.6196666955947876
     }
   },
   {
@@ -37,10 +37,10 @@
     "model_name": "nn",
     "feature_name": "barlow_twins_finetuning",
     "scores_valid": {
-      "accuracy": 0.6028866767883301
+      "accuracy": 0.603644847869873
     },
     "scores_test": {
-      "accuracy": 0.6273333430290222
+      "accuracy": 0.6143333315849304
     }
   },
   {
@@ -48,7 +48,7 @@
     "model_name": "nn",
     "feature_name": "barlow_twins_finetuning",
     "scores_valid": {
-      "accuracy": 0.6079270839691162
+      "accuracy": 0.6067336797714233
     },
     "scores_test": {
       "accuracy": 0.6203333139419556

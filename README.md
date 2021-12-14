@@ -47,12 +47,15 @@ Unsupervised learned embeddings with LightGBM model downstream evaluations:
         barlow_twins     |    0.858 \pm 0.002    |
                          
     Age group (age_pred) accuracy:
-        baseline         |    0.631 \pm 0.003    |
-        cpc_embeddings   |    0.594 \pm 0.002    |
-        mles_embeddings  |    0.638 \pm 0.007    |
-        nsp_embeddings   |    0.622 \pm 0.004    |
-        rtd_embeddings   |    0.632 \pm 0.002    |
-        sop_embeddings   |    0.493 \pm 0.002    |
+        baseline         |    0.629 \pm 0.006    |
+        cpc_embeddings   |    0.596 \pm 0.004    |
+        mles2_embeddings |    0.637 \pm 0.006    |
+        mles_embeddings  |    0.640 \pm 0.004    |
+        nsp_embeddings   |    0.618 \pm 0.005    |
+        random_encoder   |    0.375 \pm 0.008    |
+        rtd_embeddings   |    0.632 \pm 0.008    |
+        sop_embeddings   |    0.533 \pm 0.005    |
+        barlow_twins     |    0.624 \pm 0.002    |
     
     Churn (rosbank) auroc:
         baseline         |    0.825 \pm 0.004    |
@@ -89,10 +92,11 @@ Supervised finetuned encoder with MLP head evaluation:
         target_scores    |    0.858 \pm 0.005    |
 
     Age group (age_pred) accuracy:
-        cpc_finetuning   |    0.615 \pm 0.009    |
-        mles_finetuning  |    0.644 \pm 0.004    |
-        rtd_finetuning   |    0.635 \pm 0.006    |
-        target_scores    |    0.628 \pm 0.004    |
+        barlow_twins     |    0.616 \pm 0.004    |
+        cpc_finetuning   |    0.619 \pm 0.005    |
+        mles_finetuning  |    0.618 \pm 0.008    |
+        rtd_finetuning   |    0.595 \pm 0.009    |
+        target_scores    |    0.621 \pm 0.008    |
     
     Churn (rosbank) auroc:
         cpc_finetuning   |    0.810 \pm 0.006    |
