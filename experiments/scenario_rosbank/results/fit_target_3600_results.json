@@ -4,10 +4,10 @@
     "model_name": "nn",
     "feature_name": "target_scores_3600",
     "scores_valid": {
-      "auroc": 0.8178287148475647
+      "auroc": 0.8088027238845825
     },
     "scores_test": {
-      "auroc": 0.8117096424102783
+      "auroc": 0.8125504851341248
     }
   },
   {
@@ -15,10 +15,10 @@
     "model_name": "nn",
     "feature_name": "target_scores_3600",
     "scores_valid": {
-      "auroc": 0.7940042018890381
+      "auroc": 0.7771627902984619
     },
     "scores_test": {
-      "auroc": 0.8257736563682556
+      "auroc": 0.8148752450942993
     }
   },
   {
@@ -26,10 +26,10 @@
     "model_name": "nn",
     "feature_name": "target_scores_3600",
     "scores_valid": {
-      "auroc": 0.8198828101158142
+      "auroc": 0.8011527061462402
     },
     "scores_test": {
-      "auroc": 0.8206789493560791
+      "auroc": 0.816771388053894
     }
   },
   {
@@ -37,10 +37,10 @@
     "model_name": "nn",
     "feature_name": "target_scores_3600",
     "scores_valid": {
-      "auroc": 0.8083701133728027
+      "auroc": 0.7825417518615723
     },
     "scores_test": {
-      "auroc": 0.8294339179992676
+      "auroc": 0.8138365745544434
     }
   },
   {
@@ -48,10 +48,10 @@
     "model_name": "nn",
     "feature_name": "target_scores_3600",
     "scores_valid": {
-      "auroc": 0.8071380257606506
+      "auroc": 0.781255841255188
     },
     "scores_test": {
-      "auroc": 0.8202502727508545
+      "auroc": 0.8222782611846924
     }
   }
 ]
