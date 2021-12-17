@@ -4,10 +4,10 @@
     "model_name": "nn",
     "feature_name": "target_scores_01986",
     "scores_valid": {
-      "accuracy": 0.5824176073074341
+      "accuracy": 0.5757820010185242
     },
     "scores_test": {
-      "accuracy": 0.5732051730155945
+      "accuracy": 0.565856397151947
     }
   },
   {
@@ -15,10 +15,10 @@
     "model_name": "nn",
     "feature_name": "target_scores_01986",
     "scores_valid": {
-      "accuracy": 0.5741205811500549
+      "accuracy": 0.5698049664497375
     },
     "scores_test": {
-      "accuracy": 0.5647258162498474
+      "accuracy": 0.5618993639945984
     }
   },
   {
@@ -26,10 +26,10 @@
     "model_name": "nn",
     "feature_name": "target_scores_01986",
     "scores_valid": {
-      "accuracy": 0.5804020166397095
+      "accuracy": 0.5725835561752319
     },
     "scores_test": {
-      "accuracy": 0.5749010443687439
+      "accuracy": 0.5715093016624451
     }
   },
   {
@@ -37,10 +37,10 @@
     "model_name": "nn",
     "feature_name": "target_scores_01986",
     "scores_valid": {
-      "accuracy": 0.5738065242767334
+      "accuracy": 0.575586199760437
     },
     "scores_test": {
-      "accuracy": 0.5675522685050964
+      "accuracy": 0.5726398825645447
     }
   },
   {
@@ -48,10 +48,10 @@
     "model_name": "nn",
     "feature_name": "target_scores_01986",
     "scores_valid": {
-      "accuracy": 0.5706658363342285
+      "accuracy": 0.5697332620620728
     },
     "scores_test": {
-      "accuracy": 0.563029944896698
+      "accuracy": 0.5585076212882996
     }
   }
 ]
