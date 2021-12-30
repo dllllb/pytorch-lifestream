@@ -2,8 +2,8 @@ export SC_SUFFIX="subseq_SampleRandom"
 export SC_STRATEGY="SampleRandom"
 python ../../pl_train_module.py \
     logger_name=${SC_SUFFIX} \
-    params.train.split_strategy.split_strategy=$SC_STRATEGY \
-    params.valid.split_strategy.split_strategy=$SC_STRATEGY \
+    data_module.train.split_strategy.split_strategy=$SC_STRATEGY \
+    data_module.valid.split_strategy.split_strategy=$SC_STRATEGY \
     params.train.batch_size=128 \
     params.valid.batch_size=128 \
     model_path="models/mles__$SC_SUFFIX.p" \
@@ -18,8 +18,8 @@ export SC_SUFFIX="subseq_SplitRandom"
 export SC_STRATEGY="SplitRandom"
 python ../../pl_train_module.py \
     logger_name=${SC_SUFFIX} \
-    params.train.split_strategy.split_strategy=$SC_STRATEGY \
-    params.valid.split_strategy.split_strategy=$SC_STRATEGY \
+    data_module.train.split_strategy.split_strategy=$SC_STRATEGY \
+    data_module.valid.split_strategy.split_strategy=$SC_STRATEGY \
     params.train.batch_size=128 \
     params.valid.batch_size=128 \
     model_path="models/mles__$SC_SUFFIX.p" \

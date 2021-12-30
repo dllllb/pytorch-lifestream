@@ -31,6 +31,7 @@ export SC_SUFFIX="lr_cosine_annealing"
 python ../../pl_train_module.py \
     logger_name=${SC_SUFFIX} \
     params.lr_scheduler.CosineAnnealing=true \
+    params.train.lr_scheduler.n_epoch=30 \
     model_path="models/mles__$SC_SUFFIX.p" \
     --conf "conf/mles_params.hocon"
 python ../../pl_inference.py \

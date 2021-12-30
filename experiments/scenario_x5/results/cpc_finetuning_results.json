@@ -4,10 +4,10 @@
     "model_name": "nn",
     "feature_name": "cpc_finetuning",
     "scores_valid": {
-      "accuracy": 0.5213146805763245
+      "accuracy": 0.5218884944915771
     },
     "scores_test": {
-      "accuracy": 0.5247780680656433
+      "accuracy": 0.5263580083847046
     }
   },
   {
@@ -15,10 +15,10 @@
     "model_name": "nn",
     "feature_name": "cpc_finetuning",
     "scores_valid": {
-      "accuracy": 0.5215059518814087
+      "accuracy": 0.5222797393798828
     },
     "scores_test": {
-      "accuracy": 0.5255053639411926
+      "accuracy": 0.5269097685813904
     }
   },
   {
@@ -26,10 +26,10 @@
     "model_name": "nn",
     "feature_name": "cpc_finetuning",
     "scores_valid": {
-      "accuracy": 0.5238708257675171
+      "accuracy": 0.5241542458534241
     },
     "scores_test": {
-      "accuracy": 0.5257812142372131
+      "accuracy": 0.5259818434715271
     }
   },
   {
@@ -37,10 +37,10 @@
     "model_name": "nn",
     "feature_name": "cpc_finetuning",
     "scores_valid": {
-      "accuracy": 0.5222345590591431
+      "accuracy": 0.523415207862854
     },
     "scores_test": {
-      "accuracy": 0.5262075662612915
+      "accuracy": 0.5200381278991699
     }
   },
   {
@@ -48,10 +48,10 @@
     "model_name": "nn",
     "feature_name": "cpc_finetuning",
     "scores_valid": {
-      "accuracy": 0.5263194441795349
+      "accuracy": 0.5255056619644165
     },
     "scores_test": {
-      "accuracy": 0.5273862481117249
+      "accuracy": 0.5277373790740967
     }
   }
 ]

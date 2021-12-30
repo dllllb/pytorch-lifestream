@@ -1,1 +1,57 @@
-[{"fold_id": 0, "model_name": "nn", "feature_name": "mles_finetuning_200000", "scores_valid": {"accuracy": 0.5534358059616216, "cnt_samples": 71759, "cnt_features": 400}, "scores_test": {"accuracy": 0.5487535737573356, "cnt_samples": 39874, "cnt_features": 400}}, {"fold_id": 1, "model_name": "nn", "feature_name": "mles_finetuning_200000", "scores_valid": {"accuracy": 0.5505929569810059, "cnt_samples": 71759, "cnt_features": 400}, "scores_test": {"accuracy": 0.548302151778101, "cnt_samples": 39874, "cnt_features": 400}}, {"fold_id": 2, "model_name": "nn", "feature_name": "mles_finetuning_200000", "scores_valid": {"accuracy": 0.5520143814713137, "cnt_samples": 71759, "cnt_features": 400}, "scores_test": {"accuracy": 0.5472989918242464, "cnt_samples": 39874, "cnt_features": 400}}, {"fold_id": 3, "model_name": "nn", "feature_name": "mles_finetuning_200000", "scores_valid": {"accuracy": 0.5501748909544447, "cnt_samples": 71759, "cnt_features": 400}, "scores_test": {"accuracy": 0.5492551537342629, "cnt_samples": 39874, "cnt_features": 400}}, {"fold_id": 4, "model_name": "nn", "feature_name": "mles_finetuning_200000", "scores_valid": {"accuracy": 0.5512138019454277, "cnt_samples": 71758, "cnt_features": 400}, "scores_test": {"accuracy": 0.5519386066108241, "cnt_samples": 39874, "cnt_features": 400}}]
+[
+  {
+    "fold_id": "0",
+    "model_name": "nn",
+    "feature_name": "mles_finetuning_200000",
+    "scores_valid": {
+      "accuracy": 0.54213947057724
+    },
+    "scores_test": {
+      "accuracy": 0.5504087805747986
+    }
+  },
+  {
+    "fold_id": "1",
+    "model_name": "nn",
+    "feature_name": "mles_finetuning_200000",
+    "scores_valid": {
+      "accuracy": 0.5420684814453125
+    },
+    "scores_test": {
+      "accuracy": 0.5499072074890137
+    }
+  },
+  {
+    "fold_id": "2",
+    "model_name": "nn",
+    "feature_name": "mles_finetuning_200000",
+    "scores_valid": {
+      "accuracy": 0.5468944311141968
+    },
+    "scores_test": {
+      "accuracy": 0.5505592823028564
+    }
+  },
+  {
+    "fold_id": "3",
+    "model_name": "nn",
+    "feature_name": "mles_finetuning_200000",
+    "scores_valid": {
+      "accuracy": 0.5450979471206665
+    },
+    "scores_test": {
+      "accuracy": 0.5491548180580139
+    }
+  },
+  {
+    "fold_id": "4",
+    "model_name": "nn",
+    "feature_name": "mles_finetuning_200000",
+    "scores_valid": {
+      "accuracy": 0.5451124906539917
+    },
+    "scores_test": {
+      "accuracy": 0.5491548180580139
+    }
+  }
+]
