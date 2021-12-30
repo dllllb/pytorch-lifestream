@@ -1,7 +1,0 @@
-                                                   oof_accuracy                                                         test_accuracy                                                        
-                                                           mean t_int_l t_int_h    std                           values          mean t_int_l t_int_h    std                           values
-name                                                                                                                                                                                         
-lgb_embeds: emb__cosine_annealing.pickle                 0.5413  0.5398  0.5428 0.0012  [0.540 0.541 0.541 0.542 0.543]        0.5382  0.5379  0.5386 0.0003  [0.538 0.538 0.538 0.538 0.539]
-lgb_embeds: emb__reduce_on_plateau.pickle                0.5376  0.5355  0.5396 0.0016  [0.535 0.537 0.538 0.539 0.539]        0.5363  0.5354  0.5372 0.0007  [0.535 0.536 0.536 0.537 0.537]
-lgb_embeds: emb__reduce_on_plateau_x2epochs.pickle       0.5410  0.5383  0.5436 0.0022  [0.539 0.539 0.540 0.543 0.544]        0.5390  0.5369  0.5412 0.0017  [0.537 0.538 0.539 0.540 0.542]
-lgb_embeds: mles_embeddings.pickle                       0.5420  0.5396  0.5445 0.0020  [0.540 0.540 0.543 0.544 0.544]        0.5403  0.5394  0.5411 0.0007  [0.539 0.540 0.541 0.541 0.541]

@@ -1,6 +1,0 @@
-                                     oof_accuracy                                                         test_accuracy                                                        
-                                             mean t_int_l t_int_h    std                           values          mean t_int_l t_int_h    std                           values
-name                                                                                                                                                                           
-lgb_embeds: emb__SampleRandom.pickle       0.5225  0.5215  0.5234 0.0008  [0.521 0.522 0.522 0.523 0.523]        0.5224  0.5221  0.5228 0.0003  [0.522 0.522 0.523 0.523 0.523]
-lgb_embeds: emb__SplitRandom.pickle        0.5047  0.5032  0.5062 0.0012  [0.503 0.504 0.505 0.505 0.506]        0.5040  0.5031  0.5049 0.0007  [0.503 0.504 0.504 0.504 0.505]
-lgb_embeds: mles_embeddings.pickle         0.5420  0.5396  0.5445 0.0020  [0.540 0.540 0.543 0.544 0.544]        0.5403  0.5394  0.5411 0.0007  [0.539 0.540 0.541 0.541 0.541]

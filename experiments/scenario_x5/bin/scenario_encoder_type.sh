@@ -29,4 +29,4 @@ python -m embeddings_validation \
     --conf conf/embeddings_validation_short.hocon --workers 10 --total_cpu_count 20 \
     --conf_extra \
       'report_file: "../results/scenario_x5__encoder_types.txt",
-      auto_features: ["../data/emb__encoder_*.pickle"]'
+      auto_features: ["../data/emb_mles__encoder_*.pickle"]'
