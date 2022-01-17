@@ -8,6 +8,8 @@ from random import Random
 import numpy as np
 import pandas as pd
 
+from dltranz.lib.data_preprocessing.util import pd_hist
+
 logger = logging.getLogger(__name__)
 
 
@@ -48,19 +50,6 @@ def load_source_data(data_path, trx_files):
     data = pd.concat(data, axis=0)
     logger.info(f'Loaded {len(data)} rows in total')
     return data
-
-
-def pd_hist(data, name, bins=10):
-    if data.dtype.kind == 'f':
-        bins = np.linspace(data.min(), data.max(), bins + 1).round(1)
-    elif np.percentile(data, 99) - data.min() > bins - 1:
-        bins = np.linspace(data.min(), np.percentile(data, 99), bins).astype(int).tolist() + [int(data.max() + 1)]
-    else:
-        bins = np.arange(data.min(), data.max() + 2, 1).astype(int)
-    df = pd.cut(data, bins, right=False).rename(name)
-    df = df.to_frame().assign(cnt=1).groupby(name)[['cnt']].sum()
-    df['% of total'] = df['cnt'] / df['cnt'].sum()
-    return df
 
 
 def encode_col(col):

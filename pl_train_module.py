@@ -71,7 +71,6 @@ def main(args=None):
         logger.info(f'Create ModelCheckpoint callback every_n_val_epochs ="{every_n_val_epochs}"')
         _trainer_params['callbacks'].extend([every_n_val_epochs, checkpoint_callback])
 
-
     if 'logger_name' in conf:
         _trainer_params['logger'] = TensorBoardLogger(
             save_dir='lightning_logs',
