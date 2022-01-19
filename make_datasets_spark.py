@@ -29,6 +29,7 @@ class DatasetConverter:
         parser.add_argument('--target_files', nargs='*', default=[])
 
         parser.add_argument('--print_dataset_info', action='store_true')
+        parser.add_argument('--sample_fraction', type=float, default=None)
         parser.add_argument('--col_client_id', type=str)
         parser.add_argument('--cols_event_time', nargs='+')
 
@@ -84,10 +85,16 @@ class DatasetConverter:
         return data
 
     def pd_hist(self, df, name, bins=10):
-        data = df.select(name).toPandas()[name]
+        # logger.info('pd_hist begin')
+        # logger.info(f'sf = {self.config.sample_fraction}')
+        data = df.select(name)
+        if self.config.sample_fraction is not None:
+            data = data.sample(fraction=self.config.sample_fraction)
+        data = data.toPandas()[name]
 
         if data.dtype.kind == 'f':
-            bins = np.linspace(data.min(), data.max(), bins + 1).round(1)
+            round_len = 1 if data.max() > bins + 1 else 2
+            bins = np.linspace(data.min(), data.max(), bins + 1).round(round_len)
         elif np.percentile(data, 99) - data.min() > bins - 1:
             bins = np.linspace(data.min(), np.percentile(data, 99), bins).astype(int).tolist() + [int(data.max() + 1)]
         else:
@@ -95,6 +102,7 @@ class DatasetConverter:
         df = pd.cut(data, bins, right=False).rename(name)
         df = df.to_frame().assign(cnt=1).groupby(name)[['cnt']].sum()
         df['% of total'] = df['cnt'] / df['cnt'].sum()
+        logger.info('pd_hist end')
         return df
 
     def get_encoder(self, df, col_name):
