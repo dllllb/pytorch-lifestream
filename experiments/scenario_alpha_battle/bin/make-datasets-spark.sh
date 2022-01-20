@@ -1,10 +1,11 @@
 #!/usr/bin/env bash
 
 export PYTHONPATH="../../"
+# 9.8 Gb per worker
 SPARK_LOCAL_IP="127.0.0.1" spark-submit \
-    --master local[20] \
+    --master local[24] \
     --name "Alpha battle Make Dataset" \
-    --driver-memory 128G \
+    --driver-memory 240G \
     --conf spark.sql.shuffle.partitions=500 \
     --conf spark.sql.parquet.compression.codec="snappy" \
     --conf spark.ui.port=4041 \

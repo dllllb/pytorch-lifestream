@@ -3,6 +3,7 @@ import logging
 import glob
 import pandas as pd
 import pytorch_lightning as pl
+import torch.multiprocessing
 from torch.utils.data import ChainDataset
 from torch.utils.data.dataloader import DataLoader
 
@@ -48,6 +49,11 @@ def create_inference_dataloader(conf, pl_module):
 
 def main(args=None):
     conf = get_conf(args)
+
+    if 'torch_multiprocessing_sharing_strategy' in conf['inference_dataloader']:
+        torch.multiprocessing.set_sharing_strategy(
+            conf['inference_dataloader.torch_multiprocessing_sharing_strategy']
+        )
 
     if 'seed_everything' in conf:
         pl.seed_everything(conf['seed_everything'])

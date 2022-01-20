@@ -1,0 +1,67 @@
+{
+    include "embeddings_validation.hocon"
+
+    report_file: "../results/scenario_alpha_battle_baselines_unsupervised.txt"
+
+    features: {
+        baseline: {
+            enabled: true
+            read_params: {file_name: ../data/agg_feat_embed.pickle}
+            target_options: {}
+        }
+        random_encoder: {
+            enabled: true
+            read_params: {file_name: ../data/random_embeddings.pickle}
+            target_options: {}
+        }
+        mles_embeddings: {
+            enabled: true
+            read_params: {file_name: ../data/mles_embeddings.pickle}
+            target_options: {}
+        }
+        cpc_embeddings: {
+            enabled: false
+            read_params: {file_name: ../data/cpc_embeddings.pickle}
+            target_options: {}
+        }
+        sop_embeddings: {
+            enabled: false
+            read_params: {file_name: ../data/sop_embeddings.pickle}
+            target_options: {}
+        }
+        nsp_embeddings: {
+            enabled: false
+            read_params: {file_name: ../data/nsp_embeddings.pickle}
+            target_options: {}
+        }
+        rtd_embeddings: {
+            enabled: false
+            read_params: {file_name: ../data/rtd_embeddings.pickle}
+            target_options: {}
+        }
+        mles2_embeddings: {
+            enabled: false
+            read_params: {file_name: ../data/mles2_embeddings.pickle}
+            target_options: {}
+        }
+        barlow_twins_embeddings: {
+            enabled: false
+            read_params: {file_name: ../data/barlow_twins_embeddings.pickle}
+            target_options: {}
+        }
+    }
+
+    external_scores: {
+    }
+
+    report: {
+        is_check_train: false
+        error_handling: fail
+        print_all_metrics: false
+
+        metrics: {
+            auroc: {float_format: "{:.4f}", baseline_key=["lgbm", "baseline"], split_columns: true}
+            accuracy: {float_format: "{:.4f}", baseline_key=["lgbm", "baseline"], split_columns: true}
+        }
+    }
+}

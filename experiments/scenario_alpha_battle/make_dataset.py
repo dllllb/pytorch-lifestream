@@ -131,6 +131,25 @@ class LocalDatasetConverter(DatasetConverter):
         df_trx = self.collect_lists(df_trx, self.config.col_client_id)
         return df_trx, file_name
 
+    def collect_lists(self, df, col_id):
+        col_list = [col for col in df.columns if col != col_id]
+
+        # if self.config.save_partitioned_data:
+        #     df = df.withColumn('mon_id', (F.col('event_time') / 30).cast('int'))
+        #     col_id = [col_id, 'mon_id']
+        #
+        df = df.withColumn('_rn', F.row_number().over(Window.partitionBy(col_id).orderBy('event_time')))
+
+        df = df.groupby(col_id).agg(*[
+            F.sort_array(F.collect_list(F.struct('_rn', col))).alias(col)
+            for col in col_list
+        ])
+        for col in col_list:
+            df = df.withColumn(col, F.col(f'{col}.{col}'))
+
+        # df = df.drop('_rn')
+        return df
+
 
 if __name__ == '__main__':
     LocalDatasetConverter().run()

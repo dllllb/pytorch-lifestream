@@ -1,0 +1,120 @@
+{
+  data_module: {
+    type: iterable
+    setup: {
+      col_id: app_id
+      dataset_files: {
+        data_path: "data/train_trx.parquet"
+      }
+      split_by: files
+      valid_size: 0.05
+      valid_split_seed: 42
+    }
+    train: {
+      min_seq_len: 25
+      buffer_size: 10000
+      augmentations: [
+        [DropoutTrx, {trx_dropout: 0.01}]
+        [SeqLenLimit, {max_seq_len: 1200}]
+      ]
+      num_workers: 16
+      batch_size: 64
+      split_strategy: {
+        split_strategy: "SampleSlices"
+        split_count: 5
+        cnt_min: 25
+        cnt_max: 150
+      }
+    }
+    valid: {
+      augmentations: [
+        [SeqLenLimit, {max_seq_len: 1200}]
+      ]
+      num_workers: 16
+      batch_size: 1024
+      split_strategy: {
+        split_strategy: SampleSlices
+        split_count: 5
+        cnt_min: 25
+        cnt_max: 100
+      }
+    }
+  }
+
+  seed_everything: 42
+  trainer: {
+    gpus: 1
+    auto_select_gpus: 1
+
+    max_steps: 1000
+
+    checkpoint_callback: false
+    deterministic: true
+  }
+  logger_name: agg_features_model
+
+  params: {
+    data_module_class: dltranz.data_load.data_module.coles_data_module.ColesDataModuleTrain
+    pl_module_class: dltranz.lightning_modules.coles_module.CoLESModule
+
+    validation_metric_params: {
+        K: 4
+        metric: cosine
+    }
+
+    encoder_type: agg_features
+    trx_encoder: {
+      embeddings: {
+        currency: {in: 13}
+        operation_kind: {in: 9}
+        card_type: {in: 177}
+        operation_type: {in: 24}
+        operation_type_group: {in: 6}
+        ecommerce_flag: {in: 5}
+        payment_system: {in: 9}
+        income_flag: {in: 5}
+        mcc: {in: 110}
+        country: {in: 26}
+        city: {in: 163}
+        mcc_category: {in: 30}
+        day_of_week: {in: 9}
+        hour: {in: 25}
+        weekofyear: {in: 55}
+      }
+      numeric_values: {
+        amnt: identity
+        hour_diff: log
+      }
+      was_logified: false
+      log_scale_factor: 1
+    }
+    
+    lr_scheduler: {
+      step_size: 30
+      step_gamma: 0.9025
+    }
+
+    head_layers: [
+      [BatchNorm1d, {num_features: "{seq_encoder.embedding_size}"}]
+      [NormEncoder, {}]
+    ]
+
+    train: {
+      sampling_strategy: HardNegativePair
+      neg_count: 5
+      loss: ContrastiveLoss
+      margin: 0.5
+      lr: 0.002
+      weight_decay: 0.0
+    }
+  }
+
+  model_path: "models/agg_features_model.p"
+
+  include "dataset_inference_file.hocon"
+
+  output: {
+    path: data/agg_feat_embed
+    format: pickle
+  }
+}
