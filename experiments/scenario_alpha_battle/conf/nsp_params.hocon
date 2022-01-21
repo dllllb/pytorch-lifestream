@@ -23,7 +23,7 @@
         [DropoutTrx, {trx_dropout: 0.01}]
       ]
       num_workers: 8
-      batch_size: 128
+      batch_size: 256
     }
     valid: {
       split_strategy: {
@@ -34,7 +34,7 @@
       }
       augmentations: []
       num_workers: 16
-      batch_size: 128
+      batch_size: 256
     }
   }
   logger_name: nsp_model

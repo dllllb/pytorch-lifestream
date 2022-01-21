@@ -68,7 +68,7 @@
         mcc_category: {in: 30, out: 16}
         day_of_week: {in: 9, out: 2}
         hour: {in: 25, out: 2}
-        weekofyear: {in: 55, out: 2}
+        # weekofyear: {in: 55, out: 2}
       },
       numeric_values: {
         amnt: identity

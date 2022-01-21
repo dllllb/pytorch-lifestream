@@ -20,32 +20,37 @@
             target_options: {}
         }
         cpc_embeddings: {
-            enabled: false
+            enabled: true
             read_params: {file_name: ../data/cpc_embeddings.pickle}
             target_options: {}
         }
         sop_embeddings: {
-            enabled: false
+            enabled: true
             read_params: {file_name: ../data/sop_embeddings.pickle}
             target_options: {}
         }
         nsp_embeddings: {
-            enabled: false
+            enabled: true
             read_params: {file_name: ../data/nsp_embeddings.pickle}
             target_options: {}
         }
         rtd_embeddings: {
-            enabled: false
+            enabled: true
             read_params: {file_name: ../data/rtd_embeddings.pickle}
             target_options: {}
         }
         mles2_embeddings: {
-            enabled: false
+            enabled: true
             read_params: {file_name: ../data/mles2_embeddings.pickle}
             target_options: {}
         }
+        mlest_embeddings: {
+            enabled: true
+            read_params: {file_name: ../data/mlest_embeddings.pickle}
+            target_options: {}
+        }
         barlow_twins_embeddings: {
-            enabled: false
+            enabled: true
             read_params: {file_name: ../data/barlow_twins_embeddings.pickle}
             target_options: {}
         }

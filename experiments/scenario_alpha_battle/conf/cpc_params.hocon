@@ -18,14 +18,14 @@
         [SeqLenLimit, {max_seq_len: 800}]
       ]
       num_workers: 8
-      batch_size: 32
+      batch_size: 256
     }
     valid: {
       augmentations: [
         [SeqLenLimit, {max_seq_len: 800}]
       ]
       num_workers: 16
-      batch_size: 64
+      batch_size: 256
     }
   }
 

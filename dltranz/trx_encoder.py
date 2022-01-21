@@ -175,6 +175,8 @@ class TrxEncoder(nn.Module):
         for emb_name, emb_props in config['embeddings'].items():
             if emb_props.get('disabled', False):
                 continue
+            if emb_props['out'] == 0:
+                continue
             self.embeddings[emb_name] = NoisyEmbedding(
                 num_embeddings=emb_props['in'],
                 embedding_dim=emb_props['out'],
