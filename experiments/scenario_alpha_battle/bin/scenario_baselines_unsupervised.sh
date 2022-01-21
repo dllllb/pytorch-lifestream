@@ -41,8 +41,7 @@ python ../../pl_inference.py    \
     output.path="data/mles2_embeddings" \
     --conf conf/mles_params.hocon
 
-# Check COLEs with split_count=2
-# was
+# Check COLEs with transformer encoder
 python ../../pl_train_module.py \
     params.encoder_type=transf \
     trainer.max_epochs=3 \
