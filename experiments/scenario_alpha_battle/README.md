@@ -4,7 +4,7 @@
 cd experiments/scenario_alpha_battle
 
 # download datasets
-sh bin/get-data2.sh
+sh bin/get-data.sh
 
 # convert datasets from transaction list to features for metric learning
 sh bin/make-datasets-spark.sh

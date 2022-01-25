@@ -18,7 +18,7 @@ class LocalDatasetConverter(DatasetConverter):
     FILE_NAME_TRAIN = 'train_transactions_contest.parquet'
     FILE_NAME_TEST = 'test_transactions_contest.parquet'
     COL_EVENT_TIME = 'transaction_number'
-    FILE_NAME_TARGET = 'alfabattle2_train_target.csv'
+    FILE_NAME_TARGET = 'train_target.csv'
 
     def load_transactions(self):
         df_train = self.spark_read_file(self.path_to_file(self.FILE_NAME_TRAIN))
