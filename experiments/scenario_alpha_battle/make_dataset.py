@@ -63,8 +63,7 @@ class LocalDatasetConverter(DatasetConverter):
 
         logger.info(f'{df_target_train.count()} apps in train, {df_target_test.count()} in test')
 
-        test_ids = df_target_test.select(self.config.col_client_id).distinct().toPandas()
-        test_ids.to_csv(self.config.output_test_ids_path, index=False)
+        self.save_test_ids(df_target_test)
 
         logger.info(f'Start processing')
         for path in sorted(glob(self.path_to_file(self.FILE_NAME_TRAIN) + '/*.parquet')):

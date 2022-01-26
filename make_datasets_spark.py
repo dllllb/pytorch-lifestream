@@ -102,7 +102,6 @@ class DatasetConverter:
         df = pd.cut(data, bins, right=False).rename(name)
         df = df.to_frame().assign(cnt=1).groupby(name)[['cnt']].sum()
         df['% of total'] = df['cnt'] / df['cnt'].sum()
-        logger.info('pd_hist end')
         return df
 
     def get_encoder(self, df, col_name):
@@ -415,11 +414,14 @@ class DatasetConverter:
             )
 
         if save_test_id:
-            test_ids = test.select(self.config.col_client_id).distinct().toPandas()
-            test_ids.to_csv(self.config.output_test_ids_path, index=False)
+            self.save_test_ids(test)
 
         _duration = datetime.datetime.now() - _start
         logger.info(f'Data collected in {_duration.seconds} sec ({_duration})')
+
+    def save_test_ids(self, df_test):
+        test_ids = df_test.select(self.config.col_client_id).distinct().toPandas()
+        test_ids.to_csv(self.config.output_test_ids_path, index=False)
 
     def load_target(self):
         df_target = self.load_source_data(self.config.target_files)
