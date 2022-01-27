@@ -20,7 +20,7 @@ class PandasDataPreprocessor(DataPreprocessor):
         * groups flat data by `col_id`;
         * arranges data into list of dicts with features
 
-    Attributes
+    Parameters
     ----------
     col_id : str
         name of column with ids
@@ -30,9 +30,9 @@ class PandasDataPreprocessor(DataPreprocessor):
         list of category columns
     cols_log_norm : list[str],
         list of columns to be logarithmed
-    time_transformation='default',
+    time_transformation: str. Default: 'default'.
         type of transformation to be applied to time column
-    print_dataset_info : bool, default=False
+    print_dataset_info : bool. Default: False.
         If True, print dataset stats during preprocessor fitting and data transformation
     """
 
@@ -128,14 +128,12 @@ class PandasDataPreprocessor(DataPreprocessor):
             .groupby(self.col_id).apply(lambda x: {k: np.array(v) for k, v in x.to_dict(orient='list').items()}) \
             .rename('feature_arrays').reset_index().to_dict(orient='records')
 
-        def copy_time(rec):
-            rec['event_time'] = rec['feature_arrays']['event_time']
-            del rec['feature_arrays']['event_time']
-            return rec
-        features = [copy_time(r) for r in features]
+        def squeeze(rec):
+            return {self.col_id: rec[self.col_id], **rec['feature_arrays']}
+        features = [squeeze(r) for r in features]
 
         if self.print_dataset_info:
-            feature_names = list(features[0]['feature_arrays'].keys())
+            feature_names = list(features[0].keys())
             logger.info(f'Feature names: {feature_names}')
 
         logger.info(f'Prepared features for {len(features)} clients')

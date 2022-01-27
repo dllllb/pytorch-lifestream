@@ -45,3 +45,8 @@ class DataPreprocessor:
         dt_transformed : Transformed data.
         """
         return self.fit(dt, **fit_params).transform(dt)
+
+    def get_category_sizes(self):
+        """Gets a dict of mapping to integers lengths for categories
+        """
+        return {k: len(v) for k, v in self.cols_category_mapping.items()}

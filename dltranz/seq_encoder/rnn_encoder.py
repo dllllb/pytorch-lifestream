@@ -101,7 +101,7 @@ class RnnSeqEncoder(AbsSeqEncoder):
 
     @property
     def embedding_size(self):
-        return self.params['rnn.hidden_size']
+        return self.params['rnn']['hidden_size']
 
     def forward(self, x):
         x = self.model(x)

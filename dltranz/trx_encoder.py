@@ -179,7 +179,7 @@ class TrxEncoder(nn.Module):
                 num_embeddings=emb_props['in'],
                 embedding_dim=emb_props['out'],
                 padding_idx=0,
-                max_norm=1 if config['norm_embeddings'] else None,
+                max_norm=1 if config.get('norm_embeddings', False) else None,
                 noise_scale=config['embeddings_noise'],
             )
 

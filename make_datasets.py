@@ -8,7 +8,7 @@ from random import Random
 import numpy as np
 import pandas as pd
 
-from dltranz.lib.data_preprocessing.util import pd_hist
+from dltranz.data_preprocessing.util import pd_hist
 
 logger = logging.getLogger(__name__)
 
