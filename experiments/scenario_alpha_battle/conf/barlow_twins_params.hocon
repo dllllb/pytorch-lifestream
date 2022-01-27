@@ -23,7 +23,7 @@
         [DropoutTrx, {trx_dropout: 0.01}]
       ]
       num_workers: 8
-      batch_size: 256
+      batch_size: 512
     }
     valid: {
       split_strategy: {
@@ -34,7 +34,7 @@
       }
       augmentations: []
       num_workers: 16
-      batch_size: 256
+      batch_size: 512
     }
   }
 
@@ -66,19 +66,19 @@
       embeddings: {
         currency: {in: 13, out: 2}
         operation_kind: {in: 9, out: 2}
-        card_type: {in: 177, out: 2}
-        operation_type: {in: 24, out: 2}
-        operation_type_group: {in: 6, out: 2}
+        card_type: {in: 177, out: 0}
+        operation_type: {in: 24, out: 4}
+        operation_type_group: {in: 6, out: 32}
         ecommerce_flag: {in: 5, out: 1}
-        payment_system: {in: 9, out: 2}
+        payment_system: {in: 9, out: 4}
         income_flag: {in: 5, out: 1}
-        mcc: {in: 110, out: 16}
-        country: {in: 26, out: 1}
-        city: {in: 163, out: 1}
+        mcc: {in: 110, out: 32}
+        country: {in: 26, out: 0}
+        city: {in: 163, out: 0}
         mcc_category: {in: 30, out: 16}
         day_of_week: {in: 9, out: 2}
-        hour: {in: 25, out: 2}
-        weekofyear: {in: 55, out: 2}
+        hour: {in: 25, out: 4}
+        weekofyear: {in: 55, out: 4}
       },
       numeric_values: {
         amnt: identity
@@ -87,16 +87,16 @@
     },
     rnn: {
       type: gru,
-      hidden_size: 128,
+      hidden_size: 1024,
       bidir: false,
       trainable_starter: static
     },
     head_layers: [
-        [Linear, {in_features: "{seq_encoder.embedding_size}", out_features: 256, bias: false}]
-        [BatchNorm1d, {num_features: 256}]
+        [Linear, {in_features: "{seq_encoder.embedding_size}", out_features: 1024, bias: false}]
+        [BatchNorm1d, {num_features: 1024}]
         [ReLU, {}]
-        [Linear, {in_features: 256, out_features: 256, bias: false}]
-        [BatchNorm1d, {num_features: 256, affine: False}]
+        [Linear, {in_features: 1024, out_features: 1024, bias: false}]
+        [BatchNorm1d, {num_features: 1024, affine: False}]
     ]
     transf: {
       train_starter: true,
@@ -112,18 +112,19 @@
       use_src_key_padding_mask: false
     },
     lr_scheduler: {
-      step_size: 3,
-      step_gamma: 0.9025
+      step_size: 1,
+      step_gamma: 0.8
     },
     train: {
       sampling_strategy: HardNegativePair,
       neg_count: 5,
       loss: BarlowTwinsLoss,
       lambd: 0.04,
-      lr: 0.002,
+      lr: 0.001,
       weight_decay: 0.0
+      checkpoints_every_n_val_epochs: 1
     }
-  },
+  }
 
   model_path: "models/barlow_twins_model.p"
 

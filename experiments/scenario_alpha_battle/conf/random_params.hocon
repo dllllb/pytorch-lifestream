@@ -38,7 +38,7 @@
     },
     rnn: {
       type: gru,
-      hidden_size: 128,
+      hidden_size: 1024,
       bidir: false,
       trainable_starter: static
     },

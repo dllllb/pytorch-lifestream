@@ -56,18 +56,18 @@
       embeddings: {
         currency: {in: 13, out: 2}
         operation_kind: {in: 9, out: 2}
-        card_type: {in: 177, out: 2}
-        operation_type: {in: 24, out: 2}
-        operation_type_group: {in: 6, out: 2}
+        card_type: {in: 177, out: 0}
+        operation_type: {in: 24, out: 4}
+        operation_type_group: {in: 6, out: 32}
         ecommerce_flag: {in: 5, out: 1}
-        payment_system: {in: 9, out: 2}
+        payment_system: {in: 9, out: 4}
         income_flag: {in: 5, out: 1}
-        mcc: {in: 110, out: 16}
-        country: {in: 26, out: 1}
-        city: {in: 163, out: 1}
+        mcc: {in: 110, out: 32}
+        country: {in: 26, out: 0}
+        city: {in: 163, out: 0}
         mcc_category: {in: 30, out: 16}
         day_of_week: {in: 9, out: 2}
-        hour: {in: 25, out: 2}
+        hour: {in: 25, out: 4}
         # weekofyear: {in: 55, out: 2}
       },
       numeric_values: {
@@ -77,7 +77,7 @@
     },
     rnn: {
       type: gru,
-      hidden_size: 128,
+      hidden_size: 1024,
       bidir: false,
       trainable_starter: static
     },
@@ -87,8 +87,9 @@
       patience: 3
     },
     train: {
-      lr: 0.002,
+      lr: 0.001,
       weight_decay: 0.0
+      checkpoints_every_n_val_epochs: 1
     }
   }
 

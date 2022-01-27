@@ -87,7 +87,7 @@
     },
     rnn: {
       type: gru,
-      hidden_size: 128,
+      hidden_size: 1024,
       bidir: false,
       trainable_starter: static
     },
@@ -108,16 +108,17 @@
       use_src_key_padding_mask: false
     },
     lr_scheduler: {
-      step_size: 3,
-      step_gamma: 0.9025
+      step_size: 1,
+      step_gamma: 0.8
     },
     train: {
       sampling_strategy: HardNegativePair,
       neg_count: 5,
       loss: ContrastiveLoss,
       margin: 0.5,
-      lr: 0.002,
+      lr: 0.001,
       weight_decay: 0.0
+      checkpoints_every_n_val_epochs: 1
     }
   }
 
