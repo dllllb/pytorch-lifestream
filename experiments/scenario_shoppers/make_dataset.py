@@ -23,6 +23,7 @@ class LocalDatasetConverter(DatasetConverter):
     def load_transactions(self):
         spark = SparkSession.builder.getOrCreate()
         df_trx = spark.read.csv(self.path_to_file('transactions.csv.gz'), header=True)
+        # df_trx = df_trx.limit(10000)
         df_trx = df_trx.select(
             F.col('id'),
             # F.col('chain').cast('int'),
@@ -77,9 +78,9 @@ class LocalDatasetConverter(DatasetConverter):
     def load_offers(self):
         spark = SparkSession.builder.getOrCreate()
         df_offers = spark.read.csv('./data/offers.csv.gz', header=True)
-        df_offers.select(
+        df_offers = df_offers.select(
             F.col('offer'),
-            F.row_number().over(Window.partitionBy().orderBy(F.lit(1))).alias('offer_id')
+            F.row_number().over(Window.partitionBy().orderBy(F.lit(1))).alias('offer_id'),
         )
         return df_offers
 
@@ -88,18 +89,21 @@ class LocalDatasetConverter(DatasetConverter):
         self.parse_args()
         self.logging_config()
 
+        spark = SparkSession.builder.getOrCreate()
+
+        logger.info(f'Loading ...')
         df_train_hist = self.load_train_history()
         df_trx = self.load_transactions()
 
-        df = df_train_hist  # .union(df_test_hist)
-        ws = Window.partitionBy('repeater', 'offer', 'market', 'chain')
+        df = df_train_hist
+        ws = Window.partitionBy('repeater', 'offer', 'market')
         df = df.withColumn('_hash', F.hash(
             F.concat(F.col(self.config.col_client_id), F.lit(self.config.salt))) / 2**32 + 0.5)
         df = df.withColumn('p', F.row_number().over(ws.orderBy('_hash')) / F.count('*').over(ws))
 
         df_target_train = df.where(F.col('p') >= self.config.test_size).drop('_hash', 'p')
         df_target_test = df.where(F.col('p') < self.config.test_size).drop('_hash', 'p')
-        logger.info(f'{df_target_train.count()} apps in train, {df_target_test.count()} in test')
+        logger.info(f'{df_target_train.count()} ids in train, {df_target_test.count()} in test')
 
         self.save_test_ids(df_target_test)
 
@@ -115,6 +119,7 @@ class LocalDatasetConverter(DatasetConverter):
         encoders['productsize'] = encoders['productsize'].where("productsize < 99")  # top 99 sizes
         for col in cols_category:
             df_trx = self.encode_col(df_trx, col, encoders[col])
+            logger.info(f'Encoded "{col}": {encoders[col].count()} items in dictionary')
 
         df_trx = self.remove_long_trx(df_trx, self.config.max_trx_count, self.config.col_client_id)
         df_trx = self.collect_lists(df_trx, self.config.col_client_id)
@@ -138,6 +143,14 @@ class LocalDatasetConverter(DatasetConverter):
         test_path_to = self.config.output_test_path
         df_trx_train.write.parquet(train_path_to, mode='overwrite')
         df_trx_test.write.parquet(test_path_to, mode='overwrite')
+
+        df = spark.read.parquet(train_path_to)
+        logger.info(f'Train size is {df.count()} unique clients')
+        logger.info(f'Train column list: {df.columns}')
+
+        df = spark.read.parquet(test_path_to)
+        logger.info(f'Test size is {df.count()} unique clients')
+        logger.info(f'Test column list: {df.columns}')
 
         _duration = datetime.datetime.now() - _start
         logger.info(f'Data collected in {_duration.seconds} sec ({_duration})')

@@ -11,7 +11,7 @@ SPARK_LOCAL_IP="127.0.0.1" spark-submit \
     --conf spark.local.dir="data/.spark_local_dir" \
     make_dataset.py \
     --data_path './data/' \
-    --col_client_id "app_id" \
+    --col_client_id "id" \
     --test_size 0.1 \
     --output_train_path "data/train_trx.parquet" \
     --output_test_path "data/test_trx.parquet" \
