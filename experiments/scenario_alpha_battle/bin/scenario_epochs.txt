@@ -1,28 +1,3 @@
-for SC_EPOCHS in 015 010 005 020 025 030 040 050
-do
-  export SC_SUFFIX="epochs_${SC_EPOCHS}"
-  python ../../pl_train_module.py \
-      logger_name=${SC_SUFFIX} \
-      params.rnn.hidden_size=1024 \
-      trainer.max_epochs=${SC_EPOCHS} \
-      model_path="models/mlm__$SC_SUFFIX.p" \
-      --conf conf/mles_params.hocon
-  python ../../pl_inference.py \
-      model_path="models/mlm__$SC_SUFFIX.p" \
-      output.path="data/emb_mles__$SC_SUFFIX" \
-      --conf conf/mles_params.hocon
-done
-
-# Compare
-rm results/scenario_alpha_battle__epochs.txt
-# rm -r conf/embeddings_validation.work/
-python -m embeddings_validation \
-    --conf conf/embeddings_validation_short.hocon --workers 10 --total_cpu_count 20 \
-    --conf_extra \
-      'report_file: "../results/scenario_alpha_battle__epochs.txt",
-      auto_features: ["../data/emb_mles__epochs_*.pickle"]'
-
-
 export SC_SUFFIX="epochs_up_t0_30"
 python ../../pl_train_module.py \
     logger_name=${SC_SUFFIX} \
@@ -89,10 +64,25 @@ python ../../pl_inference.py \
     model_path="lightning_logs/epochs_up_t0_30/version_1/checkpoints/epoch\=11-step\=54203.ckpt" \
     output.path="data/emb_mles__011" \
     --conf conf/mles_params.hocon
+python ../../pl_inference.py \
+    model_path="lightning_logs/epochs_up_t0_30/version_1/checkpoints/epoch\=12-step\=58720.ckpt" \
+    output.path="data/emb_mles__012" \
+    --conf conf/mles_params.hocon
 
 python ../../pl_inference.py \
     model_path="lightning_logs/epochs_up_t0_30/version_1/checkpoints/epoch\=14-step\=67754.ckpt" \
     output.path="data/emb_mles__014" \
+    --conf conf/mles_params.hocon
+
+CUDA_VISIBLE_DEVICES=3 python ../../pl_inference.py \
+    model_path="lightning_logs/epochs_up_t0_30/version_1/checkpoints/epoch\=15-step\=72271.ckpt" \
+    output.path="data/emb_mles__015" \
+    inference_dataloader.loader.batch_size=500 \
+    --conf conf/mles_params.hocon
+CUDA_VISIBLE_DEVICES=3 python ../../pl_inference.py \
+    model_path="lightning_logs/epochs_up_t0_30/version_1/checkpoints/epoch\=16-step\=76788.ckpt" \
+    output.path="data/emb_mles__016" \
+    inference_dataloader.loader.batch_size=500 \
     --conf conf/mles_params.hocon
 python ../../pl_inference.py \
     model_path="lightning_logs/epochs_up_t0_30/version_1/checkpoints/epoch\=17-step\=81305.ckpt" \
@@ -106,6 +96,23 @@ CUDA_VISIBLE_DEVICES=3 python ../../pl_inference.py \
     model_path="lightning_logs/epochs_up_t0_30/version_1/checkpoints/epoch\=19-step\=90339.ckpt" \
     output.path="data/emb_mles__019" \
     inference_dataloader.loader.batch_size=500 \
+    --conf conf/mles_params.hocon
+python ../../pl_inference.py \
+    model_path="lightning_logs/epochs_up_t0_30/version_1/checkpoints/epoch\=20-step\=94856.ckpt" \
+    output.path="data/emb_mles__020" \
+    --conf conf/mles_params.hocon
+python ../../pl_inference.py \
+    model_path="lightning_logs/epochs_up_t0_30/version_1/checkpoints/epoch\=21-step\=99373.ckpt" \
+    output.path="data/emb_mles__021" \
+    --conf conf/mles_params.hocon
+
+python ../../pl_inference.py \
+    model_path="lightning_logs/epochs_up_t0_30/version_1/checkpoints/epoch\=24-step\=112924.ckpt" \
+    output.path="data/emb_mles__024" \
+    --conf conf/mles_params.hocon
+python ../../pl_inference.py \
+    model_path="lightning_logs/epochs_up_t0_30/version_1/checkpoints/epoch\=29-step\=135509.ckpt" \
+    output.path="data/emb_mles__029" \
     --conf conf/mles_params.hocon
 
 rm results/scenario_alpha_battle__epochs.txt

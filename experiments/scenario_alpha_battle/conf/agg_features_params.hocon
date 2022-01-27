@@ -67,15 +67,15 @@
       embeddings: {
         currency: {in: 13}
         operation_kind: {in: 9}
-        card_type: {in: 177}
+        # card_type: {in: 177}
         operation_type: {in: 24}
         operation_type_group: {in: 6}
         ecommerce_flag: {in: 5}
         payment_system: {in: 9}
         income_flag: {in: 5}
         mcc: {in: 110}
-        country: {in: 26}
-        city: {in: 163}
+        # country: {in: 26}
+        # city: {in: 163}
         mcc_category: {in: 30}
         day_of_week: {in: 9}
         hour: {in: 25}
