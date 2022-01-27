@@ -48,5 +48,3 @@ def test_train_loop():
     dl = RandomEventData(params['data_module'])
     trainer = pl.Trainer(max_epochs=1, logger=None, checkpoint_callback=False)
     trainer.fit(model, dl)
-
-test_train_loop()
