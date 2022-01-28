@@ -4,7 +4,7 @@
     }
 
     target: {
-        file_name: "../data/alfabattle2_train_target.csv"
+        file_name: "../data/train_target.csv"
         cols_id: [app_id]
         cols_id_type: [int]
         col_target: flag
@@ -15,7 +15,7 @@
         fit_ids: true
 
         train_id: {
-            file_name: "../data/alfabattle2_train_target.csv"
+            file_name: "../data/train_target.csv"
             drop_duplicated_ids: false
         }
         test_id: {

@@ -23,7 +23,7 @@
         [DropoutTrx, {trx_dropout: 0.01}]
       ]
       num_workers: 8
-      batch_size: 256
+      batch_size: 196
     }
     valid: {
       split_strategy: {
@@ -43,7 +43,7 @@
     gpus: 1
     auto_select_gpus: false
 
-    max_epochs: 3
+    max_epochs: 30
 
     deterministic: True
   }
