@@ -3,6 +3,7 @@ from bisect import bisect_right
 
 import numpy as np
 import torch
+
 from tqdm import tqdm
 
 from dltranz.swa import SWA
