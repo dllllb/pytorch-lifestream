@@ -1,4 +1,4 @@
-We present Contrastive Learning for Event Sequences(CoLES) , a novel self-supervised method for building embeddings
+We present Contrastive Learning for Event Sequences ([CoLES](https://arxiv.org/abs/2002.08232)), a novel self-supervised method for building embeddings
 of discrete event sequences. In particular, the CoLES method can be effectively used to produce embeddings of complex 
 event sequences that can be effectively used in various downstream tasks.
 
