@@ -1,6 +1,6 @@
 `pytorch-lifestream` a library built upon [PyTorch](https://pytorch.org/) for building embeddings on discrete event sequences using self-supervision. It can process terabyte-size volumes of raw events like game history events, clickstream data, purchase history or card transactions.
 
-It consists of various methods:
+It supports various methods of self-supervised training, adapted for event sequences:
 
 - Contrastive Learning for Event Sequences ([CoLES](https://arxiv.org/abs/2002.08232))
 - Contrastive Predictive Coding ([CPC](https://arxiv.org/abs/1807.03748))
