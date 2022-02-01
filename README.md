@@ -1,6 +1,14 @@
-We present Contrastive Learning for Event Sequences(CoLES) , a novel self-supervised method for building embeddings
-of discrete event sequences. In particular, the CoLES method can be effectively used to produce embeddings of complex 
-event sequences that can be effectively used in various downstream tasks.
+`pytorch-lifestream` is the collection of methods for building embeddings of discrete event sequences using self-supervision.
+
+It includes:
+
+- Contrastive Learning for Event Sequences(CoLES)
+- Contrastive Predictive Coding (CPC)
+- Replaced Token Detection (RTD)
+
+It supports several types of encoders, including Transformer and RNN.
+
+It can process terabyte-size volumes of raw events like game history events, clickstream data, purchase history or card transactions.
 
 ## Installation
 
