@@ -2,11 +2,13 @@
 
 It includes:
 
-- Contrastive Learning for Event Sequences(CoLES)
+- Contrastive Learning for Event Sequences (CoLES)
 - Contrastive Predictive Coding (CPC)
 - Replaced Token Detection (RTD)
+- Next Sequence Prediction (NSP)
+- Sequences Order Prediction (SOP)
 
-It supports several types of encoders, including Transformer and RNN.
+It supports several types of encoders, including Transformer and RNN. It also supports many types of self-supervised losses.
 
 It can process terabyte-size volumes of raw events like game history events, clickstream data, purchase history or card transactions.
 
