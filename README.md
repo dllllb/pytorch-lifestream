@@ -2,7 +2,7 @@
 
 It consists of various methods:
 
-- Contrastive Learning for Event Sequences (CoLES)
+- Contrastive Learning for Event Sequences ([CoLES](https://arxiv.org/abs/2002.08232))
 - Contrastive Predictive Coding (CPC)
 - Replaced Token Detection (RTD)
 - Next Sequence Prediction (NSP)
