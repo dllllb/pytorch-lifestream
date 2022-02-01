@@ -1,6 +1,6 @@
-`pytorch-lifestream` a library built upon [PyTorch](https://pytorch.org/) for building embeddings of discrete event sequences using self-supervision.
+`pytorch-lifestream` a library built upon [PyTorch](https://pytorch.org/) for building embeddings on discrete event sequences using self-supervision.
 
-It includes:
+It consists of various methods:
 
 - Contrastive Learning for Event Sequences (CoLES)
 - Contrastive Predictive Coding (CPC)
