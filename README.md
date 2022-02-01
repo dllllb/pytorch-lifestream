@@ -1,4 +1,4 @@
-`pytorch-lifestream` is the collection of methods for building embeddings of discrete event sequences using self-supervision.
+`pytorch-lifestream` a library built upon [PyTorch](https://pytorch.org/) for building embeddings of discrete event sequences using self-supervision.
 
 It includes:
 
