@@ -4,6 +4,7 @@ from torch import nn as nn
 from torch.nn import functional as F
 
 from dltranz.lightning_modules.AbsModule import ABSModule
+from dltranz.seq_encoder.rnn_encoder import RnnSeqEncoder
 from dltranz.trx_encoder import PaddedBatch
 
 
@@ -96,11 +97,14 @@ class CpcAccuracyPL(pl.metrics.Metric):
 
 
 class CpcModule(ABSModule):
-    def __init__(self, params):
+    def __init__(self, params, seq_encoder=None):
+        if seq_encoder is not None and not isinstance(seq_encoder, RnnSeqEncoder):
+            raise NotImplementedError(f'Only rnn encoder supported in CpcModule. Found {type(seq_encoder)}')
+
         if params['encoder_type'] != 'rnn':
             raise NotImplementedError(f'Only rnn encoder supported in CpcModule. Found {params.encoder_type}')
 
-        super().__init__(params)
+        super().__init__(params, seq_encoder)
 
         linear_size = self.seq_encoder.model[0].output_size
         embedding_size = self.seq_encoder.embedding_size

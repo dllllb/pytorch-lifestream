@@ -101,6 +101,7 @@ def test_train_loop_rnn():
     trainer = pl.Trainer(max_epochs=1, logger=None, checkpoint_callback=False)
     trainer.fit(model, dl)
 
+
 def test_train_loop_transf():
     params = tst_params_transf()
 

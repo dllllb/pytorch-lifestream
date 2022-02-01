@@ -60,6 +60,7 @@ def tst_params():
     params = ConfigFactory.from_dict(params)
     return params
 
+
 def test_train_loop():
     params = tst_params()
 

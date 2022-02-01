@@ -23,4 +23,3 @@ class IterableProcessingDataset(IterableDataset):
 
     def process(self, features):
         raise NotImplementedError()
-

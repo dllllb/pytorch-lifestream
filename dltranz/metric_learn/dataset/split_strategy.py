@@ -110,7 +110,7 @@ class SampleSlices(AbsSplit):
 
         cnt_max = self.cnt_max if date_len > self.cnt_max else date_len
 
-        lengths = np.random.randint(cnt_min, cnt_max, self.split_count)
+        lengths = np.random.randint(cnt_min, cnt_max+1, self.split_count)
         available_start_pos = (date_len - lengths).clip(0, None)
         start_pos = (np.random.rand(self.split_count) * (available_start_pos + 1 - 1e-9)).astype(int)
         if not self.is_sorted:

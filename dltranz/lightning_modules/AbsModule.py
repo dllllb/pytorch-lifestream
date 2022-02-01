@@ -31,12 +31,23 @@ class ABSModule(pl.LightningModule):
         """
         raise NotImplementedError()
 
-    def __init__(self, params):
+    def __init__(self, params=None, seq_encoder=None):
+        """
+        Parameters
+        ----------
+        params : dict
+            params for creating an encoder
+        seq_encoder : torch.nn.Module
+            sequence encoder, if not provided, will be constructed from params
+        """
         super().__init__()
         self.save_hyperparameters()
 
         self._loss = self.get_loss()
-        self._seq_encoder = create_encoder(params, is_reduce_sequence=self.is_requires_reduced_sequence)
+        if seq_encoder is not None:
+            self._seq_encoder = seq_encoder
+        else:
+            self._seq_encoder = create_encoder(params, is_reduce_sequence=self.is_requires_reduced_sequence)
         self._validation_metric = self.get_validation_metric()
 
     @property
