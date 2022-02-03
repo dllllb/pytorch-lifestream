@@ -18,5 +18,3 @@ build
 
 *.log
 *.code-workspace
-.gitignore
-
