@@ -10,7 +10,21 @@ It supports various methods of self-supervised training, adapted for event seque
 
 It supports several types of encoders, including Transformer and RNN. It also supports many types of self-supervised losses.
 
-## Installation
+The following variants of the contrastive losses are supported:
+
+- Contrastive loss ([paper](https://doi.org/10.1109/CVPR.2006.100))
+- Triplet loss ([paper](https://arxiv.org/abs/1412.6622))
+- Binomial deviance loss ([paper](https://arxiv.org/abs/1407.4979))
+- Histogramm loss ([paper](https://arxiv.org/abs/1611.00822))
+- Margin loss ([paper](https://arxiv.org/abs/1706.07567))
+
+## Install from PyPi
+
+```sh
+pip install pytorch-lifestream
+```
+
+## Install from source
 
 ```sh
 # Ubuntu 20.04
@@ -23,6 +37,7 @@ pipenv shell
 pytest
 
 ```
+
 ## Demo example
 
 Demo example can be found in the [notebook](demo/example.ipynb)
