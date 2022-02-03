@@ -10,7 +10,13 @@ It supports various methods of self-supervised training, adapted for event seque
 
 It supports several types of encoders, including Transformer and RNN. It also supports many types of self-supervised losses.
 
-## Installation
+## Install from PyPi
+
+```sh
+pip install pytorch-lifestream
+```
+
+## Install from source
 
 ```sh
 # Ubuntu 20.04
@@ -23,6 +29,7 @@ pipenv shell
 pytest
 
 ```
+
 ## Demo example
 
 Demo example can be found in the [notebook](demo/example.ipynb)
