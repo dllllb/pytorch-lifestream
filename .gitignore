@@ -13,8 +13,8 @@ experiments/*/runs
 lightning_logs
 experiments/*/conf/embeddings_validation*.work
 .coverage
+dist
+build
 
 *.log
 *.code-workspace
-.gitignore
-

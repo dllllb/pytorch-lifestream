@@ -335,7 +335,6 @@ class DatasetConverter:
             df_data.write.parquet(save_path, mode='overwrite', partitionBy=['mon_id', 'hash_id'])
             logger.info(f'Saved partitions to: "{save_path}"')
 
-
     def run(self):
         _start = datetime.datetime.now()
         self.parse_args()

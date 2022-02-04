@@ -247,7 +247,7 @@ class BarlowTwinsLoss(torch.nn.Module):
 
 
 def get_loss(params, sampling_strategy, kw_params=None):
-    
+
     if params['train.loss'] == 'ContrastiveLoss':
         kwargs = {
             'margin': params.get('train.margin', None),
@@ -255,7 +255,7 @@ def get_loss(params, sampling_strategy, kw_params=None):
         }
         kwargs = {k: v for k, v in kwargs.items() if v is not None}
         loss_fn = ContrastiveLoss(**kwargs)
-            
+
     elif params['train.loss'] == 'BinomialDevianceLoss':
         kwargs = {
             'C': params.get('train.C', None),
@@ -265,7 +265,7 @@ def get_loss(params, sampling_strategy, kw_params=None):
         }
         kwargs = {k: v for k, v in kwargs.items() if v is not None}
         loss_fn = BinomialDevianceLoss(**kwargs)       
-            
+
     elif params['train.loss'] == 'TripletLoss':
         kwargs = {
             'margin': params.get('train.margin', None),
@@ -273,14 +273,14 @@ def get_loss(params, sampling_strategy, kw_params=None):
         }
         kwargs = {k: v for k, v in kwargs.items() if v is not None}
         loss_fn = TripletLoss(**kwargs)
-    
+
     elif params['train.loss'] == 'HistogramLoss':
         kwargs = {
             'num_steps': params.get('train.num_steps', None),
         }
         kwargs = {k: v for k, v in kwargs.items() if v is not None}
         loss_fn = HistogramLoss(**kwargs)
-        
+
     elif params['train.loss'] == 'MarginLoss':
         kwargs = {
             'margin': params.get('train.margin', None),
@@ -307,5 +307,5 @@ def get_loss(params, sampling_strategy, kw_params=None):
 
     def loss(*args, **kwargs):
         return loss_fn(*args, **kwargs)[0]
-            
+
     return loss

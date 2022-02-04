@@ -25,3 +25,18 @@ class TargetExtractor(IterableProcessingDataset):
             if self._drop_from_features:
                 features = {k: v for k, v in features.items() if k != self._target_col}
             yield features, y
+
+
+class FakeTarget(IterableProcessingDataset):
+    def __init__(self):
+        """Create target equal 0 (for consistency)
+
+        for x in seq:
+            yield x, 0
+
+        """
+        super().__init__()
+
+    def __iter__(self):
+        for rec in self._src:
+            yield rec, 0
