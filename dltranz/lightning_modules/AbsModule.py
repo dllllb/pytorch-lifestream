@@ -87,5 +87,10 @@ class ABSModule(pl.LightningModule):
                 'scheduler': scheduler,
                 'monitor': self.metric_name,
             }
-        return [optimizer], [scheduler]
+        if params['lr_scheduler'].get('type', 'any') == 'OneCycleLR':
+            scheduler = {
+                'scheduler': scheduler,
+                'interval': 'step',
+            }
 
+        return [optimizer], [scheduler]

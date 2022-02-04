@@ -132,7 +132,10 @@ def get_lr_scheduler(optimizer, params):
         )
         logger.info('ReduceLROnPlateau lr_scheduler used')
         wrapper = ReduceLROnPlateauWrapper
-
+    elif params['lr_scheduler'].get('type', 'any') == 'OneCycleLR':
+        scheduler = torch.optim.lr_scheduler.OneCycleLR(optimizer, **params['lr_scheduler.params'])
+        logger.info('OneCycleLR lr_scheduler used')
+        wrapper = SchedulerWrapper
     else:
         lr_step_size = params['lr_scheduler']['step_size']
         lr_step_gamma = params['lr_scheduler']['step_gamma']

@@ -29,8 +29,11 @@ class PositionalEncoding(nn.Module):
         self.register_buffer('pe', pe)
 
     def forward(self, x):
-        x = x + self.pe[:x.size(0), :x.size(1)]
-        return self.dropout(x)
+        T = x.size(0)
+        start_pos = torch.randint(0, self.pe.size(0) - T, (1,)).item()
+        x = x + self.pe[start_pos:start_pos + T]
+        return x
+        # return self.dropout(x)
 
 
 class TransformerSeqEncoder(nn.Module):
