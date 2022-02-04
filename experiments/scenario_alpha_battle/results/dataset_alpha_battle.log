@@ -100,4 +100,4 @@ process_test_partition   : test: part_046_1541446_to_1551040.parquet - done. Tra
 process_test_partition   : test: part_047_1551041_to_1560328.parquet - done. Train: 9020, test: 0
 process_test_partition   : test: part_048_1560329_to_1570341.parquet - done. Train: 9673, test: 0
 process_test_partition   : test: part_049_1570342_to_1580442.parquet - done. Train: 9737, test: 0
-run                    : Data collected in 1704 sec (0:28:24.544394)
+run                    : Data collected in 1990 sec (0:33:10.831490)

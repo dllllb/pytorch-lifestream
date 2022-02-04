@@ -3,7 +3,7 @@
 
     features: {
         mles_embeddings: {
-            enabled: true
+            enabled: false
             read_params: {file_name: ../data/mles_embeddings.pickle}
             target_options: {}
         }
@@ -18,8 +18,7 @@
         print_all_metrics: false
 
         metrics: {
-            auroc: {float_format: "{:.4f}", baseline_key=["lgbm", "mles_embeddings"], split_columns: true}
-            accuracy: {float_format: "{:.4f}", baseline_key=["lgbm", "mles_embeddings"], split_columns: true}
+            auroc: {float_format: "{:.4f}", split_columns: true}
         }
     }
 }

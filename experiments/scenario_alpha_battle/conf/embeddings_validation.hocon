@@ -86,10 +86,5 @@
             score_func: sklearn.metrics.roc_auc_score
             scorer_params: {needs_proba: true}
         }
-        accuracy: {
-            enabled: true
-            score_func: sklearn.metrics.accuracy_score
-            scorer_params: {needs_proba: false}
-        }
     }
 }
