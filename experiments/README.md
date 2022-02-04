@@ -88,7 +88,7 @@ Unsupervised learned embeddings with LightGBM model downstream evaluations:
     Scoring (alpha battle) auroc:
         baseline         |    0.7792 \pm 0.0006  |
         random_encoder   |    0.6456 \pm 0.0009  |
-        barlow_twins     |    0.7870 \pm 0.0005  |
+        barlow_twins     |    0.7878 \pm 0.0009  |
         cpc              |    0.7919 \pm 0.0004  |
         mles             |    0.7921 \pm 0.0003  |
         nsp              |    0.7655 \pm 0.0006  |
