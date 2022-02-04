@@ -23,7 +23,7 @@
         [DropoutTrx, {trx_dropout: 0.01}]
       ]
       num_workers: 8
-      batch_size: 512
+      batch_size: 256
     }
     valid: {
       split_strategy: {
