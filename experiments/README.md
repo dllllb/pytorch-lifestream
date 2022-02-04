@@ -26,7 +26,6 @@ tensorboard --logdir lightning_logs/
  - [Churn](scenario_rosbank/README.md)
  - [Assess](scenario_bowl2019/README.md)
  - [Retail](scenario_x5/README.md)
- - [Scoring](scenario_alpha_battle/README.md)
  - [Small demo dataset](scenario_gender/README.md)
 
 # Final results
@@ -85,16 +84,6 @@ Unsupervised learned embeddings with LightGBM model downstream evaluations:
         rtd_embeddings   |    0.520 \pm 0.001    |
         sop_embeddings   |    0.428 \pm 0.001    |
     
-    Scoring (alpha battle) auroc:
-        baseline         |    0.7792 \pm 0.0006  |
-        random_encoder   |    0.6456 \pm 0.0009  |
-        barlow_twins     |    0.7870 \pm 0.0005  |
-        cpc              |    0.7919 \pm 0.0004  |
-        mles             |    0.7921 \pm 0.0003  |
-        nsp              |    0.7655 \pm 0.0006  |
-        rtd              |    0.7910 \pm 0.0006  |
-        sop              |    0.7238 \pm 0.0010  |
-
 
 Supervised finetuned encoder with MLP head evaluation:
                          |     mean \pm std      |
