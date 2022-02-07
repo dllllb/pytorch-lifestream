@@ -1,0 +1,133 @@
+{
+  data_module: {
+    type: iterable
+    setup: {
+      col_id: app_id
+      dataset_files: {
+        data_path: "data/train_trx.parquet"
+      }
+      split_by: files
+      valid_size: 0.05
+      valid_split_seed: 42
+    }
+    train: {
+      min_seq_len: 30
+      buffer_size: 10000
+      split_strategy: {
+        split_strategy: "SampleSlices"
+        split_count: 5
+        cnt_min: 20
+        cnt_max: 60
+      }
+      augmentations: [
+        [DropoutTrx, {trx_dropout: 0.01}]
+      ]
+      num_workers: 8
+      batch_size: 256
+    }
+    valid: {
+      split_strategy: {
+        split_strategy: SampleSlices
+        split_count: 5
+        cnt_min: 20
+        cnt_max: 60
+      }
+      augmentations: []
+      num_workers: 16
+      batch_size: 256
+    }
+  }
+
+  seed_everything: 42
+  trainer: {
+    gpus: 1
+    auto_select_gpus: false
+
+    max_epochs: 30
+
+    checkpoint_callback: false
+    deterministic: True
+  }
+  logger_name: mles_model
+
+  params: {
+    data_module_class: dltranz.data_load.data_module.coles_data_module.ColesDataModuleTrain
+    pl_module_class: dltranz.lightning_modules.coles_module.CoLESModule
+
+    validation_metric_params: {
+        K: 4
+        metric: cosine
+    }
+
+    encoder_type: rnn,
+    trx_encoder: {
+      norm_embeddings: false,
+      embeddings_noise: 0.003,
+      embeddings: {
+        currency: {in: 13, out: 2}
+        operation_kind: {in: 9, out: 2}
+        card_type: {in: 177, out: 0}
+        operation_type: {in: 24, out: 4}
+        operation_type_group: {in: 6, out: 32}
+        ecommerce_flag: {in: 5, out: 1}
+        payment_system: {in: 9, out: 4}
+        income_flag: {in: 5, out: 1}
+        mcc: {in: 110, out: 32}
+        country: {in: 26, out: 0}
+        city: {in: 163, out: 0}
+        mcc_category: {in: 30, out: 16}
+        day_of_week: {in: 9, out: 2}
+        hour: {in: 25, out: 4}
+        weekofyear: {in: 55, out: 4}
+      },
+      numeric_values: {
+        amnt: identity
+        hour_diff: log
+      }
+    },
+    rnn: {
+      type: gru,
+      hidden_size: 1024,
+      bidir: false,
+      trainable_starter: static
+    },
+    head_layers: [
+        [NormEncoder, {}],
+    ]
+    transf: {
+      train_starter: true,
+      shared_layers: false,
+      input_size: 16,
+      n_heads: 4,
+      dim_hidden: 512,
+      dropout: 0.01,
+      n_layers: 1,
+      use_positional_encoding: false,
+      max_seq_len: 800,
+      use_after_mask: false,
+      use_src_key_padding_mask: false
+    },
+    lr_scheduler: {
+      step_size: 1,
+      step_gamma: 0.8
+    },
+    train: {
+      sampling_strategy: HardNegativePair,
+      neg_count: 5,
+      loss: ContrastiveLoss,
+      margin: 0.5,
+      lr: 0.001,
+      weight_decay: 0.0
+      checkpoints_every_n_val_epochs: 1
+    }
+  }
+
+  model_path: "models/mles_model.p"
+
+  include "dataset_inference_file.hocon"
+
+  output: {
+    path: "data/mles_embeddings"
+    format: pickle
+  }
+}

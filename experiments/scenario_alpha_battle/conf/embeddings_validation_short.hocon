@@ -1,0 +1,24 @@
+{
+    include "embeddings_validation.hocon"
+
+    features: {
+        mles_embeddings: {
+            enabled: false
+            read_params: {file_name: ../data/mles_embeddings.pickle}
+            target_options: {}
+        }
+    }
+
+    external_scores: {
+    }
+
+    report: {
+        is_check_train: false
+        error_handling: fail
+        print_all_metrics: false
+
+        metrics: {
+            auroc: {float_format: "{:.4f}", split_columns: true}
+        }
+    }
+}

@@ -58,18 +58,20 @@ def main(args=None):
 
     if 'callbacks' in _trainer_params:
         logger.warning(f'Overwrite `trainer.callbacks`, was "{_trainer_params.checkpoint_callback}"')
-    _trainer_params['callbacks'] = []
+    _trainer_params_callbacks = []
 
     if _use_best_epoch:
         checkpoint_callback = ModelCheckpoint(monitor=model.metric_name, mode='max')
         logger.info(f'Create ModelCheckpoint callback with monitor="{model.metric_name}"')
-        _trainer_params['callbacks'].append(checkpoint_callback)
+        _trainer_params_callbacks.append(checkpoint_callback)
 
     if conf['params.train'].get('checkpoints_every_n_val_epochs', False):
         every_n_val_epochs = conf['params.train.checkpoints_every_n_val_epochs']
         checkpoint_callback = ModelCheckpoint(every_n_val_epochs=every_n_val_epochs, save_top_k=-1)
         logger.info(f'Create ModelCheckpoint callback every_n_val_epochs ="{every_n_val_epochs}"')
-        _trainer_params['callbacks'].extend([every_n_val_epochs, checkpoint_callback])
+        _trainer_params_callbacks.append(checkpoint_callback)
+        if 'checkpoint_callback' in _trainer_params:
+            del _trainer_params['checkpoint_callback']
 
     if 'logger_name' in conf:
         _trainer_params['logger'] = TensorBoardLogger(
@@ -78,12 +80,12 @@ def main(args=None):
         )
 
     lr_monitor = LearningRateMonitor(logging_interval='step')
-    _trainer_params['callbacks'].append(lr_monitor)
+    _trainer_params_callbacks.append(lr_monitor)
     if 'ckpts_path' in conf:
-        _trainer_params['callbacks'].append(CheckpointEveryNSteps(model, dm, conf))
+        _trainer_params_callbacks.append(CheckpointEveryNSteps(model, dm, conf))
 
-    if len(_trainer_params['callbacks']) == 0:
-        del _trainer_params['callbacks']
+    if len(_trainer_params_callbacks) > 0:
+        _trainer_params['callbacks'] = _trainer_params_callbacks
     trainer = pl.Trainer(**_trainer_params)
     trainer.fit(model, dm)
 

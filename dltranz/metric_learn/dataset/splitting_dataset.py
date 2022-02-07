@@ -45,7 +45,7 @@ class MapSplittingDataset(Dataset):
 
 
 class IterableSplittingDataset(IterableProcessingDataset):
-    def __init__(self, splitter, a_chain, col_time):
+    def __init__(self, splitter, a_chain, col_time='event_time'):
         super().__init__()
 
         self.splitter = splitter

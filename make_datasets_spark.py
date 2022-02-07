@@ -29,6 +29,7 @@ class DatasetConverter:
         parser.add_argument('--target_files', nargs='*', default=[])
 
         parser.add_argument('--print_dataset_info', action='store_true')
+        parser.add_argument('--sample_fraction', type=float, default=None)
         parser.add_argument('--col_client_id', type=str)
         parser.add_argument('--cols_event_time', nargs='+')
 
@@ -84,10 +85,16 @@ class DatasetConverter:
         return data
 
     def pd_hist(self, df, name, bins=10):
-        data = df.select(name).toPandas()[name]
+        # logger.info('pd_hist begin')
+        # logger.info(f'sf = {self.config.sample_fraction}')
+        data = df.select(name)
+        if self.config.sample_fraction is not None:
+            data = data.sample(fraction=self.config.sample_fraction)
+        data = data.toPandas()[name]
 
         if data.dtype.kind == 'f':
-            bins = np.linspace(data.min(), data.max(), bins + 1).round(1)
+            round_len = 1 if data.max() > bins + 1 else 2
+            bins = np.linspace(data.min(), data.max(), bins + 1).round(round_len)
         elif np.percentile(data, 99) - data.min() > bins - 1:
             bins = np.linspace(data.min(), np.percentile(data, 99), bins).astype(int).tolist() + [int(data.max() + 1)]
         else:
@@ -406,11 +413,14 @@ class DatasetConverter:
             )
 
         if save_test_id:
-            test_ids = test.select(self.config.col_client_id).distinct().toPandas()
-            test_ids.to_csv(self.config.output_test_ids_path, index=False)
+            self.save_test_ids(test)
 
         _duration = datetime.datetime.now() - _start
         logger.info(f'Data collected in {_duration.seconds} sec ({_duration})')
+
+    def save_test_ids(self, df_test):
+        test_ids = df_test.select(self.config.col_client_id).distinct().toPandas()
+        test_ids.to_csv(self.config.output_test_ids_path, index=False)
 
     def load_target(self):
         df_target = self.load_source_data(self.config.target_files)

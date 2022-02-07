@@ -1,0 +1,12 @@
+run                    : Loading ...
+load_transactions      : Loaded 349655789 transactions
+run                    : 144551 ids in train, 15506 in test
+run                    : Start processing
+run                    : Encoded "category": 836 items in dictionary
+run                    : Encoded "productmeasure": 12 items in dictionary
+run                    : Encoded "productsize": 97 items in dictionary
+run                    : Train size is 296035 unique clients
+run                    : Train column list: ['id', 'event_time', 'dept', 'purchaseamount', 'category', 'productmeasure', 'productsize', 'offer_id', 'market', 'repeater']
+run                    : Test size is 15506 unique clients
+run                    : Test column list: ['id', 'event_time', 'dept', 'purchaseamount', 'category', 'productmeasure', 'productsize', 'offer_id', 'market', 'repeater']
+run                    : Data collected in 2354 sec (0:39:14.049839)

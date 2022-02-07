@@ -1,0 +1,15 @@
+{
+  inference_dataloader: {
+    col_id: app_id
+    dataset_files: [
+      "data/train_trx.parquet"
+      "data/test_trx.parquet"
+    ]
+    SeqLenLimit: {max_seq_len: 1600}
+    loader: {
+      num_workers: 8
+      batch_size: 1000
+    }
+    torch_multiprocessing_sharing_strategy: file_system
+  }
+}

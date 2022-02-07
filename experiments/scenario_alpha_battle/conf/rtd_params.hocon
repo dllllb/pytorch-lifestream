@@ -1,0 +1,104 @@
+{
+  data_module: {
+    type: iterable
+    setup: {
+      col_id: app_id
+      dataset_files: {
+        data_path: "data/train_trx.parquet"
+      }
+      split_by: files
+      valid_size: 0.05
+      valid_split_seed: 42
+    }
+    train: {
+      min_seq_len: 30
+      buffer_size: 10000
+      augmentations: [
+        [DropoutTrx, {trx_dropout: 0.01}]
+        [SeqLenLimit, {max_seq_len: 800}]
+      ]
+      num_workers: 8
+      batch_size: 128
+    }
+    valid: {
+      augmentations: [
+        [SeqLenLimit, {max_seq_len: 800}]
+      ]
+      num_workers: 16
+      batch_size: 256
+    }
+    replace_token: {
+      replace_prob: 0.15,
+      skip_first: 1
+    }
+  }
+
+  seed_everything: 42
+  trainer: {
+    gpus: 1
+    auto_select_gpus: false
+
+    max_epochs: 30
+
+    checkpoint_callback: false
+    deterministic: True
+  }
+  logger_name: rtd_model
+
+  params: {
+    data_module_class: dltranz.data_load.data_module.rtd_data_module.RtdDataModuleTrain
+    pl_module_class: dltranz.lightning_modules.rtd_module.RtdModule
+
+    encoder_type: rnn,
+    trx_encoder: {
+      norm_embeddings: false,
+      embeddings_noise: 0.003,
+      embeddings: {
+        currency: {in: 13, out: 2}
+        operation_kind: {in: 9, out: 2}
+        card_type: {in: 177, out: 0}
+        operation_type: {in: 24, out: 4}
+        operation_type_group: {in: 6, out: 32}
+        ecommerce_flag: {in: 5, out: 1}
+        payment_system: {in: 9, out: 4}
+        income_flag: {in: 5, out: 1}
+        mcc: {in: 110, out: 32}
+        country: {in: 26, out: 0}
+        city: {in: 163, out: 0}
+        mcc_category: {in: 30, out: 16}
+        day_of_week: {in: 9, out: 2}
+        hour: {in: 25, out: 4}
+        # weekofyear: {in: 55, out: 2}
+      },
+      numeric_values: {
+        amnt: identity
+        hour_diff: log
+      }
+    },
+    rnn: {
+      type: gru,
+      hidden_size: 1024,
+      bidir: false,
+      trainable_starter: static
+    },
+
+    lr_scheduler: {
+      ReduceLROnPlateau: true,
+      patience: 3
+    },
+    train: {
+      lr: 0.001,
+      weight_decay: 0.0
+      checkpoints_every_n_val_epochs: 1
+    }
+  }
+
+  model_path: "models/rtd_model.p"
+
+  include "dataset_inference_file.hocon"
+
+  output: {
+    path: data/rtd_embeddings,
+    format: pickle,
+  }
+}
