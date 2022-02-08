@@ -37,11 +37,7 @@ logger = logging.getLogger(__name__)
 def collate_rtd_batch(batch, replace_prob, skip_first=0):
     padded_batch = padded_collate_wo_target(batch)
 
-    new_x, lengths = padded_batch.payload, padded_batch.seq_lens
-
-    mask = torch.zeros(next(iter(new_x.values())).shape, dtype=torch.int64)
-    for i, length in enumerate(lengths):
-        mask[i, :length] = 1
+    new_x, lengths, mask = padded_batch.payload, padded_batch.seq_lens, padded_batch.seq_len_mask
 
     to_replace = torch.bernoulli(mask * replace_prob).bool()
     to_replace[:, :skip_first] = False
