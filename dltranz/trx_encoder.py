@@ -41,10 +41,8 @@ class PaddedBatch:
             B, T = next(iter(self._payload.values())).size()
         else:
             B, T, _ = self._payload.size()
-        return (1 - torch.triu(
-            torch.ones(T, T, device=self._length.device, dtype=torch.int64),
-            1
-        ))[self._length.long() - 1]
+        return (torch.arange(T, device=self._length.device).unsqueeze(0).expand(B, T) < \
+                self._length.unsqueeze(1)).long()
 
 
 class NoisyEmbedding(nn.Embedding):
@@ -112,7 +110,7 @@ class RBatchNormWithLens(torch.nn.Module):
         seq_lens = v.seq_lens
         B, T = x.size()  # B x T
 
-        mask = torch.arange(T, device=seq_lens.device).view(1, -1).repeat(B, 1) < seq_lens.view(-1, 1)
+        mask = v.seq_len_mask
         x_new = x
         x_new[mask] = self.bn(x[mask].view(-1, 1)).view(-1)
         return x_new.view(B, T, 1)
