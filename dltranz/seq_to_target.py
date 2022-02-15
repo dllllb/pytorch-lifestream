@@ -4,7 +4,8 @@ from copy import deepcopy
 import pytorch_lightning as pl
 import torch
 import numpy as np
-from pytorch_lightning.metrics.functional.classification import auroc
+from torchmetrics.functional.classification import auroc
+import torchmetrics
 
 from dltranz.loss import get_loss, cross_entropy, kl, mape_metric, mse_loss, r_squared
 from dltranz.seq_encoder import create_encoder
@@ -17,7 +18,7 @@ from collections import defaultdict
 logger = logging.getLogger(__name__)
 
 
-class EpochAuroc(pl.metrics.Metric):
+class EpochAuroc(torchmetrics.Metric):
     def __init__(self):
         super().__init__(compute_on_step=False)
 
@@ -34,7 +35,7 @@ class EpochAuroc(pl.metrics.Metric):
         return auroc(y_hat, y.long())
 
 
-class DistributionTargets(pl.metrics.Metric):
+class DistributionTargets(torchmetrics.Metric):
     def __init__(self, col_name):
         super().__init__(compute_on_step=False)
 
@@ -91,7 +92,7 @@ class MAPE(DistributionTargets):
         return mape_metric(self.sign * torch.exp(y_hat - 1), y[:, None])
 
 
-class LogAccuracy(pl.metrics.Accuracy):
+class LogAccuracy(torchmetrics.Accuracy):
     def __init__(self, **params):
         super().__init__(**params)
 

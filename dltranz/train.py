@@ -5,8 +5,11 @@ import numpy as np
 import torch
 
 from tqdm import tqdm
+from transformers import get_linear_schedule_with_warmup
+from transformers.optimization import Adafactor, AdafactorSchedule
 
 from dltranz.swa import SWA
+
 
 logger = logging.getLogger(__name__)
 
@@ -27,6 +30,12 @@ def get_optimizer(model, params):
     optimiser_params = params.get('train.optimiser_params', None)
     if optimiser_params is None:
         parameters = model.parameters()
+    elif optimiser_params.get('type', None) == 'Adafactor':
+        optimizer = Adafactor(model.parameters(), scale_parameter=True, relative_step=True, warmup_init=True, lr=None)
+        Adafactor(model.parameters(), scale_parameter=False, relative_step=False, warmup_init=False, lr=params['train.lr'])
+        logger.info("Ada factor optimizer is used")
+    elif optimiser_params.get('type', None) == 'SWA':
+        optimizer = SWA(optimizer)
     else:
         parameters = []
         for par_name, options in optimiser_params.items():
@@ -38,10 +47,7 @@ def get_optimizer(model, params):
                 (not k.startswith(par_name) for par_name, options in optimiser_params.items())
             )]}
         parameters.append(default_options)
-    optimizer = torch.optim.Adam(parameters, lr=params['train.lr'], weight_decay=params['train.weight_decay'])
-
-    if params.get('train.swa', None):
-        optimizer = SWA(optimizer)
+    optimizer = torch.optim.Adam(parameters, lr=params['train.lr'], weight_decay=params['train.weight_decay'])   
 
     return optimizer
 
@@ -142,15 +148,14 @@ def get_lr_scheduler(optimizer, params):
 
     # TODO: ReduceLROnPlateau + warmup
     if 'warmup' in params['lr_scheduler']:
-        wrapper = LRScheduler
+        scheduler = get_linear_schedule_with_warmup(optimizer, 
+           num_warmup_steps=params['lr_scheduler']["warmup"]['num_warmup_steps'], 
+           num_training_steps=params['lr_scheduler']["warmup"]['num_training_steps'])
+        logger.info('LR warmup used')
         # optimiser param groups are not supported with LRScheduler
         # create_lr_scheduler_with_warmup don't works with SchedulerWrapper
-
-    scheduler = wrapper(scheduler)
-
-    if 'warmup' in params['lr_scheduler']:
-        scheduler = create_lr_scheduler_with_warmup(scheduler, **params['lr_scheduler.warmup'])
-        logger.info('LR warmup used')
+    else:
+        scheduler = wrapper(scheduler)
 
     return scheduler
 

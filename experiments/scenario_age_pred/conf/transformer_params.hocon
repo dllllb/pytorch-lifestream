@@ -15,32 +15,32 @@
       augmentations: [
         [DropoutTrx, {trx_dropout: 0.01}]
       ]
-      num_workers: 16
-      batch_size: 64
       split_strategy: {
         split_strategy: "SampleSlices"
         split_count: 5
         cnt_min: 25
-        cnt_max: 150
+        cnt_max: 200
       }
+      num_workers: 16
+      batch_size: 64
     }
     valid: {
       augmentations: []
-      num_workers: 16
-      batch_size: 64
       split_strategy: {
         split_strategy: SampleSlices
         split_count: 5
         cnt_min: 25
         cnt_max: 100
       }
+      num_workers: 16
+      batch_size: 512
     }
   }
 
   seed_everything: 42
   trainer: {
     gpus: 1
-    auto_select_gpus: 1
+    auto_select_gpus: false
 
     max_epochs: 60
 
@@ -58,42 +58,7 @@
         metric: cosine
     }
 
-    encoder_type: agg_features
-    trx_encoder: {
-      embeddings: {
-        trans_date: {in: 800, out: 16}
-        small_group: {in: 250, out: 16}
-      }
-      numeric_values: {
-        amount_rur: identity
-      }
-      was_logified: true
-      log_scale_factor: 1
-    }
-    
-    lr_scheduler: {
-      step_size: 1000
-      step_gamma: 1
-      "# warmup": {
-        warmup_start_value: 0.00001
-        warmup_end_value:  0.001
-        warmup_duration: 5
-      }
-    }
-
-    head_layers: [
-      [BatchNorm1d, {num_features: "{seq_encoder.embedding_size}"}]
-      [NormEncoder, {}]
-    ]
-
-    train: {
-      sampling_strategy: HardNegativePair
-      neg_count: 5
-      loss: ContrastiveLoss
-      margin: 0.5
-      lr: 0.0005
-      weight_decay: 0.0
-    }
+    encoder_type: transf
     transf: {
       train_starter: true
       shared_layers: false
@@ -107,6 +72,44 @@
       use_after_mask: false
       use_src_key_padding_mask: false
     }
+
+    trx_encoder: {
+      norm_embeddings: false
+      embeddings_noise: 0.003
+      embeddings: {
+        trans_date: {in: 800, out: 16}
+        small_group: {in: 250, out: 16}
+      }
+      numeric_values: {
+        amount_rur: identity
+      }
+    }
+    
+    lr_scheduler: {
+      step_size: 1000
+      step_gamma: 1
+      "warmup": {
+        num_warmup_steps: 20
+        num_training_steps: 60
+      }
+    }
+
+    head_layers: [
+      [BatchNorm1d, {num_features: "{seq_encoder.embedding_size}"}]
+      [NormEncoder, {}]
+    ]
+
+    train: {
+      swa: false
+      sampling_strategy: HardNegativePair
+      gradient_clip_val: 1
+      neg_count: 5
+      loss: ContrastiveLoss
+      margin: 0.5
+      lr: 0.001
+      weight_decay: 0.0
+    } 
+    
   }
 
   model_path: "models/transf_model.p"
@@ -120,7 +123,7 @@
     SeqLenLimit: {max_seq_len: 1600}
     loader: {
       num_workers: 4
-      batch_size: 128
+      batch_size: 64
     }
   }
 

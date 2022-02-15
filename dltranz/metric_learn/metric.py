@@ -2,6 +2,7 @@ import logging
 
 import torch
 import numpy as np
+import torchmetrics
 
 import pytorch_lightning as pl
 
@@ -119,7 +120,7 @@ def metric_Recall_top_K(X, y, K, metric='cosine'):
     return np.sum(res) / len(y) / K
 
 
-class BatchRecallTopPL(pl.metrics.Metric):
+class BatchRecallTopPL(torchmetrics.Metric):
     def __init__(self, K, metric='cosine'):
         super().__init__(compute_on_step=False)
 

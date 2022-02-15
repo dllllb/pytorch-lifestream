@@ -16,6 +16,7 @@ jobs:
         python -m pip install --upgrade pip
         pip install pipenv
         pipenv sync --dev
+        pipenv install "setuptools==59.5.0"
     - name: Test with pytest
       run: |
         pipenv run coverage run

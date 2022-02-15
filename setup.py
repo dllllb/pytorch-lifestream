@@ -20,7 +20,7 @@ setuptools.setup(
         "Operating System :: OS Independent",
     ],
     python_requires='>=3.8',
-    install_requires=[
-        'pytorch-lightning==1.3.*',
-    ],
+    # install_requires=[
+    #     'pytorch-lightning==1.3.*',
+    # ],
 )

@@ -2,6 +2,7 @@ import pytorch_lightning as pl
 import torch
 from torch import nn as nn
 from torch.nn import functional as F
+import torchmetrics
 
 from dltranz.lightning_modules.AbsModule import ABSModule
 from dltranz.seq_encoder.rnn_encoder import RnnSeqEncoder
@@ -80,7 +81,7 @@ class CPC_Loss(nn.Module):
         return accurate / total
 
 
-class CpcAccuracyPL(pl.metrics.Metric):
+class CpcAccuracyPL(torchmetrics.Metric):
     def __init__(self, loss):
         super().__init__(compute_on_step=False)
 

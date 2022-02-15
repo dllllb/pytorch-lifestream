@@ -22,7 +22,7 @@ def gen_trx_data(lengths, target_share=.5):
 class RandomEventData(pl.LightningDataModule):
     def __init__(self, params):
         super().__init__()
-        self.hparams = params
+        self.hparams.update(params)
 
     def train_dataloader(self):
         test_data = TrxDataset(gen_trx_data((torch.rand(1000)*60+1).long()), y_dtype=np.int64)
