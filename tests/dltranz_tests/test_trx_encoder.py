@@ -16,7 +16,7 @@ def test_padded_batch_mask_tensor():
         [1, 0, 0, 0, 0],
         [1, 1, 1, 0, 0]
     ]).long()
-    torch.testing.assert_equal(out, exp)
+    torch.testing.assert_close(out, exp)
 
 
 def test_padded_batch_mask_dict():
@@ -28,7 +28,7 @@ def test_padded_batch_mask_dict():
         [1, 0, 0, 0, 0],
         [1, 1, 1, 0, 0]
     ]).long()
-    torch.testing.assert_equal(out, exp)
+    torch.testing.assert_close(out, exp)
 
 
 def test_simple():
