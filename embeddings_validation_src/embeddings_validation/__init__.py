@@ -1,1 +1,0 @@
-from embeddings_validation.tasks.report_collect import ReportCollect
