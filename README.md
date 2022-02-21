@@ -44,4 +44,4 @@ Demo example can be found in the [notebook](demo/example.ipynb)
 
 ## Experiments on public datasets
 
-`pytorch-lifestream` usage experiments on several public event datasets are available on the separate [repo](https://github.com/sberbank-ai-lab/pytorch-lifestream-experiments)
+`pytorch-lifestream` usage experiments on several public event datasets are available in the separate [repo](https://github.com/sberbank-ai-lab/pytorch-lifestream-experiments)
