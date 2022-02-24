@@ -18,6 +18,7 @@ class DataPreprocessor:
         __init__ parameters are not touched.
         """
         self.cols_category_mapping = {}
+        self.cols_log_norm_maxes = {}
 
     def check_is_fitted(self):
         """Check is preprocessor is fitted, before applying transformation
