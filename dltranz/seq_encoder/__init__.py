@@ -125,6 +125,8 @@ class SequenceEncoder(torch.nn.Module):
             model = TransfSeqEncoder(params, True)
 
         elif encoder_type == 'agg_features':
+            params['trx_encoder']['was_logified'] = True
+            params['trx_encoder']['log_scale_factor'] = 1
             model = AggFeatureSeqEncoder(params, True)
 
         else:
