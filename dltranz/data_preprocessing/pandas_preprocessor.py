@@ -103,6 +103,8 @@ class PandasDataPreprocessor(DataPreprocessor):
             df_data = self._td_float(df_data, self.cols_event_time)
         elif self.time_transformation == 'gender':
             df_data = self._td_gender(df_data, self.cols_event_time)
+        elif self.time_transformation == 'hours_from_min':
+            df_data = self._td_hours(df_data, self.cols_event_time)
         else:
             raise NotImplementedError(f'Unknown type of data transformation: "{self.time_transformation}"')
 
@@ -116,7 +118,7 @@ class PandasDataPreprocessor(DataPreprocessor):
 
         for col in self.cols_log_norm:
             df_data[col] = np.log1p(abs(df_data[col])) * np.sign(df_data[col])
-            df_data[col] /= abs(df_data[col]).max()
+            df_data[col] /= self.cols_log_norm_maxes[col]
             if self.print_dataset_info:
                 logger.info(f'Encoder stat for "{col}":\ncodes | trx_count\n{pd_hist(df_data[col], col)}')
 
