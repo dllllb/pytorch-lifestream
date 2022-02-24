@@ -47,6 +47,7 @@ class PandasDataPreprocessor(DataPreprocessor):
         super().__init__(col_id, cols_event_time, cols_category, cols_log_norm)
         self.print_dataset_info = print_dataset_info
         self.time_transformation = time_transformation
+        self.time_min = None
 
     def fit(self, dt, **params):
         """
@@ -69,6 +70,12 @@ class PandasDataPreprocessor(DataPreprocessor):
 
             if self.print_dataset_info:
                 logger.info(f'Encoder stat for "{col}":\ncodes | trx_count\n{pd_hist(dt[col], col)}')
+
+        for col in self.cols_log_norm:
+            self.cols_log_norm_maxes[col] = (np.log1p(abs(dt[col])) * np.sign(dt[col])).max()
+
+        if self.time_transformation == 'hours_from_min':
+            self.time_min = pd.to_datetime(dt[self.cols_event_time]).min()
 
         return self
 
@@ -139,6 +146,13 @@ class PandasDataPreprocessor(DataPreprocessor):
         logger.info(f'Prepared features for {len(features)} clients')
         return features
 
+    def _reset(self):
+        """Reset internal data-dependent state of the preprocessor, if necessary.
+        __init__ parameters are not touched.
+        """
+        self.time_min = None
+        super()._reset()
+
     @staticmethod
     def _td_default(df, cols_event_time):
         df_event_time = df[cols_event_time].drop_duplicates()
@@ -175,4 +189,11 @@ class PandasDataPreprocessor(DataPreprocessor):
         time_part = time_part % (24 * 60 * 60) / (24 * 60 * 60)
         df['event_time'] = day_part + time_part
         logger.info('Gender-dataset-like time transformation')
+        return df
+
+    def _td_hours(self, df, col_event_time):
+        logger.info('To hours time transformation')
+        df['event_time'] = pd.to_datetime(df[col_event_time])
+        df['event_time'] = (df['event_time'] - self.time_min).dt.total_seconds() / 3600
+
         return df
