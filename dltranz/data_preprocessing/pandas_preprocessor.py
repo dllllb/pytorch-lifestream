@@ -41,10 +41,12 @@ class PandasDataPreprocessor(DataPreprocessor):
                  cols_event_time: str,
                  cols_category: List[str],
                  cols_log_norm: List[str],
+                 col_target: List[str] = [],
                  time_transformation: str = 'default',
                  print_dataset_info: bool = False):
 
         super().__init__(col_id, cols_event_time, cols_category, cols_log_norm)
+        self.col_target = col_target
         self.print_dataset_info = print_dataset_info
         self.time_transformation = time_transformation
         self.time_min = None
@@ -128,13 +130,15 @@ class PandasDataPreprocessor(DataPreprocessor):
 
         # column filter
         used_columns = [col for col in df_data.columns
-                        if col in self.cols_category + self.cols_log_norm + ['event_time', self.col_id]]
+                        if col in self.cols_category + self.cols_log_norm +
+                        ['event_time', self.col_id] + self.col_target]
 
         logger.info('Feature collection in progress ...')
         features = df_data[used_columns] \
             .assign(et_index=lambda x: x['event_time']) \
             .set_index([self.col_id, 'et_index']).sort_index() \
-            .groupby(self.col_id).apply(lambda x: {k: np.array(v) for k, v in x.to_dict(orient='list').items()}) \
+            .groupby(self.col_id).apply(lambda x: {k: v[0] if k in self.col_target else np.array(v)
+                                                   for k, v in x.to_dict(orient='list').items()}) \
             .rename('feature_arrays').reset_index().to_dict(orient='records')
 
         def squeeze(rec):

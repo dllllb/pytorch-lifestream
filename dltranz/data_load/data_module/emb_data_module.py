@@ -82,8 +82,10 @@ class EmbeddingTrainDataModule(pl.LightningDataModule):
                  category_names: List[str] = None,
                  category_max_size: Dict[str, int] = None,
                  col_time: str = 'event_time',
+                 drop_cols: List[str] = [],
                  random_state: int = 42):
         super().__init__()
+        self.drop_cols = drop_cols
 
         self.split_strategy_params = {
             'split_strategy': seq_split_strategy,
@@ -142,7 +144,8 @@ class EmbeddingTrainDataModule(pl.LightningDataModule):
     def build_processing(self, part):
         if part == 'train':
             yield SeqLenFilter(min_seq_len=self.min_seq_len)
-        yield FeatureFilter(keep_feature_names=self.category_names)
+        yield FeatureFilter(keep_feature_names=self.category_names,
+                            drop_feature_names=self.drop_cols)
         yield CategorySizeClip(self.category_max_size, 1)
 
     def setup_iterable(self):
