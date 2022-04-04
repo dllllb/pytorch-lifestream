@@ -30,6 +30,8 @@ class PandasDataPreprocessor(DataPreprocessor):
         list of category columns
     cols_log_norm : list[str],
         list of columns to be logarithmed
+    cols_identity : list[str],
+        list of columns to be passed as is without any transformation
     time_transformation: str. Default: 'default'.
         type of transformation to be applied to time column
     print_dataset_info : bool. Default: False.
@@ -41,10 +43,12 @@ class PandasDataPreprocessor(DataPreprocessor):
                  cols_event_time: str,
                  cols_category: List[str],
                  cols_log_norm: List[str],
+                 cols_identity: List[str],
                  time_transformation: str = 'default',
-                 print_dataset_info: bool = False):
+                 print_dataset_info: bool = False,
+                 ):
 
-        super().__init__(col_id, cols_event_time, cols_category, cols_log_norm)
+        super().__init__(col_id, cols_event_time, cols_category, cols_log_norm, cols_identity)
         self.print_dataset_info = print_dataset_info
         self.time_transformation = time_transformation
         self.time_min = None
@@ -130,8 +134,13 @@ class PandasDataPreprocessor(DataPreprocessor):
             logger.info(f'Trx count per clients:\nlen(trx_list) | client_count\n{pd_hist(df, "trx_count")}')
 
         # column filter
-        used_columns = [col for col in df_data.columns
-                        if col in self.cols_category + self.cols_log_norm + ['event_time', self.col_id]]
+        columns_for_filter = sum([
+            self.cols_category,
+            self.cols_log_norm,
+            self.cols_identity,
+            ['event_time', self.col_id],
+        ])
+        used_columns = [col for col in df_data.columns if col in columns_for_filter]
 
         logger.info('Feature collection in progress ...')
         features = df_data[used_columns] \
