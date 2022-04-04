@@ -3,6 +3,27 @@ from dltranz.seq_to_target import SequenceToTarget
 
 
 class SeqToTargetDemo(SequenceToTarget):
+    """pl.LightningModule for training CoLES embeddings
+    Parameters
+    ----------
+    seq_encoder : torch.nn.Module
+        sequence encoder
+    encoder_lr : float. Default: 1e-4
+        Learning rate for sequence encoder.
+    in_features: int. Default: 256
+        Dimension of embeddings from sequence encoder.
+    out_features: int. Default: 4
+        Dimension of output of this model (number of classes).
+    head_lr: float. Default: 0.002
+    	Learning rate for head of this model.
+    weight_decay: float. Default: 0.0
+        Weight decay for optimizer.
+    lr_scheduler_step_size : int. Default: 5
+        Period of learning rate decay.
+    lr_scheduler_step_gamma: float. Default: 0.4
+        Multiplicative factor of learning rate decay.
+    """
+
     def __init__(self,
                  seq_encoder = None,
                  encoder_lr: float = 0.0001,
@@ -10,8 +31,8 @@ class SeqToTargetDemo(SequenceToTarget):
                  out_features: int = 4,
                  head_lr: float = 0.002,
                  weight_decay: float = 0.0,
-                 lr_step_size: int = 5,
-		 lr_step_gamma: float = 0.4):
+                 lr_scheduler_step_size: int = 5,
+		 lr_scheduler_step_gamma: float = 0.4):
 
         params = {
             'score_metric': ['accuracy'],
@@ -35,8 +56,8 @@ class SeqToTargetDemo(SequenceToTarget):
               'weight_decay': weight_decay,
             },
             'lr_scheduler': {
-              'step_size': lr_step_size,
-              'step_gamma': lr_step_gamma
+              'step_size': lr_scheduler_step_size
+              'step_gamma': lr_scheduler_step_gamma
             }
         }
         super().__init__(ConfigFactory.from_dict(params), seq_encoder)
