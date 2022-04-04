@@ -15,6 +15,7 @@ from dltranz.data_load.filter_dataset import FilterDataset
 from dltranz.data_load.iterable_processing.category_size_clip import CategorySizeClip
 from dltranz.data_load.iterable_processing.feature_filter import FeatureFilter
 from dltranz.data_load.iterable_processing.seq_len_filter import SeqLenFilter
+from dltranz.data_load.iterable_processing.to_torch_tensor import ToTorch
 from dltranz.metric_learn.dataset import split_strategy
 from dltranz.metric_learn.dataset.splitting_dataset import MapSplittingDataset, IterableSplittingDataset
 
@@ -144,6 +145,7 @@ class EmbeddingTrainDataModule(pl.LightningDataModule):
     def build_processing(self, part):
         if part == 'train':
             yield SeqLenFilter(min_seq_len=self.min_seq_len)
+        yield ToTorch()
         yield FeatureFilter(keep_feature_names=self.category_names,
                             drop_feature_names=self.drop_cols)
         yield CategorySizeClip(self.category_max_size, 1)
