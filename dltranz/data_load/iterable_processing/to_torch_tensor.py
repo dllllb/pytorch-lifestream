@@ -3,7 +3,7 @@ import torch
 from dltranz.data_load.iterable_processing_dataset import IterableProcessingDataset
 
 
-class toTorchTensor(IterableProcessingDataset):
+class ToTorch(IterableProcessingDataset):
     def __init__(self):
         super().__init__()
 
@@ -12,6 +12,6 @@ class toTorchTensor(IterableProcessingDataset):
             features = rec[0] if type(rec) is tuple else rec
             for k, v in features.items():
                 if isinstance(v, np.ndarray):
-                    features[k] = torch.Tensor(v)
+                    features[k] = torch.from_numpy(v)
             yield features
 
