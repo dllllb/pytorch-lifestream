@@ -3,7 +3,7 @@ from dltranz.data_load.iterable_processing.seq_len_filter import SeqLenFilter
 from dltranz.data_load.iterable_processing.feature_filter import FeatureFilter
 from dltranz.data_load.iterable_processing.category_size_clip import CategorySizeClip
 from dltranz.data_load.iterable_processing.target_move import TargetMove
-from dltranz.data_load.iterable_processing.to_torch_tensor import toTorchTensor
+from dltranz.data_load.iterable_processing.to_torch_tensor import ToTorch
 from dltranz.data_load import IterableChain
 from torch.utils.data import DataLoader
 from dltranz.data_load import padded_collate
@@ -69,7 +69,7 @@ class SeqToTargetDatamodule(pl.LightningDataModule):
 
     def build_iterable_processing(self):
         yield SeqLenFilter(min_seq_len=self.min_seq_len)
-        yield toTorchTensor()
+        yield ToTorch()
         yield TargetMove(self.target_col)
         yield FeatureFilter(keep_feature_names=self.keep_features)
         yield CategorySizeClip(self.category_max_size)
