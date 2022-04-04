@@ -15,7 +15,7 @@ class IterableProcessingDataset(IterableDataset):
             if type(rec) is tuple:
                 features = rec[0]
                 new_features = self.process(features)
-                yield new_features, *rec[1:]
+                yield tuple([new_features, *rec[1:]])
             else:
                 features = rec
                 new_features = self.process(features)

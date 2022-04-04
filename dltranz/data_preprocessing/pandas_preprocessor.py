@@ -97,7 +97,9 @@ class PandasDataPreprocessor(DataPreprocessor):
             logger.info(f'Found {df_data[self.col_id].nunique()} unique ids')
 
         # event_time mapping
-        if self.time_transformation == 'default':
+        if self.time_transformation == 'none':
+            pass
+        elif self.time_transformation == 'default':
             df_data = self._td_default(df_data, self.cols_event_time)
         elif self.time_transformation == 'float':
             df_data = self._td_float(df_data, self.cols_event_time)
@@ -112,7 +114,8 @@ class PandasDataPreprocessor(DataPreprocessor):
             if col not in self.cols_category_mapping:
                 raise KeyError(f"column {col} isn't in fitted category columns")
             pd_col = df_data[col].astype(str)
-            df_data[col] = pd_col.map(self.cols_category_mapping[col])
+            df_data[col] = pd_col.map(self.cols_category_mapping[col]) \
+                .fillna(max(self.cols_category_mapping[col].values()))
             if self.print_dataset_info:
                 logger.info(f'Encoder stat for "{col}":\ncodes | trx_count\n{pd_hist(df_data[col], col)}')
 

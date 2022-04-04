@@ -606,7 +606,7 @@ class IterableAugmentations(IterableProcessingDataset):
             if type(row) is tuple:
                 x, *targets = row
                 x = self.a_chain(x)
-                yield x, *targets
+                yield tuple([x, *targets])
             else:
                 x = row
                 x = self.a_chain(x)
