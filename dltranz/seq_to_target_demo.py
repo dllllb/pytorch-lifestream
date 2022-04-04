@@ -56,7 +56,7 @@ class SeqToTargetDemo(SequenceToTarget):
               'weight_decay': weight_decay,
             },
             'lr_scheduler': {
-              'step_size': lr_scheduler_step_size
+              'step_size': lr_scheduler_step_size,
               'step_gamma': lr_scheduler_step_gamma
             }
         }
