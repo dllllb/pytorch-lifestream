@@ -84,9 +84,9 @@ class SeqToTargetDatamodule(pl.LightningDataModule):
 
     def val_dataloader(self):
         return DataLoader(
-            dataset=self.dataset_val,
+            dataset=self.dataset_valid,
             collate_fn=padded_collate,
-            num_workers=self.val_num_workers,
-            batch_size=self.val_batch_size
+            num_workers=self.valid_num_workers,
+            batch_size=self.valid_batch_size
         )
 
