@@ -6,8 +6,9 @@ logger = logging.getLogger(__name__)
 
 
 class PysparkDataPreprocessor(DataPreprocessor):
-    def __init__(self, col_id, cols_event_time, cols_category, cols_log_norm, print_dataset_info=False):
-        super().__init__(col_id, cols_event_time, cols_category, cols_log_norm)
+    def __init__(self, col_id, cols_event_time, cols_category, cols_log_norm, cols_identity,
+                 print_dataset_info=False):
+        super().__init__(col_id, cols_event_time, cols_category, cols_log_norm, cols_identity)
         self.print_dataset_info = print_dataset_info
 
     def _reset(self):
