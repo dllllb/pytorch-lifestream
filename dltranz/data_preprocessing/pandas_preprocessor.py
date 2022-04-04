@@ -1,8 +1,10 @@
 import logging
+from functools import reduce
+from operator import iadd
+from typing import List
+
 import numpy as np
 import pandas as pd
-
-from typing import List
 
 from .base import DataPreprocessor
 from .util import pd_hist
@@ -134,12 +136,12 @@ class PandasDataPreprocessor(DataPreprocessor):
             logger.info(f'Trx count per clients:\nlen(trx_list) | client_count\n{pd_hist(df, "trx_count")}')
 
         # column filter
-        columns_for_filter = sum([
+        columns_for_filter = reduce(iadd, [
             self.cols_category,
             self.cols_log_norm,
             self.cols_identity,
             ['event_time', self.col_id],
-        ])
+        ], [])
         used_columns = [col for col in df_data.columns if col in columns_for_filter]
 
         logger.info('Feature collection in progress ...')
