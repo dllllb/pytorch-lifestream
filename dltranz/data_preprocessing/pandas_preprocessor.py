@@ -6,6 +6,8 @@ from typing import List
 import numpy as np
 import pandas as pd
 
+from typing import List
+
 from .base import DataPreprocessor
 from .util import pd_hist
 
@@ -34,6 +36,8 @@ class PandasDataPreprocessor(DataPreprocessor):
         list of columns to be logarithmed
     cols_identity : list[str],
         list of columns to be passed as is without any transformation
+    cols_target: List[str],
+        list of columns with target
     time_transformation: str. Default: 'default'.
         type of transformation to be applied to time column
     print_dataset_info : bool. Default: False.
@@ -46,11 +50,12 @@ class PandasDataPreprocessor(DataPreprocessor):
                  cols_category: List[str],
                  cols_log_norm: List[str],
                  cols_identity: List[str],
+                 cols_target: List[str] = [],
                  time_transformation: str = 'default',
                  print_dataset_info: bool = False,
                  ):
 
-        super().__init__(col_id, cols_event_time, cols_category, cols_log_norm, cols_identity)
+        super().__init__(col_id, cols_event_time, cols_category, cols_log_norm, cols_identity, cols_target)
         self.print_dataset_info = print_dataset_info
         self.time_transformation = time_transformation
         self.time_min = None
@@ -141,6 +146,7 @@ class PandasDataPreprocessor(DataPreprocessor):
             self.cols_log_norm,
             self.cols_identity,
             ['event_time', self.col_id],
+            self.cols_target,
         ], [])
         used_columns = [col for col in df_data.columns if col in columns_for_filter]
 
@@ -148,7 +154,8 @@ class PandasDataPreprocessor(DataPreprocessor):
         features = df_data[used_columns] \
             .assign(et_index=lambda x: x['event_time']) \
             .set_index([self.col_id, 'et_index']).sort_index() \
-            .groupby(self.col_id).apply(lambda x: {k: np.array(v) for k, v in x.to_dict(orient='list').items()}) \
+            .groupby(self.col_id).apply(lambda x: {k: v[0] if k in self.cols_target else np.array(v)
+                                                   for k, v in x.to_dict(orient='list').items()}) \
             .rename('feature_arrays').reset_index().to_dict(orient='records')
 
         def squeeze(rec):

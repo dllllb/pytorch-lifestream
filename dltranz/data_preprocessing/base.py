@@ -8,12 +8,14 @@ class DataPreprocessor:
                  cols_category: List[str],
                  cols_log_norm: List[str],
                  cols_identity: List[str],
+                 cols_target: List[str],
                  ):
         self.col_id = col_id
         self.cols_event_time = cols_event_time
         self.cols_category = cols_category
         self.cols_log_norm = cols_log_norm
         self.cols_identity = cols_identity
+        self.cols_target = cols_target
         self._reset()
 
     def _reset(self):
