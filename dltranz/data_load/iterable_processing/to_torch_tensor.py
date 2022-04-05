@@ -4,6 +4,12 @@ from dltranz.data_load.iterable_processing_dataset import IterableProcessingData
 
 
 class ToTorch(IterableProcessingDataset):
+    """Filter that transforms each numpy.ndarray in sample dict to torch.Tensor
+         
+    Filter transformation:
+    list({key1: int, key2: np.ndarray, ...}) -> list({key1: int, key2: torch.Tensor, ...})
+    (in place of list there could be other iterable, for example generator)
+    """
     def __init__(self):
         super().__init__()
 
