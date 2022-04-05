@@ -41,7 +41,7 @@ pytest
 
 ## Demo example
 
-Demo example can be found in the [notebook](demo/example.ipynb)
+Demo example can be found in the [notebook](demo/UnsupervisedEmbeddings2LogisticRegression.ipynb)
 
 ## Experiments on public datasets
 
