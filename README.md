@@ -33,6 +33,7 @@ sudo apt install python3.8 python3-venv
 pip3 install pipenv
 
 pipenv sync  --dev # install packages exactly as specified in Pipfile.lock
+pipenv install "setuptools==59.5.0"
 pipenv shell
 pytest
 
@@ -40,7 +41,7 @@ pytest
 
 ## Demo example
 
-Demo example can be found in the [notebook](demo/example.ipynb)
+Demo example can be found in the [notebook](demo/UnsupervisedEmbeddings2LogisticRegression.ipynb)
 
 ## Experiments on public datasets
 

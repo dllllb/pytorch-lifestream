@@ -1,4 +1,8 @@
 import logging
+from functools import reduce
+from operator import iadd
+from typing import List
+
 import numpy as np
 import pandas as pd
 
@@ -30,6 +34,8 @@ class PandasDataPreprocessor(DataPreprocessor):
         list of category columns
     cols_log_norm : list[str],
         list of columns to be logarithmed
+    cols_identity : list[str],
+        list of columns to be passed as is without any transformation
     cols_target: List[str],
         list of columns with target
     time_transformation: str. Default: 'default'.
@@ -43,11 +49,13 @@ class PandasDataPreprocessor(DataPreprocessor):
                  cols_event_time: str,
                  cols_category: List[str],
                  cols_log_norm: List[str],
+                 cols_identity: List[str],
                  cols_target: List[str] = [],
                  time_transformation: str = 'default',
-                 print_dataset_info: bool = False):
+                 print_dataset_info: bool = False,
+                 ):
 
-        super().__init__(col_id, cols_event_time, cols_category, cols_log_norm, cols_target)
+        super().__init__(col_id, cols_event_time, cols_category, cols_log_norm, cols_identity, cols_target)
         self.print_dataset_info = print_dataset_info
         self.time_transformation = time_transformation
         self.time_min = None
@@ -100,7 +108,9 @@ class PandasDataPreprocessor(DataPreprocessor):
             logger.info(f'Found {df_data[self.col_id].nunique()} unique ids')
 
         # event_time mapping
-        if self.time_transformation == 'default':
+        if self.time_transformation == 'none':
+            pass
+        elif self.time_transformation == 'default':
             df_data = self._td_default(df_data, self.cols_event_time)
         elif self.time_transformation == 'float':
             df_data = self._td_float(df_data, self.cols_event_time)
@@ -115,7 +125,8 @@ class PandasDataPreprocessor(DataPreprocessor):
             if col not in self.cols_category_mapping:
                 raise KeyError(f"column {col} isn't in fitted category columns")
             pd_col = df_data[col].astype(str)
-            df_data[col] = pd_col.map(self.cols_category_mapping[col])
+            df_data[col] = pd_col.map(self.cols_category_mapping[col]) \
+                .fillna(max(self.cols_category_mapping[col].values()))
             if self.print_dataset_info:
                 logger.info(f'Encoder stat for "{col}":\ncodes | trx_count\n{pd_hist(df_data[col], col)}')
 
@@ -130,9 +141,14 @@ class PandasDataPreprocessor(DataPreprocessor):
             logger.info(f'Trx count per clients:\nlen(trx_list) | client_count\n{pd_hist(df, "trx_count")}')
 
         # column filter
-        used_columns = [col for col in df_data.columns
-                        if col in self.cols_category + self.cols_log_norm +
-                        ['event_time', self.col_id] + self.cols_target]
+        columns_for_filter = reduce(iadd, [
+            self.cols_category,
+            self.cols_log_norm,
+            self.cols_identity,
+            ['event_time', self.col_id],
+            self.cols_target,
+        ], [])
+        used_columns = [col for col in df_data.columns if col in columns_for_filter]
 
         logger.info('Feature collection in progress ...')
         features = df_data[used_columns] \
