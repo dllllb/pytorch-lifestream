@@ -2,6 +2,7 @@ import torch
 from torch.utils.data import DataLoader
 
 from dltranz.data_load import padded_collate, ZeroDownSampler, DropoutTrxDataset, TrxDataset, LastKTrxDataset
+from dltranz.data_load import augmentation_chain
 from tests.dltranz_tests.test_trx_encoder import gen_trx_data
 
 
@@ -46,3 +47,24 @@ def test_last_k_trx_dataset():
     assert all(torch.tensor(res) == torch.tensor([50, 50, 50]))
     res = [len(next(iter(x.values()))) for x, _ in LastKTrxDataset(TrxDataset(data), .2)]
     assert all(torch.tensor(res) == torch.tensor([20, 20, 20]))
+
+
+def _inc(x):
+    return x + 1
+
+
+def _double(x):
+    return x * 2
+
+
+def test_augmentation_chain():
+    a = augmentation_chain(_inc, _double, _inc)
+    out = a(2)
+    assert out == 7
+
+
+def test_augmentation_chain_pickle():
+    import pickle
+
+    a = augmentation_chain(_inc, _double)
+    pickle.dumps(a)
