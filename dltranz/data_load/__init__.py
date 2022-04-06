@@ -587,12 +587,22 @@ def create_validation_loader(dataset, params):
     return valid_loader
 
 
-def augmentation_chain(*i_filters):
-    def _func(x):
-        for f in i_filters:
+# def augmentation_chain(*i_filters):
+#     def _func(x):
+#         for f in i_filters:
+#             x = f(x)
+#         return x
+#     return _func
+
+
+class augmentation_chain:
+    def __init__(self, *i_filters):
+        self.i_filters = i_filters
+
+    def __call__(self, x):
+        for f in self.i_filters:
             x = f(x)
         return x
-    return _func
 
 
 class IterableAugmentations(IterableProcessingDataset):
