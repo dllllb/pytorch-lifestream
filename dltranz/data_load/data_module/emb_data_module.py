@@ -101,7 +101,7 @@ class EmbeddingDatasetFactory():
             post_processing=IterableChain(*self.build_processing())
         )
 
-        self.train_dataset = MapSplittingDataset(
+        dataset = MapSplittingDataset(
             base_dataset=dataset,
             splitter=split_strategy.create(**self.split_strategy_params),
             a_chain=build_augmentations(self.augmentations),
@@ -110,12 +110,12 @@ class EmbeddingDatasetFactory():
         return DataLoader(
             dataset=dataset,
             collate_fn=coles_collate_fn,
-            shuffle=True,
+            shuffle=False,
             num_workers=num_workers,
             batch_size=batch_size
         )
 
-    def build_processing(self, mode):
+    def build_processing(self):
         yield SeqLenFilter(min_seq_len=self.min_seq_len)
         yield ToTorch()
         yield FeatureFilter(keep_feature_names=self.category_names,
