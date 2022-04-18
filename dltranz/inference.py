@@ -20,7 +20,7 @@ def create_inference_dataloader(data: List[Dict],
     dataset = FilterDataset(
         data,
         post_processing=IterableChain(
-            FakeTarget(),
+            #FakeTarget(),
             FeatureFilter(keep_feature_names=category_names),
             CategorySizeClip(category_max_size, 1))
     )
