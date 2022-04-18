@@ -33,7 +33,6 @@ sudo apt install python3.8 python3-venv
 pip3 install pipenv
 
 pipenv sync  --dev # install packages exactly as specified in Pipfile.lock
-pipenv install "setuptools==59.5.0"
 pipenv shell
 pytest
 
