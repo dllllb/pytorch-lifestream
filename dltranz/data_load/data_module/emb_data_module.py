@@ -101,6 +101,8 @@ class EmbeddingDatasetFactory():
             post_processing=IterableChain(*self.build_processing())
         )
 
+        dataset = list(iter(dataset))
+
         dataset = MapSplittingDataset(
             base_dataset=dataset,
             splitter=split_strategy.create(**self.split_strategy_params),
@@ -126,9 +128,7 @@ class EmbeddingDatasetFactory():
         self,
         data: List[Dict],
         num_workers: int = 0,
-        batch_size: int = 512,
-        category_names: List[str] = None,
-        category_max_size: Dict[str, int] = None):
+        batch_size: int = 512):
 
         dataset = FilterDataset(
             data,
@@ -191,26 +191,28 @@ class EmbeddingTrainDataModule(pl.LightningDataModule):
         Controls the shuffling applied to the data before applying the split.
      """
 
-    def __init__(self,
-                 dataset: List[Dict],
-                 pl_module: pl.LightningModule,
-                 test_size: float = 0.1,
-                 iterable: bool = False,
-                 min_seq_len: int = 0,
-                 augmentations: List = None,
-                 seq_split_strategy: str = 'SampleSlices',
-                 split_count: int = 5,
-                 split_cnt_min: int = 1,
-                 split_cnt_max: int = 4000,
-                 train_num_workers: int = 0,
-                 train_batch_size: int = 512,
-                 valid_num_workers: int = 0,
-                 valid_batch_size: int = 512,
-                 category_names: List[str] = None,
-                 category_max_size: Dict[str, int] = None,
-                 col_time: str = 'event_time',
-                 drop_cols: List[str] = [],
-                 random_state: int = 42):
+    def __init__(
+        self,
+        dataset: List[Dict],
+        pl_module: pl.LightningModule,
+        test_size: float = 0.1,
+        iterable: bool = False,
+        min_seq_len: int = 0,
+        augmentations: List = None,
+        seq_split_strategy: str = 'SampleSlices',
+        split_count: int = 5,
+        split_cnt_min: int = 1,
+        split_cnt_max: int = 4000,
+        train_num_workers: int = 0,
+        train_batch_size: int = 512,
+        valid_num_workers: int = 0,
+        valid_batch_size: int = 512,
+        category_names: List[str] = None,
+        category_max_size: Dict[str, int] = None,
+        col_time: str = 'event_time',
+        drop_cols: List[str] = [],
+        random_state: int = 42):
+
         super().__init__()
         self.drop_cols = drop_cols
 

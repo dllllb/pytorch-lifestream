@@ -44,18 +44,19 @@ class PandasDataPreprocessor(DataPreprocessor):
         If True, print dataset stats during preprocessor fitting and data transformation
     """
 
-    def __init__(self,
-                 col_id: str,
-                 cols_event_time: str,
-                 cols_category: List[str],
-                 cols_log_norm: List[str],
-                 cols_identity: List[str],
-                 cols_target: List[str] = [],
-                 time_transformation: str = 'default',
-                 print_dataset_info: bool = False,
-                 ):
+    def __init__(
+        self,
+        col_id: str,
+        cols_event_time: str,
+        cols_category: List[str],
+        cols_log_norm: List[str],
+        cols_identity: List[str],
+        cols_target: List[str] = [],
+        time_transformation: str = 'default',
+        print_dataset_info: bool = False):
 
         super().__init__(col_id, cols_event_time, cols_category, cols_log_norm, cols_identity, cols_target)
+        
         self.print_dataset_info = print_dataset_info
         self.time_transformation = time_transformation
         self.time_min = None

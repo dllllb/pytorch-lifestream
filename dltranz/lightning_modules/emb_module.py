@@ -29,15 +29,16 @@ class EmbModule(ABSModule):
         Multiplicative factor of learning rate decay.
     """
 
-    def __init__(self,
-                 seq_encoder: torch.nn.Module,
-                 head: torch.nn.Module,
-                 margin: float = 0.5,
-                 neg_count: int = 5,
-                 lr: float = 1e-3,
-                 weight_decay: float = 0.0,
-                 lr_scheduler_step_size: int = 100,
-                 lr_scheduler_step_gamma: float = 0.1):
+    def __init__(
+        self,
+        seq_encoder: torch.nn.Module,
+        head: torch.nn.Module,
+        margin: float = 0.5,
+        neg_count: int = 5,
+        lr: float = 1e-3,
+        weight_decay: float = 0.0,
+        lr_scheduler_step_size: int = 100,
+        lr_scheduler_step_gamma: float = 0.1):
 
         train_params = {
             'train.sampling_strategy': 'HardNegativePair',
