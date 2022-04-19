@@ -49,7 +49,7 @@ class PandasDataPreprocessor(DataPreprocessor):
                  cols_event_time: str,
                  cols_category: List[str],
                  cols_log_norm: List[str],
-                 cols_identity: List[str],
+                 cols_identity: List[str] = [],
                  cols_target: List[str] = [],
                  time_transformation: str = 'default',
                  print_dataset_info: bool = False,
