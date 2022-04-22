@@ -7,14 +7,26 @@ from dltranz.trx_encoder import PaddedBatch, TrxEncoder, TrxMeanEncoder
 from .test_data_load import gen_trx_data
 
 
-def test_padded_batch_mask_tensor():
+def test_padded_batch_mask_tensor_trx_embedding():
     data = PaddedBatch(torch.randn(4, 5, 3), torch.tensor([2, 5, 1, 3]))
     out = data.seq_len_mask
     exp = torch.tensor([
         [1, 1, 0, 0, 0],
         [1, 1, 1, 1, 1],
         [1, 0, 0, 0, 0],
-        [1, 1, 1, 0, 0]
+        [1, 1, 1, 0, 0],
+    ]).long()
+    torch.testing.assert_close(out, exp)
+
+
+def test_padded_batch_mask_tensor_numerical():
+    data = PaddedBatch(torch.randn(4, 5), torch.tensor([2, 5, 3, 1]))
+    out = data.seq_len_mask
+    exp = torch.tensor([
+        [1, 1, 0, 0, 0],
+        [1, 1, 1, 1, 1],
+        [1, 1, 1, 0, 0],
+        [1, 0, 0, 0, 0],
     ]).long()
     torch.testing.assert_close(out, exp)
 
