@@ -10,8 +10,6 @@ from tests.dltranz_tests.test_data_load import RandomEventData, gen_trx_data
 
 
 def test_train_inference():
-    dm = RandomEventData()
-
     cat_sizes = {
         'mcc_code': 21,
         'trans_type': 11,
