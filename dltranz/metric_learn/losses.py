@@ -9,7 +9,7 @@ from .metric import outer_cosine_similarity
 class ContrastiveLoss(nn.Module):
     """
     Contrastive loss
-    
+
     "Signature verification using a siamese time delay neural network", NIPS 1993
     https://papers.nips.cc/paper/769-signature-verification-using-a-siamese-time-delay-neural-network.pdf
     """
@@ -20,15 +20,15 @@ class ContrastiveLoss(nn.Module):
         self.pair_selector = pair_selector
 
     def forward(self, embeddings, target):
-        
+
         positive_pairs, negative_pairs = self.pair_selector.get_pairs(embeddings, target)
         positive_loss = F.pairwise_distance(embeddings[positive_pairs[:, 0]], embeddings[positive_pairs[:, 1]]).pow(2)
-        
+
         negative_loss = F.relu(
             self.margin - F.pairwise_distance(embeddings[negative_pairs[:, 0]], embeddings[negative_pairs[:, 1]])
         ).pow(2)
         loss = torch.cat([positive_loss, negative_loss], dim=0)
-        
+
         return loss.sum(), len(positive_pairs) + len(negative_pairs)
 
 
@@ -48,9 +48,9 @@ class BinomialDevianceLoss(nn.Module):
         self.pair_selector = pair_selector
 
     def forward(self, embeddings, target):
-        
+
         positive_pairs, negative_pairs = self.pair_selector.get_pairs(embeddings, target)
-        
+
         pos_pair_similarity = F.cosine_similarity(embeddings[positive_pairs[:, 0]], embeddings[positive_pairs[:, 1]], dim=1)
         neg_pair_similarity = F.cosine_similarity(embeddings[negative_pairs[:, 0]], embeddings[negative_pairs[:, 1]], dim=1)
 
@@ -58,7 +58,7 @@ class BinomialDevianceLoss(nn.Module):
         neg_loss = torch.mean(torch.log(1 + torch.exp(self.alpha*self.C*(neg_pair_similarity - self.beta))))
 
         res_loss = (pos_loss + neg_loss) * (len(target))
-        
+
         return res_loss, len(positive_pairs) + len(negative_pairs)
 
 
@@ -92,12 +92,12 @@ class TripletLoss(nn.Module):
 class HistogramLoss(torch.nn.Module):
     """
     HistogramLoss
-    
+
     "Learning deep embeddings with histogram loss", NIPS 2016
     https://arxiv.org/abs/1611.00822
     code based on https://github.com/valerystrizh/pytorch-histogram-loss
     """
-    
+
     def __init__(self, num_steps=100):
         super(HistogramLoss, self).__init__()
         self.step = 2 / (num_steps - 1)
@@ -105,10 +105,10 @@ class HistogramLoss(torch.nn.Module):
         self.t = torch.arange(-1, 1+self.step, self.step).view(-1, 1)
         self.tsize = self.t.size()[0]
         self.device = None
-        
+
     def forward(self, embeddings, classes):
         def histogram(inds, size):
-            
+
             s_repeat_ = s_repeat.clone()
             indsa = (s_repeat_floor - (self.t - self.step) > -self.eps) &  \
                     (s_repeat_floor - (self.t - self.step) < self.eps) & inds
@@ -132,7 +132,7 @@ class HistogramLoss(torch.nn.Module):
         classes_size = classes.size()[0]
         classes_eq = (classes.repeat(classes_size, 1)  == classes.view(-1, 1).repeat(1, classes_size)).data
         dists = outer_cosine_similarity(embeddings)
-        
+
         assert ((dists > 1 + self.eps).sum().item() + (dists < -1 - self.eps).sum().item()) == 0, 'L2 normalization ' \
                                                                                                   'should be used '
         s_inds = torch.triu(torch.ones(classes_eq.size()), 1).bool()
@@ -145,12 +145,12 @@ class HistogramLoss(torch.nn.Module):
         s = s.clamp(-1 + 1e-6, 1 - 1e-6)
         s_repeat = s.repeat(self.tsize, 1)
         s_repeat_floor = (torch.floor((s_repeat.data + 1.0 - 1e-6) / self.step) * self.step - 1.0).float()
-        
+
         histogram_pos = histogram(pos_inds, pos_size)
-        assert_almost_equal(histogram_pos.sum().item(), 1, decimal=1, 
+        assert_almost_equal(histogram_pos.sum().item(), 1, decimal=1,
                             err_msg='Not good positive histogram', verbose=True)
         histogram_neg = histogram(neg_inds, neg_size)
-        assert_almost_equal(histogram_neg.sum().item(), 1, decimal=1, 
+        assert_almost_equal(histogram_neg.sum().item(), 1, decimal=1,
                             err_msg='Not good negative histogram', verbose=True)
         histogram_pos_repeat = histogram_pos.view(-1, 1).repeat(1, histogram_pos.size()[0])
         histogram_pos_inds = torch.tril(torch.ones(histogram_pos_repeat.size()), -1).bool()
@@ -158,15 +158,15 @@ class HistogramLoss(torch.nn.Module):
         histogram_pos_repeat[histogram_pos_inds] = 0
         histogram_pos_cdf = histogram_pos_repeat.sum(0)
         loss = torch.sum(histogram_neg * histogram_pos_cdf)
-        
+
         return loss, pos_size + neg_size
 
 
 class MarginLoss(torch.nn.Module):
-    
+
     """
     Margin loss
-    
+
     "Sampling Matters in Deep Embedding Learning", ICCV 2017
     https://arxiv.org/abs/1706.07567
 
@@ -177,11 +177,11 @@ class MarginLoss(torch.nn.Module):
         self.margin = margin
         self.beta = beta
         self.pair_selector = pair_selector
-        
+
     def forward(self, embeddings, target):
 
         positive_pairs, negative_pairs = self.pair_selector.get_pairs(embeddings, target)
-        
+
         d_ap = F.pairwise_distance(embeddings[positive_pairs[:, 0]], embeddings[positive_pairs[:, 1]])
         d_an = F.pairwise_distance(embeddings[negative_pairs[:, 0]], embeddings[negative_pairs[:, 1]])
 
@@ -189,7 +189,7 @@ class MarginLoss(torch.nn.Module):
         neg_loss = torch.clamp(self.beta - d_an + self.margin, min=0.0)
 
         loss = torch.cat([pos_loss, neg_loss], dim=0)
-        
+
         return loss.sum(), len(positive_pairs) + len(negative_pairs)
 
 
@@ -246,6 +246,58 @@ class BarlowTwinsLoss(torch.nn.Module):
         return x.flatten()[:-1].view(n - 1, n + 1)[:, 1:].flatten()
 
 
+class VicregLoss(torch.nn.Module):
+    """
+    From https://github.com/facebookresearch/vicreg
+
+    """
+    def __init__(self, sim_coeff, std_coeff, cov_coeff):
+        super().__init__()
+
+        self.sim_coeff = sim_coeff
+        self.std_coeff = std_coeff
+        self.cov_coeff = cov_coeff
+
+    def forward(self, model_outputs, target):
+        n = len(model_outputs)
+        m = len(model_outputs[0])
+        ix1 = torch.arange(0, n, 2, device=model_outputs.device)
+        ix2 = torch.arange(1, n, 2, device=model_outputs.device)
+
+        assert (target[ix1] == target[ix2]).all(), "Wrong embedding positions"
+
+        x = model_outputs[ix1]
+        y = model_outputs[ix2]
+
+        # From https://github.com/facebookresearch/vicreg:
+
+        repr_loss = F.mse_loss(x, y)
+
+        x = x - x.mean(dim=0)
+        y = y - y.mean(dim=0)
+
+        std_x = torch.sqrt(x.var(dim=0) + 0.0001)
+        std_y = torch.sqrt(y.var(dim=0) + 0.0001)
+        std_loss = torch.mean(F.relu(1 - std_x)) / 2 +\
+                   torch.mean(F.relu(1 - std_y)) / 2
+
+        cov_x = (x.T @ x) / (n - 1)
+        cov_y = (y.T @ y) / (n - 1)
+        cov_loss = self.off_diagonal(cov_x).pow_(2).sum().div(m) +\
+                   self.off_diagonal(cov_y).pow_(2).sum().div(m)
+
+        loss = (self.sim_coeff * repr_loss +
+                self.std_coeff * std_loss +
+                self.cov_coeff * cov_loss)
+        return loss, None
+
+    @staticmethod
+    def off_diagonal(x):
+        n, m = x.shape
+        assert n == m
+        return x.flatten()[:-1].view(n - 1, n + 1)[:, 1:].flatten()
+
+
 def get_loss(params, sampling_strategy, kw_params=None):
 
     if params['train.loss'] == 'ContrastiveLoss':
@@ -264,7 +316,7 @@ def get_loss(params, sampling_strategy, kw_params=None):
             'pair_selector': sampling_strategy
         }
         kwargs = {k: v for k, v in kwargs.items() if v is not None}
-        loss_fn = BinomialDevianceLoss(**kwargs)       
+        loss_fn = BinomialDevianceLoss(**kwargs)
 
     elif params['train.loss'] == 'TripletLoss':
         kwargs = {
@@ -302,6 +354,14 @@ def get_loss(params, sampling_strategy, kw_params=None):
         }
         kwargs = {k: v for k, v in kwargs.items() if v is not None}
         loss_fn = BarlowTwinsLoss(**kwargs)
+    elif params['train.loss'] == 'VicregLoss':
+        kwargs = {
+            'sim_coeff': params.get('train.sim_coeff', None),
+            'std_coeff': params.get('train.std_coeff', None),
+            'cov_coeff': params.get('train.cov_coeff', None)
+        }
+        kwargs = {k: v for k, v in kwargs.items() if v is not None}
+        loss_fn = VicregLoss(**kwargs)
     else:
         raise AttributeError(f'wrong loss "{params["train.loss"]}"')
 

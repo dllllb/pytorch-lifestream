@@ -32,18 +32,33 @@ class EmbModule(ABSModule):
     def __init__(self,
                  seq_encoder: torch.nn.Module,
                  head: torch.nn.Module,
+                 loss: str = 'contrastive',
                  margin: float = 0.5,
                  neg_count: int = 5,
+                 sim_coeff: float = 25.0,
+                 std_coeff: float = 25.0,
+                 cov_coeff: float = 1.0,
                  lr: float = 1e-3,
                  weight_decay: float = 0.0,
                  lr_scheduler_step_size: int = 100,
                  lr_scheduler_step_gamma: float = 0.1):
 
+        self.loss = loss
+        if loss == 'contrastive':
+            loss_params = {'train.loss': 'ContrastiveLoss',
+                           'train.sampling_strategy': 'HardNegativePair',
+                           'train.margin': margin,
+                           'train.neg_count': neg_count}
+        elif loss == 'vicreg':
+            loss_params = {'train.loss': 'VicregLoss',
+                           'train.sampling_strategy': None,
+                           'train.sim_coeff': sim_coeff,
+                           'train.std_coeff': std_coeff,
+                           'train.cov_coeff': cov_coeff}
+        else:
+            raise NotImplementedError
+
         train_params = {
-            'train.sampling_strategy': 'HardNegativePair',
-            'train.loss': 'ContrastiveLoss',
-            'train.margin': margin,
-            'train.neg_count': neg_count,
             'train.lr': lr,
             'train.weight_decay': weight_decay,
             'lr_scheduler': {
@@ -51,6 +66,8 @@ class EmbModule(ABSModule):
                 'step_gamma': lr_scheduler_step_gamma
             }
         }
+        train_params = {**train_params, **loss_params}
+
         super().__init__(train_params, seq_encoder)
 
         self._head = head
