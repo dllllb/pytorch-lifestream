@@ -32,7 +32,7 @@ class EmbModule(ABSModule):
     def __init__(self,
                  seq_encoder: torch.nn.Module,
                  head: torch.nn.Module,
-                 loss: torch.nn.Module,
+                 loss: torch.nn.Module = None,
                  lr: float = 1e-3,
                  weight_decay: float = 0.0,
                  lr_scheduler_step_size: int = 100,
