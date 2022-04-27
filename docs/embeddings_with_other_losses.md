@@ -5,6 +5,11 @@
 from dltranz.seq_encoder import SequenceEncoder
 from dltranz.models import Head
 from dltranz.lightning_modules.emb_module import EmbModule
+from dltranz.metric_learn.losses import VicregLoss
+
+vicreg_loss = VicregLoss(sim_coeff=10.0,
+                         std_coeff=10.0,
+                         cov_coeff=5.0)
 
 seq_encoder = SequenceEncoder(
     category_features=preprocessor.get_category_sizes(),
@@ -17,11 +22,8 @@ head = Head(input_size=seq_encoder.embedding_size, hidden_layers_sizes=[256], us
 
 model = EmbModule(seq_encoder=seq_encoder,
                   head=head,
-                  loss='vicreg',
-                  sim_coeff=10.0,
-                  std_coeff=10.0,
-                  cov_coeff=5.0,
-                  lr=0.01,
+                  loss=vicreg_loss,
+                  lr=0.001,
                   lr_scheduler_step_size=30,
                   lr_scheduler_step_gamma=0.9025)
 ```
