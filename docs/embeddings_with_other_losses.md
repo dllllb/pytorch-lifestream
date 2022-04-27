@@ -24,7 +24,7 @@ model = EmbModule(seq_encoder=seq_encoder,
                   head=head,
                   loss=vicreg_loss,
                   lr=0.01,
-                  lr_scheduler_step_size=30,
+                  lr_scheduler_step_size=10,
                   lr_scheduler_step_gamma=0.9025)
 ```
 
