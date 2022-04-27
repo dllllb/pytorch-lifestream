@@ -31,7 +31,7 @@ class ABSModule(pl.LightningModule):
         """
         raise NotImplementedError()
 
-    def __init__(self, params=None, seq_encoder=None):
+    def __init__(self, params=None, seq_encoder=None, loss=None):
         """
         Parameters
         ----------
@@ -43,7 +43,10 @@ class ABSModule(pl.LightningModule):
         super().__init__()
         self.save_hyperparameters()
 
-        self._loss = self.get_loss()
+        if not loss:
+            self._loss = self.get_loss()
+        else:
+            self._loss = loss
         if seq_encoder is not None:
             self._seq_encoder = seq_encoder
         else:

@@ -252,7 +252,7 @@ class VicregLoss(torch.nn.Module):
 
     """
     def __init__(self, sim_coeff, std_coeff, cov_coeff):
-        super().__init__()
+        super(VicregLoss, self).__init__()
 
         self.sim_coeff = sim_coeff
         self.std_coeff = std_coeff
@@ -289,7 +289,7 @@ class VicregLoss(torch.nn.Module):
         loss = (self.sim_coeff * repr_loss +
                 self.std_coeff * std_loss +
                 self.cov_coeff * cov_loss)
-        return loss, None
+        return loss
 
     @staticmethod
     def off_diagonal(x):
