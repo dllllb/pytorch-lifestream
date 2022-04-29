@@ -175,6 +175,7 @@ class TrxEncoder(nn.Module):
         super().__init__()
         self.scalers = nn.ModuleDict()
         self.use_batch_norm_with_lens = config.get('use_batch_norm_with_lens', False)
+        self.clip_replace_value = config.get('clip_replace_value', 'max')
 
         for name, scaler_name in config['numeric_values'].items():
             self.scalers[name] = torch.nn.Sequential(
@@ -202,8 +203,10 @@ class TrxEncoder(nn.Module):
 
     def forward(self, x: PaddedBatch):
         processed = []
+
         for field_name, embed_layer in self.embeddings.items():
-            processed.append(embed_layer(x.payload[field_name].long()))
+            feature = self._smart_clip(x.payload[field_name].long(), embed_layer.num_embeddings)
+            processed.append(embed_layer(feature))
 
         for value_name, scaler in self.scalers.items():
             if self.use_batch_norm_with_lens:
@@ -217,6 +220,14 @@ class TrxEncoder(nn.Module):
 
         out = torch.cat(processed, -1)
         return PaddedBatch(out, x.seq_lens)
+
+    def _smart_clip(self, values, max_size):
+        if self.clip_replace_value == 'max':
+            return values.clip(0, max_size - 1)
+        else:
+            res = values.clone()
+            res[values >= max_size] = self.clip_replace_value
+            return res
 
     @property
     def output_size(self):

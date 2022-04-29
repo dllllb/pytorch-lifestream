@@ -23,129 +23,102 @@ from dltranz.metric_learn.dataset.splitting_dataset import MapSplittingDataset, 
 logger = logging.getLogger(__name__)
 
 
-class EmbeddingDatasetFactory():
-    r"""pytorch data loader generator
+r"""Generate a train data loader
 
-    Parameters
-    ----------
-     min_seq_len: int. Default: 0.
-        The minimal length of sequences used for training. The shorter sequences would be skipped.
-     seq_split_strategy: str. Options: 'SampleSlices',  Default: 'SampleSlices'.
-        The strategy for splitting sequence to subsequences
-     split_count: int. Default: 5.
-        An amount of subsequences from one sequence.
-     split_cnt_min: int. Default: 1.
-        The minimal amount of events in each subsequence.
-     split_cnt_max: int. Default: 4000.
-         The maximal amount of events in each subsequence.
-     col_time: str. Default: 'event_time'
-        The name of date and time column.
-     category_names: List[str]. Default: None.
-        The names of features (keys in dataset)
-     category_max_size: Dict[str, int]. Default: None.
-        The max value of categorical features (embedding matrix size)
-     """
+Parameters
+----------
+data: List[Dict]
+The dataset
+min_seq_len: int. Default: 0.
+The minimal length of sequences used for training. The shorter sequences would be skipped.
+seq_split_strategy: str. Options: 'SampleSlices',  Default: 'SampleSlices'.
+The strategy for splitting sequence to subsequences
+split_count: int. Default: 5.
+An amount of subsequences from one sequence.
+split_cnt_min: int. Default: 1.
+The minimal amount of events in each subsequence.
+split_cnt_max: int. Default: 4000.
+    The maximal amount of events in each subsequence.
+num_workers: int. Default: 0.
+The number of workers for the dataloader. 0 = single-process loader
+train_batch_size: int. Default: 512.
+The number of samples (before splitting to subsequences) in each batch
+"""
+def train_data_loader(
+    data: List[Dict],
+    min_seq_len: int = 0,
+    seq_split_strategy: str = 'SampleSlices',
+    split_count: int = 5,
+    split_cnt_min: int = 1,
+    split_cnt_max: int = 4000,
+    drop_cols: List[str] = list(),
+    num_workers: int = 0,
+    batch_size: int = 512):
 
-    def __init__(
-        self,
-        min_seq_len: int = 0,
-        seq_split_strategy: str = 'SampleSlices',
-        split_count: int = 5,
-        split_cnt_min: int = 1,
-        split_cnt_max: int = 4000,
-        category_names: List[str] = list(),
-        category_max_size: Dict[str, int] = dict(),
-        col_time: str = 'event_time',
-        drop_cols: List[str] = list()):
-
-        super().__init__()
-        self.drop_cols = drop_cols
-
-        self.split_strategy_params = {
-            'split_strategy': seq_split_strategy,
-            'split_count': split_count,
-            'cnt_min': split_cnt_min,
-            'cnt_max': split_cnt_max
-        }
-
-        self.min_seq_len = min_seq_len
-
-        self.col_time = col_time
-
-        self.augmentations = []
-
-        self.category_names = category_names
-        if self.category_names is not None:
-            self.category_names.add(col_time)
-        self.category_max_size = category_max_size
-
-    r"""generate a data loader
-
-     Parameters
-     ----------
-     data: List[Dict]
-        The dataset
-     num_workers: int. Default: 0.
-        The number of workers for the dataloader. 0 = single-process loader
-     train_batch_size: int. Default: 512.
-        The number of samples (before splitting to subsequences) in each batch
-    """
-    def train_data_loader(
-        self,
-        data: List[Dict],
-        num_workers: int = 0,
-        batch_size: int = 512):
-
-        dataset = FilterDataset(
-            data,
-            post_processing=IterableChain(*self.build_processing())
+    dataset = FilterDataset(
+        data,
+        post_processing=IterableChain(
+            SeqLenFilter(min_seq_len=min_seq_len),
+            ToTorch(),
+            FeatureFilter(drop_feature_names=drop_cols)
         )
+    )
 
-        dataset = list(iter(dataset))
+    dataset = list(iter(dataset))
 
-        dataset = MapSplittingDataset(
-            base_dataset=dataset,
-            splitter=split_strategy.create(**self.split_strategy_params),
-            a_chain=build_augmentations(self.augmentations),
+    split_strategy_params = {
+        'split_strategy': seq_split_strategy,
+        'split_count': split_count,
+        'cnt_min': split_cnt_min,
+        'cnt_max': split_cnt_max
+    }
+
+    dataset = MapSplittingDataset(
+        base_dataset=dataset,
+        splitter=split_strategy.create(**split_strategy_params),
+        a_chain=build_augmentations({}),
+    )
+
+    return DataLoader(
+        dataset=dataset,
+        collate_fn=coles_collate_fn,
+        shuffle=False,
+        num_workers=num_workers,
+        batch_size=batch_size
+    )
+
+
+r"""Generate an inference data loader
+
+Parameters
+----------
+data: List[Dict]
+The dataset
+num_workers: int. Default: 0.
+The number of workers for the dataloader. 0 = single-process loader
+train_batch_size: int. Default: 512.
+The number of samples (before splitting to subsequences) in each batch
+"""
+def inference_data_loader(
+    data: List[Dict],
+    num_workers: int = 0,
+    batch_size: int = 512):
+
+    dataset = FilterDataset(
+        data,
+        post_processing=IterableChain(
+            FakeTarget(),
+            ToTorch()
         )
+    )
 
-        return DataLoader(
-            dataset=dataset,
-            collate_fn=coles_collate_fn,
-            shuffle=False,
-            num_workers=num_workers,
-            batch_size=batch_size
-        )
-
-    def build_processing(self):
-        yield SeqLenFilter(min_seq_len=self.min_seq_len)
-        yield ToTorch()
-        yield FeatureFilter(keep_feature_names=self.category_names,
-                            drop_feature_names=self.drop_cols)
-        yield CategorySizeClip(self.category_max_size, 1)
-
-    def inference_data_loader(
-        self,
-        data: List[Dict],
-        num_workers: int = 0,
-        batch_size: int = 512):
-
-        dataset = FilterDataset(
-            data,
-            post_processing=IterableChain(
-                FakeTarget(),
-                FeatureFilter(keep_feature_names=self.category_names),
-                CategorySizeClip(self.category_max_size, 1))
-        )
-
-        return DataLoader(
-            dataset=dataset,
-            collate_fn=padded_collate,
-            shuffle=False,
-            num_workers=num_workers,
-            batch_size=batch_size,
-        )
-
+    return DataLoader(
+        dataset=dataset,
+        collate_fn=padded_collate,
+        shuffle=False,
+        num_workers=num_workers,
+        batch_size=batch_size,
+    )
 
 
 class EmbeddingTrainDataModule(pl.LightningDataModule):
