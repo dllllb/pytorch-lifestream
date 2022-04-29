@@ -9,7 +9,7 @@ from dltranz.data_preprocessing.pandas_preprocessor import PandasDataPreprocesso
 from dltranz.seq_encoder import SequenceEncoder
 from dltranz.models import Head
 from dltranz.lightning_modules.emb_module import EmbModule
-from dltranz.data_load.data_module.emb_data_module import EmbeddingDatasetFactory
+from dltranz.data_load.data_module.emb_data_module import train_data_loader, inference_data_loader
 
 
 def test_train_inference():
@@ -39,23 +39,24 @@ def test_train_inference():
 
     model = EmbModule(seq_encoder=seq_encoder, head=head)
 
-    dlf = EmbeddingDatasetFactory(
-        min_seq_len=5,
-        seq_split_strategy='SampleSlices',
-        category_names = model.seq_encoder.category_names,
-        category_max_size = model.seq_encoder.category_max_size,
-        split_count=5,
-        split_cnt_min=5,
-        split_cnt_max=20,
-    )
-
     trainer = pl.Trainer(
         max_epochs=1,
         gpus=1 if torch.cuda.is_available() else 0
     )
 
-    train_dl = dlf.train_data_loader(train, num_workers=1, batch_size=4)
+    train_dl = train_data_loader(
+        train,
+        min_seq_len=5,
+        seq_split_strategy='SampleSlices',
+        split_count=5,
+        split_cnt_min=5,
+        split_cnt_max=20,
+        num_workers=1,
+        batch_size=4
+    )
+
     trainer.fit(model, train_dl)
 
-    test_dl = dlf.inference_data_loader(test, num_workers=1, batch_size=4)
+    test_dl = inference_data_loader(test, num_workers=1, batch_size=4)
+    
     trainer.predict(model, test_dl)
