@@ -14,11 +14,12 @@ from dltranz.data_load.data_module.coles_data_module import coles_collate_fn
 from dltranz.data_load.filter_dataset import FilterDataset
 from dltranz.data_load.iterable_processing.category_size_clip import CategorySizeClip
 from dltranz.data_load.iterable_processing.feature_filter import FeatureFilter
+from dltranz.data_load.iterable_processing.filter_non_array import FilterNonArray
 from dltranz.data_load.iterable_processing.seq_len_filter import SeqLenFilter
 from dltranz.data_load.iterable_processing.to_torch_tensor import ToTorch
 from dltranz.data_load.iterable_processing.target_extractor import FakeTarget
 from dltranz.metric_learn.dataset import split_strategy
-from dltranz.metric_learn.dataset.splitting_dataset import MapSplittingDataset, IterableSplittingDataset
+from dltranz.metric_learn.dataset.splitting_dataset import MapSplittingDataset
 
 logger = logging.getLogger(__name__)
 
@@ -59,6 +60,7 @@ def train_data_loader(
         data,
         post_processing=IterableChain(
             SeqLenFilter(min_seq_len=min_seq_len),
+            FilterNonArray(),
             ToTorch(),
             FeatureFilter(drop_feature_names=drop_cols)
         )
@@ -108,6 +110,7 @@ def inference_data_loader(
         data,
         post_processing=IterableChain(
             FakeTarget(),
+            FilterNonArray(),
             ToTorch()
         )
     )
