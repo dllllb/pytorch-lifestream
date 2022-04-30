@@ -51,12 +51,12 @@ def test_train_inference():
         split_count=5,
         split_cnt_min=5,
         split_cnt_max=20,
-        num_workers=1,
+        num_workers=0,
         batch_size=4
     )
 
     trainer.fit(model, train_dl)
 
-    test_dl = inference_data_loader(test, num_workers=1, batch_size=4)
+    test_dl = inference_data_loader(test, num_workers=0, batch_size=4)
     
     trainer.predict(model, test_dl)
