@@ -19,5 +19,5 @@ class ToTorch(IterableProcessingDataset):
             for k, v in features.items():
                 if isinstance(v, np.ndarray):
                     features[k] = torch.from_numpy(v)
-            yield features
+            yield rec
 
