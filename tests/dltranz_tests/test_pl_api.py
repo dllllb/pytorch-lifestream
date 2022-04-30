@@ -48,8 +48,8 @@ def test_train_inference():
         train,
         min_seq_len=5,
         seq_split_strategy='SampleSlices',
-        split_count=5,
-        split_cnt_min=5,
+        split_count=3,
+        split_cnt_min=3,
         split_cnt_max=20,
         num_workers=0,
         batch_size=4
