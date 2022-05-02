@@ -6,6 +6,8 @@ from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LogisticRegression
 
 from dltranz.data_preprocessing.pandas_preprocessor import PandasDataPreprocessor
+from dltranz.metric_learn.losses import ContrastiveLoss
+from dltranz.metric_learn.sampling_strategies import HardNegativePairSelector
 from dltranz.seq_encoder import SequenceEncoder
 from dltranz.models import Head
 from dltranz.lightning_modules.emb_module import EmbModule
@@ -37,7 +39,9 @@ def test_train_inference():
 
     head = Head(input_size=seq_encoder.embedding_size, use_norm_encoder=True)
 
-    model = EmbModule(seq_encoder=seq_encoder, head=head)
+    #loss = ContrastiveLoss(margin=3, pair_selector=HardNegativePairSelector(neg_count=5))
+
+    model = EmbModule(seq_encoder=seq_encoder, head=head)#, loss=loss)
 
     trainer = pl.Trainer(
         max_epochs=1,
