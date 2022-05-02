@@ -3,7 +3,6 @@ import pytorch_lightning as pl
 import pandas as pd
 from pathlib import Path
 from sklearn.model_selection import train_test_split
-from sklearn.linear_model import LogisticRegression
 
 from dltranz.data_preprocessing.pandas_preprocessor import PandasDataPreprocessor
 from dltranz.metric_learn.losses import ContrastiveLoss
