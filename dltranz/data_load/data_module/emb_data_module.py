@@ -8,7 +8,7 @@ from torch.utils.data import DataLoader
 from typing import List, Dict
 from tqdm.auto import tqdm
 
-from dltranz.data_load import IterableChain, padded_collate
+from dltranz.data_load import IterableChain, padded_collate, padded_collate_wo_target
 from dltranz.data_load.augmentations.build_augmentations import build_augmentations
 from dltranz.data_load.data_module.coles_data_module import coles_collate_fn
 from dltranz.data_load.filter_dataset import FilterDataset
@@ -109,7 +109,6 @@ def inference_data_loader(
     dataset = FilterDataset(
         data,
         post_processing=IterableChain(
-            FakeTarget(),
             FilterNonArray(),
             ToTorch()
         )
@@ -117,7 +116,7 @@ def inference_data_loader(
 
     return DataLoader(
         dataset=dataset,
-        collate_fn=padded_collate,
+        collate_fn=padded_collate_wo_target,
         shuffle=False,
         num_workers=num_workers,
         batch_size=batch_size,
