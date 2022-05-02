@@ -15,10 +15,8 @@ class EmbModule(ABSModule):
         sequence encoder
     head : torch.nn.Module
         head of th model
-    margin : float. Default: 0.5
-        The margin for Contrastive Loss
-    neg_count : int. Default: 5
-        The number of negative samples for hard negative sampler
+    loss : torch.nn.Module
+        Loss function for training
     lr : float. Default: 1e-3
         Learning rate
     weight_decay: float. Default: 0.0
@@ -28,23 +26,21 @@ class EmbModule(ABSModule):
     lr_scheduler_step_gamma: float. Default: 0.1
         Multiplicative factor of learning rate decay.
     """
-
     def __init__(
         self,
         seq_encoder: torch.nn.Module,
         head: torch.nn.Module,
-        margin: float = 0.5,
-        neg_count: int = 5,
+        loss: torch.nn.Module = None,
         lr: float = 1e-3,
         weight_decay: float = 0.0,
         lr_scheduler_step_size: int = 100,
         lr_scheduler_step_gamma: float = 0.1):
 
+        default_loss_params = {'train.loss': 'ContrastiveLoss',
+                               'train.sampling_strategy': 'HardNegativePair',
+                               'train.margin': 0.5,
+                               'train.neg_count': 5}
         train_params = {
-            'train.sampling_strategy': 'HardNegativePair',
-            'train.loss': 'ContrastiveLoss',
-            'train.margin': margin,
-            'train.neg_count': neg_count,
             'train.lr': lr,
             'train.weight_decay': weight_decay,
             'lr_scheduler': {
@@ -52,7 +48,10 @@ class EmbModule(ABSModule):
                 'step_gamma': lr_scheduler_step_gamma
             }
         }
-        super().__init__(train_params, seq_encoder)
+        if not loss:
+            train_params = {**train_params, **default_loss_params}
+
+        super().__init__(train_params, seq_encoder, loss)
 
         self._head = head
 

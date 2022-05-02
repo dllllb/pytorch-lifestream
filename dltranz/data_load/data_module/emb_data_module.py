@@ -5,13 +5,14 @@ import torch
 
 from sklearn.model_selection import train_test_split
 from torch.utils.data import DataLoader
-from typing import List, Dict
+from typing import List, Dict, Union
 from tqdm.auto import tqdm
 
 from dltranz.data_load import IterableChain, padded_collate, padded_collate_wo_target
 from dltranz.data_load.augmentations.build_augmentations import build_augmentations
 from dltranz.data_load.data_module.coles_data_module import coles_collate_fn
 from dltranz.data_load.filter_dataset import FilterDataset
+from dltranz.data_load.parquet_dataset import ParquetFiles, ParquetDataset
 from dltranz.data_load.iterable_processing.category_size_clip import CategorySizeClip
 from dltranz.data_load.iterable_processing.feature_filter import FeatureFilter
 from dltranz.data_load.iterable_processing.filter_non_array import FilterNonArray
@@ -134,6 +135,10 @@ class EmbeddingTrainDataModule(pl.LightningDataModule):
         Should be between 0.0 and 1.0 and represent the proportion of the dataset to include in the test split.
      pl_module: pl.LightningModule
         The model (pl.LightningModule object).
+     parquet_train_path: str
+        Path to parquet files with train data.
+     parquet_valid_path: str
+        Path to parquet files with validation data.
      iterable: bool. Default: False.
         Whether to use iterable or map dataset.
      min_seq_len: int. Default: 0.
@@ -166,27 +171,33 @@ class EmbeddingTrainDataModule(pl.LightningDataModule):
         Controls the shuffling applied to the data before applying the split.
      """
 
-    def __init__(
-        self,
-        dataset: List[Dict],
-        pl_module: pl.LightningModule,
-        test_size: float = 0.1,
-        iterable: bool = False,
-        min_seq_len: int = 0,
-        augmentations: List = None,
-        seq_split_strategy: str = 'SampleSlices',
-        split_count: int = 5,
-        split_cnt_min: int = 1,
-        split_cnt_max: int = 4000,
-        train_num_workers: int = 0,
-        train_batch_size: int = 512,
-        valid_num_workers: int = 0,
-        valid_batch_size: int = 512,
-        category_names: List[str] = None,
-        category_max_size: Dict[str, int] = None,
-        col_time: str = 'event_time',
-        drop_cols: List[str] = [],
-        random_state: int = 42):
+    def __init__(self,
+                 dataset: List[Dict] = None,
+                 pl_module: pl.LightningModule = None,
+                 parquet_train_path: str = None,
+                 parquet_valid_path: str = None,
+                 test_size: float = 0.1,
+                 iterable: bool = False,
+                 min_seq_len: int = 0,
+                 augmentations: List = None,
+                 seq_split_strategy: str = 'SampleSlices',
+                 split_count: int = 5,
+                 split_cnt_min: int = 1,
+                 split_cnt_max: int = 4000,
+                 train_num_workers: int = 0,
+                 train_batch_size: int = 512,
+                 valid_num_workers: int = 0,
+                 valid_batch_size: int = 512,
+                 category_names: List[str] = None,
+                 category_max_size: Dict[str, int] = None,
+                 col_time: str = 'event_time',
+                 drop_cols: List[str] = [],
+                 random_state: int = 42):
+
+        required_s = 'Necessary to supply `dataset` or `parquet_train_path` and `parquet_valid_path`'
+        assert dataset or (parquet_train_path and parquet_valid_path), required_s
+        if dataset and (parquet_train_path or parquet_valid_path):
+            print('`dataset` is supplied, `parquet_train_path` and `parquet_valid_path` will be ignored')
 
         super().__init__()
         self.drop_cols = drop_cols
@@ -212,19 +223,26 @@ class EmbeddingTrainDataModule(pl.LightningDataModule):
             self.category_names.add(col_time)
         self.category_max_size = category_max_size
 
-        train, valid = train_test_split(dataset, test_size=test_size, random_state=random_state)
-        self.train_data = train
-        self.valid_data = valid
+        if dataset:
+            self.train_data, self.valid_data = train_test_split(dataset,
+                                                                test_size=test_size,
+                                                                random_state=random_state)
+            self.dataset_cls = FilterDataset
+        else:
+            self.train_data = ParquetFiles(parquet_train_path).data_files
+            self.valid_data = ParquetFiles(parquet_valid_path).data_files
+            self.dataset_cls = ParquetDataset
+
         self.train_dataset = None
         self.valid_dataset = None
 
     def prepare_data(self):
-        self.train_dataset = FilterDataset(
+        self.train_dataset = self.dataset_cls(
             self.train_data,
             post_processing=IterableChain(*self.build_processing('train'))
         )
 
-        self.valid_dataset = FilterDataset(
+        self.valid_dataset = self.dataset_cls(
             self.valid_data,
             post_processing=IterableChain(*self.build_processing('valid'))
         )
