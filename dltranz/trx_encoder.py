@@ -40,7 +40,7 @@ class PaddedBatch:
         if type(self._payload) is dict:
             B, T = next(iter(self._payload.values())).size()
         else:
-            B, T, _ = self._payload.size()
+            B, T = self._payload.size()[:2]
         return (torch.arange(T, device=self._length.device).unsqueeze(0).expand(B, T) < \
                 self._length.unsqueeze(1)).long()
 
