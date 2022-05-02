@@ -8,7 +8,7 @@ from torch.utils.data import DataLoader
 from typing import List, Dict, Union
 from tqdm.auto import tqdm
 
-from dltranz.data_load import IterableChain, padded_collate, padded_collate_wo_target
+from dltranz.data_load import IterableChain, padded_collate_wo_target
 from dltranz.data_load.augmentations.build_augmentations import build_augmentations
 from dltranz.data_load.data_module.coles_data_module import coles_collate_fn
 from dltranz.data_load.filter_dataset import FilterDataset
@@ -18,7 +18,6 @@ from dltranz.data_load.iterable_processing.feature_filter import FeatureFilter
 from dltranz.data_load.iterable_processing.filter_non_array import FilterNonArray
 from dltranz.data_load.iterable_processing.seq_len_filter import SeqLenFilter
 from dltranz.data_load.iterable_processing.to_torch_tensor import ToTorch
-from dltranz.data_load.iterable_processing.target_extractor import FakeTarget
 from dltranz.metric_learn.dataset import split_strategy
 from dltranz.metric_learn.dataset.splitting_dataset import MapSplittingDataset
 
