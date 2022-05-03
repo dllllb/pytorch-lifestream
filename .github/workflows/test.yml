@@ -20,13 +20,3 @@ jobs:
       run: |
         pipenv run coverage run
         pipenv run coverage report
-  notebooks:
-    steps:
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install pipenv
-        pipenv sync --dev
-    - name: Execute notebooks
-      run: |
-        jupyter nbconvert --execute --inplace demo/*.ipynb
