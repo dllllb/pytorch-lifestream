@@ -29,3 +29,6 @@ setuptools = "==59.5.0"
 
 [requires]
 python_version = "3.8"
+
+[scripts]
+notebooks = "jupyter nbconvert --execute --inplace demo/*.ipynb"
