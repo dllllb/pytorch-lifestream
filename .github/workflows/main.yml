@@ -20,3 +20,12 @@ jobs:
       run: |
         pipenv run coverage run
         pipenv run coverage report
+    - name: Build a source tarball
+      if: startsWith(github.ref, 'refs/tags')
+      run: |
+        pipenv run setup.py sdist
+    - name: Publish distribution 📦 to PyPI
+      if: startsWith(github.ref, 'refs/tags')
+      uses: pypa/gh-action-pypi-publish@master
+      with:
+        password: ${{ secrets.PYPI_API_TOKEN }}
