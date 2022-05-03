@@ -1,4 +1,4 @@
-from dltranz.data_load.iterable_processing.iterable_shuffle import IterableShuffle
+from ptls.data_load.iterable_processing.iterable_shuffle import IterableShuffle
 import numpy as np
 
 

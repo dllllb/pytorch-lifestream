@@ -1,4 +1,4 @@
-from dltranz.data_load.iterable_processing.to_torch_tensor import ToTorch
+from ptls.data_load.iterable_processing.to_torch_tensor import ToTorch
 import numpy as np
 import torch
 

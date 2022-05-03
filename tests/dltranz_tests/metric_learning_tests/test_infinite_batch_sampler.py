@@ -1,6 +1,6 @@
 from torch.utils.data import Dataset, DataLoader
 
-from dltranz.metric_learn.dataset.infinite_loader import InfiniteBatchSampler
+from ptls.metric_learn.dataset.infinite_loader import InfiniteBatchSampler
 
 
 class TestInfiniteDataset(Dataset):

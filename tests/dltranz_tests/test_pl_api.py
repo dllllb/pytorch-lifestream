@@ -4,13 +4,13 @@ import pandas as pd
 from pathlib import Path
 from sklearn.model_selection import train_test_split
 
-from dltranz.data_preprocessing.pandas_preprocessor import PandasDataPreprocessor
-from dltranz.metric_learn.losses import ContrastiveLoss
-from dltranz.metric_learn.sampling_strategies import HardNegativePairSelector
-from dltranz.seq_encoder import SequenceEncoder
-from dltranz.models import Head
-from dltranz.lightning_modules.emb_module import EmbModule
-from dltranz.data_load.data_module.emb_data_module import train_data_loader, inference_data_loader
+from ptls.data_preprocessing.pandas_preprocessor import PandasDataPreprocessor
+from ptls.metric_learn.losses import ContrastiveLoss
+from ptls.metric_learn.sampling_strategies import HardNegativePairSelector
+from ptls.seq_encoder import SequenceEncoder
+from ptls.models import Head
+from ptls.lightning_modules.emb_module import EmbModule
+from ptls.data_load.data_module.emb_data_module import train_data_loader, inference_data_loader
 
 
 def test_train_inference():

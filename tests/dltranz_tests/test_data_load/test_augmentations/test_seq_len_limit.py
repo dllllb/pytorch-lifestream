@@ -1,4 +1,4 @@
-from dltranz.data_load.augmentations.seq_len_limit import SeqLenLimit
+from ptls.data_load.augmentations.seq_len_limit import SeqLenLimit
 import numpy as np
 
 

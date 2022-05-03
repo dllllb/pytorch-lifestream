@@ -1,4 +1,4 @@
-from dltranz.data_load.iterable_processing.target_join import TargetJoin
+from ptls.data_load.iterable_processing.target_join import TargetJoin
 
 
 def get_features_only():

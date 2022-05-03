@@ -2,9 +2,9 @@ import pytorch_lightning as pl
 
 from pyhocon import ConfigFactory
 
-from dltranz.lightning_modules.emb_module import EmbModule
-from dltranz.models import Head
-from dltranz.seq_encoder import SequenceEncoder
+from ptls.lightning_modules.emb_module import EmbModule
+from ptls.models import Head
+from ptls.seq_encoder import SequenceEncoder
 from tests.dltranz_tests.test_data_load import RandomEventData
 
 

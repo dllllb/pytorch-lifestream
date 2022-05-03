@@ -1,4 +1,4 @@
-from dltranz.util import ListSubset
+from ptls.util import ListSubset
 
 
 def test_list_subset_iter():

@@ -1,8 +1,8 @@
 import torch
 from pyhocon import ConfigFactory
 
-from dltranz.seq_encoder.agg_feature_model import AggFeatureModel
-from dltranz.trx_encoder import PaddedBatch
+from ptls.seq_encoder.agg_feature_model import AggFeatureModel
+from ptls.trx_encoder import PaddedBatch
 
 
 def get_data():

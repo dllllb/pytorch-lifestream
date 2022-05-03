@@ -1,6 +1,6 @@
 import numpy as np
 
-from dltranz.size_reduction import embeds_quantiles, pca_reduction
+from ptls.size_reduction import embeds_quantiles, pca_reduction
 
 
 def test_embeds_quantiles():

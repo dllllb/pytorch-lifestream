@@ -1,6 +1,6 @@
 import numpy as np
 
-from dltranz.data_load.augmentations.dropout_trx import DropoutTrx
+from ptls.data_load.augmentations.dropout_trx import DropoutTrx
 
 
 def test_no_dropout():

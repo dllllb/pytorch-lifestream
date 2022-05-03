@@ -1,4 +1,4 @@
-from dltranz.data_load.iterable_processing.category_size_clip import CategorySizeClip
+from ptls.data_load.iterable_processing.category_size_clip import CategorySizeClip
 import numpy as np
 
 

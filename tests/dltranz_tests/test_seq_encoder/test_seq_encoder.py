@@ -1,7 +1,7 @@
 import torch
 
-from dltranz.seq_encoder import SequenceEncoder
-from dltranz.trx_encoder import PaddedBatch
+from ptls.seq_encoder import SequenceEncoder
+from ptls.trx_encoder import PaddedBatch
 
 
 def get_data():

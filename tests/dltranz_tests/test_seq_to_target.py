@@ -1,8 +1,8 @@
 import pytorch_lightning as pl
-from dltranz.seq_to_target import SequenceToTarget
+from ptls.seq_to_target import SequenceToTarget
 from .test_data_load import RandomEventData
 from pyhocon import ConfigFactory
-from dltranz.seq_to_target import LogAccuracy
+from ptls.seq_to_target import LogAccuracy
 import torch
 
 

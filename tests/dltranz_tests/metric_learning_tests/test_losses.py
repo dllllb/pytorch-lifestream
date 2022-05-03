@@ -1,9 +1,9 @@
 import torch
 
-from dltranz.metric_learn.losses import ContrastiveLoss, HistogramLoss, BinomialDevianceLoss, TripletLoss, MarginLoss, \
+from ptls.metric_learn.losses import ContrastiveLoss, HistogramLoss, BinomialDevianceLoss, TripletLoss, MarginLoss, \
     ComplexLoss
-from dltranz.metric_learn.sampling_strategies import AllPositivePairSelector
-from dltranz.metric_learn.sampling_strategies import AllTripletSelector
+from ptls.metric_learn.sampling_strategies import AllPositivePairSelector
+from ptls.metric_learn.sampling_strategies import AllTripletSelector
 
 
 def get_data():
