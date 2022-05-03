@@ -1,6 +1,6 @@
 import pytorch_lightning as pl
 from ptls.lightning_modules.coles_module import CoLESModule
-from tests.dltranz_tests.test_data_load import RandomEventData
+from ..test_data_load import RandomEventData
 from pyhocon import ConfigFactory
 
 

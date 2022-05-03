@@ -5,7 +5,7 @@ from pyhocon import ConfigFactory
 from ptls.lightning_modules.emb_module import EmbModule
 from ptls.models import Head
 from ptls.seq_encoder import SequenceEncoder
-from tests.dltranz_tests.test_data_load import RandomEventData
+from ..test_data_load import RandomEventData
 
 
 def tst_params():
