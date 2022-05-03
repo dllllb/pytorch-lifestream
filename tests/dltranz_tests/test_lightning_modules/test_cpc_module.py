@@ -2,9 +2,9 @@ import pytorch_lightning as pl
 import torch
 from pyhocon import ConfigFactory
 
-from dltranz.data_load import TrxDataset
-from dltranz.data_load import create_train_loader, create_validation_loader
-from dltranz.lightning_modules.cpc_module import CpcModule
+from ptls.data_load import TrxDataset
+from ptls.data_load import create_train_loader, create_validation_loader
+from ptls.lightning_modules.cpc_module import CpcModule
 from tests.dltranz_tests.test_trx_encoder import gen_trx_data
 
 

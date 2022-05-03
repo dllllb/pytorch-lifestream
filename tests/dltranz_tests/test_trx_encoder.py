@@ -2,8 +2,8 @@ import pickle
 
 import torch
 
-from dltranz.data_load import padded_collate, TrxDataset
-from dltranz.trx_encoder import PaddedBatch, TrxEncoder, TrxMeanEncoder
+from ptls.data_load import padded_collate, TrxDataset
+from ptls.trx_encoder import PaddedBatch, TrxEncoder, TrxMeanEncoder
 from .test_data_load import gen_trx_data
 
 

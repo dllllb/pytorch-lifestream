@@ -1,8 +1,8 @@
 import torch
 
-from dltranz.seq_encoder.rnn_encoder import RnnEncoder
-from dltranz.trx_encoder import PaddedBatch
-from dltranz.seq_encoder.utils import LastStepEncoder
+from ptls.seq_encoder.rnn_encoder import RnnEncoder
+from ptls.trx_encoder import PaddedBatch
+from ptls.seq_encoder.utils import LastStepEncoder
 
 
 def get_data():

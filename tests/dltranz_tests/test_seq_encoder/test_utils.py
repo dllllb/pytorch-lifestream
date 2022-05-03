@@ -1,10 +1,10 @@
 import pytest
 import torch
 
-from dltranz.seq_encoder.rnn_encoder import RnnEncoder, SkipStepEncoder
-from dltranz.seq_encoder.utils import PerTransHead, TimeStepShuffle, scoring_head
-from dltranz.seq_encoder.transf_seq_encoder import TransformerSeqEncoder
-from dltranz.trx_encoder import PaddedBatch
+from ptls.seq_encoder.rnn_encoder import RnnEncoder, SkipStepEncoder
+from ptls.seq_encoder.utils import PerTransHead, TimeStepShuffle, scoring_head
+from ptls.seq_encoder.transf_seq_encoder import TransformerSeqEncoder
+from ptls.trx_encoder import PaddedBatch
 
 
 class TrxEncoderTest(torch.nn.Module):

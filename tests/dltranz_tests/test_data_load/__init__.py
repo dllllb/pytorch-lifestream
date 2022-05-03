@@ -1,7 +1,7 @@
 import numpy as np
 import torch
 import pytorch_lightning as pl
-from dltranz.data_load import create_train_loader, create_validation_loader, TrxDataset
+from ptls.data_load import create_train_loader, create_validation_loader, TrxDataset
 
 
 def gen_trx_data(lengths, target_share=.5):

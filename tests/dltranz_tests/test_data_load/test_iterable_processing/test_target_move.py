@@ -1,4 +1,4 @@
-from dltranz.data_load.iterable_processing.target_move import TargetMove
+from ptls.data_load.iterable_processing.target_move import TargetMove
 import numpy as np
 import torch
 

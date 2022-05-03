@@ -3,10 +3,10 @@ import torch
 from pyhocon import ConfigFactory
 from sklearn.metrics import roc_auc_score
 
-from dltranz.data_load import create_validation_loader, TrxDataset
-from dltranz.models import rnn_model
+from ptls.data_load import create_validation_loader, TrxDataset
+from ptls.models import rnn_model
 from .test_data_load import gen_trx_data
-from dltranz.train import score_model, score_model
+from ptls.train import score_model, score_model
 
 
 def tst_params():

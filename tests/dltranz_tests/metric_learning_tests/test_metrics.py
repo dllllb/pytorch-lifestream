@@ -1,7 +1,7 @@
 import math
 import torch
 
-from dltranz.metric_learn.metric import outer_cosine_similarity, outer_pairwise_distance, metric_Recall_top_K, \
+from ptls.metric_learn.metric import outer_cosine_similarity, outer_pairwise_distance, metric_Recall_top_K, \
     BatchRecallTopPL
 
 

@@ -1,6 +1,6 @@
 import torch
 
-from dltranz.metric_learn.sampling_strategies import AllPositivePairSelector, HardNegativePairSelector, \
+from ptls.metric_learn.sampling_strategies import AllPositivePairSelector, HardNegativePairSelector, \
     DistanceWeightedPairSelector
 
 

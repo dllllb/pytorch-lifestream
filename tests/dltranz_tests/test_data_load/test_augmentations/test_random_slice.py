@@ -1,6 +1,6 @@
 import numpy as np
 
-from dltranz.data_load.augmentations.random_slice import RandomSlice
+from ptls.data_load.augmentations.random_slice import RandomSlice
 
 
 def test_usage():

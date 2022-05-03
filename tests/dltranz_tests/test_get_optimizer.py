@@ -1,6 +1,6 @@
 import torch
 
-from dltranz.train import get_optimizer
+from ptls.train import get_optimizer
 
 
 def test_get_optimizer():

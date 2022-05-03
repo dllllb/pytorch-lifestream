@@ -1,8 +1,8 @@
 import torch
 import numpy as np
 
-from dltranz.trx_encoder import PaddedBatch
-from dltranz.seq_encoder.rnn_encoder import RnnSeqEncoder
+from ptls.trx_encoder import PaddedBatch
+from ptls.seq_encoder.rnn_encoder import RnnSeqEncoder
 
 
 def get_data():

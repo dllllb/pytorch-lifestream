@@ -1,7 +1,7 @@
 import torch
 import numpy as np
 
-from dltranz.custom_layers import DropoutEncoder, Squeeze, CatLayer, MLP, TabularRowEncoder, CombinedTargetHeadFromRnn
+from ptls.custom_layers import DropoutEncoder, Squeeze, CatLayer, MLP, TabularRowEncoder, CombinedTargetHeadFromRnn
 
 
 class TrxEncoderTest(torch.nn.Module):
