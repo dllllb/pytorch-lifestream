@@ -3,7 +3,7 @@ from torch.utils.data import DataLoader
 
 from ptls.data_load import padded_collate, ZeroDownSampler, DropoutTrxDataset, TrxDataset, LastKTrxDataset
 from ptls.data_load import augmentation_chain
-from tests.dltranz_tests.test_trx_encoder import gen_trx_data
+from ..test_trx_encoder import gen_trx_data
 
 
 def test_padded_collate():
