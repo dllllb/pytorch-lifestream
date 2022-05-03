@@ -9,6 +9,7 @@ pylint = "*"
 jupyter = "*"
 coverage = "*"
 twine = "*"
+catboost = "*"
 
 [packages]
 matplotlib = ">=3.1.1"
@@ -25,7 +26,10 @@ pyarrow = ">=1"
 pytorch-lightning = ">=1.3.8"
 pytorch-lifestream = {editable = true, path = "."}
 transformers = ">=4.16.2"
-setuptools = "==59.5.0"
+setuptools = ">=59.5.0"
 
 [requires]
 python_version = "3.8"
+
+[scripts]
+notebooks = "jupyter nbconvert --execute --inplace demo/*.ipynb"

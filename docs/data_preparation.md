@@ -79,7 +79,7 @@ Similar as data collected in lists.
 - `target` - target value for supervised learning
 
 Code example:
-```
+```python
 dataset = SomeDataset(params)
 X, y = dataset[0]
 
@@ -95,7 +95,7 @@ Output is `PaddedBatch` type which collect together packed sequences and lengths
 `PaddedBatch` compatible with all `putorch-lifestream` modules.
 
 Input and output example:
-```
+```python
 # input
 batch = [
     {'cat1': [0, 1, 2, 3], 'amnt': [10, 20, 10, 10]},

@@ -38,9 +38,11 @@ pytest
 
 ```
 
-## Demo example
+## Demo notebooks
 
-Demo example can be found in the [notebook](demo/UnsupervisedEmbeddings2LogisticRegression.ipynb)
+- Self-supervided training and embeddings usage for downstream task [notebook](demo/coles-logreg.ipynb)
+- Self-supervided training and embeddings usage in CatBoost [notebook](demo/coles-catboost.ipynb)
+- Self-supervided training and fine-tuning [notebook](demo/coles-finetune.ipynb)
 
 ## Experiments on public datasets
 
