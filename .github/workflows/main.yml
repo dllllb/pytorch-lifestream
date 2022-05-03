@@ -23,7 +23,7 @@ jobs:
     - name: Build a source tarball
       if: startsWith(github.ref, 'refs/tags')
       run: |
-        pipenv run setup.py sdist
+        pipenv run python setup.py sdist
     - name: Publish distribution 📦 to PyPI
       if: startsWith(github.ref, 'refs/tags')
       uses: pypa/gh-action-pypi-publish@master
