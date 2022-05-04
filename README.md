@@ -40,9 +40,10 @@ pytest
 
 ## Demo notebooks
 
-- Self-supervided training and embeddings usage for downstream task [notebook](demo/coles-logreg.ipynb)
-- Self-supervided training and embeddings usage in CatBoost [notebook](demo/coles-catboost.ipynb)
+- Self-supervided training and embeddings for downstream task [notebook](demo/coles-emb.ipynb)
+- Self-supervided embeddings in CatBoost [notebook](demo/coles-catboost.ipynb)
 - Self-supervided training and fine-tuning [notebook](demo/coles-finetune.ipynb)
+- PySpark and Parquet for data preprocessing [notebook](demo/pyspark-parquet.ipynb)
 
 ## Experiments on public datasets
 
