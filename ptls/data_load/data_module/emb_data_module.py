@@ -24,6 +24,19 @@ from ptls.metric_learn.dataset.splitting_dataset import MapSplittingDataset
 logger = logging.getLogger(__name__)
 
 
+class PostProcessDataset(torch.utils.data.Dataset):
+    def __init__(self, parent, post_processor):
+        super().__init__()
+        self.parent = parent
+        self.post_processor = post_processor
+
+    def __len__(self):
+        return len(self.parent)
+
+    def __getitem__(self, idx):
+        return next(self.post_processor([self.parent[idx]]))
+
+
 r"""Generate a train data loader
 
 Parameters
@@ -56,17 +69,15 @@ def train_data_loader(
     num_workers: int = 0,
     batch_size: int = 512):
 
-    dataset = FilterDataset(
+    dataset = PostProcessDataset(
         data,
-        post_processing=IterableChain(
+        post_processor=IterableChain(
             SeqLenFilter(min_seq_len=min_seq_len),
             FilterNonArray(),
             ToTorch(),
             FeatureFilter(drop_feature_names=drop_cols)
         )
     )
-
-    dataset = list(iter(dataset))
 
     split_strategy_params = {
         'split_strategy': seq_split_strategy,
