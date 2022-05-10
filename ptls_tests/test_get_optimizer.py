@@ -1,4 +1,6 @@
 import torch
+from omegaconf import OmegaConf
+from pyhocon import ConfigFactory, HOCONConverter
 
 from ptls.train import get_optimizer
 
@@ -9,6 +11,8 @@ def test_get_optimizer():
         'train.lr': 0.01,
         'train.weight_decay': 0.01,
     }
+    yaml_string = HOCONConverter.to_yaml(ConfigFactory.from_dict(params))
+    params = OmegaConf.create(yaml_string)
     optim = get_optimizer(model, params)
 
 
@@ -27,6 +31,8 @@ def test_get_optimizer_params():
             '0.weight': {'lr': 0.001},
         },
     }
+    yaml_string = HOCONConverter.to_yaml(ConfigFactory.from_dict(params))
+    params = OmegaConf.create(yaml_string)
 
     optim = get_optimizer(model, params)
     for grp in optim.param_groups:
@@ -56,6 +62,8 @@ def test_get_optimizer_2params():
             '2.weight': {'lr': 0.001},
         },
     }
+    yaml_string = HOCONConverter.to_yaml(ConfigFactory.from_dict(params))
+    params = OmegaConf.create(yaml_string)
 
     optim = get_optimizer(model, params)
     for grp in optim.param_groups:

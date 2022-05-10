@@ -1,5 +1,6 @@
 import pytest
 import torch
+from omegaconf import OmegaConf
 
 from ptls.seq_encoder.rnn_encoder import RnnEncoder, SkipStepEncoder
 from ptls.seq_encoder.utils import PerTransHead, TimeStepShuffle, scoring_head
@@ -51,6 +52,7 @@ def test_simple_config():
             'use_batch_norm': False,
         }
     }
+    config = OmegaConf.create(config)
 
     m = tst_rnn_model(config)
 
@@ -79,6 +81,7 @@ def test_concat_lens():
             'use_batch_norm': False,
         },
     }
+    config = OmegaConf.create(config)
     rnn = tst_rnn_model(config)
 
     x = torch.rand(12, 100, 8)
@@ -106,6 +109,7 @@ def test_trainable_starter():
             'use_batch_norm': False,
         },
     }
+    config = OmegaConf.create(config)
     rnn = tst_rnn_model(config)
 
     x = torch.rand(12, 100, 8)
@@ -133,6 +137,7 @@ def test_rnn_type():
             'use_batch_norm': False,
         },
     }
+    config = OmegaConf.create(config)
     rnn = tst_rnn_model(config)
 
     x = torch.rand(12, 100, 8)
@@ -160,6 +165,7 @@ def test_pred_all_states():
             'use_batch_norm': False,
         },
     }
+    config = OmegaConf.create(config)
 
     rnn = tst_rnn_model(config)
 
@@ -188,6 +194,7 @@ def test_pred_all_states_mean():
             'use_batch_norm': False,
         },
     }
+    config = OmegaConf.create(config)
     rnn = tst_rnn_model(config)
 
     x = torch.rand(12, 100, 8)
@@ -219,6 +226,7 @@ def test_pred_all_states_no_effect():
             'use_batch_norm': False,
         },
     }
+    config = OmegaConf.create(config)
     rnn = tst_rnn_model(config)
     out1 = rnn(x)
 
@@ -244,6 +252,7 @@ def test_pred_all_states_and_concat_lens():
             'use_batch_norm': False,
         },
     }
+    config = OmegaConf.create(config)
 
     with pytest.raises(AttributeError):
         tst_rnn_model(config)
@@ -282,6 +291,7 @@ def test_all():
                                 'use_batch_norm': False,
                             },
                         }
+                        config = OmegaConf.create(config)
                         rnn = tst_rnn_model(config)
                         try:
                             out = rnn(x)
@@ -351,6 +361,7 @@ def test_transf_seq_encoder():
             'use_batch_norm': False,
         },
     }
+    config = OmegaConf.create(config)
 
     m = tst_transf_model(config)
 
@@ -393,6 +404,7 @@ def test_rnn_iterative_no_starter():
         'bidir': False,
         'trainable_starter': 'none',
     }
+    conf = OmegaConf.create(config)
 
     m = RnnEncoder(INPUT_SIZE, conf)
     m.eval()
@@ -445,6 +457,7 @@ def test_rnn_iterative_with_starter():
         'bidir': False,
         'trainable_starter': 'static',
     }
+    conf = OmegaConf.create(config)
 
     m = RnnEncoder(INPUT_SIZE, conf)
     m.eval()

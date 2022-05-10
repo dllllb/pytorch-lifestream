@@ -1,5 +1,6 @@
 import torch
 import numpy as np
+from omegaconf import OmegaConf
 
 from ptls.trx_encoder import PaddedBatch
 from ptls.seq_encoder.rnn_encoder import RnnSeqEncoderDistributionTarget
@@ -54,6 +55,7 @@ def test_shape():
             }
         }
     }
+    params = OmegaConf.create(params)
 
     model = RnnSeqEncoderDistributionTarget(params, True)
 

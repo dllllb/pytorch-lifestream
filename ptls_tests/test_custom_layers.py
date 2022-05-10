@@ -1,6 +1,7 @@
 import torch
 import numpy as np
 
+from omegaconf import OmegaConf
 from ptls.custom_layers import DropoutEncoder, Squeeze, CatLayer, MLP, TabularRowEncoder, CombinedTargetHeadFromRnn
 
 
@@ -33,6 +34,7 @@ def test_mlp():
         "drop_p": 0.5,
         "objective": "classification"
     }
+    mlp_config = OmegaConf.create(mlp_config)
 
     mlp = MLP(512, mlp_config)
     x = torch.rand(256, 512)
