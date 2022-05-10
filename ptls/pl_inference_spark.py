@@ -1,10 +1,12 @@
 import logging
 import torch
+import hydra
 import pytorch_lightning as pl
 import pyspark.sql.functions as F
 import pyspark.sql.types as T
+from omegaconf import DictConfig, OmegaConf
 from pyspark.sql import SparkSession
-from ptls.util import get_conf, get_cls
+from ptls.util import get_conf, get_cls, hydra_path
 
 logger = logging.getLogger(__name__)
 
@@ -114,9 +116,12 @@ class InferenceSpark(object):
 
         logger.info(f'explode arrays and save path {self.work_path}/{self.output_path}')
 
-def main(args=None):
 
-    conf = get_conf(args)
+@hydra.main()
+def main(conf: DictConfig):
+    OmegaConf.set_struct(conf, False)
+    orig_cwd = hydra.utils.get_original_cwd()
+    hydra_path(orig_cwd, conf)
 
     spark = SparkSession.builder\
         .appName("spark_inference")\
