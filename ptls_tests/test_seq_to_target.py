@@ -97,7 +97,7 @@ def test_train_loop_rnn():
     params = tst_params_rnn()
 
     model = SequenceToTarget(params)
-    dl = RandomEventData(params['data_module'])
+    dl = RandomEventData(params.data_module)
     trainer = pl.Trainer(max_epochs=1, logger=None, checkpoint_callback=False)
     trainer.fit(model, dl)
 
@@ -106,7 +106,7 @@ def test_train_loop_transf():
     params = tst_params_transf()
 
     model = SequenceToTarget(params)
-    dl = RandomEventData(params['data_module'])
+    dl = RandomEventData(params.data_module)
     trainer = pl.Trainer(max_epochs=1, logger=None, checkpoint_callback=False)
     trainer.fit(model, dl)
 

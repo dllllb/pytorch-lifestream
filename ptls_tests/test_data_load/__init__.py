@@ -26,10 +26,10 @@ class RandomEventData(pl.LightningDataModule):
 
     def train_dataloader(self):
         test_data = TrxDataset(gen_trx_data((torch.rand(1000)*60+1).long()), y_dtype=np.int64)
-        train_loader = create_train_loader(test_data, self.hparams['train'])
+        train_loader = create_train_loader(test_data, self.hparams.train)
         return train_loader
 
     def val_dataloader(self):
         test_data = TrxDataset(gen_trx_data((torch.rand(200)*60+1).long()), y_dtype=np.int64)
-        train_loader = create_validation_loader(test_data, self.hparams['valid'])
+        train_loader = create_validation_loader(test_data, self.hparams.valid)
         return train_loader

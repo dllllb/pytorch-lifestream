@@ -1,5 +1,6 @@
 import torch
 import numpy as np
+from omegaconf import OmegaConf
 
 from ptls.trx_encoder import PaddedBatch
 from ptls.seq_encoder.rnn_encoder import RnnSeqEncoder
@@ -17,7 +18,7 @@ def get_data():
                       )
 
 def test_shape():
-    
+
     params = {
         'trx_encoder' : {
             'norm_embeddings': False,
@@ -43,6 +44,7 @@ def test_shape():
             'trainable_starter': 'static',
         }
     }
+    params = OmegaConf.create(params)
 
     model = RnnSeqEncoder(params, True)
 
