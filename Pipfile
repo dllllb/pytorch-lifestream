@@ -28,6 +28,7 @@ pytorch-lifestream = {editable = true, path = "."}
 transformers = ">=4.16.2"
 setuptools = ">=59.5.0"
 hydra-core = ">=1.1.2"
+omegaconf = ">=2.1.2"
 
 [requires]
 python_version = "3.8"
