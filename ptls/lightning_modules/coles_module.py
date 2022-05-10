@@ -25,7 +25,7 @@ class CoLESModule(ABSModule):
         return loss
 
     def get_validation_metric(self):
-        return BatchRecallTopPL(**self.hparams.params['validation_metric_params'])
+        return BatchRecallTopPL(**self.hparams.params.validation_metric_params)
 
     def shared_step(self, x, y):
         y_h = self(x)

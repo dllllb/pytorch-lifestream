@@ -37,29 +37,29 @@ class ModelEnsemble(torch.nn.Module):
 
 
 def load_model(conf):
-    if 'model' in conf['model_path']:
-        path = conf['model_path.model']
+    if 'model' in conf.model_path:
+        path = conf.model_path.model
         model = torch.load(path, map_location=torch.device("cpu"))
         logger.info(f'Model loaded from "{path}"')
         return model
-    elif 'models' in conf['model_path']:
+    elif 'models' in conf.model_path:
         raise NotImplementedError()
 
-        path = conf['model_path.models']
+        path = conf.model_path.models
         models = [torch.load(p, map_location=torch.device("cpu")) for p in path]
         logger.info(f'Models loaded from "{path}"')
         return ModelEnsemble(models)
 
-    elif 'state_dict' in conf['model_path']:
+    elif 'state_dict' in conf.model_path:
         raise NotImplementedError()
     else:
-        raise AttributeError(f'Not supported model_path: {conf["model_path"]}')
+        raise AttributeError(f'Not supported model_path: {conf.model_path}')
 
 
 def read_dataset_all(conf, desc, preproc_gen):
     logger.info(f'Data loading ({desc})...')
-    files = get_data_files(conf['dataset'])
-    n_workers = conf['dataset.n_workers']
+    files = get_data_files(conf.dataset)
+    n_workers = conf.dataset.n_workers
     rec_gen = read_dataset_mthread(files, n_workers, preproc_gen)
     data = list(tqdm(rec_gen))
     logger.info(f'Loaded {len(data)} rows from disk ({desc})')
@@ -75,16 +75,16 @@ def infer_part_of_data(part_num, part_data, columns, model, conf, lock_obj=None)
     else:
         logger.info(f'Start to score {part_num} part of data ({len(part_data)} records)')
 
-    if conf['dataset.preprocessing.add_seq_len'] and 'seq_len' not in columns:
+    if conf.dataset.preprocessing.add_seq_len and 'seq_len' not in columns:
         columns.append('seq_len')  # change list object
 
     valid_ds = ConvertingTrxDataset(TrxDataset(part_data))
-    valid_loader = create_validation_loader(valid_ds, conf['params.valid'])
+    valid_loader = create_validation_loader(valid_ds, conf.params.valid)
 
-    _, pred = score_model(model, valid_loader, conf['params'])
+    _, pred = score_model(model, valid_loader, conf.params)
 
-    if conf['params.device'] != 'cpu':
-        with torch.cuda.device(conf['params.device']):
+    if conf.params.device != 'cpu':
+        with torch.cuda.device(conf.params.device):
             torch.cuda.empty_cache()
         logger.info('torch.cuda.empty_cache()')
     if lock_obj:
@@ -125,13 +125,13 @@ def infer_iterable(part_num, valid_loader, columns, model, conf, lock_obj=None):
 
     logger.info(f'Start to score data (iterable)')
 
-    if conf['dataset.preprocessing.add_seq_len'] and 'seq_len' not in columns:
+    if conf.dataset.preprocessing.add_seq_len and 'seq_len' not in columns:
         columns.append('seq_len')  # change list object
 
-    ids, pred = score_model(model, valid_loader, conf['params'])
+    ids, pred = score_model(model, valid_loader, conf.params)
 
-    if conf['params.device'] != 'cpu':
-        with torch.cuda.device(conf['params.device']):
+    if conf.params.device != 'cpu':
+        with torch.cuda.device(conf.params.device):
             torch.cuda.empty_cache()
         logger.info('torch.cuda.empty_cache()')
     if lock_obj:
@@ -140,7 +140,7 @@ def infer_iterable(part_num, valid_loader, columns, model, conf, lock_obj=None):
     if len(pred.shape) == 1:
         pred = pred.reshape(-1, 1)
     df_scores_cols = [f'v{i:003d}' for i in range(pred.shape[1])]
-    col_id = conf['dataset.col_id']
+    col_id = conf.dataset.col_id
 
     df_scores = pd.concat([
         pd.DataFrame({col_id: ids}),
@@ -153,8 +153,8 @@ def infer_iterable(part_num, valid_loader, columns, model, conf, lock_obj=None):
 
 def save_scores(df_scores, part_num, output_conf):
     # output
-    output_name = output_conf['path']
-    output_format = output_conf['format']
+    output_name = output_conf.path
+    output_format = output_conf.format
     if output_format not in ('pickle', 'csv'):
         logger.warning(f'Format "{output_format}" is not supported. Used default "pickle"')
         output_format = 'pickle'
@@ -162,7 +162,7 @@ def save_scores(df_scores, part_num, output_conf):
     if part_num is None:
         output_path = f'{output_name}.{output_format}'
     else:
-        os.makedirs(output_conf['path'], exist_ok=True)
+        os.makedirs(output_conf.path, exist_ok=True)
         output_path = f'{output_name}/{part_num:03}.{output_format}'
 
     if output_format == 'pickle':
@@ -181,19 +181,19 @@ def score_part_of_data(part_num, part_data, columns, model, conf, lock_obj=None)
         df_scores = infer_iterable(part_num, part_data, columns, model, conf, lock_obj=lock_obj)
     else:
         valid_ds = ConvertingTrxDataset(TrxDataset(part_data))
-        valid_loader = create_validation_loader(valid_ds, conf['params.valid'])
+        valid_loader = create_validation_loader(valid_ds, conf.params.valid)
         df_scores = infer_iterable(part_num, valid_loader, columns, model, conf, lock_obj=lock_obj)
 
-    save_scores(df_scores, part_num, conf['output'])
+    save_scores(df_scores, part_num, conf.output)
 
 
 def common_preprocessing(seq, conf):
-    preprocessing_conf = conf['dataset.preprocessing']
+    preprocessing_conf = conf.dataset.preprocessing
 
-    fill_target = preprocessing_conf['fill_target']
-    add_seq_len = preprocessing_conf['add_seq_len']
-    min_date = np.datetime64(preprocessing_conf['min_date']) if 'min_date' in preprocessing_conf else None
-    max_date = np.datetime64(preprocessing_conf['max_date']) if 'max_date' in preprocessing_conf else None
+    fill_target = preprocessing_conf.fill_target
+    add_seq_len = preprocessing_conf.add_seq_len
+    min_date = np.datetime64(preprocessing_conf.min_date) if 'min_date' in preprocessing_conf else None
+    max_date = np.datetime64(preprocessing_conf.max_date) if 'max_date' in preprocessing_conf else None
 
     for rec in seq:
         if 'application_date' in rec:
@@ -221,13 +221,13 @@ def consumer_preprocess_gen(seq, conf, data_pre_filter=None, ticks_mode='applica
 
     seq = common_preprocessing(seq, conf)
     seq = fit_features(seq,
-                       embeddings=conf['params.trx_encoder.embeddings'],
-                       numeric_values=conf['params.trx_encoder.numeric_values'])
-    if 'tick_params' in conf['params']:
+                       embeddings=conf.params.trx_encoder.embeddings,
+                       numeric_values=conf.params.trx_encoder.numeric_values)
+    if 'tick_params' in conf.params:
         seq = add_ticks(seq, conf, mode=ticks_mode)
     seq = fit_types(seq,
-                    embeddings=conf['params.trx_encoder.embeddings'],
-                    numeric_values=conf['params.trx_encoder.numeric_values'])
+                    embeddings=conf.params.trx_encoder.embeddings,
+                    numeric_values=conf.params.trx_encoder.numeric_values)
     return seq
 
 
@@ -235,22 +235,22 @@ def main_single_part(args=None):
     conf = get_conf(args)
 
     model = load_model(conf)
-    columns = conf['output.columns']
+    columns = conf.output.columns
 
     valid_data = read_dataset_all(conf, 'valid', partial(consumer_preprocess_gen, conf=conf))
     score_part_of_data(None, valid_data, columns, model, conf)
 
 
 def score_data(conf, y_true, y_predict):
-    metric_name = conf['params.score_metric']
+    metric_name = conf.params.score_metric
     if metric_name not in ('auroc', 'accuracy'):
         raise AttributeError(f'Unknown metric: "{metric_name}"')
 
-    col_id = conf['output.columns'][0]
+    col_id = conf.output.columns[0]
 
-    model_type = conf['params.model_type']
+    model_type = conf.params.model_type
     if model_type in ('rnn', 'cpc_model'):
-        cnt_features = conf['params.rnn.hidden_size']
+        cnt_features = conf.params.rnn.hidden_size
     else:
         raise AttributeError(f'Unknown model_type: "{model_type}"')
 

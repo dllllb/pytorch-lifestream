@@ -128,10 +128,10 @@ def train_and_score(kw_params: KWParamsTrainAndScore):
         elif kw_params.model_type == 'tabnet':
             if kw_params.model_params.get('objective') == 'regression':
                 from pytorch_tabnet.tab_model import TabNetRegressor
-                model = TabNetRegressor(**kw_params.model_params['model_params'])
+                model = TabNetRegressor(**kw_params.model_params.model_params)
             else:
                 from pytorch_tabnet.tab_model import TabNetClassifier
-                model = TabNetClassifier(**kw_params.model_params['model_params'])
+                model = TabNetClassifier(**kw_params.model_params.model_params)
         elif kw_params.model_type in ('neural_automl', 'fastai'):
             pass
         else:
@@ -167,7 +167,7 @@ def train_and_score(kw_params: KWParamsTrainAndScore):
                 X_train.values,
                 y_train.values,
                 eval_set=[(X_valid.values, y_valid.values)],
-                **kw_params.model_params['fit_params']
+                **kw_params.model_params.fit_params
             )
             score_valid = kw_params.scorer(model, X_valid.values, y_valid.values)
             score_test = kw_params.scorer(model, X_test.values, y_test.values)

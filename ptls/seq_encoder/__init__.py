@@ -9,7 +9,7 @@ from ptls.seq_encoder.dummy_encoder import DummyEncoder
 
 
 def create_encoder(params, is_reduce_sequence=True):
-    encoder_type = params['encoder_type']
+    encoder_type = params.encoder_type
     if encoder_type == 'rnn':
         return RnnSeqEncoder(params, is_reduce_sequence)
     if encoder_type == 'transf':
@@ -101,7 +101,7 @@ class SequenceEncoder(torch.nn.Module):
         params = {'trx_encoder': trx_encoder_params}
 
         if encoder_type == 'rnn':
-            params['rnn'] = {
+            params.rnn = {
                 'type': rnn_type,
                 'hidden_size': rnn_hidden_size,
                 'bidir': rnn_bidirectional,
@@ -110,7 +110,7 @@ class SequenceEncoder(torch.nn.Module):
             model = RnnSeqEncoder(params, True)
 
         elif encoder_type == 'transformer':
-            params['transf'] = {
+            params.transf = {
                 'input_size': transformer_input_size,
                 'shared_layers': transformer_shared_layers,
                 'use_after_mask': transformer_use_after_mask,
@@ -125,8 +125,8 @@ class SequenceEncoder(torch.nn.Module):
             model = TransfSeqEncoder(params, True)
 
         elif encoder_type == 'agg_features':
-            params['trx_encoder']['was_logified'] = True
-            params['trx_encoder']['log_scale_factor'] = 1
+            params.trx_encoder.was_logified = True
+            params.trx_encoder.log_scale_factor = 1
             model = AggFeatureSeqEncoder(params, True)
 
         else:

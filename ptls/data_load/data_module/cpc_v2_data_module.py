@@ -74,14 +74,14 @@ class CpcV2DataModuleTrain(ColesDataModuleTrain):
             dataset=self.train_dataset,
             collate_fn=collate_fn,
             shuffle=False if self._type == 'iterable' else True,
-            num_workers=self.train_conf['num_workers'],
-            batch_size=self.train_conf['batch_size'],
+            num_workers=self.train_conf.num_workers,
+            batch_size=self.train_conf.batch_size,
         )
 
     def val_dataloader(self):
         return DataLoader(
             dataset=self.valid_dataset,
             collate_fn=collate_fn,
-            num_workers=self.valid_conf['num_workers'],
-            batch_size=self.valid_conf['batch_size'],
+            num_workers=self.valid_conf.num_workers,
+            batch_size=self.valid_conf.batch_size,
         )

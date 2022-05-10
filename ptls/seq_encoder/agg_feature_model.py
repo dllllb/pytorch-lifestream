@@ -183,7 +183,7 @@ class AggFeatureSeqEncoder(AbsSeqEncoder):
     def __init__(self, params, is_reduce_sequence):
         super().__init__(params, is_reduce_sequence)
 
-        self.model = AggFeatureModel(params['trx_encoder'])
+        self.model = AggFeatureModel(params.trx_encoder)
 
     @property
     def is_reduce_sequence(self):

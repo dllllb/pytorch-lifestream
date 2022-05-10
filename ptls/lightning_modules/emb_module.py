@@ -74,7 +74,7 @@ class EmbModule(ABSModule):
             'metric': 'cosine'
         }
         if 'validation_metric_params' in self.hparams.params:
-            kwargs = {**default_kwargs, **self.hparams.params['validation_metric_params']}
+            kwargs = {**default_kwargs, **self.hparams.params.validation_metric_params}
         else:
             kwargs = default_kwargs
 

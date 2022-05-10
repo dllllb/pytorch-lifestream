@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 class PreloadDataset(Dataset):
     # TODO: можно добавить чтение заранее, чтобы подгрузка новых данных не начиналась в середине эпохи
     def __init__(self, params, prepare_gen, max_file_read=None, progress=False):
-        self.dataset_params = params['dataset']
+        self.dataset_params = params.dataset
         self.prepare_gen = prepare_gen
         self.max_file_read = max_file_read
         self.n_workers = self.dataset_params.get('n_workers', 1)
@@ -28,7 +28,7 @@ class PreloadDataset(Dataset):
         self._file_list = get_data_files(self.dataset_params)
         self._prepare_file_iterator()
         self.data = []
-        self.train_epoch_size = params['params.train.epoch_size']
+        self.train_epoch_size = params.params.train.epoch_size
         self.n_epoch = -1
 
     def __len__(self):

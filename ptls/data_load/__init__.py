@@ -23,11 +23,11 @@ logger = logging.getLogger(__name__)
 
 
 def default_preprocess(data, conf, drop_unknown=True):
-    random.seed(conf['params.seed'])
+    random.seed(conf.params.seed)
 
-    lag_days = conf['params.lag_days']
-    max_days = conf['params.max_days']
-    transaction_start_date = np.datetime64(conf.get('dataset.transaction_start_date', '1970-01-01T00:00'))
+    lag_days = conf.params.lag_days
+    max_days = conf.params.max_days
+    transaction_start_date = np.datetime64(conf.dataset.get('transaction_start_date', '1970-01-01T00:00'))
 
     for rec in data:
         target = rec['target']
@@ -114,7 +114,7 @@ def read_pyarrow_file(path, use_threads=True):
         source=path,
         use_threads=use_threads,
     )
-    
+
     col_indexes = [n for n in p_table.column_names]
 
     def get_records():
@@ -535,14 +535,14 @@ def create_train_loader(dataset, params):
     else:
         sampler = None
 
-    dataset = DropoutTrxDataset(dataset, params['trx_dropout'], params['max_seq_len'])
+    dataset = DropoutTrxDataset(dataset, params.trx_dropout, params.max_seq_len)
 
     valid_loader = DataLoader(
         dataset,
-        batch_size=params['batch_size'],
+        batch_size=params.batch_size,
         shuffle=sampler is None,
         sampler=sampler,
-        num_workers=params['num_workers'],
+        num_workers=params.num_workers,
         collate_fn=padded_collate)
 
     return valid_loader
@@ -568,7 +568,7 @@ class IterableDatasetWrapper(torch.utils.data.IterableDataset):
 
 
 def create_validation_loader(dataset, params):
-    dataset = DropoutTrxDataset(dataset, 0, params['max_seq_len'])
+    dataset = DropoutTrxDataset(dataset, 0, params.max_seq_len)
 
     if dataset.style == 'iterable':
         dataset = IterableDatasetWrapper(dataset)
@@ -579,9 +579,9 @@ def create_validation_loader(dataset, params):
 
     valid_loader = DataLoader(
         dataset,
-        batch_size=params['batch_size'],
+        batch_size=params.batch_size,
         shuffle=False,
-        num_workers=params['num_workers'],
+        num_workers=params.num_workers,
         collate_fn=padded_collate)
 
     return valid_loader

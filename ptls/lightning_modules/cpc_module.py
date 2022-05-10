@@ -102,7 +102,7 @@ class CpcModule(ABSModule):
         if seq_encoder is not None and not isinstance(seq_encoder, RnnSeqEncoder):
             raise NotImplementedError(f'Only rnn encoder supported in CpcModule. Found {type(seq_encoder)}')
 
-        if params['encoder_type'] != 'rnn':
+        if params.encoder_type != 'rnn':
             raise NotImplementedError(f'Only rnn encoder supported in CpcModule. Found {params.encoder_type}')
 
         super().__init__(params, seq_encoder)
@@ -110,7 +110,7 @@ class CpcModule(ABSModule):
         linear_size = self.seq_encoder.model[0].output_size
         embedding_size = self.seq_encoder.embedding_size
         self._linears = torch.nn.ModuleList([torch.nn.Linear(embedding_size, linear_size)
-                                             for _ in range(params['cpc.n_forward_steps'])])
+                                             for _ in range(params.cpc.n_forward_steps)])
 
     @property
     def metric_name(self):
@@ -121,7 +121,7 @@ class CpcModule(ABSModule):
         return False
 
     def get_loss(self):
-        return CPC_Loss(n_negatives=self.hparams.params['cpc.n_negatives'])
+        return CPC_Loss(n_negatives=self.hparams.params.cpc.n_negatives)
 
     def get_validation_metric(self):
         return CpcAccuracyPL(self._loss)

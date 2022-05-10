@@ -32,23 +32,23 @@ class ClsDataModuleTrain(pl.LightningDataModule):
         super().__init__()
 
         self.fold_id = fold_id
-        self._type = conf['type']
+        self._type = conf.type
         assert self._type in ('map', 'iterable')
 
         self.distribution_targets_task = dict(conf).get('distribution_targets_task')
         self.y_function = int if not self.distribution_targets_task else lambda x: \
                                                     np.array(ast.literal_eval(x), dtype=object)
-        self.setup_conf = conf['setup']
-        self.train_conf = conf['train']
-        self.valid_conf = conf['valid']
+        self.setup_conf = conf.setup
+        self.train_conf = conf.train
+        self.valid_conf = conf.valid
         self.test_conf = conf.get('test', self.valid_conf)
 
-        self.col_id = self.setup_conf['col_id']
+        self.col_id = self.setup_conf.col_id
         self.col_id_dtype = {
             'str': str,
             'int': int,
-        }[self.setup_conf['col_id_dtype']]
-        self.col_target = self.setup_conf['col_target']
+        }[self.setup_conf.col_id_dtype]
+        self.col_target = self.setup_conf.col_target
         self.category_names = pl_module.seq_encoder.category_names
         self.category_names.add('event_time')
         self.category_max_size = pl_module.seq_encoder.category_max_size
@@ -75,22 +75,22 @@ class ClsDataModuleTrain(pl.LightningDataModule):
 
     def setup_iterable_files(self):
         if self.setup_conf.get('split_by', None) == 'embeddings_validation':
-          
+
             if (self.setup_conf.get('use_files_partially', None)):
-                n_train = len(glob.glob(self.setup_conf['dataset_files.train_data_path'] + "/*.parquet"))
+                n_train = len(glob.glob(self.setup_conf.dataset_files.train_data_path + "/*.parquet"))
                 ixes = list(range(n_train))
-                train_ixes, test_ixes = train_test_split(ixes, test_size=int(n_train * (1 - self.setup_conf['train_part'])), shuffle=True)
-                train_data_files = ParquetFiles(self.setup_conf['dataset_files.train_data_path'], train_ixes).data_files
-                if self.setup_conf['same_file_for_test']:
-                    test_ixes = random.sample(test_ixes, int(n_train * self.setup_conf['test_part']))
-                    test_data_files = ParquetFiles(self.setup_conf['dataset_files.train_data_path'], test_ixes).data_files
+                train_ixes, test_ixes = train_test_split(ixes, test_size=int(n_train * (1 - self.setup_conf.train_part)), shuffle=True)
+                train_data_files = ParquetFiles(self.setup_conf.dataset_files.train_data_path, train_ixes).data_files
+                if self.setup_conf.same_file_for_test:
+                    test_ixes = random.sample(test_ixes, int(n_train * self.setup_conf.test_part))
+                    test_data_files = ParquetFiles(self.setup_conf.dataset_files.train_data_path, test_ixes).data_files
                 else:
-                    n_test = len(glob.glob(self.setup_conf['dataset_files.test_data_path'] + "/*.parquet"))
-                    test_ixes = random.sample(ixes, int(n_test * self.setup_conf['test_part']))
-                    test_data_files = ParquetFiles(self.setup_conf['dataset_files.test_data_path'], test_ixes).data_files
+                    n_test = len(glob.glob(self.setup_conf.dataset_files.test_data_path + "/*.parquet"))
+                    test_ixes = random.sample(ixes, int(n_test * self.setup_conf.test_part))
+                    test_data_files = ParquetFiles(self.setup_conf.dataset_files.test_data_path, test_ixes).data_files
             else:
-                train_data_files = ParquetFiles(self.setup_conf['dataset_files.train_data_path']).data_files
-                test_data_files = ParquetFiles(self.setup_conf['dataset_files.test_data_path']).data_files
+                train_data_files = ParquetFiles(self.setup_conf.dataset_files.train_data_path).data_files
+                test_data_files = ParquetFiles(self.setup_conf.dataset_files.test_data_path).data_files
 
             self.read_external_splits()
             self.train_dataset = ParquetDataset(
@@ -113,8 +113,8 @@ class ClsDataModuleTrain(pl.LightningDataModule):
             raise AttributeError(f'Unknown split strategy: {self.setup_conf.split_by}')
 
     def read_external_splits(self):
-        if self.setup_conf['split_by'] == 'embeddings_validation':
-            with open(self.setup_conf['fold_info'], 'r') as f:
+        if self.setup_conf.split_by == 'embeddings_validation':
+            with open(self.setup_conf.fold_info, 'r') as f:
                 self._fold_info = json.load(f)
 
         current_fold = self._fold_info[self.fold_id]
@@ -133,7 +133,7 @@ class ClsDataModuleTrain(pl.LightningDataModule):
     def build_iterable_processing(self, part):
         yield FeatureTypeCast({self.col_id: self.col_id_dtype})
 
-        if 'dataset_files' in self.setup_conf and self.setup_conf['split_by'] == 'embeddings_validation':
+        if 'dataset_files' in self.setup_conf and self.setup_conf.split_by == 'embeddings_validation':
             if part == 'train':
                 yield IdFilter(id_col=self.col_id, relevant_ids=self._train_targets.df[self.col_id].values.tolist())
             elif part == 'valid':
@@ -144,7 +144,7 @@ class ClsDataModuleTrain(pl.LightningDataModule):
                 raise AttributeError(f'Unknown part: {part}')
 
         if part == 'train':
-            yield SeqLenFilter(min_seq_len=self.train_conf['min_seq_len'])
+            yield SeqLenFilter(min_seq_len=self.train_conf.min_seq_len)
 
         if part == 'train':
             yield TargetJoin(self.col_id, self._train_targets.df.set_index(self.col_id)[self.col_target].to_dict(), self.y_function)
@@ -161,25 +161,25 @@ class ClsDataModuleTrain(pl.LightningDataModule):
         if self._type == 'iterable':
             # all processing in single chain
             if part == 'train':
-                yield IterableShuffle(self.train_conf['buffer_size'])
+                yield IterableShuffle(self.train_conf.buffer_size)
 
             yield IterableAugmentations(self.build_augmentations(part))
 
     def build_augmentations(self, part):
         if part == 'train':
-            return build_augmentations(self.train_conf['augmentations'])
+            return build_augmentations(self.train_conf.augmentations)
         elif part == 'valid':
-            return build_augmentations(self.valid_conf['augmentations'])
+            return build_augmentations(self.valid_conf.augmentations)
         elif part == 'test':
-            return build_augmentations(self.test_conf['augmentations'])
+            return build_augmentations(self.test_conf.augmentations)
 
     def train_dataloader(self):
         return DataLoader(
             dataset=self.train_dataset,
             collate_fn=padded_collate_distribution_target if self.distribution_targets_task else padded_collate,
             shuffle=False if self._type == 'iterable' else True,
-            num_workers=self.train_conf['num_workers'],
-            batch_size=self.train_conf['batch_size'],
+            num_workers=self.train_conf.num_workers,
+            batch_size=self.train_conf.batch_size,
             drop_last=self.train_conf.get('drop_last', False)
         )
 
@@ -208,14 +208,14 @@ class ClsDataModuleTrain(pl.LightningDataModule):
         return DataLoader(
             dataset=self.valid_dataset,
             collate_fn=padded_collate_distribution_target if self.distribution_targets_task else padded_collate,
-            num_workers=self.valid_conf['num_workers'],
-            batch_size=self.valid_conf['batch_size'],
+            num_workers=self.valid_conf.num_workers,
+            batch_size=self.valid_conf.batch_size,
         )
 
     def test_dataloader(self):
         return DataLoader(
             dataset=self.test_dataset,
             collate_fn=padded_collate_distribution_target if self.distribution_targets_task else padded_collate,
-            num_workers=self.test_conf['num_workers'],
-            batch_size=self.test_conf['batch_size'],
+            num_workers=self.test_conf.num_workers,
+            batch_size=self.test_conf.batch_size,
         )

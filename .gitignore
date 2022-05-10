@@ -15,6 +15,7 @@ experiments/*/conf/embeddings_validation*.work
 .coverage
 dist
 build
+tags
 
 *.log
 *.code-workspace

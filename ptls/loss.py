@@ -210,30 +210,30 @@ class DistributionTargetsLoss(nn.Module):
 
 
 def get_loss(params):
-    loss_type = params['train.loss']
+    loss_type = params.train.loss
 
     if loss_type == 'bce':
         loss = BCELoss()
     elif loss_type == 'NLLLoss':
         loss = nn.NLLLoss()
     elif loss_type == 'ranking':
-        loss = PairwiseMarginRankingLoss(margin=params['ranking.loss_margin'])
+        loss = PairwiseMarginRankingLoss(margin=params.ranking.loss_margin)
     elif loss_type == 'both':
-        loss = MultiLoss([(1, BCELoss()), (1, PairwiseMarginRankingLoss(margin=params['ranking.loss_margin']))])
+        loss = MultiLoss([(1, BCELoss()), (1, PairwiseMarginRankingLoss(margin=params.ranking.loss_margin))])
     elif loss_type == 'mae':
         loss = nn.L1Loss()
     elif loss_type == 'mse':
         loss = MSELoss()
     elif loss_type == 'transaction_sum':
-        n_variables_to_predict = params['variable_predicted']
+        n_variables_to_predict = params.variable_predicted
         loss = TransactionSumLoss(n_variables_to_predict)
     elif loss_type == 'unsupervised_tabnet':
         loss = UnsupervisedTabNetLoss()
     elif loss_type == 'pseudo_labeled':
         loss = PseudoLabeledLoss(
-            loss=get_loss(params['labeled']),
-            pl_threshold=params['pl_threshold'],
-            unlabeled_weight=params['unlabeled_weight']
+            loss=get_loss(params.labeled),
+            pl_threshold=params.pl_threshold,
+            unlabeled_weight=params.unlabeled_weight
         )
     elif loss_type == 'distribution_targets':
         loss = DistributionTargetsLoss()
