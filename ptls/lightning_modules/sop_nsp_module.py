@@ -30,7 +30,7 @@ class SopNspModule(ABSModule):
     def __init__(self, params):
         super().__init__(params)
 
-        self._head = SentencePairsHead(self.seq_encoder, self.seq_encoder.embedding_size, params['head'])
+        self._head = SentencePairsHead(self.seq_encoder, self.seq_encoder.embedding_size, params.head)
 
     @property
     def metric_name(self):

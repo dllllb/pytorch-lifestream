@@ -300,70 +300,70 @@ class VicregLoss(torch.nn.Module):
 
 def get_loss(params, sampling_strategy, kw_params=None):
 
-    if params['train.loss'] == 'ContrastiveLoss':
+    if params.train.loss == 'ContrastiveLoss':
         kwargs = {
-            'margin': params.get('train.margin', None),
+            'margin': params.train.get('margin', None),
             'pair_selector': sampling_strategy
         }
         kwargs = {k: v for k, v in kwargs.items() if v is not None}
         loss_fn = ContrastiveLoss(**kwargs)
 
-    elif params['train.loss'] == 'BinomialDevianceLoss':
+    elif params.train.loss == 'BinomialDevianceLoss':
         kwargs = {
-            'C': params.get('train.C', None),
-            'alpha': params.get('train.alpha', None),
-            'beta': params.get('train.beta', None),
+            'C': params.train.get('C', None),
+            'alpha': params.train.get('alpha', None),
+            'beta': params.train.get('beta', None),
             'pair_selector': sampling_strategy
         }
         kwargs = {k: v for k, v in kwargs.items() if v is not None}
         loss_fn = BinomialDevianceLoss(**kwargs)
 
-    elif params['train.loss'] == 'TripletLoss':
+    elif params.train.loss == 'TripletLoss':
         kwargs = {
-            'margin': params.get('train.margin', None),
+            'margin': params.train.get('margin', None),
             'triplet_selector': sampling_strategy
         }
         kwargs = {k: v for k, v in kwargs.items() if v is not None}
         loss_fn = TripletLoss(**kwargs)
 
-    elif params['train.loss'] == 'HistogramLoss':
+    elif params.train.loss == 'HistogramLoss':
         kwargs = {
-            'num_steps': params.get('train.num_steps', None),
+            'num_steps': params.train.get('num_steps', None),
         }
         kwargs = {k: v for k, v in kwargs.items() if v is not None}
         loss_fn = HistogramLoss(**kwargs)
 
-    elif params['train.loss'] == 'MarginLoss':
+    elif params.train.loss == 'MarginLoss':
         kwargs = {
-            'margin': params.get('train.margin', None),
-            'beta': params.get('train.beta', None),
+            'margin': params.train.get('margin', None),
+            'beta': params.train.get('beta', None),
             'pair_selector': sampling_strategy
         }
         kwargs = {k: v for k, v in kwargs.items() if v is not None}
         loss_fn = MarginLoss(**kwargs)
-    elif params['train.loss'] == 'CPCLoss':
+    elif params.train.loss == 'CPCLoss':
         kwargs = {
-            'k_pos_samples': params.get('cpc.k_pos_samples', None),
-            'm_neg_samples': params.get('cpc.m_neg_samples', None),
-            'linear_predictor': kw_params['linear_predictor'],
+            'k_pos_samples': params.cpc.get('k_pos_samples', None),
+            'm_neg_samples': params.cpc.get('m_neg_samples', None),
+            'linear_predictor': kw_params.linear_predictor,
         }
         kwargs = {k: v for k, v in kwargs.items() if v is not None}
-    elif params['train.loss'] == 'BarlowTwinsLoss':
+    elif params.train.loss == 'BarlowTwinsLoss':
         kwargs = {
-            'lambd': params.get('train.lambd', None),
+            'lambd': params.train.get('lambd', None),
         }
         kwargs = {k: v for k, v in kwargs.items() if v is not None}
         loss_fn = BarlowTwinsLoss(**kwargs)
-    elif params['train.loss'] == 'VicregLoss':
+    elif params.train.loss == 'VicregLoss':
         kwargs = {
-            'sim_coeff': params.get('train.sim_coeff', None),
-            'std_coeff': params.get('train.std_coeff', None),
-            'cov_coeff': params.get('train.cov_coeff', None)
+            'sim_coeff': params.train.get('sim_coeff', None),
+            'std_coeff': params.train.get('std_coeff', None),
+            'cov_coeff': params.train.get('cov_coeff', None)
         }
         kwargs = {k: v for k, v in kwargs.items() if v is not None}
         loss_fn = VicregLoss(**kwargs)
     else:
-        raise AttributeError(f'wrong loss "{params["train.loss"]}"')
+        raise AttributeError(f'wrong loss "{params.train.loss}"')
 
     def loss(*args, **kwargs):
         return loss_fn(*args, **kwargs)[0]

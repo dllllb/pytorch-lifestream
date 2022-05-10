@@ -42,14 +42,14 @@ class CpcDataModuleTrain(pl.LightningDataModule):
     def __init__(self, conf, pl_module):
         super().__init__()
 
-        self._type = conf['type']
+        self._type = conf.type
         assert self._type in ('map', 'iterable')
 
-        self.setup_conf = conf['setup']
-        self.train_conf = conf['train']
-        self.valid_conf = conf['valid']
+        self.setup_conf = conf.setup
+        self.train_conf = conf.train
+        self.valid_conf = conf.valid
 
-        self.col_id = self.setup_conf['col_id']
+        self.col_id = self.setup_conf.col_id
         self.category_names = pl_module.seq_encoder.category_names
         self.category_names.add('event_time')
         self.category_max_size = pl_module.seq_encoder.category_max_size
@@ -71,13 +71,13 @@ class CpcDataModuleTrain(pl.LightningDataModule):
             self.setup_map()
 
     def setup_iterable_files(self):
-        if self.setup_conf['split_by'] == 'files':
-            data_files = ParquetFiles(self.setup_conf['dataset_files.data_path']).data_files
+        if self.setup_conf.split_by == 'files':
+            data_files = ParquetFiles(self.setup_conf.dataset_files.data_path).data_files
 
             splitter = ListSplitter(
                 data_files,
-                valid_size=self.setup_conf['valid_size'],
-                seed=self.setup_conf['valid_split_seed'],
+                valid_size=self.setup_conf.valid_size,
+                seed=self.setup_conf.valid_split_seed,
             )
             logger.info(f'Prepared splits: '
                         f'{len(splitter.train)} files in train, {len(splitter.valid)} files in valid')
@@ -97,13 +97,13 @@ class CpcDataModuleTrain(pl.LightningDataModule):
             raise AttributeError(f'Unknown split strategy: {self.setup_conf.split_by}')
 
     def setup_iterable_parts(self):
-        data_files = PartitionedDataFiles(**self.setup_conf['dataset_parts'])
+        data_files = PartitionedDataFiles(**self.setup_conf.dataset_parts)
 
-        if self.setup_conf['split_by'] == 'hash_id':
+        if self.setup_conf.split_by == 'hash_id':
             splitter = ListSplitter(
                 data_files.hash_parts,
-                valid_size=self.setup_conf['valid_size'],
-                seed=self.setup_conf['valid_split_seed'],
+                valid_size=self.setup_conf.valid_size,
+                seed=self.setup_conf.valid_split_seed,
             )
             logger.info(f'Prepared splits: '
                         f'{len(data_files.dt_parts)} parts in dt_train, {len(data_files.dt_parts)} parts in dt_valid, '
@@ -119,14 +119,14 @@ class CpcDataModuleTrain(pl.LightningDataModule):
                 post_processing=IterableChain(*self.build_iterable_processing('valid')),
                 shuffle_files=False,
             )
-        elif self.setup_conf['split_by'] == 'rows':
+        elif self.setup_conf.split_by == 'rows':
             raise NotImplementedError("Split by rows aren't supported for partitioned dataset")
         else:
             raise AttributeError(f'Unknown split strategy: {self.setup_conf.split_by}')
 
     def build_iterable_processing(self, part):
         if part == 'train':
-            yield SeqLenFilter(min_seq_len=self.train_conf['min_seq_len'])
+            yield SeqLenFilter(min_seq_len=self.train_conf.min_seq_len)
 
         yield FeatureFilter(keep_feature_names=self.category_names)
         yield CategorySizeClip(self.category_max_size)
@@ -134,15 +134,15 @@ class CpcDataModuleTrain(pl.LightningDataModule):
         if self._type == 'iterable':
             # all processing in single chain
             if part == 'train':
-                yield IterableShuffle(self.train_conf['buffer_size'])
+                yield IterableShuffle(self.train_conf.buffer_size)
 
             yield IterableAugmentations(self.build_augmentations(part))
 
     def build_augmentations(self, part):
         if part == 'train':
-            return build_augmentations(self.train_conf['augmentations'])
+            return build_augmentations(self.train_conf.augmentations)
         else:
-            return build_augmentations(self.valid_conf['augmentations'])
+            return build_augmentations(self.valid_conf.augmentations)
 
     def setup_map(self):
         self.train_dataset = list(tqdm(iter(self.train_dataset)))
@@ -164,14 +164,14 @@ class CpcDataModuleTrain(pl.LightningDataModule):
             dataset=self.train_dataset,
             collate_fn=cpc_collate_fn,
             shuffle=False if self._type == 'iterable' else True,
-            num_workers=self.train_conf['num_workers'],
-            batch_size=self.train_conf['batch_size'],
+            num_workers=self.train_conf.num_workers,
+            batch_size=self.train_conf.batch_size,
         )
 
     def val_dataloader(self):
         return DataLoader(
             dataset=self.valid_dataset,
             collate_fn=cpc_collate_fn,
-            num_workers=self.valid_conf['num_workers'],
-            batch_size=self.valid_conf['batch_size'],
+            num_workers=self.valid_conf.num_workers,
+            batch_size=self.valid_conf.batch_size,
         )

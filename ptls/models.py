@@ -13,25 +13,25 @@ from ptls.seq_encoder.utils import NormEncoder
 
 
 def trx_avg_model(params):
-    p = TrxEncoder(params['trx_encoder'])
+    p = TrxEncoder(params.trx_encoder)
     h = PerTransHead(p.output_size)
     m = torch.nn.Sequential(p, h, torch.nn.Sigmoid())
     return m
 
 
 def trx_avg2_model(params):
-    p = TrxMeanEncoder(params['trx_encoder'])
-    h = scoring_head(TrxMeanEncoder.output_size(params['trx_encoder']), params['head'])
+    p = TrxMeanEncoder(params.trx_encoder)
+    h = scoring_head(TrxMeanEncoder.output_size(params.trx_encoder), params.head)
     m = torch.nn.Sequential(p, h)
     return m
 
 
 def rnn_model(params):
-    p = TrxEncoder(params['trx_encoder'])
-    e = RnnEncoder(p.output_size, params['rnn'])
+    p = TrxEncoder(params.trx_encoder)
+    e = RnnEncoder(p.output_size, params.rnn)
     h = scoring_head(
-        input_size=params['rnn.hidden_size'] * (2 if params['rnn.bidir'] else 1),
-        params=params['head']
+        input_size=params.rnn.hidden_size * (2 if params.rnn.bidir else 1),
+        params=params.head
     )
 
     m = torch.nn.Sequential(p, e, h)
@@ -39,13 +39,13 @@ def rnn_model(params):
 
 
 def rnn_shuffle_model(params):
-    p = TrxEncoder(params['trx_encoder'])
+    p = TrxEncoder(params.trx_encoder)
     p_size = p.output_size
     p = torch.nn.Sequential(p, TimeStepShuffle())
-    e = RnnEncoder(p_size, params['rnn'])
+    e = RnnEncoder(p_size, params.rnn)
     h = scoring_head(
-        input_size=params['rnn.hidden_size'] * (2 if params['rnn.bidir'] else 1),
-        params=params['head']
+        input_size=params.rnn.hidden_size * (2 if params.rnn.bidir else 1),
+        params=params.head
     )
 
     m = torch.nn.Sequential(p, e, h)
@@ -53,11 +53,11 @@ def rnn_shuffle_model(params):
 
 
 def skip_rnn2_model(params):
-    p = TrxEncoder(params['trx_encoder'])
-    e = skip_rnn_encoder(p.output_size, params['skip_rnn'])
+    p = TrxEncoder(params.trx_encoder)
+    e = skip_rnn_encoder(p.output_size, params.skip_rnn)
     h = scoring_head(
-        input_size=params['skip_rnn.rnn1.hidden_size'] * (2 if params['skip_rnn.rnn1.bidir'] else 1),
-        params=params['head']
+        input_size=params.skip_rnn.rnn1.hidden_size * (2 if params.skip_rnn.rnn1.bidir else 1),
+        params=params.head
     )
 
     m = torch.nn.Sequential(p, e, h)
@@ -65,15 +65,15 @@ def skip_rnn2_model(params):
 
 
 def transformer_model(params):
-    p = TrxEncoder(params['trx_encoder'])
+    p = TrxEncoder(params.trx_encoder)
     trx_size = p.output_size
-    enc_input_size = params['transf']['input_size']
+    enc_input_size = params.transf.input_size
     if enc_input_size != trx_size:
         inp_reshape = PerTransTransf(trx_size, enc_input_size)
         p = torch.nn.Sequential(p, inp_reshape)
 
-    e = TransformerSeqEncoder(enc_input_size, params['transf'])
-    h = scoring_head(enc_input_size, params['head'])
+    e = TransformerSeqEncoder(enc_input_size, params.transf)
+    h = scoring_head(enc_input_size, params.head)
 
     m = torch.nn.Sequential(p, e, h)
     return m
@@ -103,7 +103,7 @@ def create_head_layers(params, seq_encoder=None):
 
     layers = []
     _locals = locals()
-    for l_name, l_params in params['head_layers']:
+    for l_name, l_params in params.head_layers:
         l_params = {k: int(v.format(**_locals)) if type(v) is str else v
                     for k, v in l_params.items()}
 

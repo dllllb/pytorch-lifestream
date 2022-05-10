@@ -148,17 +148,17 @@ def fit_types(seq, embeddings, numeric_values):
 def add_ticks(seq, conf, mode):
     assert mode in ('application_date', 'time_window')
 
-    freq = conf['params.tick_params.freq']
+    freq = conf.params.tick_params.freq
 
     if mode == 'application_date':
-        application_start_date = np.datetime64(conf['dataset.application_start_date'])
-        transaction_start_date = np.datetime64(conf['dataset.transaction_start_date'])
-        max_days = conf['params.max_days']
+        application_start_date = np.datetime64(conf.dataset.application_start_date)
+        transaction_start_date = np.datetime64(conf.dataset.transaction_start_date)
+        max_days = conf.params.max_days
         trx_start_date = max(application_start_date - np.timedelta64(max_days, 'D'), transaction_start_date)
-        trx_end_date = np.datetime64(conf['dataset.ripe_date'])
+        trx_end_date = np.datetime64(conf.dataset.ripe_date)
     elif mode == 'time_window':
-        trx_start_date = np.datetime64(conf['dataset.start_date'])
-        trx_end_date = np.datetime64(conf['dataset.end_date'])
+        trx_start_date = np.datetime64(conf.dataset.start_date)
+        trx_end_date = np.datetime64(conf.dataset.end_date)
 
     all_dates = np.arange(trx_start_date, trx_end_date, np.timedelta64(1, 'D'))
     if freq == 'w':

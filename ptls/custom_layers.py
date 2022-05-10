@@ -42,12 +42,12 @@ class MLP(nn.Module):
         layers = []
         if self.use_batch_norm:
             layers.append(nn.BatchNorm1d(input_size))
-        layers_size = [input_size] + params['hidden_layers_size']
+        layers_size = [input_size] + params.hidden_layers_size
         for size_in, size_out in zip(layers_size[:-1], layers_size[1:]):
             layers.append(nn.Linear(size_in, size_out))
             layers.append(nn.ReLU())
-            if params['drop_p']:
-                layers.append(nn.Dropout(params['drop_p']))
+            if params.drop_p:
+                layers.append(nn.Dropout(params.drop_p))
             if self.use_batch_norm:
                 layers.append(nn.BatchNorm1d(size_out))
             self.output_size = layers_size[-1]
@@ -62,7 +62,7 @@ class MLP(nn.Module):
             self.output_size = head_output_size
 
         elif params.get('objective', None) == 'multilabel_classification':
-            head_output_size = params['num_classes']
+            head_output_size = params.num_classes
             h = nn.Sequential(nn.Linear(layers_size[-1], head_output_size), nn.Sigmoid())
             layers.append(h)
             self.output_size = head_output_size

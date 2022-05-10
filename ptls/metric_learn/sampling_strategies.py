@@ -62,7 +62,7 @@ class HardNegativePairSelector(PairSelector):
 
         # positive pairs
         positive_pairs = torch.triu((x == 0).int(), diagonal=1).nonzero(as_tuple=False)
-        
+
         # hard negative minning
         mat_distances = outer_pairwise_distance(embeddings.detach())  # pairwise_distance
 
@@ -82,13 +82,13 @@ class HardNegativePairSelector(PairSelector):
 class DistanceWeightedPairSelector(PairSelector):
     """
     Distance Weighted Sampling
-    
+
     "Sampling Matters in Deep Embedding Learning", ICCV 2017
     https://arxiv.org/abs/1706.07567
     code based on https://github.com/suruoxi/DistanceWeightedSampling
 
     Generates pairs correspond to distances
-    
+
     parameters
     ----------
     batch_k: int
@@ -336,46 +336,46 @@ class SemiHardTripletSelector(TripletSelector):
 
 
 def get_sampling_strategy(params):
-    if params['train.sampling_strategy'] is None:
+    if params.train.sampling_strategy is None:
         sampling_strategy = None
 
-    elif params['train.sampling_strategy'] == 'AllPositivePair':
+    elif params.train.sampling_strategy == 'AllPositivePair':
         sampling_strategy = AllPositivePairSelector()
 
-    elif params['train.sampling_strategy'] == 'HardNegativePair':
+    elif params.train.sampling_strategy == 'HardNegativePair':
         kwargs = {
-            'neg_count': params.get('train.neg_count', None),
+            'neg_count': params.train.get('neg_count', None),
         }
         kwargs = {k: v for k, v in kwargs.items() if v is not None}
         sampling_strategy = HardNegativePairSelector(**kwargs)
 
-    elif params['train.sampling_strategy'] == 'AllTriplets':
+    elif params.train.sampling_strategy == 'AllTriplets':
         sampling_strategy = AllTripletSelector()
 
-    elif params['train.sampling_strategy'] == 'RandomNegativeTriplets':
+    elif params.train.sampling_strategy == 'RandomNegativeTriplets':
         sampling_strategy = RandomNegativeTripletSelector()
 
-    elif params['train.sampling_strategy'] == 'HardTriplets':
+    elif params.train.sampling_strategy == 'HardTriplets':
         kwargs = {
-            'neg_count': params.get('train.neg_count', None),
+            'neg_count': params.train.get('neg_count', None),
         }
         kwargs = {k: v for k, v in kwargs.items() if v is not None}
         sampling_strategy = HardTripletSelector(**kwargs)
 
-    elif params['train.sampling_strategy'] == 'SemiHardTriplets':
+    elif params.train.sampling_strategy == 'SemiHardTriplets':
         sampling_strategy = SemiHardTripletSelector()
 
-    elif params['train.sampling_strategy'] == 'DistanceWeightedPair':
+    elif params.train.sampling_strategy == 'DistanceWeightedPair':
         kwargs = {
-            'batch_k': params['train.n_samples_from_class'],
-            'cutoff': params.get('train.cutoff', None),
-            'nonzero_loss_cutoff': params.get('train.nonzero_loss_cutoff', None),
-            'normalize': params.get('train.normalize', None),
+            'batch_k': params.train.n_samples_from_class,
+            'cutoff': params.train.get('cutoff', None),
+            'nonzero_loss_cutoff': params.train.get('nonzero_loss_cutoff', None),
+            'normalize': params.train.get('normalize', None),
         }
         kwargs = {k: v for k, v in kwargs.items() if v is not None}
         sampling_strategy = DistanceWeightedPairSelector(**kwargs)
 
     else:
-        raise AttributeError(f'wrong sampling_strategy "{params["train.sampling_strategy"]}"')
+        raise AttributeError(f'wrong sampling_strategy "{params.train.sampling_strategy}"')
 
     return sampling_strategy

@@ -53,23 +53,23 @@ def projection_head(input_size, output_size):
 
 
 def rnn_model(params):
-    p = TrxEncoder(params['trx_encoder'])
+    p = TrxEncoder(params.trx_encoder)
     encoder_layers = [
         p,
-        RnnEncoder(p.output_size, params['rnn']),
+        RnnEncoder(p.output_size, params.rnn),
         LastStepEncoder(),
     ]
 
     layers = [torch.nn.Sequential(*encoder_layers)]
     if 'projection_head' in params:
         logger.info('projection_head included')
-        layers.extend(projection_head(params['rnn.hidden_size'], params['projection_head.output_size']))
+        layers.extend(projection_head(params.rnn.hidden_size, params.projection_head.output_size))
 
     if params.get('embeddings_dropout', 0):
-        layers.append(DropoutEncoder(params['embeddings_dropout']))
+        layers.append(DropoutEncoder(params.embeddings_dropout))
         logger.info('DropoutEncoder included')
 
-    if params['use_normalization_layer']:
+    if params.use_normalization_layer:
         layers.append(NormEncoder())
         logger.info('NormEncoder included')
     m = torch.nn.Sequential(*layers)
@@ -77,34 +77,34 @@ def rnn_model(params):
 
 
 def transformer_model(params):
-    p = TrxEncoder(params['trx_encoder'])
+    p = TrxEncoder(params.trx_encoder)
     trx_size = p.output_size
-    enc_input_size = params['transf']['input_size']
+    enc_input_size = params.transf.input_size
     if enc_input_size != trx_size:
         inp_reshape = PerTransTransf(trx_size, enc_input_size)
         p = torch.nn.Sequential(p, inp_reshape)
 
-    e = TransformerSeqEncoder(enc_input_size, params['transf'])
+    e = TransformerSeqEncoder(enc_input_size, params.transf)
     l = FirstStepEncoder()
     layers = [p, e, l]
 
     encoder = torch.nn.Sequential(*layers)
     layers = [encoder]
-    if params['use_normalization_layer']:
+    if params.use_normalization_layer:
         layers.append(NormEncoder())
     m = torch.nn.Sequential(*layers)
     return m
 
 
 def agg_feature_model(params):
-    p = AggFeatureModel(params['trx_encoder'])
+    p = AggFeatureModel(params.trx_encoder)
     layers = [
         torch.nn.Sequential(
             p,
         ),
         torch.nn.BatchNorm1d(p.output_size),
     ]
-    if params['use_normalization_layer']:
+    if params.use_normalization_layer:
         layers.append(NormEncoder())
     m = torch.nn.Sequential(*layers)
     return m
@@ -123,8 +123,8 @@ def ml_model_by_type(model_type):
 class MeLESModel(torch.nn.Module):
     def __init__(self, params):
         super().__init__()
-        self.p = TrxEncoder(params['trx_encoder'])
-        self.e = RnnEncoder(self.p.output_size, params['rnn'])
+        self.p = TrxEncoder(params.trx_encoder)
+        self.e = RnnEncoder(self.p.output_size, params.rnn)
         self.l = torch.nn.Sequential(LastStepEncoder(), NormEncoder())
 
     def forward(self, padded_x, h_0=None):
@@ -154,9 +154,9 @@ class ComplexModel(torch.nn.Module):
     def __init__(self, ml_model, params):
         super().__init__()
         self.ml_model = ml_model
-        self.projection_ml_head = projection_head(params['rnn.hidden_size'], params['ml_projection_head.output_size'])
+        self.projection_ml_head = projection_head(params.rnn.hidden_size, params.ml_projection_head.output_size)
         self.projection_aug_head = torch.nn.Sequential(
-            projection_head(params['rnn.hidden_size'], params['aug_projection_head.output_size']),
+            projection_head(params.rnn.hidden_size, params.aug_projection_head.output_size),
             torch.nn.LogSoftmax(dim=1)
         )
 
@@ -169,13 +169,13 @@ class ComplexModel(torch.nn.Module):
 
 @Deprecated('Use dltranz.seq_mel.SequenceMetricLearning.load_from_checkpoint')
 def load_encoder_for_inference(conf):
-    ext = os.path.splitext(conf['model_path.model'])[1]
+    ext = os.path.splitext(conf.model_path.model)[1]
     if ext in ('.pth', '.pt'):
         params = conf.get('params', conf)
-        model_type = params['model_type']
+        model_type = params.model_type
         model_f = ml_model_by_type(model_type)
         model = model_f(params)
-        model_d = torch.load(conf['model_path.model'], map_location=torch.device("cpu"))
+        model_d = torch.load(conf.model_path.model, map_location=torch.device("cpu"))
         model.load_state_dict(model_d)
 
         if isinstance(model, CPC_Ecoder):
@@ -184,7 +184,7 @@ def load_encoder_for_inference(conf):
             model = torch.nn.Sequential(trx_e, rnn_e, l)
 
     elif ext == '.p':
-        model = torch.load(conf['model_path.model'], map_location=torch.device("cpu"))
+        model = torch.load(conf.model_path.model, map_location=torch.device("cpu"))
     else:
         raise NotImplementedError(f'Unknown model file extension: "{ext}"')
     return model

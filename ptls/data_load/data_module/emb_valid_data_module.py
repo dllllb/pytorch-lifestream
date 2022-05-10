@@ -21,20 +21,20 @@ class EmbValidDataModule(pl.LightningDataModule):
     def __init__(self, conf, pl_module):
         super().__init__()
 
-        self._type = conf['type']
+        self._type = conf.type
         assert self._type in ('map', 'iterable')
 
-        self.setup_conf = conf['setup']
-        self.train_conf = conf['train']
-        self.valid_conf = conf['valid']
+        self.setup_conf = conf.setup
+        self.train_conf = conf.train
+        self.valid_conf = conf.valid
         self.test_conf = conf.get('test', self.valid_conf)
 
-        self.col_id = self.setup_conf['col_id']
+        self.col_id = self.setup_conf.col_id
         self.col_id_dtype = {
             'str': str,
             'int': int,
-        }[self.setup_conf['col_id_dtype']]
-        self.col_target = self.setup_conf['col_target']
+        }[self.setup_conf.col_id_dtype]
+        self.col_target = self.setup_conf.col_target
         self.category_names = pl_module.seq_encoder.category_names
         self.category_names.add('event_time')
         self.category_max_size = pl_module.seq_encoder.category_max_size
@@ -59,20 +59,20 @@ class EmbValidDataModule(pl.LightningDataModule):
 
     def setup_iterable_files(self):
        if (self.setup_conf.get('use_files_partially', None)):
-           n_train = len(glob.glob(self.setup_conf['dataset_files.train_data_path'] + "/*.parquet"))
+           n_train = len(glob.glob(self.setup_conf.dataset_files.train_data_path + "/*.parquet"))
            ixes = list(range(n_train))
-           train_ixes, test_ixes = train_test_split(ixes, test_size=int(n_train * (1 - self.setup_conf['train_part'])), shuffle=True)
-           train_data_files = ParquetFiles(self.setup_conf['dataset_files.train_data_path'], train_ixes).data_files
-           if self.setup_conf['same_file_for_test']:
-               test_ixes = random.sample(test_ixes, int(n_train * self.setup_conf['test_part']))
-               test_data_files = ParquetFiles(self.setup_conf['dataset_files.train_data_path'], test_ixes).data_files
+           train_ixes, test_ixes = train_test_split(ixes, test_size=int(n_train * (1 - self.setup_conf.train_part)), shuffle=True)
+           train_data_files = ParquetFiles(self.setup_conf.dataset_files.train_data_path, train_ixes).data_files
+           if self.setup_conf.same_file_for_test:
+               test_ixes = random.sample(test_ixes, int(n_train * self.setup_conf.test_part))
+               test_data_files = ParquetFiles(self.setup_conf.dataset_files.train_data_path, test_ixes).data_files
            else:
-               n_test = len(glob.glob(self.setup_conf['dataset_files.test_data_path'] + "/*.parquet"))
-               test_ixes = random.sample(ixes, int(n_test * self.setup_conf['test_part']))
-               test_data_files = ParquetFiles(self.setup_conf['dataset_files.test_data_path'], test_ixes).data_files
+               n_test = len(glob.glob(self.setup_conf.dataset_files.test_data_path + "/*.parquet"))
+               test_ixes = random.sample(ixes, int(n_test * self.setup_conf.test_part))
+               test_data_files = ParquetFiles(self.setup_conf.dataset_files.test_data_path, test_ixes).data_files
        else:
-           train_data_files = ParquetFiles(self.setup_conf['dataset_files.train_data_path']).data_files
-           test_data_files = ParquetFiles(self.setup_conf['dataset_files.test_data_path']).data_files
+           train_data_files = ParquetFiles(self.setup_conf.dataset_files.train_data_path).data_files
+           test_data_files = ParquetFiles(self.setup_conf.dataset_files.test_data_path).data_files
 
        self.train_dataset = ParquetDataset(
            train_data_files,
@@ -91,8 +91,8 @@ class EmbValidDataModule(pl.LightningDataModule):
             dataset=self.train_dataset,
             collate_fn=padded_collate_emb_valid,
             shuffle=False if self._type == 'iterable' else True,
-            num_workers=self.train_conf['num_workers'],
-            batch_size=self.train_conf['batch_size'],
+            num_workers=self.train_conf.num_workers,
+            batch_size=self.train_conf.batch_size,
             drop_last=self.train_conf.get('drop_last', False)
         )
 
@@ -100,6 +100,6 @@ class EmbValidDataModule(pl.LightningDataModule):
          return DataLoader(
              dataset=self.test_dataset,
              collate_fn=padded_collate_emb_valid,
-             num_workers=self.test_conf['num_workers'],
-             batch_size=self.test_conf['batch_size'],
+             num_workers=self.test_conf.num_workers,
+             batch_size=self.test_conf.batch_size,
          )

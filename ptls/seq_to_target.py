@@ -129,7 +129,7 @@ class SequenceToTarget(pl.LightningModule):
         self.metrics_test = defaultdict(list)  # here we accumulate metrics on each test end
         self.metrics_train = defaultdict(list)  # here we accumulate metrics on some train bathes (called outside)
 
-        head_params = dict(params['head_layers']).get('CombinedTargetHeadFromRnn', None)
+        head_params = dict(params.head_layers).get('CombinedTargetHeadFromRnn', None)
         self.pos, self.neg = (head_params.get('pos', True), head_params.get('neg', True)) if head_params else (0, 0)
         self.cols_ix = params.get('columns_ix', {'neg_sum': 0,
                                                  'neg_distribution': 1,
@@ -162,7 +162,7 @@ class SequenceToTarget(pl.LightningModule):
             'KLn': KL('neg_distribution'),
             'KLp': KL('pos_distribution')
         }
-        params_score_metric = params['score_metric']
+        params_score_metric = params.score_metric
         if type(params_score_metric) is str:
             params_score_metric = [params_score_metric]
         metric_cls = [(name, d_metrics[name]) for name in params_score_metric]
@@ -227,15 +227,15 @@ class SequenceToTarget(pl.LightningModule):
     def get_pretrained_optimizer(self):
         params = self.hparams.params
 
-        if params['pretrained.lr'] == 'freeze':
+        if params.pretrained.lr == 'freeze':
             self._seq_encoder.freeze()
             logger.info('Created optimizer with frozen encoder')
             return get_optimizer(self, params)
 
         parameters = [
-            {'params': self._seq_encoder.parameters(), 'lr': params['pretrained.lr']},
-            {'params': self._head.parameters(), 'lr': params['train.lr']},
+            {'params': self._seq_encoder.parameters(), 'lr': params.pretrained.lr},
+            {'params': self._head.parameters(), 'lr': params.train.lr},
         ]
         logger.info('Created optimizer with two lr groups')
 
-        return torch.optim.Adam(parameters, lr=params['train.lr'], weight_decay=params['train.weight_decay'])
+        return torch.optim.Adam(parameters, lr=params.train.lr, weight_decay=params.train.weight_decay)

@@ -8,7 +8,7 @@ from ptls.seq_encoder.rnn_encoder import RnnEncoder
 
 class CpcV2Module(ABSModule):
     def __init__(self, params):
-        if params['encoder_type'] != 'rnn':
+        if params.encoder_type != 'rnn':
             raise NotImplementedError(f'Only rnn encoder supported in CpcModule. Found {params.encoder_type}')
 
         super().__init__(params)
@@ -17,7 +17,7 @@ class CpcV2Module(ABSModule):
         self.agg_rnn = RnnEncoder(params.rnn.hidden_size, params.rnn_agg)
         
         # Define linear transformation for every cpc.n_forward_steps 
-        self.n_forward_steps = params['cpc.n_forward_steps']
+        self.n_forward_steps = params.cpc.n_forward_steps
         embedding_size = params.rnn_agg.hidden_size
         linear_size = params.rnn.hidden_size
         self._linears = torch.nn.ModuleList([torch.nn.Linear(embedding_size, linear_size)
@@ -33,7 +33,7 @@ class CpcV2Module(ABSModule):
         return True
 
     def get_loss(self):
-        return CPC_Loss(n_negatives=self.hparams.params['cpc.n_negatives'])
+        return CPC_Loss(n_negatives=self.hparams.params.cpc.n_negatives)
 
     def get_validation_metric(self):
         return CpcAccuracyPL(self._loss)
