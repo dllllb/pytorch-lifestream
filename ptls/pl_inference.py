@@ -1,9 +1,11 @@
 import logging
 
 import glob
+import hydra
 import pandas as pd
 import pytorch_lightning as pl
 import torch.multiprocessing
+from omegaconf import DictConfig, OmegaConf
 from torch.utils.data import ChainDataset
 from torch.utils.data.dataloader import DataLoader
 
@@ -15,7 +17,7 @@ from ptls.data_load.iterable_processing.target_extractor import TargetExtractor
 from ptls.data_load.parquet_dataset import ParquetDataset, ParquetFiles
 from ptls.metric_learn.inference_tools import save_scores
 from ptls.train import score_model
-from ptls.util import get_conf, get_cls
+from ptls.util import get_conf, get_cls, hydra_path
 
 logger = logging.getLogger(__name__)
 
@@ -47,8 +49,11 @@ def create_inference_dataloader(conf, pl_module):
     )
 
 
-def main(args=None):
-    conf = get_conf(args)
+@hydra.main()
+def main(conf: DictConfig):
+    OmegaConf.set_struct(conf, False)
+    orig_cwd = hydra.utils.get_original_cwd()
+    hydra_path(orig_cwd, conf)
 
     if 'torch_multiprocessing_sharing_strategy' in conf.inference_dataloader:
         torch.multiprocessing.set_sharing_strategy(

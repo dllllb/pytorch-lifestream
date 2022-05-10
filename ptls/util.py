@@ -27,6 +27,12 @@ def hydra_path(orig_cwd, conf):
         if isinstance(k, str) and isinstance(v, str) and (k[-4:] == 'path' or
                                                           k[-4:] == 'info'):
             conf[k] = orig_cwd + '/' + v
+        if isinstance(k, str) and\
+                isinstance(v, omegaconf.listconfig.ListConfig) and\
+                (k[-5:] == 'files'):
+            for ix, el in enumerate(v):
+                v[ix] = orig_cwd + '/' + el
+
 
 def block_iterator(iterator, size):
     bucket = list()
