@@ -28,7 +28,7 @@ def test_get_optimizer_params():
         'train.lr': 0.01,
         'train.weight_decay': 0.01,
         'train.optimiser_params': {
-            '0.weight': {'lr': 0.001},
+            '"0.weight"': {'lr': 0.001},
         },
     }
     yaml_string = HOCONConverter.to_yaml(ConfigFactory.from_dict(params))
@@ -58,8 +58,8 @@ def test_get_optimizer_2params():
         'train.lr': 0.01,
         'train.weight_decay': 0.01,
         'train.optimiser_params': {
-            '0.weight': {'lr': 0.001},
-            '2.weight': {'lr': 0.001},
+            '"0.weight"': {'lr': 0.001},
+            '"2.weight"': {'lr': 0.001},
         },
     }
     yaml_string = HOCONConverter.to_yaml(ConfigFactory.from_dict(params))

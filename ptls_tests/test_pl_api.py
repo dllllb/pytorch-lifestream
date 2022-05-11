@@ -44,7 +44,8 @@ def test_train_inference():
 
     trainer = pl.Trainer(
         max_epochs=1,
-        gpus=1 if torch.cuda.is_available() else 0
+        gpus=0 if torch.cuda.is_available() else 0,
+        logger=False
     )
 
     train_dl = train_data_loader(
@@ -61,5 +62,5 @@ def test_train_inference():
     trainer.fit(model, train_dl)
 
     test_dl = inference_data_loader(test, num_workers=0, batch_size=4)
-    
+
     trainer.predict(model, test_dl)
