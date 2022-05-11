@@ -404,7 +404,7 @@ def test_rnn_iterative_no_starter():
         'bidir': False,
         'trainable_starter': 'none',
     }
-    conf = OmegaConf.create(config)
+    conf = OmegaConf.create(conf)
 
     m = RnnEncoder(INPUT_SIZE, conf)
     m.eval()
@@ -457,7 +457,7 @@ def test_rnn_iterative_with_starter():
         'bidir': False,
         'trainable_starter': 'static',
     }
-    conf = OmegaConf.create(config)
+    conf = OmegaConf.create(conf)
 
     m = RnnEncoder(INPUT_SIZE, conf)
     m.eval()

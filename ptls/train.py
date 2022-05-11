@@ -1,5 +1,6 @@
 import logging
 from bisect import bisect_right
+from omegaconf import OmegaConf
 
 import numpy as np
 import torch
@@ -27,27 +28,31 @@ def get_optimizer(model, params):
             'options' is dict with options for this parameter group
     :return:
     """
-    optimiser_params = params.train.get('optimiser_params', None)
+    optimiser_params = params['train'].get('optimiser_params', None)
     if optimiser_params is None:
         parameters = model.parameters()
     elif optimiser_params.get('type', None) == 'Adafactor':
         optimizer = Adafactor(model.parameters(), scale_parameter=True, relative_step=True, warmup_init=True, lr=None)
-        Adafactor(model.parameters(), scale_parameter=False, relative_step=False, warmup_init=False, lr=params.train.lr)
+        Adafactor(model.parameters(), scale_parameter=False, relative_step=False, warmup_init=False, lr=params['train'].lr)
         logger.info("Ada factor optimizer is used")
     elif optimiser_params.get('type', None) == 'SWA':
         optimizer = SWA(optimizer)
     else:
         parameters = []
+        print(len(optimiser_params.items()))
         for par_name, options in optimiser_params.items():
-            options = options.copy()
+            options = OmegaConf.to_container(options)
             options['params'] = [v for k, v in model.named_parameters() if k.startswith(par_name)]
             parameters.append(options)
+
         default_options = {
             'params': [v for k, v in model.named_parameters() if all(
                 (not k.startswith(par_name) for par_name, options in optimiser_params.items())
             )]}
+
         parameters.append(default_options)
-    optimizer = torch.optim.Adam(parameters, lr=params.train.lr, weight_decay=params.train.weight_decay)
+
+    optimizer = torch.optim.Adam(parameters, lr=params['train']['lr'], weight_decay=params['train']['weight_decay'])
 
     return optimizer
 
@@ -98,33 +103,33 @@ class MultiGammaScheduler(torch.optim.lr_scheduler.MultiStepLR):
 def get_lr_scheduler(optimizer, params):
     if 'scheduler' in params:
         # TODO: check the this code branch
-        if params.scheduler.current != '':
-            scheduler_type = params.scheduler.current
+        if params['scheduler'].current != '':
+            scheduler_type = params['scheduler'].current
 
-            scheduler_params = getattr(params.scheduler, scheduler_type)
+            scheduler_params = getattr(params['scheduler'], scheduler_type)
 
             if scheduler_type == 'MultiGammaScheduler':
                 scheduler = MultiGammaScheduler(optimizer,
-                                         milestones=scheduler_params.milestones,
-                                         gammas=scheduler_params.gammas,
-                                         gamma=scheduler_params.gamma,
-                                         last_epoch=scheduler_params.last_epoch)
+                                         milestones=scheduler_params['milestones'],
+                                         gammas=scheduler_params['gammas'],
+                                         gamma=scheduler_params['gamma'],
+                                         last_epoch=scheduler_params['last_epoch'])
 
             logger.info('MultiGammaScheduler used')
 
-    elif params.lr_scheduler.get('CosineAnnealing', False):
-        T_max = params.train.get('n_epoch', params.lr_scheduler.n_epoch)
-        eta_min = params.lr_scheduler.get('eta_min', 0)
+    elif params['lr_scheduler'].get('CosineAnnealing', False):
+        T_max = params['train'].get('n_epoch', params['lr_scheduler'].n_epoch)
+        eta_min = params['lr_scheduler'].get('eta_min', 0)
         scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=T_max, eta_min=eta_min)
         logger.info('CosineAnnealingLR lr_scheduler used')
         wrapper = SchedulerWrapper
 
-    elif params.lr_scheduler.get('ReduceLROnPlateau', False):
-        mode = params.lr_scheduler.get('mode', 'max')
-        factor = params.lr_scheduler.get('factor', 0.1)
-        patience = params.lr_scheduler.get('patience', 10)
-        threshold = params.lr_scheduler.get('threshold', 0.001)
-        min_lr = params.lr_scheduler.get('min_lr', 1e-6)
+    elif params['lr_scheduler'].get('ReduceLROnPlateau', False):
+        mode = params['lr_scheduler'].get('mode', 'max')
+        factor = params['lr_scheduler'].get('factor', 0.1)
+        patience = params['lr_scheduler'].get('patience', 10)
+        threshold = params['lr_scheduler'].get('threshold', 0.001)
+        min_lr = params['lr_scheduler'].get('min_lr', 1e-6)
 
         scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
             optimizer,
@@ -140,17 +145,17 @@ def get_lr_scheduler(optimizer, params):
         wrapper = ReduceLROnPlateauWrapper
 
     else:
-        lr_step_size = params.lr_scheduler.step_size
-        lr_step_gamma = params.lr_scheduler.step_gamma
+        lr_step_size = params['lr_scheduler']['step_size']
+        lr_step_gamma = params['lr_scheduler']['step_gamma']
         scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=lr_step_size, gamma=lr_step_gamma)
         logger.info('StepLR lr_scheduler used')
         wrapper = SchedulerWrapper
 
     # TODO: ReduceLROnPlateau + warmup
-    if 'warmup' in params.lr_scheduler:
+    if 'warmup' in params['lr_scheduler']:
         scheduler = get_linear_schedule_with_warmup(optimizer,
-           num_warmup_steps=params.lr_scheduler.warmup.num_warmup_steps,
-           num_training_steps=params.lr_scheduler.warmup.num_training_steps)
+           num_warmup_steps=params['lr_scheduler'].warmup.num_warmup_steps,
+           num_training_steps=params['lr_scheduler'].warmup.num_training_steps)
         logger.info('LR warmup used')
         # optimiser param groups are not supported with LRScheduler
         # create_lr_scheduler_with_warmup don't works with SchedulerWrapper

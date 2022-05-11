@@ -42,7 +42,7 @@ class MLP(nn.Module):
         layers = []
         if self.use_batch_norm:
             layers.append(nn.BatchNorm1d(input_size))
-        layers_size = [input_size] + params.hidden_layers_size
+        layers_size = [input_size] + list(params.hidden_layers_size)
         for size_in, size_out in zip(layers_size[:-1], layers_size[1:]):
             layers.append(nn.Linear(size_in, size_out))
             layers.append(nn.ReLU())
