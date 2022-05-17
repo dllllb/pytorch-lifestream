@@ -6,7 +6,7 @@ import pyspark.sql.functions as F
 import pyspark.sql.types as T
 from omegaconf import DictConfig, OmegaConf
 from pyspark.sql import SparkSession
-from ptls.util import get_conf, get_cls, hydra_path
+from ptls.util import get_conf, get_cls
 
 logger = logging.getLogger(__name__)
 
@@ -121,7 +121,6 @@ class InferenceSpark(object):
 def main(conf: DictConfig):
     OmegaConf.set_struct(conf, False)
     orig_cwd = hydra.utils.get_original_cwd()
-    hydra_path(orig_cwd, conf)
 
     spark = SparkSession.builder\
         .appName("spark_inference")\
