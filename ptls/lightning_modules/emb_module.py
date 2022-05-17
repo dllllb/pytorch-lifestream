@@ -36,20 +36,25 @@ class EmbModule(ABSModule):
         lr_scheduler_step_size: int = 100,
         lr_scheduler_step_gamma: float = 0.1):
 
-        default_loss_params = {'train.loss': 'ContrastiveLoss',
-                               'train.sampling_strategy': 'HardNegativePair',
-                               'train.margin': 0.5,
-                               'train.neg_count': 5}
-        train_params = {
-            'train.lr': lr,
-            'train.weight_decay': weight_decay,
-            'lr_scheduler': {
-                'step_size': lr_scheduler_step_size,
-                'step_gamma': lr_scheduler_step_gamma
-            }
+        default_loss_params = {'train': {
+                                   'loss': 'ContrastiveLoss',
+                                   'sampling_strategy': 'HardNegativePair',
+                                   'margin': 0.5,
+                                   'neg_count': 5
+                               }
+        }
+        train_params = {'train': {
+                            'lr': lr,
+                            'weight_decay': weight_decay
+                        },
+                        'lr_scheduler': {
+                            'step_size': lr_scheduler_step_size,
+                            'step_gamma': lr_scheduler_step_gamma
+                        }
         }
         if not loss:
-            train_params = {**train_params, **default_loss_params}
+            train_params['train'] = {**train_params['train'],
+                                     **default_loss_params['train']}
 
         super().__init__(train_params, seq_encoder, loss)
 
@@ -74,7 +79,7 @@ class EmbModule(ABSModule):
             'metric': 'cosine'
         }
         if 'validation_metric_params' in self.hparams.params:
-            kwargs = {**default_kwargs, **self.hparams.params['validation_metric_params']}
+            kwargs = {**default_kwargs, **self.hparams.params.validation_metric_params}
         else:
             kwargs = default_kwargs
 

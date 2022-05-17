@@ -130,7 +130,7 @@ def test_score_model():
     params = tst_params()
 
     test_data = gen_trx_data((torch.rand(1000)*60+1).long())
-    valid_loader = create_validation_loader(TrxDataset(test_data), params['valid'])
+    valid_loader = create_validation_loader(TrxDataset(test_data), params.valid)
 
     pred, true = score_model(rnn_model(params), valid_loader, params)
     print(roc_auc_score(true, pred))
@@ -140,7 +140,7 @@ def test_score_model_mult1():
     params = tst_params()
 
     test_data = gen_trx_data((torch.rand(1000)*60+1).long())
-    valid_loader = create_validation_loader(TrxDataset(test_data), params['valid'])
+    valid_loader = create_validation_loader(TrxDataset(test_data), params.valid)
 
     pred, true = score_model(rnn_model(params), valid_loader, params)
     print(roc_auc_score(true, pred))

@@ -1,5 +1,6 @@
 import logging
 from bisect import bisect_right
+from omegaconf import OmegaConf
 
 import numpy as np
 import torch
@@ -19,35 +20,39 @@ def get_optimizer(model, params):
 
     :param model: model with his `model.named_parameters()`
     :param params: dict with options:
-        ['train.lr']: `lr` for Adam optimizer
-        ['train.weight_decay']: `weight_decay` for Adam optimizer
-        ['train.optimiser_params']: (optional) list of tuples (par_name, options),
+        ['train']['lr']: `lr` for Adam optimizer
+        ['train']['weight_decay']: `weight_decay` for Adam optimizer
+        ['train']['optimiser_params']: (optional) list of tuples (par_name, options),
             each tuple define new parameter group.
             `par_name` is end of parameter name from `model.named_parameters()` for this parameter group
             'options' is dict with options for this parameter group
     :return:
     """
-    optimiser_params = params.get('train.optimiser_params', None)
+    optimiser_params = params['train'].get('optimiser_params', None)
     if optimiser_params is None:
         parameters = model.parameters()
     elif optimiser_params.get('type', None) == 'Adafactor':
         optimizer = Adafactor(model.parameters(), scale_parameter=True, relative_step=True, warmup_init=True, lr=None)
-        Adafactor(model.parameters(), scale_parameter=False, relative_step=False, warmup_init=False, lr=params['train.lr'])
+        Adafactor(model.parameters(), scale_parameter=False, relative_step=False, warmup_init=False, lr=params['train'].lr)
         logger.info("Ada factor optimizer is used")
     elif optimiser_params.get('type', None) == 'SWA':
         optimizer = SWA(optimizer)
     else:
         parameters = []
+        print(len(optimiser_params.items()))
         for par_name, options in optimiser_params.items():
-            options = options.copy()
+            options = OmegaConf.to_container(options)
             options['params'] = [v for k, v in model.named_parameters() if k.startswith(par_name)]
             parameters.append(options)
+
         default_options = {
             'params': [v for k, v in model.named_parameters() if all(
                 (not k.startswith(par_name) for par_name, options in optimiser_params.items())
             )]}
+
         parameters.append(default_options)
-    optimizer = torch.optim.Adam(parameters, lr=params['train.lr'], weight_decay=params['train.weight_decay'])   
+
+    optimizer = torch.optim.Adam(parameters, lr=params['train']['lr'], weight_decay=params['train']['weight_decay'])
 
     return optimizer
 
@@ -98,10 +103,10 @@ class MultiGammaScheduler(torch.optim.lr_scheduler.MultiStepLR):
 def get_lr_scheduler(optimizer, params):
     if 'scheduler' in params:
         # TODO: check the this code branch
-        if params['scheduler.current'] != '':
-            scheduler_type = params['scheduler.current']
+        if params['scheduler'].current != '':
+            scheduler_type = params['scheduler'].current
 
-            scheduler_params = params[f'scheduler.{scheduler_type}']
+            scheduler_params = getattr(params['scheduler'], scheduler_type)
 
             if scheduler_type == 'MultiGammaScheduler':
                 scheduler = MultiGammaScheduler(optimizer,
@@ -113,7 +118,7 @@ def get_lr_scheduler(optimizer, params):
             logger.info('MultiGammaScheduler used')
 
     elif params['lr_scheduler'].get('CosineAnnealing', False):
-        T_max = params['train'].get('n_epoch', params['lr_scheduler.n_epoch'])
+        T_max = params['train'].get('n_epoch', params['lr_scheduler'].n_epoch)
         eta_min = params['lr_scheduler'].get('eta_min', 0)
         scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=T_max, eta_min=eta_min)
         logger.info('CosineAnnealingLR lr_scheduler used')
@@ -148,9 +153,9 @@ def get_lr_scheduler(optimizer, params):
 
     # TODO: ReduceLROnPlateau + warmup
     if 'warmup' in params['lr_scheduler']:
-        scheduler = get_linear_schedule_with_warmup(optimizer, 
-           num_warmup_steps=params['lr_scheduler']["warmup"]['num_warmup_steps'], 
-           num_training_steps=params['lr_scheduler']["warmup"]['num_training_steps'])
+        scheduler = get_linear_schedule_with_warmup(optimizer,
+           num_warmup_steps=params['lr_scheduler'].warmup.num_warmup_steps,
+           num_training_steps=params['lr_scheduler'].warmup.num_training_steps)
         logger.info('LR warmup used')
         # optimiser param groups are not supported with LRScheduler
         # create_lr_scheduler_with_warmup don't works with SchedulerWrapper

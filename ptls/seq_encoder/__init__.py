@@ -1,5 +1,6 @@
 import torch
 from typing import List, Dict
+from omegaconf import OmegaConf
 
 from ptls.seq_encoder.agg_feature_model import AggFeatureSeqEncoder
 from ptls.seq_encoder.rnn_encoder import RnnSeqEncoder, RnnSeqEncoderDistributionTarget
@@ -9,7 +10,7 @@ from ptls.seq_encoder.dummy_encoder import DummyEncoder
 
 
 def create_encoder(params, is_reduce_sequence=True):
-    encoder_type = params['encoder_type']
+    encoder_type = params.encoder_type
     if encoder_type == 'rnn':
         return RnnSeqEncoder(params, is_reduce_sequence)
     if encoder_type == 'transf':
@@ -107,7 +108,7 @@ class SequenceEncoder(torch.nn.Module):
                 'bidir': rnn_bidirectional,
                 'trainable_starter': 'statis' if rnn_trainable_starter else None
             }
-            model = RnnSeqEncoder(params, True)
+            model = RnnSeqEncoder(OmegaConf.create(params), True)
 
         elif encoder_type == 'transformer':
             params['transf'] = {
@@ -122,12 +123,12 @@ class SequenceEncoder(torch.nn.Module):
                 'dropout': transformer_dropout,
                 'n_layers': transformer_n_layers,
             }
-            model = TransfSeqEncoder(params, True)
+            model = TransfSeqEncoder(OmegaConf.create(params), True)
 
         elif encoder_type == 'agg_features':
             params['trx_encoder']['was_logified'] = True
             params['trx_encoder']['log_scale_factor'] = 1
-            model = AggFeatureSeqEncoder(params, True)
+            model = AggFeatureSeqEncoder(OmegaConf.create(params), True)
 
         else:
             raise AttributeError(f'Unknown encoder_type: {encoder_type}')

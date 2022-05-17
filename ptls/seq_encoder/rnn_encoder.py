@@ -85,8 +85,8 @@ class RnnSeqEncoder(AbsSeqEncoder):
     def __init__(self, params, is_reduce_sequence):
         super().__init__(params, is_reduce_sequence)
 
-        p = TrxEncoder(params['trx_encoder'])
-        e = RnnEncoder(p.output_size, params['rnn'])
+        p = TrxEncoder(params.trx_encoder)
+        e = RnnEncoder(p.output_size, params.rnn)
         layers = [p, e]
         self.reducer = LastStepEncoder()
         self.model = torch.nn.Sequential(*layers)
@@ -101,7 +101,7 @@ class RnnSeqEncoder(AbsSeqEncoder):
 
     @property
     def embedding_size(self):
-        return self.params['rnn']['hidden_size']
+        return self.params.rnn.hidden_size
 
     def forward(self, x):
         x = self.model(x)
@@ -137,9 +137,9 @@ class RnnSeqEncoderDistributionTarget(RnnSeqEncoder):
 
     def __init__(self, params, is_reduce_sequence):
         super().__init__(params, is_reduce_sequence)
-        head_params = dict(params['head_layers']).get('CombinedTargetHeadFromRnn', None)
+        head_params = dict(params.head_layers).get('CombinedTargetHeadFromRnn', None)
         self.pass_samples = head_params.get('pass_samples', True)
-        self.numeric_name = list(params['trx_encoder']['numeric_values'].keys())[0]
+        self.numeric_name = list(params.trx_encoder.numeric_values.keys())[0]
         self.collect_pos, self.collect_neg = (head_params.get('pos', True), head_params.get('neg', True)) if head_params else (0, 0)
         self.eps = 1e-7
 
@@ -195,7 +195,7 @@ class SkipStepEncoder(nn.Module):
 
 
 def skip_rnn_encoder(input_size, params):
-    rnn0 = RnnEncoder(input_size, params['rnn0'])
-    rnn1 = RnnEncoder(params['rnn0']['hidden_size'], params['rnn1'])
-    sse = SkipStepEncoder(params['skip_step_size'])
+    rnn0 = RnnEncoder(input_size, params.rnn0)
+    rnn1 = RnnEncoder(params.rnn0.hidden_size, params.rnn1)
+    sse = SkipStepEncoder(params.skip_step_size)
     return nn.Sequential(rnn0, sse, rnn1)

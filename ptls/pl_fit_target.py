@@ -1,6 +1,8 @@
+import hydra
 import json
 import logging
 import numpy as np
+from omegaconf import DictConfig, OmegaConf
 from pytorch_lightning.loggers import TensorBoardLogger
 
 from ptls.data_load.data_module.cls_data_module import ClsDataModuleTrain
@@ -14,20 +16,21 @@ logger = logging.getLogger(__name__)
 
 def fold_fit_test(conf, fold_id, pretrained_module=None):
     pretrained_encoder = None if pretrained_module is None else pretrained_module.seq_encoder
-    model = SequenceToTarget(conf['params'], pretrained_encoder)
-    dm = ClsDataModuleTrain(conf['data_module'], model, fold_id)
+    model = SequenceToTarget(conf.params, pretrained_encoder)
+    dm = ClsDataModuleTrain(conf.data_module, model, fold_id)
 
-    _trainer_params = conf['trainer']
+    _trainer_params = conf.trainer
+    _trainer_params_additional = {}
     if 'logger_name' in conf:
-        _trainer_params['logger'] = TensorBoardLogger(
+        _trainer_params_additional['logger'] = TensorBoardLogger(
             save_dir='lightning_logs',
             name=conf.get('logger_name'),
         )
-    trainer = pl.Trainer(**_trainer_params)
+    trainer = pl.Trainer(**_trainer_params, **_trainer_params_additional)
     trainer.fit(model, dm)
 
     if 'model_path' in conf:
-        trainer.save_checkpoint(conf['model_path'], weights_only=True)
+        trainer.save_checkpoint(conf.model_path, weights_only=True)
         logger.info(f'Model weights saved to "{conf.model_path}"')
 
     valid_metrics = {name: float(mf.compute().item()) for name, mf in model.valid_metrics.items()}
@@ -39,31 +42,32 @@ def fold_fit_test(conf, fold_id, pretrained_module=None):
 
     return {
         "fold_id": fold_id,
-        "model_name": conf['embedding_validation_results.model_name'],
-        "feature_name": conf['embedding_validation_results.feature_name'],
+        "model_name": conf.embedding_validation_results.model_name,
+        "feature_name": conf.embedding_validation_results.feature_name,
         'scores_valid': valid_metrics,
         'scores_test': test_metrics,
     }
 
-
-def main(args=None):
-    conf = get_conf(args)
+@hydra.main()
+def main(conf: DictConfig):
+    OmegaConf.set_struct(conf, False)
+    orig_cwd = hydra.utils.get_original_cwd()
 
     if 'seed_everything' in conf:
-        pl.seed_everything(conf['seed_everything'])
+        pl.seed_everything(conf.seed_everything)
 
-    if conf['data_module.setup.split_by'] == 'embeddings_validation':
-        with open(conf['data_module.setup.fold_info'], 'r') as f:
+    if conf.data_module.setup.split_by == 'embeddings_validation':
+        with open(conf.data_module.setup.fold_info, 'r') as f:
             fold_info = json.load(f)
         fold_list = [k for k in sorted(fold_info.keys()) if not k.startswith('_')]
     else:
         raise NotImplementedError(f'Only `embeddings_validation` split supported,'
                                   f'found "{conf.data_module.setup.split_by}"')
 
-    if conf['params.encoder_type'] == 'pretrained':
-        pre_conf = conf['params.pretrained']
-        cls = get_cls(pre_conf['pl_module_class'])
-        pretrained_module = cls.load_from_checkpoint(pre_conf['model_path'])
+    if conf.params.encoder_type == 'pretrained':
+        pre_conf = conf.params.pretrained
+        cls = get_cls(pre_conf.pl_module_class)
+        pretrained_module = cls.load_from_checkpoint(pre_conf.model_path)
         pretrained_module.seq_encoder.is_reduce_sequence = True
     else:
         pretrained_module = None
@@ -74,7 +78,7 @@ def main(args=None):
         result = fold_fit_test(conf, fold_id, pretrained_module)
         results.append(result)
 
-    stats_file = conf['embedding_validation_results.output_path']
+    stats_file = conf.embedding_validation_results.output_path
     if stats_file is not None:
         with open(stats_file, 'w') as f:
             json.dump(results, f, indent=2)

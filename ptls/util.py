@@ -131,10 +131,10 @@ def config_coalesce(conf, *keys, default=None, raise_if_missing=False):
 
 
 def get_data_files(params):
-    path_wc = params['path_wc']
+    path_wc = params.path_wc
 
     if 'data_path' in params:
-        path_wc = os.path.join(params['data_path'], path_wc)
+        path_wc = os.path.join(params.data_path, path_wc)
 
     files = glob(path_wc)
     logger.info(f'Found {len(files)} files in "{path_wc}"')
@@ -258,7 +258,7 @@ def plot_arrays(a, b, title=None):
 
 def eval_kappa_regression(y_true, y_pred):
     dist = {3: 0.5, 0: 0.239, 2: 0.125, 1: 0.136} # ground shares
-    
+
     acum = 0
     bound = {}
     for i in range(3):

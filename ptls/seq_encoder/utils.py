@@ -128,13 +128,13 @@ class FlattenHead(nn.Module):
 
 
 def scoring_head(input_size, params):
-    if params['pred_all_states'] and params['explicit_lengths']:
+    if params.pred_all_states and params.explicit_lengths:
         raise AttributeError('Can not use `pred_all_states` and `explicit_lengths` together for now')
 
     layers = []
 
-    if not params['pred_all_states']:
-        if params['explicit_lengths']:
+    if not params.pred_all_states:
+        if params.explicit_lengths:
             e0 = ConcatLenEncoder()
             input_size += 2
             layers.append(e0)
@@ -142,17 +142,17 @@ def scoring_head(input_size, params):
             e0 = LastStepEncoder()
             layers.append(e0)
 
-    if params['norm_input']:
+    if params.norm_input:
         layers.append(NormEncoder())
 
-    if params['use_batch_norm']:
+    if params.use_batch_norm:
         layers.append(nn.BatchNorm1d(input_size))
 
     if params.get('neural_automl', False):
-        if params['pred_all_states']:
+        if params.pred_all_states:
             raise AttributeError('neural_automl not supported with `pred_all_states` for now')
         layers.append(nn.BatchNorm1d(input_size))
-        head = node.get_model(model_config=params['neural_automl'], input_size=input_size)
+        head = node.get_model(model_config=params.neural_automl, input_size=input_size)
         layers.append(head)
         return nn.Sequential(*layers)
 
@@ -165,8 +165,8 @@ def scoring_head(input_size, params):
                 h = nn.Sequential(nn.Linear(input_size, head_output_size), nn.LogSoftmax(dim=1))
         else:
             h = nn.Sequential(nn.Linear(input_size, head_output_size), Squeeze())
-        if params['pred_all_states']:
-            if params['pred_all_states_mean']:
+        if params.pred_all_states:
+            if params.pred_all_states_mean:
                 h = AllStepsMeanHead(h)
                 layers.append(h)
             else:
@@ -178,7 +178,7 @@ def scoring_head(input_size, params):
         else:
             layers.append(h)
     else:
-        head_layers = [input_size] + params["head_layers"] + [1]
+        head_layers = [input_size] + params.head_layers + [1]
         for size_in, size_out in zip(head_layers[:-1], head_layers[1:]):
             layers.append(nn.Linear(size_in, size_out))
             if size_out != 1:

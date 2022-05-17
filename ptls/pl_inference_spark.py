@@ -1,8 +1,10 @@
 import logging
 import torch
+import hydra
 import pytorch_lightning as pl
 import pyspark.sql.functions as F
 import pyspark.sql.types as T
+from omegaconf import DictConfig, OmegaConf
 from pyspark.sql import SparkSession
 from ptls.util import get_conf, get_cls
 
@@ -10,7 +12,7 @@ logger = logging.getLogger(__name__)
 
 class InferenceSpark(object):
 
-    def __init__(self, spark, work_path, model_path, output_path, dataset_files, 
+    def __init__(self, spark, work_path, model_path, output_path, dataset_files,
                        col_id, pl_module_class, hidden_size, batch_size):
         self.spark           = spark
         self.work_path       = work_path
@@ -114,28 +116,30 @@ class InferenceSpark(object):
 
         logger.info(f'explode arrays and save path {self.work_path}/{self.output_path}')
 
-def main(args=None):
 
-    conf = get_conf(args)
+@hydra.main()
+def main(conf: DictConfig):
+    OmegaConf.set_struct(conf, False)
+    orig_cwd = hydra.utils.get_original_cwd()
 
     spark = SparkSession.builder\
         .appName("spark_inference")\
         .master(f"local[{conf.inference_dataloader.loader.num_workers}]")\
-        .config("spark.sql.shuffle.partitions",100)\
-        .config("spark.driver.memory",conf['spark_memory'])\
-        .config("spark.local.dir",f"{conf.work_path}/spark_local_dir")\
+        .config("spark.sql.shuffle.partitions", 100)\
+        .config("spark.driver.memory", conf.spark_memory)\
+        .config("spark.local.dir", f"{conf.work_path}/spark_local_dir")\
         .enableHiveSupport()\
         .getOrCreate()
 
-    inference_obj = InferenceSpark(spark, 
-        conf['work_path'], 
-        conf['model_path'], 
-        conf['output.path'], 
-        conf['inference_dataloader.dataset_files'],
-        conf['inference_dataloader.col_id'],
-        conf['params.pl_module_class'],
-        conf['params.rnn.hidden_size'],
-        conf["inference_dataloader.loader.batch_size"]
+    inference_obj = InferenceSpark(spark,
+        conf.work_path,
+        conf.model_path,
+        conf.output.path,
+        conf.inference_dataloader.dataset_files,
+        conf.inference_dataloader.col_id,
+        conf.params.pl_module_class,
+        conf.params.rnn.hidden_size,
+        conf.inference_dataloader.loader.batch_size
         )
 
     inference_obj.collect_batches()
