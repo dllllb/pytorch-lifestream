@@ -5,7 +5,6 @@ import os
 import pickle
 import subprocess
 import sys
-import omegaconf
 from glob import glob
 
 import pandas as pd
@@ -18,20 +17,6 @@ import functools
 
 
 logger = logging.getLogger(__name__)
-
-
-def hydra_path(orig_cwd, conf):
-    for k, v in conf.items():
-        if isinstance(v, omegaconf.dictconfig.DictConfig):
-            hydra_path(orig_cwd, v)
-        if isinstance(k, str) and isinstance(v, str) and (k[-4:] == 'path' or
-                                                          k[-4:] == 'info'):
-            conf[k] = orig_cwd + '/' + v
-        if isinstance(k, str) and\
-                isinstance(v, omegaconf.listconfig.ListConfig) and\
-                (k[-5:] == 'files'):
-            for ix, el in enumerate(v):
-                v[ix] = orig_cwd + '/' + el
 
 
 def block_iterator(iterator, size):

@@ -6,7 +6,7 @@ from omegaconf import DictConfig, OmegaConf
 from pytorch_lightning.callbacks import ModelCheckpoint
 from pytorch_lightning.loggers import TensorBoardLogger
 
-from ptls.util import get_conf, get_cls, hydra_path
+from ptls.util import get_conf, get_cls
 from pytorch_lightning.callbacks import LearningRateMonitor
 
 logger = logging.getLogger(__name__)
@@ -46,7 +46,6 @@ class CheckpointEveryNSteps(pl.Callback):
 def main(conf: DictConfig):
     OmegaConf.set_struct(conf, False)
     orig_cwd = hydra.utils.get_original_cwd()
-    hydra_path(orig_cwd, conf)
 
     if 'seed_everything' in conf:
         pl.seed_everything(conf.seed_everything)
