@@ -1,4 +1,5 @@
 import pytorch_lightning as pl
+from hydra.utils import instantiate
 from ptls.seq_encoder import create_encoder
 from ptls.train import get_optimizer, get_lr_scheduler, ReduceLROnPlateauWrapper
 from ptls.trx_encoder import PaddedBatch
@@ -13,12 +14,6 @@ class ABSModule(pl.LightningModule):
     def is_requires_reduced_sequence(self):
         raise NotImplementedError()
 
-    def get_loss(self):
-        raise NotImplementedError()
-
-    def get_validation_metric(self):
-        raise NotImplementedError()
-
     def shared_step(self, x, y):
         """
 
@@ -31,7 +26,12 @@ class ABSModule(pl.LightningModule):
         """
         raise NotImplementedError()
 
-    def __init__(self, params=None, seq_encoder=None, loss=None):
+    def __init__(self, validation_metric=None,
+                       seq_encoder=None,
+                       loss=None,
+                       optimizer=None,
+                       lr_scheduler_wrapper=None,
+                       lr_scheduler=None):
         """
         Parameters
         ----------
@@ -43,15 +43,13 @@ class ABSModule(pl.LightningModule):
         super().__init__()
         self.save_hyperparameters()
 
-        if not loss:
-            self._loss = self.get_loss()
-        else:
-            self._loss = loss
-        if seq_encoder is not None:
-            self._seq_encoder = seq_encoder
-        else:
-            self._seq_encoder = create_encoder(params, is_reduce_sequence=self.is_requires_reduced_sequence)
-        self._validation_metric = self.get_validation_metric()
+        self._loss = lambda *args, **kwargs: loss(*args, **kwargs)[0]
+        self._seq_encoder = seq_encoder(is_reduce_sequence=self.is_requires_reduced_sequence)
+        self._validation_metric = validation_metric
+
+        self._optimizer = optimizer
+        self._lr_scheduler_wrapper = lr_scheduler_wrapper
+        self._lr_scheduler = lr_scheduler
 
     @property
     def seq_encoder(self):
@@ -82,9 +80,8 @@ class ABSModule(pl.LightningModule):
         self.log(self.metric_name, self._validation_metric.compute(), prog_bar=True)
 
     def configure_optimizers(self):
-        params = self.hparams.params
-        optimizer = get_optimizer(self, params)
-        scheduler = get_lr_scheduler(optimizer, params)
+        optimizer = self._optimizer(self.parameters())
+        scheduler = self._lr_scheduler_wrapper(self._lr_scheduler(optimizer))
         if isinstance(scheduler, ReduceLROnPlateauWrapper):
             scheduler = {
                 'scheduler': scheduler,

@@ -14,10 +14,10 @@ class ContrastiveLoss(nn.Module):
     https://papers.nips.cc/paper/769-signature-verification-using-a-siamese-time-delay-neural-network.pdf
     """
 
-    def __init__(self, margin, pair_selector):
+    def __init__(self, margin, sampling_strategy):
         super(ContrastiveLoss, self).__init__()
         self.margin = margin
-        self.pair_selector = pair_selector
+        self.pair_selector = sampling_strategy
 
     def forward(self, embeddings, target):
 

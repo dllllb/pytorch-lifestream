@@ -1,15 +1,24 @@
+from hydra.utils import instantiate
 from ptls.lightning_modules.AbsModule import ABSModule
-from ptls.metric_learn.metric import BatchRecallTopPL
-from ptls.models import create_head_layers
-from ptls.metric_learn.losses import get_loss
-from ptls.metric_learn.sampling_strategies import get_sampling_strategy
 
 
 class CoLESModule(ABSModule):
-    def __init__(self, params):
-        super().__init__(params)
+    def __init__(self, validation_metric=None,
+                       seq_encoder=None,
+                       head=None,
+                       loss=None,
+                       optimizer=None,
+                       lr_scheduler_wrapper=None,
+                       lr_scheduler=None):
 
-        self._head = create_head_layers(params, self.seq_encoder)
+        super().__init__(validation_metric,
+                         seq_encoder,
+                         loss,
+                         optimizer,
+                         lr_scheduler_wrapper,
+                         lr_scheduler)
+
+        self._head = head(input_size=self._seq_encoder.embedding_size)
 
     @property
     def metric_name(self):
@@ -18,14 +27,6 @@ class CoLESModule(ABSModule):
     @property
     def is_requires_reduced_sequence(self):
         return True
-
-    def get_loss(self):
-        sampling_strategy = get_sampling_strategy(self.hparams.params)
-        loss = get_loss(self.hparams.params, sampling_strategy)
-        return loss
-
-    def get_validation_metric(self):
-        return BatchRecallTopPL(**self.hparams.params.validation_metric_params)
 
     def shared_step(self, x, y):
         y_h = self(x)

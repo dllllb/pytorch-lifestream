@@ -1,11 +1,13 @@
 import torch
+from hydra.utils import instantiate
 
 
 class AbsSeqEncoder(torch.nn.Module):
-    def __init__(self, params, is_reduce_sequence):
+    def __init__(self, trx_encoder, rnn_encoder, is_reduce_sequence):
         super().__init__()
 
-        self.params = params
+        self.trx_encoder = trx_encoder
+        self.rnn_encoder = rnn_encoder(input_size=trx_encoder.output_size)
         self._is_reduce_sequence = is_reduce_sequence
 
     @property
@@ -16,7 +18,7 @@ class AbsSeqEncoder(torch.nn.Module):
     def is_reduce_sequence(self, value):
         self._is_reduce_sequence = value
 
-    @property  
+    @property
     def category_max_size(self):
         raise NotImplementedError()
 
