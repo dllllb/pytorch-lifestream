@@ -3,12 +3,10 @@ from hydra.utils import instantiate
 
 
 class AbsSeqEncoder(torch.nn.Module):
-    def __init__(self, trx_encoder, rnn_encoder, is_reduce_sequence):
+    def __init__(self):
         super().__init__()
 
-        self.trx_encoder = trx_encoder
-        self.rnn_encoder = rnn_encoder(input_size=trx_encoder.output_size)
-        self._is_reduce_sequence = is_reduce_sequence
+        self.is_reduce_sequence = True
 
     @property
     def is_reduce_sequence(self):

@@ -174,7 +174,7 @@ class TrxEncoder(nn.Module):
                        embeddings_noise=None,
                        embeddings=None,
                        numeric_values=None,
-                       use_batch_norm_with_lens=None,
+                       use_batch_norm_with_lens=False,
                        clip_replace_value=None,
                        positions=None
                  ):

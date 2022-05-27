@@ -9,31 +9,31 @@ from ptls.trx_encoder import PaddedBatch, TrxEncoder
 
 
 class RnnEncoder(nn.Module):
-    def __init__(self, input_size=None,
-                       hidden_size=None,
-                       type=None,
-                       bidir=None,
-                       trainable_starter=None):
+    def __init__(self, rnn_input_size=None,
+                       rnn_hidden_size=None,
+                       rnn_type=None,
+                       rnn_bidir=None,
+                       rnn_trainable_starter=None):
         super().__init__()
 
-        self.hidden_size = hidden_size
-        self.rnn_type = type
-        self.bidirectional = bidir
+        self.hidden_size = rnn_hidden_size
+        self.rnn_type = rnn_type
+        self.bidirectional = rnn_bidir
         if self.bidirectional:
             raise AttributeError('bidirectional RNN is not supported yet')
-        self.trainable_starter = trainable_starter
+        self.trainable_starter = rnn_trainable_starter
 
         # initialize RNN
         if self.rnn_type == 'lstm':
             self.rnn = nn.LSTM(
-                input_size,
+                rnn_input_size,
                 self.hidden_size,
                 num_layers=1,
                 batch_first=True,
                 bidirectional=self.bidirectional)
         elif self.rnn_type == 'gru':
             self.rnn = nn.GRU(
-                input_size,
+                rnn_input_size,
                 self.hidden_size,
                 num_layers=1,
                 batch_first=True,
@@ -88,9 +88,19 @@ class RnnEncoder(nn.Module):
 
 class RnnSeqEncoder(AbsSeqEncoder):
     def __init__(self, trx_encoder=None,
-                       rnn_encoder=None,
-                       is_reduce_sequence=None):
-        super().__init__(trx_encoder, rnn_encoder, is_reduce_sequence)
+                       rnn_hidden_size=None,
+                       rnn_type=None,
+                       rnn_bidir=None,
+                       rnn_trainable_starter=None):
+
+        super().__init__()
+        self.trx_encoder = trx_encoder
+        self.rnn_encoder = RnnEncoder(rnn_input_size=trx_encoder.output_size,
+                                 rnn_hidden_size=rnn_hidden_size,
+                                 rnn_type=rnn_type,
+                                 rnn_bidir=rnn_bidir,
+                                 rnn_trainable_starter=rnn_trainable_starter)
+
 
         p = self.trx_encoder
         e = self.rnn_encoder

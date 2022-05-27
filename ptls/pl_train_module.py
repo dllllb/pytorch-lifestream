@@ -80,22 +80,14 @@ def main(conf: DictConfig):
             name=conf.get('logger_name'),
         )
 
-    if _trainer_params.get('swa', False):
-        _trainer_params.stochastic_weight_avg=True
-        logger.info("SWA is used")
-
-    if "gradient_clip_val" in _trainer_params:
-        _trainer_params.gradient_clip_val = _trainer_params.get("gradient_clip_val")
-        logger.info("Gradient clipping is used")
-
     lr_monitor = LearningRateMonitor(logging_interval='step')
-    # _trainer_params_callbacks.append(lr_monitor)
+    _trainer_params_callbacks.append(lr_monitor)
     if 'ckpts_path' in conf:
         _trainer_params_callbacks.append(CheckpointEveryNSteps(model, dm, conf))
 
     if len(_trainer_params_callbacks) > 0:
         _trainer_params_additional['callbacks'] = _trainer_params_callbacks
-    trainer = pl.Trainer(**_trainer_params, **_trainer_params_additional, logger=False)
+    trainer = pl.Trainer(**_trainer_params, **_trainer_params_additional)
     trainer.fit(model, dm)
 
     if 'model_path' in conf:

@@ -1,3 +1,4 @@
+import torch
 import pytorch_lightning as pl
 from hydra.utils import instantiate
 from ptls.seq_encoder import create_encoder
@@ -29,9 +30,8 @@ class ABSModule(pl.LightningModule):
     def __init__(self, validation_metric=None,
                        seq_encoder=None,
                        loss=None,
-                       optimizer=None,
-                       lr_scheduler_wrapper=None,
-                       lr_scheduler=None):
+                       optimizer_partial=None,
+                       lr_scheduler_partial=None):
         """
         Parameters
         ----------
@@ -41,15 +41,15 @@ class ABSModule(pl.LightningModule):
             sequence encoder, if not provided, will be constructed from params
         """
         super().__init__()
-        self.save_hyperparameters()
+        # self.save_hyperparameters()
 
-        self._loss = lambda *args, **kwargs: loss(*args, **kwargs)[0]
-        self._seq_encoder = seq_encoder(is_reduce_sequence=self.is_requires_reduced_sequence)
+        self._loss = loss
+        self._seq_encoder = seq_encoder
+        self._seq_encoder.is_reduce_sequence = self.is_requires_reduced_sequence
         self._validation_metric = validation_metric
 
-        self._optimizer = optimizer
-        self._lr_scheduler_wrapper = lr_scheduler_wrapper
-        self._lr_scheduler = lr_scheduler
+        self._optimizer_partial = optimizer_partial
+        self._lr_scheduler_partial = lr_scheduler_partial
 
     @property
     def seq_encoder(self):
@@ -80,9 +80,9 @@ class ABSModule(pl.LightningModule):
         self.log(self.metric_name, self._validation_metric.compute(), prog_bar=True)
 
     def configure_optimizers(self):
-        optimizer = self._optimizer(self.parameters())
-        scheduler = self._lr_scheduler_wrapper(self._lr_scheduler(optimizer))
-        if isinstance(scheduler, ReduceLROnPlateauWrapper):
+        optimizer = self._optimizer_partial(self.parameters())
+        scheduler = self._lr_scheduler_partial(optimizer)
+        if isinstance(scheduler, torch.optim.lr_scheduler.ReduceLROnPlateau):
             scheduler = {
                 'scheduler': scheduler,
                 'monitor': self.metric_name,

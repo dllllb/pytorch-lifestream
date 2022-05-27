@@ -132,7 +132,7 @@ class Head(torch.nn.Module):
 
      """
     def __init__(self,
-                 input_size: int,
+                 input_size: int = 1,
                  use_norm_encoder: bool = False,
                  use_batch_norm: bool = False,
                  hidden_layers_sizes: List[int] = None,

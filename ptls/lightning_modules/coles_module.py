@@ -7,18 +7,16 @@ class CoLESModule(ABSModule):
                        seq_encoder=None,
                        head=None,
                        loss=None,
-                       optimizer=None,
-                       lr_scheduler_wrapper=None,
-                       lr_scheduler=None):
+                       optimizer_partial=None,
+                       lr_scheduler_partial=None):
 
         super().__init__(validation_metric,
                          seq_encoder,
                          loss,
-                         optimizer,
-                         lr_scheduler_wrapper,
-                         lr_scheduler)
+                         optimizer_partial,
+                         lr_scheduler_partial)
 
-        self._head = head(input_size=self._seq_encoder.embedding_size)
+        self._head = head
 
     @property
     def metric_name(self):

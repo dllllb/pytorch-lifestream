@@ -29,7 +29,7 @@ class ContrastiveLoss(nn.Module):
         ).pow(2)
         loss = torch.cat([positive_loss, negative_loss], dim=0)
 
-        return loss.sum(), len(positive_pairs) + len(negative_pairs)
+        return loss.sum()
 
 
 class BinomialDevianceLoss(nn.Module):
