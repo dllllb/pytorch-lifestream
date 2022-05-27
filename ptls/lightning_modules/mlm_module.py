@@ -10,7 +10,17 @@ from torchmetrics import MeanMetric
 
 
 class QuerySoftmaxLoss(torch.nn.Module):
-    def __init__(self, temperature=1.0, reduce=True):
+    def __init__(self, temperature: float = 1.0, reduce: bool = True):
+        """
+
+        Parameters
+        ----------
+        temperature:
+            softmax(logits * temperature)
+        reduce:
+            if `reduce` then `loss.mean()` returned. Else loss by elements returned
+        """
+
         super().__init__()
         self.temperature = temperature
         self.reduce = reduce
@@ -34,12 +44,58 @@ class MLMPretrainModule(pl.LightningModule):
                  trx_encoder: torch.nn.Module,
                  hidden_size: int,
                  loss_temperature: float,
-                 norm_predict: bool,
-                 transformer: DictConfig,
-                 mlm: DictConfig,
-                 optimizer: DictConfig,
+                 total_steps: int,
+                 max_lr: float = 0.001,
+                 weight_decay: float = 0.0,
+                 pct_start: float = 0.1,
+                 norm_predict: bool = True,
+                 num_attention_heads: int = 1,
+                 intermediate_size: int = 128,
+                 num_hidden_layers: int = 1,
+                 attention_window: int = 16,
+                 max_position_embeddings: int = 4000,
+                 replace_proba: float = 0.1,
+                 neg_count: int = 1,
                  log_logits: bool = False,
                  ):
+        """
+
+        Parameters
+        ----------
+        trx_encoder:
+            Module for transform dict with feature sequences to sequence of transaction representations
+        hidden_size:
+            Output size of `trx_encoder`. Hidden size of internal transformer representation
+        loss_temperature:
+             temperature parameter of `QuerySoftmaxLoss`
+        total_steps:
+            total_steps expected in OneCycle lr scheduler
+        max_lr:
+            max_lr of OneCycle lr scheduler
+        weight_decay:
+            weight_decay of Adam optimizer
+        pct_start:
+            % of total_steps when lr increase
+        norm_predict:
+            use l2 norm for transformer output or not
+        num_attention_heads:
+            parameter for Longformer
+        intermediate_size:
+            parameter for Longformer
+        num_hidden_layers:
+            parameter for Longformer
+        attention_window:
+            parameter for Longformer
+        max_position_embeddings:
+            parameter for Longformer
+        replace_proba:
+            probability of masking transaction embedding
+        neg_count:
+            negative count for `QuerySoftmaxLoss`
+        log_logits:
+            if true than logits histogram will be logged. May be useful for `loss_temperature` tuning
+        """
+
         super().__init__()
         self.save_hyperparameters()
 
@@ -51,12 +107,12 @@ class MLMPretrainModule(pl.LightningModule):
         self.transf = LongformerModel(
             config=LongformerConfig(
                 hidden_size=hidden_size,
-                num_attention_heads=transformer['num_attention_heads'],
-                intermediate_size=transformer['intermediate_size'],
-                num_hidden_layers=transformer['num_hidden_layers'],
+                num_attention_heads=num_attention_heads,
+                intermediate_size=intermediate_size,
+                num_hidden_layers=num_hidden_layers,
                 vocab_size=4,
-                max_position_embeddings=self.hparams.transformer['max_position_embeddings'],
-                attention_window=transformer['attention_window'],
+                max_position_embeddings=self.hparams.max_position_embeddings,
+                attention_window=attention_window,
             ),
             add_pooling_layer=False,
         )
@@ -68,14 +124,14 @@ class MLMPretrainModule(pl.LightningModule):
 
     def configure_optimizers(self):
         optim = torch.optim.Adam(self.parameters(),
-                                 lr=self.hparams.optimizer['max_lr'],
-                                 weight_decay=self.hparams.optimizer['weight_decay'],
+                                 lr=self.hparams.max_lr,
+                                 weight_decay=self.hparams.weight_decay,
                                  )
         scheduler = torch.optim.lr_scheduler.OneCycleLR(
             optimizer=optim,
-            max_lr=self.hparams.optimizer['max_lr'],
-            total_steps=self.hparams.optimizer['total_steps'],
-            pct_start=self.hparams.optimizer['pct_start'],
+            max_lr=self.hparams.max_lr,
+            total_steps=self.hparams.total_steps,
+            pct_start=self.hparams.pct_start,
             anneal_strategy='cos',
             cycle_momentum=False,
             div_factor=25.0,
@@ -86,7 +142,7 @@ class MLMPretrainModule(pl.LightningModule):
         return [optim], [scheduler]
 
     def get_mask(self, attention_mask):
-        return torch.bernoulli(attention_mask.float() * self.hparams.mlm['replace_proba']).bool()
+        return torch.bernoulli(attention_mask.float() * self.hparams.replace_proba).bool()
 
     def mask_x(self, x, attention_mask, mask):
         shuffled_tokens = x[attention_mask.bool()]
@@ -111,7 +167,7 @@ class MLMPretrainModule(pl.LightningModule):
         device = z.payload.device
 
         if self.training:
-            start_pos = np.random.randint(0, self.hparams.transformer['max_position_embeddings'] - T - 1, 1)[0]
+            start_pos = np.random.randint(0, self.hparams.max_position_embeddings - T - 1, 1)[0]
         else:
             start_pos = 0
 
@@ -150,7 +206,7 @@ class MLMPretrainModule(pl.LightningModule):
         """
         mask_num = mask.int().sum()
         mn = 1 - torch.eye(mask_num, device=mask.device)
-        neg_ix = torch.multinomial(mn, self.hparams.mlm['neg_count'])
+        neg_ix = torch.multinomial(mn, self.hparams.neg_count)
 
         b_ix = torch.arange(mask.size(0), device=mask.device).view(-1, 1).expand_as(mask)[mask][neg_ix]
         t_ix = torch.arange(mask.size(1), device=mask.device).view(1, -1).expand_as(mask)[mask][neg_ix]
