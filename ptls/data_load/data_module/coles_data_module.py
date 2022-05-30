@@ -44,15 +44,15 @@ def coles_collate_fn(batch):
 
 
 class ColesDataModuleTrain(pl.LightningDataModule):
-    def __init__(self, conf, pl_module):
+    def __init__(self, type, setup, train, valid, pl_module):
         super().__init__()
 
-        self._type = conf.type
+        self._type = type
         assert self._type in ('map', 'iterable')
 
-        self.setup_conf = conf.setup
-        self.train_conf = conf.train
-        self.valid_conf = conf.valid
+        self.setup_conf = setup
+        self.train_conf = train
+        self.valid_conf = valid
 
         self.col_id = self.setup_conf.col_id
         self.col_time = self.setup_conf.get('col_time', 'event_time')

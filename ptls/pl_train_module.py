@@ -50,15 +50,12 @@ def main(conf: DictConfig):
     if 'seed_everything' in conf:
         pl.seed_everything(conf.seed_everything)
 
-    data_module = get_cls(conf.params.data_module_class)
-
-    pl_module = get_cls(conf.params.pl_module_class)
-    model = pl_module(conf.params)
-    dm = data_module(conf.data_module, model)
+    model = hydra.utils.instantiate(conf.pl_module)
+    dm = hydra.utils.instantiate(conf.data_module, pl_module=model)
 
     _trainer_params = conf.trainer
     _trainer_params_additional = {}
-    _use_best_epoch = conf.params.train.get('use_best_epoch', False)
+    _use_best_epoch = _trainer_params.get('use_best_epoch', False)
 
     if 'callbacks' in _trainer_params:
         logger.warning(f'Overwrite `trainer.callbacks`, was "{_trainer_params.checkpoint_callback}"')
@@ -69,8 +66,8 @@ def main(conf: DictConfig):
         logger.info(f'Create ModelCheckpoint callback with monitor="{model.metric_name}"')
         _trainer_params_callbacks.append(checkpoint_callback)
 
-    if conf.params.train.get('checkpoints_every_n_val_epochs', False):
-        every_n_val_epochs = conf.params.train.checkpoints_every_n_val_epochs
+    if _trainer_params.get('checkpoints_every_n_val_epochs', False):
+        every_n_val_epochs = _trainer_params.checkpoints_every_n_val_epochs
         checkpoint_callback = ModelCheckpoint(every_n_val_epochs=every_n_val_epochs, save_top_k=-1)
         logger.info(f'Create ModelCheckpoint callback every_n_val_epochs ="{every_n_val_epochs}"')
         _trainer_params_callbacks.append(checkpoint_callback)
@@ -82,14 +79,6 @@ def main(conf: DictConfig):
             save_dir='lightning_logs',
             name=conf.get('logger_name'),
         )
-
-    if conf.params.train.get('swa', False):
-        _trainer_params.stochastic_weight_avg=True
-        logger.info("SWA is used")
-
-    if "gradient_clip_val" in conf.params.train:
-        _trainer_params.gradient_clip_val = conf.params.train.get("gradient_clip_val")
-        logger.info("Gradient clipping is used")
 
     lr_monitor = LearningRateMonitor(logging_interval='step')
     _trainer_params_callbacks.append(lr_monitor)

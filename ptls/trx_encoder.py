@@ -170,21 +170,30 @@ class FloatPositionalEncoding(nn.Module):
 
 
 class TrxEncoder(nn.Module):
-    def __init__(self, config):
+    def __init__(self, norm_embeddings=None,
+                       embeddings_noise=None,
+                       embeddings=None,
+                       numeric_values=None,
+                       use_batch_norm_with_lens=False,
+                       clip_replace_value=None,
+                       positions=None
+                 ):
 
         super().__init__()
         self.scalers = nn.ModuleDict()
-        self.use_batch_norm_with_lens = config.get('use_batch_norm_with_lens', False)
-        self.clip_replace_value = config.get('clip_replace_value', 'max')
 
-        for name, scaler_name in config['numeric_values'].items():
+        self.use_batch_norm_with_lens = use_batch_norm_with_lens
+        self.clip_replace_value = clip_replace_value if clip_replace_value else 'max'
+        self.positions = positions if positions else {}
+
+        for name, scaler_name in numeric_values.items():
             self.scalers[name] = torch.nn.Sequential(
                 RBatchNormWithLens() if self.use_batch_norm_with_lens else RBatchNorm(),
                 scaler_by_name(scaler_name),
             )
 
         self.embeddings = nn.ModuleDict()
-        for emb_name, emb_props in config['embeddings'].items():
+        for emb_name, emb_props in embeddings.items():
             if emb_props.get('disabled', False):
                 continue
             if emb_props['out'] == 0:
@@ -193,12 +202,12 @@ class TrxEncoder(nn.Module):
                 num_embeddings=emb_props['in'],
                 embedding_dim=emb_props['out'],
                 padding_idx=0,
-                max_norm=1 if config.get('norm_embeddings', False) else None,
-                noise_scale=config['embeddings_noise'],
+                max_norm=1 if norm_embeddings else None,
+                noise_scale=embeddings_noise,
             )
 
         self.pos = nn.ModuleDict()
-        for pos_name, pos_params in config.get('positions', {}).items():
+        for pos_name, pos_params in self.positions.items():
             self.pos[pos_name] = FloatPositionalEncoding(**pos_params)
 
     def forward(self, x: PaddedBatch):
