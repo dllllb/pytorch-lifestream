@@ -27,10 +27,25 @@ class SentencePairsHead(torch.nn.Module):
 
 
 class SopNspModule(ABSModule):
-    def __init__(self, params):
-        super().__init__(params)
+    def __init__(self, validation_metric=None,
+                       seq_encoder=None,
+                       head=None,
+                       loss=None,
+                       optimizer_partial=None,
+                       lr_scheduler_partial=None):
 
-        self._head = SentencePairsHead(self.seq_encoder, self.seq_encoder.embedding_size, params.head)
+        if loss is None:
+            loss = BCELoss()
+        if validation_metric is None:
+            validation_metric = EppochAuroc()
+
+        super().__init__(validation_metric,
+                         seq_encoder,
+                         loss,
+                         optimizer_partial,
+                         lr_scheduler_partial)
+
+        self._head = SentencePairsHead(self.seq_encoder, self.seq_encoder.embedding_size, head)
 
     @property
     def metric_name(self):
@@ -39,12 +54,6 @@ class SopNspModule(ABSModule):
     @property
     def is_requires_reduced_sequence(self):
         return True
-
-    def get_loss(self):
-        return BCELoss()
-
-    def get_validation_metric(self):
-        return EpochAuroc()
 
     def shared_step(self, x, y):
         y_h = self._head(x)
