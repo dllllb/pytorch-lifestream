@@ -4,6 +4,7 @@ from ptls.data_load.iterable_processing.feature_filter import FeatureFilter
 from ptls.data_load.iterable_processing.category_size_clip import CategorySizeClip
 from ptls.data_load.iterable_processing.target_move import TargetMove
 from ptls.data_load.iterable_processing.to_torch_tensor import ToTorch
+from ptls.data_load.iterable_processing.filter_non_array import FilterNonArray
 from ptls.data_load import IterableChain
 from torch.utils.data import DataLoader
 from ptls.data_load import padded_collate
@@ -57,7 +58,6 @@ class SeqToTargetDatamodule(pl.LightningDataModule):
         self.train_batch_size = train_batch_size
         self.valid_num_workers = valid_num_workers
         self.valid_batch_size = valid_batch_size
-        self.keep_features.add('event_time')
         self.target_col = target_col
         self.post_proc = IterableChain(*self.build_iterable_processing())
 
@@ -69,8 +69,7 @@ class SeqToTargetDatamodule(pl.LightningDataModule):
         yield SeqLenFilter(min_seq_len=self.min_seq_len)
         yield ToTorch()
         yield TargetMove(self.target_col)
-        # yield FeatureFilter(keep_feature_names=self.keep_features)
-        # yield CategorySizeClip(self.category_max_size)
+        yield FeatureFilter(drop_non_iterable=True)
 
     def train_dataloader(self):
         return DataLoader(

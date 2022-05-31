@@ -12,7 +12,7 @@ class RnnEncoder(nn.Module):
     def __init__(self, rnn_input_size=None,
                        rnn_hidden_size=None,
                        rnn_type=None,
-                       rnn_bidir=None,
+                       rnn_bidir=False,
                        rnn_trainable_starter=None):
         super().__init__()
 
@@ -87,20 +87,24 @@ class RnnEncoder(nn.Module):
 
 
 class RnnSeqEncoder(AbsSeqEncoder):
-    def __init__(self, trx_encoder=None,
-                       rnn_hidden_size=None,
-                       rnn_type=None,
-                       rnn_bidir=None,
-                       rnn_trainable_starter=None):
+    def __init__(self,
+                 trx_encoder=None,
+                 rnn_input_size=None,
+                 rnn_hidden_size=None,
+                 rnn_type=None,
+                 rnn_bidir=False,
+                 rnn_trainable_starter=None,
+                 ):
 
         super().__init__()
         self.trx_encoder = trx_encoder
-        self.rnn_encoder = RnnEncoder(rnn_input_size=trx_encoder.output_size,
-                                 rnn_hidden_size=rnn_hidden_size,
-                                 rnn_type=rnn_type,
-                                 rnn_bidir=rnn_bidir,
-                                 rnn_trainable_starter=rnn_trainable_starter)
-
+        self.rnn_encoder = RnnEncoder(
+            rnn_input_size=rnn_input_size if rnn_input_size is not None else trx_encoder.output_size,
+            rnn_hidden_size=rnn_hidden_size,
+            rnn_type=rnn_type,
+            rnn_bidir=rnn_bidir,
+            rnn_trainable_starter=rnn_trainable_starter,
+        )
 
         p = self.trx_encoder
         e = self.rnn_encoder
