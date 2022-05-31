@@ -8,18 +8,8 @@ def get_config():
     return OmegaConf.create(dict(
         hidden_size=8,
         loss_temperature=1.0,
-        # norm_predict=False,
-        # num_attention_heads=1,
-        # intermediate_size=32,
-        # num_hidden_layers=1,
-        # attention_window=4,
-        # max_position_embeddings=100,
-        # replace_proba=0.1,
         neg_count=2,
-        # max_lr=0.001,
-        # weight_decay=0,
         total_steps=100,
-        # pct_start=0.2,
     ))
 
 
