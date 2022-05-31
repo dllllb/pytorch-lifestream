@@ -13,6 +13,7 @@ from ptls.train import get_optimizer, get_lr_scheduler
 from ptls.models import create_head_layers
 from ptls.trx_encoder import PaddedBatch
 from collections import defaultdict
+from ptls.seq_encoder.abs_seq_encoder import AbsSeqEncoder
 
 
 logger = logging.getLogger(__name__)
@@ -123,15 +124,67 @@ class R_squared(DistributionTargets):
 
 class SequenceToTarget(pl.LightningModule):
     def __init__(self,
-                 seq_encoder,
-                 head,
-                 loss,
-                 metric_list,
+                 seq_encoder: AbsSeqEncoder,
+                 head: torch.nn.Module,
+                 loss: torch.nn.Module,
+                 metric_list: torchmetrics.Metric,
                  optimizer_partial,
                  scheduler_partial,
                  pretrained_lr=None,
                  train_update_n_steps=None,
                  ):
+        """LightningModule for supervised task
+
+        For binary classification problem use settings like:
+            head=torch.nn.Sequential(
+                ...
+                torch.nn.Linear(in_size, 1),
+                torch.nn.Sigmoid(),
+                torch.nn.Flatten(start_dim=0),
+            ),
+            loss=BCELoss(),
+            metric_list=torchmetrics.AUROC(num_classes=2, compute_on_step=False),
+
+        For multiclass problem use settings like:
+            head=torch.nn.Sequential(
+                torch.nn.Linear(in_size, num_classes),
+                torch.nn.Softmax(dim=1),
+            ),
+            loss=torch.nn.NLLLoss(),
+            metric_list=torchmetrics.Accuracy(compute_on_step=False),
+
+        For regression problem use settings like:
+            head=torch.nn.Sequential(
+                torch.nn.Linear(in_size, 1),
+                torch.nn.Flatten(start_dim=0),
+            ),
+            loss=torch.nn.MSELoss(),
+            metric_list=torchmetrics.MeanSquaredError(compute_on_step=False),
+
+        Parameters
+        ----------
+        seq_encoder:
+            Sequence encoder. May be pretrained or with random initialisation
+        head:
+            Head layers for your problem. May be simple or multilayer.
+        loss:
+            Your loss for specific problem.
+        metric_list:
+            One or list of metrics for specific problem.
+        optimizer_partial:
+            optimizer init partial. Network parameters are missed.
+        scheduler_partial:
+            scheduler init partial. Optimizer are missed.
+        pretrained_lr:
+            lr for seq_encoder. Can be one of:
+            - 'freeze' - seq_encoder will be frozen
+            - float - correspond seq_encoder lr, other network parameters have lr from optimizer_partial
+            - None - all network parameters have lr from optimizer_partial
+        train_update_n_steps:
+            Interval of train metric update. Use it for large train dataset with heavy metrics.
+            Update train metrics on each step when `train_update_n_steps is None`
+
+        """
         super().__init__()
 
         self.save_hyperparameters(ignore=[
