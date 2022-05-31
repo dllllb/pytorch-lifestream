@@ -99,17 +99,18 @@ class CpcAccuracyPL(torchmetrics.Metric):
 
 
 class CpcModule(ABSModule):
-    def __init__(self, validation_metric_partial=None,
+    def __init__(self, validation_metric=None,
                        seq_encoder=None,
                        head=None,
                        loss=None,
                        optimizer_partial=None,
                        lr_scheduler_partial=None):
 
+        if validation_metric is None:
+            validation_metric = CpcAccuracyPL(loss)
+
         if seq_encoder is not None and not isinstance(seq_encoder, RnnSeqEncoder):
             raise NotImplementedError(f'Only rnn encoder supported in CpcModule. Found {type(seq_encoder)}')
-
-        validation_metric = validation_metric_partial(loss)
 
         super().__init__(validation_metric,
                          seq_encoder,
