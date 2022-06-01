@@ -8,7 +8,9 @@ from ptls.metric_learn.metric import BatchRecallTopPL
 
 
 class EmbModule(ABSModule):
-    """pl.LightningModule for training CoLES embeddings
+    """Deprecated. The same as `ptls.lightning_modules.coles_module.CoLESModule`
+
+    pl.LightningModule for training CoLES embeddings
 
     Parameters
     ----------

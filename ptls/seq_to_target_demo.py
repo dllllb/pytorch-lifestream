@@ -3,7 +3,9 @@ from ptls.seq_to_target import SequenceToTarget
 
 
 class SeqToTargetDemo(SequenceToTarget):
-    """pl.LightningModule for training CoLES embeddings
+    """Deprecated. Use original `ptls.seq_to_target.SequenceToTarget`
+
+    pl.LightningModule for training CoLES embeddings
     Parameters
     ----------
     seq_encoder : torch.nn.Module

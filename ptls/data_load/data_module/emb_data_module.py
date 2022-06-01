@@ -135,7 +135,11 @@ def inference_data_loader(
 
 
 class EmbeddingTrainDataModule(pl.LightningDataModule):
-    r"""pytorch-lightning data module for unsupervised CoLES training
+    r"""Deprecated. Use:
+        - `ptls.data_load.data_module.emb_data_module.train_data_loader`
+        - `ptls.data_load.data_module.emb_data_module.inference_data_loader`
+
+    pytorch-lightning data module for unsupervised CoLES training
 
     Parameters
     ----------
