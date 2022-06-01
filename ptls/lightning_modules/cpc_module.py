@@ -106,6 +106,9 @@ class CpcModule(ABSModule):
                        optimizer_partial=None,
                        lr_scheduler_partial=None):
 
+        if loss is None:
+            loss = CPC_Loss(n_negatives=40, n_forward_steps=6)
+
         if validation_metric is None:
             validation_metric = CpcAccuracyPL(loss)
 
