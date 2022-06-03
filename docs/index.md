@@ -34,10 +34,10 @@ Library modules:
 2. **Choose framework for encoder train**.
    - There are both supervised of unsupervised in `ptls.lightning_modules`. 
    - Keep in mind that each framework requires his own batch format.
-   Tools for batch collate are near selected framework.
+   Tools for batch collate can be found in the selected framework package.
 3. **Build encoder**.
    - All parts are available in `ptls.trx_encoder`, `ptls.seq_encoder`, `ptls.heads`.
-   - You can use early pretrained layers.
+   - You can also use pretrained layers.
 4. **Train your encoder** with selected framework.
    - Some frameworks require certain options to be selected. It can be loss, metrics or something else. 
    `ptls.contrastive_learning` contains all of them. 
