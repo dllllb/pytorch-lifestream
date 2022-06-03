@@ -6,16 +6,23 @@ from ptls.trx_encoder import PaddedBatch
 
 
 class StatisticsEncoder(torch.nn.Module):
-    def __init__(self, config):
+    def __init__(self,
+                 pos=True,
+                 neg=True,
+                 top_negative_trx=[],
+                 top_positive_trx=[],
+                 category_names=None,
+                 numeric_values=None,
+                 category_max_size=None):
         super().__init__()
-        self.collect_pos, self.collect_neg = config.get('pos', True), config.get('neg', True)
+        self.collect_pos, self.collect_neg = pos, neg
         self.dummy = torch.nn.Linear(1, 1)
-        self.negative_items = config.get('top_negative_trx', [])
-        self.positive_items = config.get('top_positive_trx', [])
+        self.negative_items = top_negative_trx
+        self.positive_items = top_positive_trx
 
-        self.cat_names = list(config.get('category_names'))
-        self.num_values = list(config.get('numeric_values'))
-        self.cat_max_size = config.get('category_max_size')
+        self.cat_names = list(category_names)
+        self.num_values = list(numeric_values)
+        self.cat_max_size = category_max_size
 
     def forward(self, x: PaddedBatch):
         eps = 1e-7

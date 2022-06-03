@@ -8,15 +8,24 @@ from ptls.trx_encoder import PaddedBatch
 
 
 class AggFeatureModel(torch.nn.Module):
-    def __init__(self, config):
+    def __init__(self,
+                 embeddings=None,
+                 numeric_values=None,
+                 was_logified=True,
+                 log_scale_factor=1,
+                 num_aggregators={'count': True, 'sum': True, 'std': True},
+                 cat_aggregators={},
+                 distribution_targets_task=False,
+                 logify_sum_mean_seqlens=False):
+
         super().__init__()
-        
-        self.numeric_values = OrderedDict(config['numeric_values'].items())
-        self.embeddings = OrderedDict(config['embeddings'].items())
-        self.was_logified = config['was_logified']
-        self.log_scale_factor = config['log_scale_factor']
-        self.distribution_targets_task = config.get('distribution_targets_task', False)
-        self.logify_sum_mean_seqlens = config.get('logify_sum_mean_seqlens', False)
+
+        self.numeric_values = OrderedDict(numeric_values.items())
+        self.embeddings = OrderedDict(embeddings.items())
+        self.was_logified = was_logified
+        self.log_scale_factor = log_scale_factor
+        self.distribution_targets_task = distribution_targets_task
+        self.logify_sum_mean_seqlens = logify_sum_mean_seqlens
 
         self.eps = 1e-9
 
@@ -27,8 +36,8 @@ class AggFeatureModel(torch.nn.Module):
             self.ohe_buffer[col_embed] = ohe
             self.register_buffer(f'ohe_{col_embed}', ohe)
 
-        self.num_aggregators = config.get('num_aggregators', {'count': True, 'sum': True, 'std': True})
-        self.cat_aggregators = config.get('cat_aggregators', {})
+        self.num_aggregators = num_aggregators
+        self.cat_aggregators = cat_aggregators
 
     def forward(self, x: PaddedBatch):
         """
@@ -77,7 +86,7 @@ class AggFeatureModel(torch.nn.Module):
             a = torch.clamp(val_orig.pow(2).sum(dim=1) - val_orig.sum(dim=1).pow(2).div(seq_lens + self.eps), min=0.0)
             mean_ = val_orig.sum(dim=1).div(seq_lens + self.eps).unsqueeze(1)  # mean
             std_ = a.div(torch.clamp(seq_lens - 1, min=0.0) + self.eps).pow(0.5).unsqueeze(1)  # std
-   
+
             if self.distribution_targets_task:
                 sum_pos = torch.clamp(val_orig, min=0).sum(dim=1).unsqueeze(1)
                 processed.append(torch.log(sum_pos + 1))  # log sum positive
@@ -144,7 +153,7 @@ class AggFeatureModel(torch.nn.Module):
         for i, t in enumerate(processed):
             if torch.isnan(t).any():
                 raise Exception(f'nan in {i}')
-    
+
         out = torch.cat(processed + cat_processed, 1)
 
         return out
@@ -180,20 +189,18 @@ class AggFeatureModel(torch.nn.Module):
 
 
 class AggFeatureSeqEncoder(AbsSeqEncoder):
-    def __init__(self, params, is_reduce_sequence):
-        super().__init__(params, is_reduce_sequence)
+    def __init__(self,
+                 embeddings=None,
+                 numeric_values=None,
+                 was_logified=True,
+                 log_scale_factor=1):
 
-        self.model = AggFeatureModel(params.trx_encoder)
+        super().__init__()
 
-    @property
-    def is_reduce_sequence(self):
-        return self._is_reduce_sequence
-
-    @is_reduce_sequence.setter
-    def is_reduce_sequence(self, value):
-        if not value:
-            raise NotImplementedError('Only sequence embedding can be returned')
-        self._is_reduce_sequence = value
+        self.model = AggFeatureModel(embeddings,
+                                     numeric_values,
+                                     was_logified,
+                                     log_scale_factor)
 
     @property
     def category_max_size(self):
