@@ -27,7 +27,7 @@ class SeqToTargetDatamodule(pl.LightningDataModule):
      train_batch_size: int. Default: 256.
         The number of samples (before splitting to subsequences) in each batch during training.
      valid_num_workers: int. Default: 0.
-        The number of workers for validation dataloader. 0 = single-process loader       
+        The number of workers for validation dataloader. 0 = single-process loader
      valid_batch_size: int. Default: 256.
         The number of samples (before splitting to subsequences) in each batch during validation.
      target_col: str. Default: 'target'.
@@ -86,11 +86,10 @@ class SeqToTargetDatamodule(pl.LightningDataModule):
         )
 
     def get_test_dataloader(self, data, num_workers=0, batch_size=128):
-        return DataLoader(
-            dataset=list(self.post_proc(iter(data))),
-            collate_fn=padded_collate,
-            num_workers=num_workers,
-            batch_size=batch_size,
-        )
-
+         return DataLoader(
+             dataset=list(self.post_proc(iter(data))),
+             collate_fn=padded_collate,
+             num_workers=num_workers,
+             batch_size=batch_size,
+         )
 
