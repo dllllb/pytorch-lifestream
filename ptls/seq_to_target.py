@@ -7,7 +7,7 @@ import numpy as np
 from torchmetrics.functional.classification import auroc
 import torchmetrics
 
-from ptls.loss import get_loss, cross_entropy, kl, mape_metric, mse_loss, r_squared
+from ptls.loss import cross_entropy, kl, mape_metric, mse_loss, r_squared
 from ptls.seq_encoder import create_encoder
 from ptls.train import get_optimizer, get_lr_scheduler
 from ptls.models import create_head_layers
