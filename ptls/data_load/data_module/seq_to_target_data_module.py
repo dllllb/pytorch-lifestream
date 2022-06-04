@@ -1,7 +1,6 @@
 import pytorch_lightning as pl
 from ptls.data_load.iterable_processing.seq_len_filter import SeqLenFilter
 from ptls.data_load.iterable_processing.feature_filter import FeatureFilter
-from ptls.data_load.iterable_processing.category_size_clip import CategorySizeClip
 from ptls.data_load.iterable_processing.target_move import TargetMove
 from ptls.data_load.iterable_processing.to_torch_tensor import ToTorch
 from ptls.data_load import IterableChain
@@ -18,7 +17,7 @@ class SeqToTargetDatamodule(pl.LightningDataModule):
      dataset: List[Dict]
         dataset
      pl_module: pl.LightningModule
-        Pytorch-lightning module used for training seq_encoder.
+        Don't required
      min_seq_len: int. Default: 0.
         The minimal length of sequences used for training. The shorter sequences would be skipped.
      valid_size: float. Default: 0.05.
@@ -28,7 +27,7 @@ class SeqToTargetDatamodule(pl.LightningDataModule):
      train_batch_size: int. Default: 256.
         The number of samples (before splitting to subsequences) in each batch during training.
      valid_num_workers: int. Default: 0.
-        The number of workers for validation dataloader. 0 = single-process loader       
+        The number of workers for validation dataloader. 0 = single-process loader
      valid_batch_size: int. Default: 256.
         The number of samples (before splitting to subsequences) in each batch during validation.
      target_col: str. Default: 'target'.
@@ -38,7 +37,7 @@ class SeqToTargetDatamodule(pl.LightningDataModule):
      """
     def __init__(self,
                  dataset: List[dict],
-                 pl_module: pl.LightningModule,
+                 pl_module: pl.LightningModule = None,
                  min_seq_len: int = 0,
                  valid_size: float = 0.05,
                  train_num_workers: int = 0,
@@ -57,9 +56,6 @@ class SeqToTargetDatamodule(pl.LightningDataModule):
         self.train_batch_size = train_batch_size
         self.valid_num_workers = valid_num_workers
         self.valid_batch_size = valid_batch_size
-        self.keep_features = pl_module.seq_encoder.category_names
-        self.keep_features.add('event_time')
-        self.category_max_size = pl_module.seq_encoder.category_max_size
         self.target_col = target_col
         self.post_proc = IterableChain(*self.build_iterable_processing())
 
@@ -71,8 +67,7 @@ class SeqToTargetDatamodule(pl.LightningDataModule):
         yield SeqLenFilter(min_seq_len=self.min_seq_len)
         yield ToTorch()
         yield TargetMove(self.target_col)
-        yield FeatureFilter(keep_feature_names=self.keep_features)
-        yield CategorySizeClip(self.category_max_size)
+        yield FeatureFilter(drop_non_iterable=True)
 
     def train_dataloader(self):
         return DataLoader(
@@ -89,4 +84,12 @@ class SeqToTargetDatamodule(pl.LightningDataModule):
             num_workers=self.valid_num_workers,
             batch_size=self.valid_batch_size
         )
+
+    def get_test_dataloader(self, data, num_workers=0, batch_size=128):
+         return DataLoader(
+             dataset=list(self.post_proc(iter(data))),
+             collate_fn=padded_collate,
+             num_workers=num_workers,
+             batch_size=batch_size,
+         )
 
