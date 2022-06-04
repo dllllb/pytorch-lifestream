@@ -18,16 +18,16 @@ logger = logging.getLogger(__name__)
 
 
 class EmbValidDataModule(pl.LightningDataModule):
-    def __init__(self, conf, pl_module):
+    def __init__(self, type, setup, train, valid, pl_module, test=None):
         super().__init__()
 
-        self._type = conf.type
+        self._type = type
         assert self._type in ('map', 'iterable')
 
-        self.setup_conf = conf.setup
-        self.train_conf = conf.train
-        self.valid_conf = conf.valid
-        self.test_conf = conf.get('test', self.valid_conf)
+        self.setup_conf = setup
+        self.train_conf = train
+        self.valid_conf = valid
+        self.test_conf = test if test else self.valid_conf
 
         self.col_id = self.setup_conf.col_id
         self.col_id_dtype = {
@@ -47,7 +47,6 @@ class EmbValidDataModule(pl.LightningDataModule):
         self._test_targets = None
 
         self._fold_info = None
-        self.conf = conf
 
     def prepare_data(self):
         if 'dataset_files' in self.setup_conf:
