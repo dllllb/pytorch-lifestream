@@ -24,12 +24,12 @@ Library modules:
 ## How to guide
 
 1. **Prepare your data**.
-   - Use pyspark in local or cluster mode for big dataset and pandas for small.
+   - Use `Pyspark` in local or cluster mode for big dataset and `Pandas` for small.
    - Split data into required parts (train, valid, test, ...).
-   - Transform features to compatible format using pyspark or pandas functions. 
+   - Transform features to compatible format using `Pyspark` or `Pandas` functions. 
    You can use also `ptls.data.preprocessing` for common data transformation patterns.
-   - Split sequences to ptls-data format with `ptls.data.split_tools`. Save prepared data into parquet format or 
-   keep it in memory (pickle also works).
+   - Split sequences to ptls-data format with `ptls.data.split_tools`. Save prepared data into `Parquet` format or 
+   keep it in memory (`Pickle` also works).
    - Use one of available `ptls.data.datasets` which provide data access.
 2. **Choose framework for encoder train**.
    - There are both supervised of unsupervised in `ptls.lightning_modules`. 
