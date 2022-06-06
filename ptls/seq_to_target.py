@@ -19,6 +19,8 @@ logger = logging.getLogger(__name__)
 
 
 class EpochAuroc(torchmetrics.Metric):
+    """Deprecated. Use `torchmetrics.AUROC`
+    """
     def __init__(self):
         super().__init__(compute_on_step=False)
 

@@ -1,7 +1,6 @@
 from collections import OrderedDict
 
 import torch
-import numpy as np
 
 from ptls.seq_encoder.abs_seq_encoder import AbsSeqEncoder
 from ptls.trx_encoder import PaddedBatch

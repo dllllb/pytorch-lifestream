@@ -5,7 +5,7 @@ from torch import nn
 
 from ptls.seq_encoder.abs_seq_encoder import AbsSeqEncoder
 from ptls.seq_encoder.utils import PerTransTransf, FirstStepEncoder
-from ptls.trx_encoder import PaddedBatch, TrxEncoder
+from ptls.trx_encoder import PaddedBatch
 
 logger = logging.getLogger(__name__)
 

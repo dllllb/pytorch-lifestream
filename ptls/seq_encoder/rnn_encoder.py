@@ -1,11 +1,10 @@
 import numpy as np
 import torch
 from torch import nn as nn
-from hydra.utils import instantiate
 
 from ptls.seq_encoder.abs_seq_encoder import AbsSeqEncoder
 from ptls.seq_encoder.utils import LastStepEncoder
-from ptls.trx_encoder import PaddedBatch, TrxEncoder
+from ptls.trx_encoder import PaddedBatch
 
 
 class RnnEncoder(nn.Module):
