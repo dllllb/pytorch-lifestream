@@ -52,7 +52,6 @@ def create_inference_dataloader(conf, pl_module):
 @hydra.main()
 def main(conf: DictConfig):
     OmegaConf.set_struct(conf, False)
-    orig_cwd = hydra.utils.get_original_cwd()
 
     if 'torch_multiprocessing_sharing_strategy' in conf.inference_dataloader:
         torch.multiprocessing.set_sharing_strategy(
@@ -62,17 +61,16 @@ def main(conf: DictConfig):
     if 'seed_everything' in conf:
         pl.seed_everything(conf.seed_everything)
 
-    pl_module = get_cls(conf.params.pl_module_class)
+    model = hydra.utils.instantiate(conf.pl_module)
 
-    if conf.get('random_model', False):
-        model = pl_module(conf.params)
-    else:
-        model = pl_module.load_from_checkpoint(conf.model_path)
+    if not conf.get('random_model', False):
+        model = model.load_from_checkpoint(conf.model_path)
+
     model.seq_encoder.is_reduce_sequence = True
 
     dl = create_inference_dataloader(conf.inference_dataloader, model)
 
-    pred, ids = score_model(model, dl, conf.params)
+    pred, ids = score_model(model, dl, conf.device)
 
     df_scores_cols = [f'v{i:003d}' for i in range(pred.shape[1])]
     col_id = conf.inference_dataloader.col_id

@@ -165,7 +165,7 @@ def get_lr_scheduler(optimizer, params):
     return scheduler
 
 
-def score_model(model, valid_loader, params=None):
+def score_model(model, valid_loader, device=None):
     """
       - extended valid_loader. input format: x, * in batch:
       - output: pred(x), * in score_model
@@ -173,13 +173,11 @@ def score_model(model, valid_loader, params=None):
     Returns:
 
     """
-    if params is None:
-        params = {}
 
     if torch.cuda.is_available():
-        device = torch.device(params.get('device', 'cuda'))
+        device = torch.device(device if device else 'cuda')
     else:
-        device = torch.device(params.get('device', 'cpu'))
+        device = torch.device(device if device else 'cpu')
     model.to(device)
     model.eval()
 
