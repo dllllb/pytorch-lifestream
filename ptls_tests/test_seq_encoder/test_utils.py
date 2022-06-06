@@ -15,7 +15,7 @@ class TrxEncoderTest(torch.nn.Module):
 
 def tst_rnn_model(config):
     p = TrxEncoderTest()
-    e = RnnEncoder(8, config['rnn'])
+    e = RnnEncoder(8, **config['rnn'])
     h = scoring_head(16, config['head'])
     m = torch.nn.Sequential(p, e, h)
     return m
@@ -406,7 +406,7 @@ def test_rnn_iterative_no_starter():
     }
     conf = OmegaConf.create(conf)
 
-    m = RnnEncoder(INPUT_SIZE, conf)
+    m = RnnEncoder(INPUT_SIZE, **conf)
     m.eval()
     print(m)
 
@@ -459,7 +459,7 @@ def test_rnn_iterative_with_starter():
     }
     conf = OmegaConf.create(conf)
 
-    m = RnnEncoder(INPUT_SIZE, conf)
+    m = RnnEncoder(INPUT_SIZE, **conf)
     m.eval()
     print(m)
 

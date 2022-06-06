@@ -33,7 +33,7 @@ def test_train_inference():
     seq_encoder = SequenceEncoder(
         category_features=preprocessor.get_category_sizes(),
         numeric_features=[],
-        trx_embedding_noize=0.003
+        trx_embedding_noise=0.003
     )
 
     head = Head(input_size=seq_encoder.embedding_size, use_norm_encoder=True)

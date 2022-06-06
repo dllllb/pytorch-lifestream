@@ -56,7 +56,7 @@ def test_simple():
         'numeric_values': {'amount': 'log'}
     }
 
-    te = TrxEncoder(params)
+    te = TrxEncoder(**params)
 
     e = te(x)
 
@@ -74,7 +74,7 @@ def test_pickle():
         'numeric_values': {'amount': 'log'}
     }
 
-    te = TrxEncoder(params)
+    te = TrxEncoder(**params)
     out = pickle.dumps(te)
     assert len(out) > 0
 

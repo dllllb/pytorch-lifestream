@@ -97,10 +97,7 @@ def test_complex_loss():
     y_ml = torch.arange(C).view(-1, 1).expand(C, B).reshape(-1, 1)
 
     sampling_strategy = AllPositivePairSelector()
-    ml_loss_fn = MarginLoss(sampling_strategy)
-
-    def ml_loss(*args, **kwargs):
-        return ml_loss_fn(*args, **kwargs)[0]
+    ml_loss = MarginLoss(sampling_strategy)
 
     x_aug = torch.randn(B * C, C)
     x_aug = x_aug.div(x_aug.sum(dim=1, keepdim=True))

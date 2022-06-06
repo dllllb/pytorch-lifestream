@@ -5,7 +5,7 @@ from torch import nn
 
 from ptls.seq_encoder.abs_seq_encoder import AbsSeqEncoder
 from ptls.seq_encoder.utils import PerTransTransf, FirstStepEncoder
-from ptls.trx_encoder import PaddedBatch, TrxEncoder
+from ptls.trx_encoder import PaddedBatch
 
 logger = logging.getLogger(__name__)
 
@@ -114,16 +114,17 @@ class TransfSeqEncoder(AbsSeqEncoder):
     def __init__(self,
                  trx_encoder=None,
                  input_size=256,
- 	         train_starter=True,
- 	         shared_layers=False,
- 	         n_heads=8,
- 	         dim_hidden=256,
- 	         dropout=0.1,
- 	         n_layers=6,
- 	         use_positional_encoding=False,
- 	         max_seq_len=1200,
- 	         use_after_mask=False,
- 	         use_src_key_padding_mask=False):
+                 train_starter=True,
+                 shared_layers=False,
+                 n_heads=8,
+                 dim_hidden=256,
+                 dropout=0.1,
+                 n_layers=6,
+                 use_positional_encoding=False,
+                 max_seq_len=1200,
+                 use_after_mask=False,
+                 use_src_key_padding_mask=False,
+                 ):
 
         super().__init__()
 
@@ -136,6 +137,7 @@ class TransfSeqEncoder(AbsSeqEncoder):
         if enc_input_size != trx_size:
             inp_reshape = PerTransTransf(trx_size, enc_input_size)
             p = torch.nn.Sequential(p, inp_reshape)
+        self.enc_input_size = enc_input_size
 
         e = TransformerSeqEncoder(enc_input_size,
                                   train_starter,
@@ -164,7 +166,7 @@ class TransfSeqEncoder(AbsSeqEncoder):
 
     @property
     def embedding_size(self):
-        return self.params.transf.input_size
+        return self.enc_input_size
 
     def forward(self, x):
         x = self.model(x)

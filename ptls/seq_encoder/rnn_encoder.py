@@ -1,11 +1,10 @@
 import numpy as np
 import torch
 from torch import nn as nn
-from hydra.utils import instantiate
 
 from ptls.seq_encoder.abs_seq_encoder import AbsSeqEncoder
 from ptls.seq_encoder.utils import LastStepEncoder
-from ptls.trx_encoder import PaddedBatch, TrxEncoder
+from ptls.trx_encoder import PaddedBatch
 
 
 class RnnEncoder(nn.Module):
@@ -157,11 +156,26 @@ class RnnSeqEncoderDistributionTarget(RnnSeqEncoder):
     def transform_inv(self, x):
         return np.sign(x) * (np.exp(np.abs(x)) - 1)
 
-    def __init__(self, params, is_reduce_sequence):
-        super().__init__(params, is_reduce_sequence)
-        head_params = dict(params.head_layers).get('CombinedTargetHeadFromRnn', None)
+    def __init__(self,
+                 trx_encoder,
+                 hidden_size,
+                 type,
+                 bidir,
+                 trainable_starter,
+                 head_layers,
+                 input_size=None,
+                 ):
+        super().__init__(
+            trx_encoder,
+            input_size,
+            hidden_size,
+            type,
+            bidir,
+            trainable_starter,
+        )
+        head_params = dict(head_layers).get('CombinedTargetHeadFromRnn', None)
         self.pass_samples = head_params.get('pass_samples', True)
-        self.numeric_name = list(params.trx_encoder.numeric_values.keys())[0]
+        self.numeric_name = list(trx_encoder.scalers.keys())[0]
         self.collect_pos, self.collect_neg = (head_params.get('pos', True), head_params.get('neg', True)) if head_params else (0, 0)
         self.eps = 1e-7
 

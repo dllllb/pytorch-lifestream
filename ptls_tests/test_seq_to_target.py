@@ -127,26 +127,28 @@ def test_train_loop_rnn_regression():
 
 
 def test_train_loop_transf():
-    model = SequenceToTarget(
-        seq_encoder=TransfSeqEncoder(
-            trx_encoder=TrxEncoder(
-                norm_embeddings=False,
-                embeddings_noise=0.1,
-                embeddings={
-                    'mcc_code': {'in': 21, 'out': 3},
-                    'trans_type': {'in': 11, 'out': 2},
-                },
-                numeric_values={'amount': 'log'},
-            ),
-            rnn_hidden_size=16,
-            rnn_type='gru',
+    seq_encoder = TransfSeqEncoder(
+        trx_encoder=TrxEncoder(
+            norm_embeddings=False,
+            embeddings_noise=0.1,
+            embeddings={
+                'mcc_code': {'in': 21, 'out': 3},
+                'trans_type': {'in': 11, 'out': 2},
+            },
+            numeric_values={'amount': 'log'},
         ),
+        input_size=20,
+        n_heads=1,
+        n_layers=1,
+    )
+    model = SequenceToTarget(
+        seq_encoder=seq_encoder,
         head=torch.nn.Sequential(
-            torch.nn.Linear(16, 1),
+            torch.nn.Linear(seq_encoder.embedding_size, 1),
             torch.nn.Sigmoid(),
             torch.nn.Flatten(start_dim=0),
         ),
-        loss=torch.nn.BCELoss(),
+        loss=BCELoss(),
         metric_list=torchmetrics.AUROC(num_classes=2, compute_on_step=False),
         optimizer_partial=partial(torch.optim.Adam, lr=0.004),
         lr_scheduler_partial=partial(torch.optim.lr_scheduler.StepLR, step_size=10, gamma=0.8),

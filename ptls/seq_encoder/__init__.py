@@ -11,7 +11,7 @@ from ptls.trx_encoder import TrxEncoder
 
 
 class SequenceEncoder(torch.nn.Module):
-    r"""Sequence encoder
+    r"""Deprecated. Use `ptls.seq_encoder.abs_seq_encoder.AbsSeqEncoder` implementations
 
     Parameters
     ----------
@@ -59,7 +59,7 @@ class SequenceEncoder(torch.nn.Module):
                  category_features: Dict[str, int],
                  numeric_features: List[str],
                  trx_embedding_size: int = 16,
-                 trx_embedding_noize: float = 0.0,
+                 trx_embedding_noise: float = 0.0,
                  trx_norm_embeddings: bool = False,
                  trx_use_batch_norm_with_lens: bool = False,
                  trx_clip_replace_value: bool = False,
@@ -96,7 +96,7 @@ class SequenceEncoder(torch.nn.Module):
 
         if encoder_type == 'rnn':
             model = RnnSeqEncoder(trx_encoder,
-                                  trx_embedding_size,
+                                  None,
                                   rnn_hidden_size,
                                   rnn_type,
                                   rnn_bidirectional,
@@ -125,7 +125,7 @@ class SequenceEncoder(torch.nn.Module):
             raise AttributeError(f'Unknown encoder_type: {encoder_type}')
 
         self.model = model
-        self.params = params
+        # self.params = params
 
     @property
     def is_reduce_sequence(self):

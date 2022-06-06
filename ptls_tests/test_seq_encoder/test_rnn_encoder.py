@@ -19,7 +19,7 @@ def test_shape():
         'bidir': False,
         'trainable_starter': 'static',
     }
-    model = RnnEncoder(5, params)
+    model = RnnEncoder(5, **params)
 
     x = get_data()
 
@@ -34,7 +34,7 @@ def test_last_step():
         'bidir': False,
         'trainable_starter': 'static',
     }
-    model = torch.nn.Sequential(RnnEncoder(5, params), LastStepEncoder())
+    model = torch.nn.Sequential(RnnEncoder(5, **params), LastStepEncoder())
 
     x = get_data()
 

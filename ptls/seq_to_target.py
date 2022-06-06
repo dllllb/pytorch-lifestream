@@ -8,7 +8,6 @@ from torchmetrics.functional.classification import auroc
 import torchmetrics
 
 from ptls.loss import cross_entropy, kl, mape_metric, mse_loss, r_squared
-from ptls.seq_encoder import create_encoder
 from ptls.train import get_optimizer, get_lr_scheduler
 from ptls.models import create_head_layers
 from ptls.trx_encoder import PaddedBatch
@@ -20,6 +19,8 @@ logger = logging.getLogger(__name__)
 
 
 class EpochAuroc(torchmetrics.Metric):
+    """Deprecated. Use `torchmetrics.AUROC`
+    """
     def __init__(self):
         super().__init__(compute_on_step=False)
 

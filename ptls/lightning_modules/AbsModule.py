@@ -1,8 +1,5 @@
 import torch
 import pytorch_lightning as pl
-from hydra.utils import instantiate
-from ptls.seq_encoder import create_encoder
-from ptls.train import get_optimizer, get_lr_scheduler, ReduceLROnPlateauWrapper
 from ptls.trx_encoder import PaddedBatch
 
 

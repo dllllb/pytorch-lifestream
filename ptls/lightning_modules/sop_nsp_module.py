@@ -37,7 +37,7 @@ class SopNspModule(ABSModule):
         if loss is None:
             loss = BCELoss()
         if validation_metric is None:
-            validation_metric = EppochAuroc()
+            validation_metric = EpochAuroc()
 
         super().__init__(validation_metric,
                          seq_encoder,

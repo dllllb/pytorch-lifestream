@@ -33,6 +33,8 @@ def test_train_loop():
     seq_encoder = SequenceEncoder(
         category_features={'mcc_code': 21, 'trans_type': 11},
         numeric_features=["amount"],
+        encoder_type='rnn',
+        rnn_hidden_size=16,
     )
     head = Head(
         input_size=seq_encoder.embedding_size,

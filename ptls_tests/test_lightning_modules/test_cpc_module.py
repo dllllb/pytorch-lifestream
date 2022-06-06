@@ -6,11 +6,13 @@ from ptls.data_load import TrxDataset
 from ptls.data_load import create_train_loader, create_validation_loader
 from ptls.lightning_modules.cpc_module import CpcModule
 from ..test_trx_encoder import gen_trx_data
+from ptls.seq_encoder.rnn_encoder import RnnSeqEncoder
+from ptls.trx_encoder import TrxEncoder
+from functools import partial
 
 
 def tst_params():
     params = {
-        'encoder_type': 'rnn',
         'rnn': {
             'trainable_starter': 'empty',
             'hidden_size': 16,
@@ -25,10 +27,6 @@ def tst_params():
                 'trans_type': {'in': 11, 'out': 2},
             },
             'numeric_values': {'amount': 'log'}
-        },
-        "cpc": {
-            "n_forward_steps": 3,
-            "n_negatives": 4,
         },
         "train": {
             "weight_decay": 0,
@@ -45,10 +43,6 @@ def tst_params():
             "max_seq_len": 30,
             "recall_top_k": 3
         },
-        "lr_scheduler": {
-            "step_size": 10,
-            "step_gamma": 0.8
-        }
     }
 
     params = ConfigFactory.from_dict(params)
@@ -58,7 +52,14 @@ def tst_params():
 def test_rnn_model():
     config = tst_params()
 
-    pl_module = CpcModule(config)
+    pl_module = CpcModule(
+        seq_encoder=RnnSeqEncoder(
+            trx_encoder=TrxEncoder(**config['trx_encoder']),
+            **config['rnn'],
+        ),
+        optimizer_partial=partial(torch.optim.Adam),
+        lr_scheduler_partial=partial(torch.optim.lr_scheduler.StepLR, step_size=1, gamma=1.0),
+    )
     train_data = gen_trx_data((torch.rand(1000)*60+1).long())
     train_ds = TrxDataset(train_data)
     test_data = gen_trx_data((torch.rand(100)*60+1).long())
@@ -69,7 +70,7 @@ def test_rnn_model():
 
     trainer = pl.Trainer(
         gpus=None,
-        max_steps=100,
+        max_steps=50,
         checkpoint_callback=False,
     )
     trainer.fit(pl_module, train_loader, valid_loader)
