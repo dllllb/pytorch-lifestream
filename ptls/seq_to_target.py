@@ -125,15 +125,15 @@ class R_squared(DistributionTargets):
 class SequenceToTarget(pl.LightningModule):
     def __init__(self,
                  seq_encoder: AbsSeqEncoder,
-                 head: torch.nn.Module,
-                 loss: torch.nn.Module,
-                 metric_list: torchmetrics.Metric,
-                 optimizer_partial,
-                 scheduler_partial,
+                 head: torch.nn.Module=None,
+                 loss: torch.nn.Module=None,
+                 metric_list: torchmetrics.Metric=None,
+                 optimizer_partial=None,
+                 lr_scheduler_partial=None,
                  pretrained_lr=None,
                  train_update_n_steps=None,
                  ):
-        """LightningModule for supervised task
+        """LightningModule for supervised task or for inference
 
         For binary classification problem use settings like:
             head=torch.nn.Sequential(
@@ -148,7 +148,7 @@ class SequenceToTarget(pl.LightningModule):
         For multiclass problem use settings like:
             head=torch.nn.Sequential(
                 torch.nn.Linear(in_size, num_classes),
-                torch.nn.Softmax(dim=1),
+                torch.nn.LogSoftmax(dim=1),
             ),
             loss=torch.nn.NLLLoss(),
             metric_list=torchmetrics.Accuracy(compute_on_step=False),
@@ -160,6 +160,11 @@ class SequenceToTarget(pl.LightningModule):
             ),
             loss=torch.nn.MSELoss(),
             metric_list=torchmetrics.MeanSquaredError(compute_on_step=False),
+
+        For `seq_encoder` inference:
+            Just set `seq_encoder` and `head` (if needed), keep other parameters as None.
+            Next use `torch.vstack(trainer.predict(sequence_to_target, dl_inference))`
+            This call `seq_encoder.forward` which provide embeddings.
 
         Parameters
         ----------
@@ -173,7 +178,7 @@ class SequenceToTarget(pl.LightningModule):
             One or list of metrics for specific problem.
         optimizer_partial:
             optimizer init partial. Network parameters are missed.
-        scheduler_partial:
+        lr_scheduler_partial:
             scheduler init partial. Optimizer are missed.
         pretrained_lr:
             lr for seq_encoder. Can be one of:
@@ -188,7 +193,7 @@ class SequenceToTarget(pl.LightningModule):
         super().__init__()
 
         self.save_hyperparameters(ignore=[
-            'seq_encoder', 'head', 'loss', 'metric_list', 'optimizer_partial', 'scheduler_partial'])
+            'seq_encoder', 'head', 'loss', 'metric_list', 'optimizer_partial', 'lr_scheduler_partial'])
 
         self.seq_encoder = seq_encoder
         self.head = head
@@ -203,11 +208,12 @@ class SequenceToTarget(pl.LightningModule):
         self.test_metrics = torch.nn.ModuleDict([(name, deepcopy(mc)) for name, mc in metric_list])
 
         self.optimizer_partial = optimizer_partial
-        self.scheduler_partial = scheduler_partial
+        self.lr_scheduler_partial = lr_scheduler_partial
 
     def forward(self, x):
         x = self.seq_encoder(x)
-        x = self.head(x)
+        if self.head is not None:
+            x = self.head(x)
         return x
 
     def training_step(self, batch, _):
@@ -265,5 +271,5 @@ class SequenceToTarget(pl.LightningModule):
             parameters = self.parameters()
 
         optimizer = self.optimizer_partial(parameters)
-        scheduler = self.scheduler_partial(optimizer)
+        scheduler = self.lr_scheduler_partial(optimizer)
         return [optimizer], [scheduler]

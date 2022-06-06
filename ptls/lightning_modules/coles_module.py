@@ -1,12 +1,14 @@
-from hydra.utils import instantiate
 from ptls.lightning_modules.AbsModule import ABSModule
 from ptls.metric_learn.losses import ContrastiveLoss
+from ptls.metric_learn.sampling_strategies import HardNegativePairSelector
 from ptls.metric_learn.metric import BatchRecallTopPL
+from ptls.models import Head
+from ptls.seq_encoder.abs_seq_encoder import AbsSeqEncoder
 
 
 class CoLESModule(ABSModule):
     def __init__(self, validation_metric=None,
-                       seq_encoder=None,
+                       seq_encoder: AbsSeqEncoder=None,
                        head=None,
                        loss=None,
                        optimizer_partial=None,
@@ -19,6 +21,9 @@ class CoLESModule(ABSModule):
 
         if validation_metric is None:
             validation_metric = BatchRecallTopPL(K=4, metric='cosine')
+
+        if head is None:
+            head = Head(input_size=seq_encoder.embedding_size, use_norm_encoder=True)
 
         super().__init__(validation_metric,
                          seq_encoder,

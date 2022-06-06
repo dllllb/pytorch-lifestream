@@ -28,7 +28,7 @@ def get_rnn_params():
             type='gru',
         ),
         optimizer_partial=partial(torch.optim.Adam, lr=0.004),
-        scheduler_partial=partial(torch.optim.lr_scheduler.StepLR, step_size=10, gamma=0.8),
+        lr_scheduler_partial=partial(torch.optim.lr_scheduler.StepLR, step_size=10, gamma=0.8),
     )
 
 
@@ -95,7 +95,7 @@ def test_train_loop_rnn_milti_classification():
     model = SequenceToTarget(
         head=torch.nn.Sequential(
             torch.nn.Linear(16, 4),
-            torch.nn.Softmax(dim=1),
+            torch.nn.LogSoftmax(dim=1),
         ),
         loss=torch.nn.NLLLoss(),
         metric_list=[
@@ -149,7 +149,7 @@ def test_train_loop_transf():
         loss=torch.nn.BCELoss(),
         metric_list=torchmetrics.AUROC(num_classes=2, compute_on_step=False),
         optimizer_partial=partial(torch.optim.Adam, lr=0.004),
-        scheduler_partial=partial(torch.optim.lr_scheduler.StepLR, step_size=10, gamma=0.8),
+        lr_scheduler_partial=partial(torch.optim.lr_scheduler.StepLR, step_size=10, gamma=0.8),
     )
     dl = RandomEventData(tst_params_data())
     trainer = pl.Trainer(max_epochs=1, logger=None, checkpoint_callback=False)
