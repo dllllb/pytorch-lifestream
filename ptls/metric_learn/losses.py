@@ -59,7 +59,7 @@ class BinomialDevianceLoss(nn.Module):
 
         res_loss = (pos_loss + neg_loss) * (len(target))
 
-        return res_loss, len(positive_pairs) + len(negative_pairs)
+        return res_loss
 
 
 class TripletLoss(nn.Module):
@@ -86,7 +86,7 @@ class TripletLoss(nn.Module):
         an_distances = F.pairwise_distance(embeddings[triplets[:, 0]], embeddings[triplets[:, 2]])
         losses = F.relu(ap_distances - an_distances + self.margin)
 
-        return losses.sum(), len(triplets)
+        return losses.sum()
 
 
 class HistogramLoss(torch.nn.Module):
@@ -159,7 +159,7 @@ class HistogramLoss(torch.nn.Module):
         histogram_pos_cdf = histogram_pos_repeat.sum(0)
         loss = torch.sum(histogram_neg * histogram_pos_cdf)
 
-        return loss, pos_size + neg_size
+        return loss
 
 
 class MarginLoss(torch.nn.Module):
@@ -190,7 +190,7 @@ class MarginLoss(torch.nn.Module):
 
         loss = torch.cat([pos_loss, neg_loss], dim=0)
 
-        return loss.sum(), len(positive_pairs) + len(negative_pairs)
+        return loss.sum()
 
 
 class ComplexLoss(torch.nn.Module):
@@ -236,7 +236,7 @@ class BarlowTwinsLoss(torch.nn.Module):
         on_diag = torch.diagonal(c).add_(-1).pow_(2).sum()
         off_diag = self.off_diagonal(c).pow_(2).sum()
         loss = on_diag + self.lambd * off_diag
-        return loss, None
+        return loss
 
     @staticmethod
     def off_diagonal(x):
