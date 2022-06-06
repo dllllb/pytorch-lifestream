@@ -132,7 +132,7 @@ def test_score_model():
     test_data = gen_trx_data((torch.rand(1000)*60+1).long())
     valid_loader = create_validation_loader(TrxDataset(test_data), params.valid)
 
-    pred, true = score_model(rnn_model(params), valid_loader, params)
+    pred, true = score_model(rnn_model(params), valid_loader, 'cpu')
     print(roc_auc_score(true, pred))
 
 
@@ -142,7 +142,7 @@ def test_score_model_mult1():
     test_data = gen_trx_data((torch.rand(1000)*60+1).long())
     valid_loader = create_validation_loader(TrxDataset(test_data), params.valid)
 
-    pred, true = score_model(rnn_model(params), valid_loader, params)
+    pred, true = score_model(rnn_model(params), valid_loader, 'cpu')
     print(roc_auc_score(true, pred))
 
 
@@ -154,7 +154,7 @@ def test_score_model_mult2():
         (torch.rand(1, 16), np.arange(1), np.arange(1).astype(str)),
     ]
 
-    pred, id1, id2 = score_model(model, valid_loader, {'device': 'cpu'})
+    pred, id1, id2 = score_model(model, valid_loader, 'cpu')
     assert pred.shape == (7, 2)
     assert id1.shape == (7,)
     assert id2.shape == (7,)
