@@ -50,11 +50,11 @@ def get_conf():
 
 
 def test_output_size():
-    out_size = AggFeatureModel(get_conf()['params.trx_encoder']).output_size
+    out_size = AggFeatureModel(**get_conf()['params.trx_encoder']).output_size
     assert out_size == 24
 
 
 def test_model():
-    model = AggFeatureModel(get_conf()['params.trx_encoder'])
+    model = AggFeatureModel(**get_conf()['params.trx_encoder'])
     out = model(get_data())
     assert out.size() == (3, 24)

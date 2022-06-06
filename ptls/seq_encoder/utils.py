@@ -144,6 +144,9 @@ class FlattenHead(nn.Module):
 
 
 def scoring_head(input_size, params):
+    """Deprecated. Use `ptls.models.Head` instead.
+    """
+
     if params.pred_all_states and params.explicit_lengths:
         raise AttributeError('Can not use `pred_all_states` and `explicit_lengths` together for now')
 

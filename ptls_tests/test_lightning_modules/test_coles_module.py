@@ -1,7 +1,13 @@
 import pytorch_lightning as pl
+import torch.optim
+
 from ptls.lightning_modules.coles_module import CoLESModule
 from ..test_data_load import RandomEventData
 from pyhocon import ConfigFactory
+from ptls.seq_encoder.rnn_encoder import RnnSeqEncoder
+from ptls.models import Head
+from ptls.trx_encoder import TrxEncoder
+from functools import partial
 
 
 def tst_params():
@@ -19,20 +25,6 @@ def tst_params():
                 "max_seq_len": 100
             }
         },
-        "validation_metric_params": {
-            "K": 2,
-            "metric": "cosine"
-        },
-        "encoder_type": "rnn",
-        "train": {
-            "sampling_strategy": "HardNegativePair",
-            "neg_count": 5,
-            "loss": "MarginLoss",
-            "margin": 0.2,
-            "beta": 0.4,
-            "lr": 0.002,
-            "weight_decay": 0.0,
-        },
         "rnn": {
             "type": "gru",
             "hidden_size": 16,
@@ -48,13 +40,6 @@ def tst_params():
             },
             'numeric_values': {'amount': 'log'}
         },
-        "head_layers": [
-            ["NormEncoder", {}],
-        ],
-        "lr_scheduler": {
-            "step_size": 10,
-            "step_gamma": 0.9025
-        },
     }
 
     params = ConfigFactory.from_dict(params)
@@ -64,7 +49,15 @@ def tst_params():
 def test_train_loop():
     params = tst_params()
 
-    model = CoLESModule(params)
-    dl = RandomEventData(params.data_module)
+    model = CoLESModule(
+        seq_encoder=RnnSeqEncoder(
+            trx_encoder=TrxEncoder(**params['trx_encoder']),
+            **params['rnn'],
+        ),
+        head=Head(use_norm_encoder=True),
+        optimizer_partial=partial(torch.optim.Adam),
+        lr_scheduler_partial=partial(torch.optim.lr_scheduler.StepLR, step_size=1, gamma=1.0),
+    )
+    dl = RandomEventData(params['data_module'])
     trainer = pl.Trainer(max_epochs=1, logger=None, checkpoint_callback=False)
     trainer.fit(model, dl)

@@ -4,6 +4,7 @@ from omegaconf import OmegaConf
 
 from ptls.trx_encoder import PaddedBatch
 from ptls.seq_encoder.rnn_encoder import RnnSeqEncoderDistributionTarget
+from ptls.trx_encoder import TrxEncoder
 
 
 def get_data():
@@ -17,11 +18,11 @@ def get_data():
                        length=torch.tensor([4, 2, 6, 8])
                       )
 
+
 def test_shape():
     eps = 1e-5
-
     params = {
-        'trx_encoder' : {
+        'trx_encoder': {
             'norm_embeddings': False,
             'embeddings_noise': 0.003,
             'embeddings': {
@@ -57,7 +58,11 @@ def test_shape():
     }
     params = OmegaConf.create(params)
 
-    model = RnnSeqEncoderDistributionTarget(params, True)
+    model = RnnSeqEncoderDistributionTarget(
+        trx_encoder=TrxEncoder(**params['trx_encoder']),
+        **params['rnn'],
+        head_layers=params['head_layers'],
+    )
 
     x = get_data()
 

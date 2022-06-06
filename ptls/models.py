@@ -27,8 +27,8 @@ def trx_avg2_model(params):
 
 
 def rnn_model(params):
-    p = TrxEncoder(params.trx_encoder)
-    e = RnnEncoder(p.output_size, params.rnn)
+    p = TrxEncoder(**params.trx_encoder)
+    e = RnnEncoder(p.output_size, **params.rnn)
     h = scoring_head(
         input_size=params.rnn.hidden_size * (2 if params.rnn.bidir else 1),
         params=params.head
