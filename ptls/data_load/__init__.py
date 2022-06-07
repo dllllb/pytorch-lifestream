@@ -629,7 +629,7 @@ class IterableChain:
 
     def __call__(self, seq):
         for f in self.i_filters:
-            logger.debug(f'Applied {f} to {seq}')
+            # logger.debug(f'Applied {f} to {seq}')
             seq = f(seq)
-        logger.debug(f'Returned {seq}')
+        # logger.debug(f'Returned {seq}')
         return seq

@@ -10,9 +10,10 @@ from ptls.trx_encoder import PaddedBatch
 
 
 class CPC_Loss(nn.Module):
-    def __init__(self, n_negatives):
+    def __init__(self, n_negatives=None, n_forward_steps=None):
         super().__init__()
         self.n_negatives = n_negatives
+        self.n_forward_steps = n_forward_steps
 
     def _get_preds(self, base_embeddings, mapped_ctx_embeddings):
         batch_size, max_seq_len, emb_size = base_embeddings.payload.shape
@@ -98,19 +99,32 @@ class CpcAccuracyPL(torchmetrics.Metric):
 
 
 class CpcModule(ABSModule):
-    def __init__(self, params, seq_encoder=None):
+    def __init__(self, validation_metric=None,
+                       seq_encoder=None,
+                       head=None,
+                       loss=None,
+                       optimizer_partial=None,
+                       lr_scheduler_partial=None):
+
+        if loss is None:
+            loss = CPC_Loss(n_negatives=40, n_forward_steps=6)
+
+        if validation_metric is None:
+            validation_metric = CpcAccuracyPL(loss)
+
         if seq_encoder is not None and not isinstance(seq_encoder, RnnSeqEncoder):
             raise NotImplementedError(f'Only rnn encoder supported in CpcModule. Found {type(seq_encoder)}')
 
-        if params.encoder_type != 'rnn':
-            raise NotImplementedError(f'Only rnn encoder supported in CpcModule. Found {params.encoder_type}')
-
-        super().__init__(params, seq_encoder)
+        super().__init__(validation_metric,
+                         seq_encoder,
+                         loss,
+                         optimizer_partial,
+                         lr_scheduler_partial)
 
         linear_size = self.seq_encoder.model[0].output_size
         embedding_size = self.seq_encoder.embedding_size
         self._linears = torch.nn.ModuleList([torch.nn.Linear(embedding_size, linear_size)
-                                             for _ in range(params.cpc.n_forward_steps)])
+                                             for _ in range(loss.n_forward_steps)])
 
     @property
     def metric_name(self):
@@ -119,12 +133,6 @@ class CpcModule(ABSModule):
     @property
     def is_requires_reduced_sequence(self):
         return False
-
-    def get_loss(self):
-        return CPC_Loss(n_negatives=self.hparams.params.cpc.n_negatives)
-
-    def get_validation_metric(self):
-        return CpcAccuracyPL(self._loss)
 
     def shared_step(self, x, y):
         trx_encoder = self._seq_encoder.model[0]

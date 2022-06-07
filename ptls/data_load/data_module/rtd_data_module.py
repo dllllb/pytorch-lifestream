@@ -56,16 +56,16 @@ def collate_rtd_batch(batch, replace_prob, skip_first=0):
 
 
 class RtdDataModuleTrain(pl.LightningDataModule):
-    def __init__(self, conf, pl_module):
+    def __init__(self, type, setup, train, valid, pl_module, replace_token=False):
         super().__init__()
 
-        self._type = conf.type
+        self._type = type
         assert self._type in ('map', 'iterable')
 
-        self.setup_conf = conf.setup
-        self.train_conf = conf.train
-        self.valid_conf = conf.valid
-        self.replace_token_conf = conf.replace_token
+        self.setup_conf = setup
+        self.train_conf = train
+        self.valid_conf = valid
+        self.replace_token_conf = replace_token
 
         self.col_id = self.setup_conf.col_id
         self.category_names = pl_module.seq_encoder.category_names

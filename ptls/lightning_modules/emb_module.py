@@ -1,13 +1,16 @@
 import torch
+from functools import partial
 
 from ptls.lightning_modules.AbsModule import ABSModule
-from ptls.metric_learn.losses import get_loss
+from ptls.metric_learn.losses import ContrastiveLoss
+from ptls.metric_learn.sampling_strategies import HardNegativePairSelector
 from ptls.metric_learn.metric import BatchRecallTopPL
-from ptls.metric_learn.sampling_strategies import get_sampling_strategy
 
 
 class EmbModule(ABSModule):
-    """pl.LightningModule for training CoLES embeddings
+    """Deprecated. The same as `ptls.lightning_modules.coles_module.CoLESModule`
+
+    pl.LightningModule for training CoLES embeddings
 
     Parameters
     ----------
@@ -34,29 +37,29 @@ class EmbModule(ABSModule):
         lr: float = 1e-3,
         weight_decay: float = 0.0,
         lr_scheduler_step_size: int = 100,
-        lr_scheduler_step_gamma: float = 0.1):
+        lr_scheduler_step_gamma: float = 0.1,
+        validation_metric = None):
 
-        default_loss_params = {'train': {
-                                   'loss': 'ContrastiveLoss',
-                                   'sampling_strategy': 'HardNegativePair',
-                                   'margin': 0.5,
-                                   'neg_count': 5
-                               }
-        }
-        train_params = {'train': {
-                            'lr': lr,
-                            'weight_decay': weight_decay
-                        },
-                        'lr_scheduler': {
-                            'step_size': lr_scheduler_step_size,
-                            'step_gamma': lr_scheduler_step_gamma
-                        }
-        }
-        if not loss:
-            train_params['train'] = {**train_params['train'],
-                                     **default_loss_params['train']}
+        if loss is None:
+            sampling_strategy = HardNegativePairSelector(neg_count=5)
+            loss = ContrastiveLoss(margin=0.5,
+                                   sampling_strategy=sampling_strategy)
 
-        super().__init__(train_params, seq_encoder, loss)
+            optimizer_partial = partial(torch.optim.Adam,
+                                        lr=lr,
+                                        weight_decay=weight_decay)
+            lr_scheduler_partial = partial(torch.optim.lr_scheduler.StepLR,
+                                           step_size=lr_scheduler_step_size,
+                                           gamma=lr_scheduler_step_gamma)
+
+        if validation_metric is None:
+            validation_metric = BatchRecallTopPL(K=4, metric='cosine')
+
+        super().__init__(validation_metric,
+                         seq_encoder,
+                         loss,
+                         optimizer_partial,
+                         lr_scheduler_partial)
 
         self._head = head
 
@@ -67,23 +70,6 @@ class EmbModule(ABSModule):
     @property
     def is_requires_reduced_sequence(self):
         return True
-
-    def get_loss(self):
-        sampling_strategy = get_sampling_strategy(self.hparams.params)
-        loss = get_loss(self.hparams.params, sampling_strategy)
-        return loss
-
-    def get_validation_metric(self):
-        default_kwargs = {
-            'K': 4,
-            'metric': 'cosine'
-        }
-        if 'validation_metric_params' in self.hparams.params:
-            kwargs = {**default_kwargs, **self.hparams.params.validation_metric_params}
-        else:
-            kwargs = default_kwargs
-
-        return BatchRecallTopPL(**kwargs)
 
     def shared_step(self, x, y):
         y_h = self(x)

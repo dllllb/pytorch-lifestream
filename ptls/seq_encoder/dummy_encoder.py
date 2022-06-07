@@ -1,9 +1,8 @@
-import numpy as np
 import torch
 
 
 class DummyEncoder(torch.nn.Module):
-    def __init__(self, config):
+    def __init__(self):
         super().__init__()
         self.dummy = torch.nn.Linear(1, 1)
         self.cat_names = []

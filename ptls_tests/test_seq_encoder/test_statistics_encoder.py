@@ -30,7 +30,7 @@ def test_shape():
 
     eps = 1e-2
 
-    model = StatisticsEncoder(config)
+    model = StatisticsEncoder(**config)
 
     x = get_data()
 

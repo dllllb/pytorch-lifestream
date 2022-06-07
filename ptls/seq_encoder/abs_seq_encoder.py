@@ -2,11 +2,10 @@ import torch
 
 
 class AbsSeqEncoder(torch.nn.Module):
-    def __init__(self, params, is_reduce_sequence):
+    def __init__(self):
         super().__init__()
 
-        self.params = params
-        self._is_reduce_sequence = is_reduce_sequence
+        self.is_reduce_sequence = True
 
     @property
     def is_reduce_sequence(self):
@@ -16,7 +15,7 @@ class AbsSeqEncoder(torch.nn.Module):
     def is_reduce_sequence(self, value):
         self._is_reduce_sequence = value
 
-    @property  
+    @property
     def category_max_size(self):
         raise NotImplementedError()
 

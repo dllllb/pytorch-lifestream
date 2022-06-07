@@ -17,6 +17,9 @@ class DropoutEncoder(nn.Module):
 
 
 class Squeeze(nn.Module):
+    """Use torch.nn.Flatten(start_dim=) instead
+
+    """
     def forward(self, x: torch.Tensor):
         return x.squeeze()
 

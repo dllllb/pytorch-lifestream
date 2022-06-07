@@ -7,28 +7,11 @@ from ptls.seq_encoder.rnn_encoder import RnnSeqEncoder, RnnSeqEncoderDistributio
 from ptls.seq_encoder.transf_seq_encoder import TransfSeqEncoder
 from ptls.seq_encoder.statistics_encoder import StatisticsEncoder
 from ptls.seq_encoder.dummy_encoder import DummyEncoder
-
-
-def create_encoder(params, is_reduce_sequence=True):
-    encoder_type = params.encoder_type
-    if encoder_type == 'rnn':
-        return RnnSeqEncoder(params, is_reduce_sequence)
-    if encoder_type == 'transf':
-        return TransfSeqEncoder(params, is_reduce_sequence)
-    if encoder_type == 'agg_features':
-        return AggFeatureSeqEncoder(params, is_reduce_sequence)
-    if encoder_type == 'statistics':
-        return StatisticsEncoder(params)
-    if encoder_type == 'distribution_targets':
-        return RnnSeqEncoderDistributionTarget(params, is_reduce_sequence)
-    if encoder_type == 'emb_valid':
-        return DummyEncoder(params)
-
-    raise AttributeError(f'Unknown encoder_type: "{encoder_type}"')
+from ptls.trx_encoder import TrxEncoder
 
 
 class SequenceEncoder(torch.nn.Module):
-    r"""Sequence encoder
+    r"""Deprecated. Use `ptls.seq_encoder.abs_seq_encoder.AbsSeqEncoder` implementations
 
     Parameters
     ----------
@@ -76,11 +59,16 @@ class SequenceEncoder(torch.nn.Module):
                  category_features: Dict[str, int],
                  numeric_features: List[str],
                  trx_embedding_size: int = 16,
-                 trx_embedding_noize: float = 0.0,
+                 trx_embedding_noise: float = 0.0,
+                 trx_norm_embeddings: bool = False,
+                 trx_use_batch_norm_with_lens: bool = False,
+                 trx_clip_replace_value: bool = False,
+                 was_logified: bool = True,
+                 log_scale_factor: float = 1.0,
                  encoder_type: str = 'rnn',
                  rnn_hidden_size: int = 512,
                  rnn_type: str = 'gru',
-                 rnn_trainable_starter: bool = False,
+                 rnn_trainable_starter: str = None,
                  rnn_bidirectional: bool = False,
                  transformer_input_size: int = 512,
                  transformer_dim_hidden: int = 256,
@@ -91,50 +79,53 @@ class SequenceEncoder(torch.nn.Module):
                  transformer_use_src_key_padding_mask: bool = False,
                  transformer_use_positional_encoding: bool = False,
                  transformer_train_starter: bool = False,
-                 transformer_dropout: float = 0.0):
+                 transformer_dropout: float = 0.0,
+                 transformer_max_seq_len: int = 1200):
+
         super().__init__()
 
-        trx_encoder_params = {
-            'embeddings_noise': trx_embedding_noize,
-            'embeddings': {k: {'in': v, 'out': trx_embedding_size} for k, v in category_features.items()},
-            'numeric_values': {k: 'identity' for k in numeric_features},
-        }
-        params = {'trx_encoder': trx_encoder_params}
+        embeddings = {k: {'in': v, 'out': trx_embedding_size} for k, v in category_features.items()}
+        numeric_values = {k: 'identity' for k in numeric_features}
+
+        trx_encoder = TrxEncoder(trx_norm_embeddings,
+                                 trx_embedding_noise,
+                                 embeddings,
+                                 numeric_values,
+                                 trx_use_batch_norm_with_lens,
+                                 trx_clip_replace_value)
 
         if encoder_type == 'rnn':
-            params['rnn'] = {
-                'type': rnn_type,
-                'hidden_size': rnn_hidden_size,
-                'bidir': rnn_bidirectional,
-                'trainable_starter': 'statis' if rnn_trainable_starter else None
-            }
-            model = RnnSeqEncoder(OmegaConf.create(params), True)
+            model = RnnSeqEncoder(trx_encoder,
+                                  None,
+                                  rnn_hidden_size,
+                                  rnn_type,
+                                  rnn_bidirectional,
+                                  rnn_trainable_starter)
 
         elif encoder_type == 'transformer':
-            params['transf'] = {
-                'input_size': transformer_input_size,
-                'shared_layers': transformer_shared_layers,
-                'use_after_mask': transformer_use_after_mask,
-                'use_src_key_padding_mask': transformer_use_src_key_padding_mask,
-                'use_positional_encoding': transformer_use_positional_encoding,
-                'train_starter': transformer_train_starter,
-                'n_heads': transformer_n_heads,
-                'dim_hidden': transformer_dim_hidden,
-                'dropout': transformer_dropout,
-                'n_layers': transformer_n_layers,
-            }
-            model = TransfSeqEncoder(OmegaConf.create(params), True)
+            model = TransfSeqEncoder(transformer_input_size,
+                                     transformer_train_starter,
+                                     transformer_shared_layers,
+                                     transformer_n_heads,
+                                     transformer_dim_hidden,
+                                     transformer_dropout,
+                                     transformer_n_layers,
+                                     transformer_use_positional_encoding,
+                                     transformer_max_seq_len,
+                                     transformer_use_after_mask,
+                                     transformer_use_src_key_padding_mask)
 
         elif encoder_type == 'agg_features':
-            params['trx_encoder']['was_logified'] = True
-            params['trx_encoder']['log_scale_factor'] = 1
-            model = AggFeatureSeqEncoder(OmegaConf.create(params), True)
+            model = AggFeatureSeqEncoder(embeddings,
+                                         numeric_values,
+                                         was_logified,
+                                         log_scale_factor)
 
         else:
             raise AttributeError(f'Unknown encoder_type: {encoder_type}')
 
         self.model = model
-        self.params = params
+        # self.params = params
 
     @property
     def is_reduce_sequence(self):

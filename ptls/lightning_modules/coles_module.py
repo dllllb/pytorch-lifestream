@@ -1,15 +1,37 @@
 from ptls.lightning_modules.AbsModule import ABSModule
+from ptls.metric_learn.losses import ContrastiveLoss
+from ptls.metric_learn.sampling_strategies import HardNegativePairSelector
 from ptls.metric_learn.metric import BatchRecallTopPL
-from ptls.models import create_head_layers
-from ptls.metric_learn.losses import get_loss
-from ptls.metric_learn.sampling_strategies import get_sampling_strategy
+from ptls.models import Head
+from ptls.seq_encoder.abs_seq_encoder import AbsSeqEncoder
 
 
 class CoLESModule(ABSModule):
-    def __init__(self, params):
-        super().__init__(params)
+    def __init__(self, validation_metric=None,
+                       seq_encoder: AbsSeqEncoder=None,
+                       head=None,
+                       loss=None,
+                       optimizer_partial=None,
+                       lr_scheduler_partial=None):
 
-        self._head = create_head_layers(params, self.seq_encoder)
+        if loss is None:
+            sampling_strategy = HardNegativePairSelector(neg_count=5)
+            loss = ContrastiveLoss(margin=0.5,
+                                   sampling_strategy=sampling_strategy)
+
+        if validation_metric is None:
+            validation_metric = BatchRecallTopPL(K=4, metric='cosine')
+
+        if head is None:
+            head = Head(input_size=seq_encoder.embedding_size, use_norm_encoder=True)
+
+        super().__init__(validation_metric,
+                         seq_encoder,
+                         loss,
+                         optimizer_partial,
+                         lr_scheduler_partial)
+
+        self._head = head
 
     @property
     def metric_name(self):
@@ -18,14 +40,6 @@ class CoLESModule(ABSModule):
     @property
     def is_requires_reduced_sequence(self):
         return True
-
-    def get_loss(self):
-        sampling_strategy = get_sampling_strategy(self.hparams.params)
-        loss = get_loss(self.hparams.params, sampling_strategy)
-        return loss
-
-    def get_validation_metric(self):
-        return BatchRecallTopPL(**self.hparams.params.validation_metric_params)
 
     def shared_step(self, x, y):
         y_h = self(x)

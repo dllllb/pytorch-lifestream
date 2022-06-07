@@ -5,7 +5,7 @@ from torch import nn
 
 from ptls.seq_encoder.abs_seq_encoder import AbsSeqEncoder
 from ptls.seq_encoder.utils import PerTransTransf, FirstStepEncoder
-from ptls.trx_encoder import PaddedBatch, TrxEncoder
+from ptls.trx_encoder import PaddedBatch
 
 logger = logging.getLogger(__name__)
 
@@ -34,26 +34,38 @@ class PositionalEncoding(nn.Module):
 
 
 class TransformerSeqEncoder(nn.Module):
-    def __init__(self, input_size, params):
+    def __init__(self,
+                 input_size=256,
+ 	         train_starter=True,
+ 	         shared_layers=False,
+ 	         n_heads=8,
+ 	         dim_hidden=256,
+ 	         dropout=0.1,
+ 	         n_layers=6,
+ 	         use_positional_encoding=False,
+ 	         max_seq_len=1200,
+ 	         use_after_mask=False,
+ 	         use_src_key_padding_mask=False):
+
         super().__init__()
 
-        self.shared_layers = params.shared_layers
-        self.n_layers = params.n_layers
-        self.use_after_mask = params.use_after_mask
-        self.use_src_key_padding_mask = params.use_src_key_padding_mask
-        self.use_positional_encoding = params.use_positional_encoding
+        self.shared_layers = shared_layers
+        self.n_layers = n_layers
+        self.use_after_mask = use_after_mask
+        self.use_src_key_padding_mask = use_src_key_padding_mask
+        self.use_positional_encoding = use_positional_encoding
 
-        self.starter = torch.nn.Parameter(torch.randn(1, 1, input_size)) if params.train_starter else None
+        self.starter = torch.nn.Parameter(torch.randn(1, 1, input_size)) if train_starter else None
 
         self.enc_layer = TransformerEncoderLayer(
             d_model=input_size,
-            nhead=params.n_heads,
-            dim_feedforward=params.dim_hidden,
-            dropout=params.dropout)
+            nhead=n_heads,
+            dim_feedforward=dim_hidden,
+            dropout=dropout)
 
         enc_norm = LayerNorm(input_size)
-        self.enc = TransformerEncoder(self.enc_layer, params.n_layers, enc_norm)
-        self.pe = PositionalEncoding(max_len=params.max_seq_len, d_model=input_size, dropout=params.dropout)
+        self.enc = TransformerEncoder(self.enc_layer, n_layers, enc_norm)
+        self.pe = PositionalEncoding(max_len=max_seq_len, d_model=input_size, dropout=dropout)
 
     @staticmethod
     def generate_square_subsequent_mask(sz):
@@ -99,20 +111,45 @@ class TransformerSeqEncoder(nn.Module):
 
 
 class TransfSeqEncoder(AbsSeqEncoder):
-    def __init__(self, params, is_reduce_sequence):
-        super().__init__(params, is_reduce_sequence)
+    def __init__(self,
+                 trx_encoder=None,
+                 input_size=256,
+                 train_starter=True,
+                 shared_layers=False,
+                 n_heads=8,
+                 dim_hidden=256,
+                 dropout=0.1,
+                 n_layers=6,
+                 use_positional_encoding=False,
+                 max_seq_len=1200,
+                 use_after_mask=False,
+                 use_src_key_padding_mask=False,
+                 ):
 
-        p = TrxEncoder(params.trx_encoder)
+        super().__init__()
+
+        p = trx_encoder
         trx_size = p.output_size
         self._category_max_size = p.category_max_size
         self._category_names = p.category_names
 
-        enc_input_size = params.transf.input_size
+        enc_input_size = input_size
         if enc_input_size != trx_size:
             inp_reshape = PerTransTransf(trx_size, enc_input_size)
             p = torch.nn.Sequential(p, inp_reshape)
+        self.enc_input_size = enc_input_size
 
-        e = TransformerSeqEncoder(enc_input_size, params.transf)
+        e = TransformerSeqEncoder(enc_input_size,
+                                  train_starter,
+                                  shared_layers,
+                                  n_heads,
+                                  dim_hidden,
+                                  dropout,
+                                  n_layers,
+                                  use_positional_encoding,
+                                  max_seq_len,
+                                  use_after_mask,
+                                  use_src_key_padding_mask)
 
         layers = [p, e]
         self.reducer = FirstStepEncoder()
@@ -129,7 +166,7 @@ class TransfSeqEncoder(AbsSeqEncoder):
 
     @property
     def embedding_size(self):
-        return self.params.transf.input_size
+        return self.enc_input_size
 
     def forward(self, x):
         x = self.model(x)

@@ -14,10 +14,10 @@ class ContrastiveLoss(nn.Module):
     https://papers.nips.cc/paper/769-signature-verification-using-a-siamese-time-delay-neural-network.pdf
     """
 
-    def __init__(self, margin, pair_selector):
+    def __init__(self, margin, sampling_strategy):
         super(ContrastiveLoss, self).__init__()
         self.margin = margin
-        self.pair_selector = pair_selector
+        self.pair_selector = sampling_strategy
 
     def forward(self, embeddings, target):
 
@@ -29,7 +29,7 @@ class ContrastiveLoss(nn.Module):
         ).pow(2)
         loss = torch.cat([positive_loss, negative_loss], dim=0)
 
-        return loss.sum(), len(positive_pairs) + len(negative_pairs)
+        return loss.sum()
 
 
 class BinomialDevianceLoss(nn.Module):
@@ -59,7 +59,7 @@ class BinomialDevianceLoss(nn.Module):
 
         res_loss = (pos_loss + neg_loss) * (len(target))
 
-        return res_loss, len(positive_pairs) + len(negative_pairs)
+        return res_loss
 
 
 class TripletLoss(nn.Module):
@@ -86,7 +86,7 @@ class TripletLoss(nn.Module):
         an_distances = F.pairwise_distance(embeddings[triplets[:, 0]], embeddings[triplets[:, 2]])
         losses = F.relu(ap_distances - an_distances + self.margin)
 
-        return losses.sum(), len(triplets)
+        return losses.sum()
 
 
 class HistogramLoss(torch.nn.Module):
@@ -159,7 +159,7 @@ class HistogramLoss(torch.nn.Module):
         histogram_pos_cdf = histogram_pos_repeat.sum(0)
         loss = torch.sum(histogram_neg * histogram_pos_cdf)
 
-        return loss, pos_size + neg_size
+        return loss
 
 
 class MarginLoss(torch.nn.Module):
@@ -190,7 +190,7 @@ class MarginLoss(torch.nn.Module):
 
         loss = torch.cat([pos_loss, neg_loss], dim=0)
 
-        return loss.sum(), len(positive_pairs) + len(negative_pairs)
+        return loss.sum()
 
 
 class ComplexLoss(torch.nn.Module):
@@ -236,7 +236,7 @@ class BarlowTwinsLoss(torch.nn.Module):
         on_diag = torch.diagonal(c).add_(-1).pow_(2).sum()
         off_diag = self.off_diagonal(c).pow_(2).sum()
         loss = on_diag + self.lambd * off_diag
-        return loss, None
+        return loss
 
     @staticmethod
     def off_diagonal(x):
@@ -297,75 +297,3 @@ class VicregLoss(torch.nn.Module):
         assert n == m
         return x.flatten()[:-1].view(n - 1, n + 1)[:, 1:].flatten()
 
-
-def get_loss(params, sampling_strategy, kw_params=None):
-
-    if params['train']['loss'] == 'ContrastiveLoss':
-        kwargs = {
-            'margin': params['train'].get('margin', None),
-            'pair_selector': sampling_strategy
-        }
-        kwargs = {k: v for k, v in kwargs.items() if v is not None}
-        loss_fn = ContrastiveLoss(**kwargs)
-
-    elif params['train']['loss'] == 'BinomialDevianceLoss':
-        kwargs = {
-            'C': params['train'].get('C', None),
-            'alpha': params['train'].get('alpha', None),
-            'beta': params['train'].get('beta', None),
-            'pair_selector': sampling_strategy
-        }
-        kwargs = {k: v for k, v in kwargs.items() if v is not None}
-        loss_fn = BinomialDevianceLoss(**kwargs)
-
-    elif params['train']['loss'] == 'TripletLoss':
-        kwargs = {
-            'margin': params['train'].get('margin', None),
-            'triplet_selector': sampling_strategy
-        }
-        kwargs = {k: v for k, v in kwargs.items() if v is not None}
-        loss_fn = TripletLoss(**kwargs)
-
-    elif params['train']['loss'] == 'HistogramLoss':
-        kwargs = {
-            'num_steps': params['train'].get('num_steps', None),
-        }
-        kwargs = {k: v for k, v in kwargs.items() if v is not None}
-        loss_fn = HistogramLoss(**kwargs)
-
-    elif params['train']['loss'] == 'MarginLoss':
-        kwargs = {
-            'margin': params['train'].get('margin', None),
-            'beta': params['train'].get('beta', None),
-            'pair_selector': sampling_strategy
-        }
-        kwargs = {k: v for k, v in kwargs.items() if v is not None}
-        loss_fn = MarginLoss(**kwargs)
-    elif params['train']['loss'] == 'CPCLoss':
-        kwargs = {
-            'k_pos_samples': params['cpc'].get('k_pos_samples', None),
-            'm_neg_samples': params['cpc'].get('m_neg_samples', None),
-            'linear_predictor': kw_params['linear_predictor'],
-        }
-        kwargs = {k: v for k, v in kwargs.items() if v is not None}
-    elif params['train']['loss'] == 'BarlowTwinsLoss':
-        kwargs = {
-            'lambd': params['train'].get('lambd', None),
-        }
-        kwargs = {k: v for k, v in kwargs.items() if v is not None}
-        loss_fn = BarlowTwinsLoss(**kwargs)
-    elif params['train']['loss'] == 'VicregLoss':
-        kwargs = {
-            'sim_coeff': params['train'].get('sim_coeff', None),
-            'std_coeff': params['train'].get('std_coeff', None),
-            'cov_coeff': params['train'].get('cov_coeff', None)
-        }
-        kwargs = {k: v for k, v in kwargs.items() if v is not None}
-        loss_fn = VicregLoss(**kwargs)
-    else:
-        raise AttributeError(f'wrong loss `{params["train"]["loss"]}`')
-
-    def loss(*args, **kwargs):
-        return loss_fn(*args, **kwargs)[0]
-
-    return loss

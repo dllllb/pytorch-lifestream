@@ -9,15 +9,17 @@ from ptls.data_load.data_module.cls_data_module import ClsDataModuleTrain
 import pytorch_lightning as pl
 
 from ptls.seq_to_target import SequenceToTarget
-from ptls.util import get_conf, get_cls
+
 
 logger = logging.getLogger(__name__)
 
 
-def fold_fit_test(conf, fold_id, pretrained_module=None):
-    pretrained_encoder = None if pretrained_module is None else pretrained_module.seq_encoder
-    model = SequenceToTarget(conf.params, pretrained_encoder)
-    dm = ClsDataModuleTrain(conf.data_module, model, fold_id)
+def fold_fit_test(conf, pl_module, fold_id):
+    if pl_module:
+        model = hydra.utils.instantiate(conf.pl_module, seq_encoder=pl_module.seq_encoder)
+    else:
+        model = hydra.utils.instantiate(conf.pl_module)
+    dm = hydra.utils.instantiate(conf.data_module, pl_module=model, fold_id=fold_id)
 
     _trainer_params = conf.trainer
     _trainer_params_additional = {}
@@ -51,7 +53,6 @@ def fold_fit_test(conf, fold_id, pretrained_module=None):
 @hydra.main()
 def main(conf: DictConfig):
     OmegaConf.set_struct(conf, False)
-    orig_cwd = hydra.utils.get_original_cwd()
 
     if 'seed_everything' in conf:
         pl.seed_everything(conf.seed_everything)
@@ -64,18 +65,18 @@ def main(conf: DictConfig):
         raise NotImplementedError(f'Only `embeddings_validation` split supported,'
                                   f'found "{conf.data_module.setup.split_by}"')
 
-    if conf.params.encoder_type == 'pretrained':
-        pre_conf = conf.params.pretrained
-        cls = get_cls(pre_conf.pl_module_class)
-        pretrained_module = cls.load_from_checkpoint(pre_conf.model_path)
-        pretrained_module.seq_encoder.is_reduce_sequence = True
+    use_pretrained_path = conf.pl_module.get('use_pretrained_path', None)
+    if use_pretrained_path:
+        pl_module_cls = hydra.utils.instantiate(conf.pretrained_module_cls)
+        pl_module = pl_module_cls.load_from_checkpoint(use_pretrained_path)
+        pl_module.seq_encoder.is_reduce_sequence = True
     else:
-        pretrained_module = None
+        pl_module = None
 
     results = []
     for fold_id in fold_list:
         logger.info(f'==== Fold [{fold_id}] fit-test start ====')
-        result = fold_fit_test(conf, fold_id, pretrained_module)
+        result = fold_fit_test(conf, pl_module, fold_id)
         results.append(result)
 
     stats_file = conf.embedding_validation_results.output_path

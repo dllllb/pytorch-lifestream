@@ -4,19 +4,23 @@ from torch import nn as nn
 
 from ptls.seq_encoder.abs_seq_encoder import AbsSeqEncoder
 from ptls.seq_encoder.utils import LastStepEncoder
-from ptls.trx_encoder import PaddedBatch, TrxEncoder
+from ptls.trx_encoder import PaddedBatch
 
 
 class RnnEncoder(nn.Module):
-    def __init__(self, input_size, config):
+    def __init__(self, input_size=None,
+                       hidden_size=None,
+                       type=None,
+                       bidir=False,
+                       trainable_starter=None):
         super().__init__()
 
-        self.hidden_size = config['hidden_size']
-        self.rnn_type = config['type']
-        self.bidirectional = config['bidir']
+        self.hidden_size = hidden_size
+        self.rnn_type = type
+        self.bidirectional = bidir
         if self.bidirectional:
             raise AttributeError('bidirectional RNN is not supported yet')
-        self.trainable_starter = config['trainable_starter']
+        self.trainable_starter = trainable_starter
 
         # initialize RNN
         if self.rnn_type == 'lstm':
@@ -82,11 +86,28 @@ class RnnEncoder(nn.Module):
 
 
 class RnnSeqEncoder(AbsSeqEncoder):
-    def __init__(self, params, is_reduce_sequence):
-        super().__init__(params, is_reduce_sequence)
+    def __init__(self,
+                 trx_encoder=None,
+                 input_size=None,
+                 hidden_size=None,
+                 type=None,
+                 bidir=False,
+                 trainable_starter=None,
+                 ):
 
-        p = TrxEncoder(params.trx_encoder)
-        e = RnnEncoder(p.output_size, params.rnn)
+        super().__init__()
+        self.trx_encoder = trx_encoder
+        self.rnn_encoder = RnnEncoder(
+            input_size=input_size if input_size is not None else trx_encoder.output_size,
+            hidden_size=hidden_size,
+            type=type,
+            bidir=bidir,
+            trainable_starter=trainable_starter,
+        )
+
+
+        p = self.trx_encoder
+        e = self.rnn_encoder
         layers = [p, e]
         self.reducer = LastStepEncoder()
         self.model = torch.nn.Sequential(*layers)
@@ -101,7 +122,7 @@ class RnnSeqEncoder(AbsSeqEncoder):
 
     @property
     def embedding_size(self):
-        return self.params.rnn.hidden_size
+        return self.rnn_encoder.hidden_size
 
     def forward(self, x):
         x = self.model(x)
@@ -135,11 +156,26 @@ class RnnSeqEncoderDistributionTarget(RnnSeqEncoder):
     def transform_inv(self, x):
         return np.sign(x) * (np.exp(np.abs(x)) - 1)
 
-    def __init__(self, params, is_reduce_sequence):
-        super().__init__(params, is_reduce_sequence)
-        head_params = dict(params.head_layers).get('CombinedTargetHeadFromRnn', None)
+    def __init__(self,
+                 trx_encoder,
+                 hidden_size,
+                 type,
+                 bidir,
+                 trainable_starter,
+                 head_layers,
+                 input_size=None,
+                 ):
+        super().__init__(
+            trx_encoder,
+            input_size,
+            hidden_size,
+            type,
+            bidir,
+            trainable_starter,
+        )
+        head_params = dict(head_layers).get('CombinedTargetHeadFromRnn', None)
         self.pass_samples = head_params.get('pass_samples', True)
-        self.numeric_name = list(params.trx_encoder.numeric_values.keys())[0]
+        self.numeric_name = list(trx_encoder.scalers.keys())[0]
         self.collect_pos, self.collect_neg = (head_params.get('pos', True), head_params.get('neg', True)) if head_params else (0, 0)
         self.eps = 1e-7
 

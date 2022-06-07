@@ -28,20 +28,28 @@ logger = logging.getLogger(__name__)
 
 
 class ClsDataModuleTrain(pl.LightningDataModule):
-    def __init__(self, conf, pl_module, fold_id):
+    def __init__(self,
+                 type,
+                 setup,
+                 train,
+                 valid,
+                 pl_module,
+                 fold_id,
+                 test=None,
+                 distribution_target_task=False):
         super().__init__()
 
         self.fold_id = fold_id
-        self._type = conf.type
+        self._type = type
         assert self._type in ('map', 'iterable')
 
-        self.distribution_targets_task = dict(conf).get('distribution_targets_task')
+        self.distribution_targets_task = distribution_targets_task
         self.y_function = int if not self.distribution_targets_task else lambda x: \
                                                     np.array(ast.literal_eval(x), dtype=object)
-        self.setup_conf = conf.setup
-        self.train_conf = conf.train
-        self.valid_conf = conf.valid
-        self.test_conf = conf.get('test', self.valid_conf)
+        self.setup_conf = setup
+        self.train_conf = train
+        self.valid_conf = valid
+        self.test_conf = test if test else self.valid_conf
 
         self.col_id = self.setup_conf.col_id
         self.col_id_dtype = {
