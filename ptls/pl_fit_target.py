@@ -65,7 +65,7 @@ def main(conf: DictConfig):
         raise NotImplementedError(f'Only `embeddings_validation` split supported,'
                                   f'found "{conf.data_module.setup.split_by}"')
 
-    use_pretrained_path = conf.pl_module.get('use_pretrained_path', None)
+    use_pretrained_path = conf.get('use_pretrained_path', None)
     if use_pretrained_path:
         pl_module_cls = hydra.utils.instantiate(conf.pretrained_module_cls)
         pl_module = pl_module_cls.load_from_checkpoint(use_pretrained_path)
