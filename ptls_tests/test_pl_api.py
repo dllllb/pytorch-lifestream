@@ -38,9 +38,7 @@ def test_train_inference():
 
     head = Head(input_size=seq_encoder.embedding_size, use_norm_encoder=True)
 
-    #loss = ContrastiveLoss(margin=3, pair_selector=HardNegativePairSelector(neg_count=5))
-
-    model = EmbModule(seq_encoder=seq_encoder, head=head)#, loss=loss)
+    model = EmbModule(seq_encoder=seq_encoder, head=head)
 
     trainer = pl.Trainer(
         max_epochs=1,
