@@ -176,7 +176,7 @@ class SequenceToTarget(pl.LightningModule):
         loss:
             Your loss for specific problem.
         metric_list:
-            One or list of metrics for specific problem.
+            One or dict of metrics for specific problem: {'metric_name1': metric1, 'metric_name2': metric2, ...}.
         optimizer_partial:
             optimizer init partial. Network parameters are missed.
         lr_scheduler_partial:
@@ -200,8 +200,10 @@ class SequenceToTarget(pl.LightningModule):
         self.head = head
         self.loss = loss
 
-        if type(metric_list) is not list:
+        if type(metric_list) is not dict:
             metric_list = [metric_list]
+        else:
+            metric_list = list(metric_list.values())
         metric_list = [(m.__class__.__name__, m) for m in metric_list]
 
         self.train_metrics = torch.nn.ModuleDict([(name, deepcopy(mc)) for name, mc in metric_list])
