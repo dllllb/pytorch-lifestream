@@ -98,10 +98,10 @@ def test_train_loop_rnn_milti_classification():
             torch.nn.LogSoftmax(dim=1),
         ),
         loss=torch.nn.NLLLoss(),
-        metric_list=[
-            torchmetrics.AUROC(num_classes=4, compute_on_step=False),
-            torchmetrics.Accuracy(compute_on_step=False),
-        ],
+        metric_list={
+            'auroc': torchmetrics.AUROC(num_classes=4, compute_on_step=False),
+            'accuracy': torchmetrics.Accuracy(compute_on_step=False),
+        },
         **get_rnn_params(),
     )
     dl = RandomEventData(tst_params_data(), target_type='multi_cls')
