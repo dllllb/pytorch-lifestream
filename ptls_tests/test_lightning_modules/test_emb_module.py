@@ -2,9 +2,10 @@ import pytorch_lightning as pl
 
 from pyhocon import ConfigFactory
 
+from ptls.trx_encoder import TrxEncoder
 from ptls.lightning_modules.emb_module import EmbModule
 from ptls.models import Head
-from ptls.seq_encoder import SequenceEncoder
+from ptls.seq_encoder.rnn_encoder import RnnSeqEncoder
 from ..test_data_load import RandomEventData
 
 
@@ -30,11 +31,13 @@ def tst_params():
 
 
 def test_train_loop():
-    seq_encoder = SequenceEncoder(
-        category_features={'mcc_code': 21, 'trans_type': 11},
-        numeric_features=["amount"],
-        encoder_type='rnn',
-        rnn_hidden_size=16,
+    seq_encoder = RnnSeqEncoder(
+        trx_encoder=TrxEncoder(
+            embeddings={'mcc_code': {'in': 21, 'out': 16}, 'trans_type': {'in': 11, 'out': 16}},
+            numeric_values={'amount': 'log'},
+        ),
+        hidden_size=16,
+        type='gru',
     )
     head = Head(
         input_size=seq_encoder.embedding_size,
