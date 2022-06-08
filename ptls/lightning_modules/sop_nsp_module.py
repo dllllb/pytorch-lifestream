@@ -1,8 +1,8 @@
 import torch
+import torchmetrics
 from torch.nn import BCELoss
 
 from ptls.lightning_modules.AbsModule import ABSModule
-from ptls.seq_to_target import EpochAuroc
 
 
 class SentencePairsHead(torch.nn.Module):
@@ -37,7 +37,7 @@ class SopNspModule(ABSModule):
         if loss is None:
             loss = BCELoss()
         if validation_metric is None:
-            validation_metric = EpochAuroc()
+            validation_metric = torchmetrics.AUROC(num_classes=2, compute_on_step=False)
 
         super().__init__(validation_metric,
                          seq_encoder,
