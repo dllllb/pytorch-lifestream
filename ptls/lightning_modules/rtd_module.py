@@ -4,7 +4,6 @@ from torch.nn import BCELoss
 
 from ptls.custom_layers import Squeeze
 from ptls.lightning_modules.AbsModule import ABSModule
-from ptls.seq_to_target import EpochAuroc
 from ptls.seq_encoder.utils import AllStepsHead, FlattenHead
 
 
@@ -17,12 +16,9 @@ class RtdModule(ABSModule):
                        lr_scheduler_partial=None):
 
         if validation_metric is None:
-            validation_metric = EpochAuroc()
+            validation_metric = torchmetrics.AUROC(num_classes=2, compute_on_step=False)
         if loss is None:
             loss = BCELoss()
-            
-        if validation_metric is None:
-            validation_metric = torchmetrics.AUROC(num_classes=2, compute_on_step=False)
 
         super().__init__(validation_metric,
                          seq_encoder,
