@@ -4,6 +4,7 @@ import torch
 # TODO: update this, split into 3 functions for corresponding targets, remove 'feature_arrays'
 def gen_trx_data(lengths, target_share=.5, target_type='bin_cls'):
     n = len(lengths)
+    # TODO: replace `lengths` with `min_len`, `max_len`, `num_sample`
     if target_type == 'bin_cls':
         targets = (torch.rand(n) >= target_share).long()
     elif target_type == 'multi_cls':
