@@ -1,4 +1,5 @@
 import torch
+import torchmetrics
 from torch.nn import BCELoss
 
 from ptls.custom_layers import Squeeze
@@ -19,6 +20,9 @@ class RtdModule(ABSModule):
             validation_metric = EpochAuroc()
         if loss is None:
             loss = BCELoss()
+            
+        if validation_metric is None:
+            validation_metric = torchmetrics.AUROC(num_classes=2, compute_on_step=False)
 
         super().__init__(validation_metric,
                          seq_encoder,
