@@ -1,4 +1,4 @@
-# `ptls.trx_encoder` usage:
+# `ptls.trx_encoder` usage
 
 ## Usage
 `ptls.trx_encoder` helps to make a representation for single transactions.
@@ -105,10 +105,6 @@ z = model(x)
 `H = 6` is output size of model.
 
 Now we can use other layers which consume transactional embeddings.
-
-
-
-
 
 
 ## Classes

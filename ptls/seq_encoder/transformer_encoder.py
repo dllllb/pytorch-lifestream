@@ -35,6 +35,7 @@ class PositionalEncoding(nn.Module):
 
 class TransformerEncoder(AbsSeqEncoder):
     """Used torch implementation of transformer
+    Based on `torch.nn.TransformerEncoder`
 
     Parameters
         input_size:

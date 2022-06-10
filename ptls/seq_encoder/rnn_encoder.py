@@ -9,6 +9,7 @@ from ptls.trx_encoder import PaddedBatch
 # TODO: split it on GRU Rnn Encoder and LSTM Rnn Encoder
 class RnnEncoder(AbsSeqEncoder):
     """Use torch recurrent layer network
+    Based on `torch.nn.GRU` and `torch.nn.LSTM`
 
     Parameters
         input_size:
