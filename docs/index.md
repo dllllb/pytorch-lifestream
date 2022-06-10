@@ -13,8 +13,8 @@ Library modules:
  - `ptls.lightning_modules` - propose tools for training your encoders with popular frameworks like 
  CoLES, SimCLR, CPC, VICReg, ... [Link TBD](#)
  - Build your encoder with layers. [Link TBD](#):
-   - `ptls.trx_encoder` - layers which makes representation for single transactions. [Link TBD](#)
-   - `ptls.seq_encoder` - layers which works with sequences. [Link TBD](#)
+   - `ptls.trx_encoder` - layers which makes representation for single transactions. [Link](trx_encoder.md)
+   - `ptls.seq_encoder` - layers which works with sequences. [Link](seq_encoder.md)
    There are cross transactional interaction (like convolution of self attention) and reduce sequence to single vector.
    [Link TBD](#)
    - `ptls.heads` - composite layers for final embedding transformation (L2Norm, MLP, ResNet, FFT, ...). [Link TBD](#)

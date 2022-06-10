@@ -7,13 +7,10 @@ from torch import nn as nn
 
 from torch.autograd import Function
 
-from ptls.seq_encoder.agg_feature_model import AggFeatureModel
-from ptls.seq_encoder.transf_seq_encoder import TransformerSeqEncoder
-from ptls.seq_encoder.rnn_encoder import RnnEncoder
-from ptls.trx_encoder import PaddedBatch
+from ptls.seq_encoder import AggFeatureSeqEncoder, TransformerEncoder, RnnEncoder
+from ptls.trx_encoder import PaddedBatch, TrxEncoder
 from ptls.seq_encoder.utils import PerTransTransf, LastStepEncoder, FirstStepEncoder, NormEncoder
 from ptls.custom_layers import DropoutEncoder
-from ptls.trx_encoder import TrxEncoder
 from ptls.util import Deprecated
 
 logger = logging.getLogger(__name__)
@@ -84,7 +81,7 @@ def transformer_model(params):
         inp_reshape = PerTransTransf(trx_size, enc_input_size)
         p = torch.nn.Sequential(p, inp_reshape)
 
-    e = TransformerSeqEncoder(enc_input_size, params.transf)
+    e = TransformerEncoder(enc_input_size, params.transf)
     l = FirstStepEncoder()
     layers = [p, e, l]
 
@@ -97,7 +94,7 @@ def transformer_model(params):
 
 
 def agg_feature_model(params):
-    p = AggFeatureModel(params.trx_encoder)
+    p = AggFeatureSeqEncoder(params.trx_encoder)
     layers = [
         torch.nn.Sequential(
             p,

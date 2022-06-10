@@ -12,8 +12,7 @@ from ptls.train import get_optimizer, get_lr_scheduler
 from ptls.models import create_head_layers
 from ptls.trx_encoder import PaddedBatch
 from collections import defaultdict
-from ptls.seq_encoder.abs_seq_encoder import AbsSeqEncoder
-
+from ptls.seq_encoder.containers import SeqEncoderContainer
 
 logger = logging.getLogger(__name__)
 
@@ -125,7 +124,7 @@ class R_squared(DistributionTargets):
 
 class SequenceToTarget(pl.LightningModule):
     def __init__(self,
-                 seq_encoder: AbsSeqEncoder,
+                 seq_encoder: SeqEncoderContainer,
                  head: torch.nn.Module=None,
                  loss: torch.nn.Module=None,
                  metric_list: torchmetrics.Metric=None,

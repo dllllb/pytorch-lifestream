@@ -2,9 +2,9 @@ import pytest
 import torch
 from omegaconf import OmegaConf
 
-from ptls.seq_encoder.rnn_encoder import RnnEncoder, SkipStepEncoder
+from ptls.seq_encoder.rnn_encoder import RnnEncoder
+from ptls.seq_encoder.skip_rnn_encoder import SkipStepEncoder
 from ptls.seq_encoder.utils import PerTransHead, TimeStepShuffle, scoring_head
-from ptls.seq_encoder.transf_seq_encoder import TransformerSeqEncoder
 from ptls.trx_encoder import PaddedBatch
 
 
@@ -13,6 +13,7 @@ class TrxEncoderTest(torch.nn.Module):
         return x
 
 
+# TODO: replace these tests with new-style usage patterns
 def tst_rnn_model(config):
     p = TrxEncoderTest()
     e = RnnEncoder(8, **config['rnn'])
@@ -25,14 +26,6 @@ def tst_trx_avg_model():
     p = TrxEncoderTest()
     h = PerTransHead(8)
     m = torch.nn.Sequential(p, h)
-    return m
-
-
-def tst_transf_model(config):
-    p = TrxEncoderTest()
-    e = TransformerSeqEncoder(8, config['transf'])
-    h = scoring_head(8, config['head'])
-    m = torch.nn.Sequential(p, e, h)
     return m
 
 
@@ -335,43 +328,6 @@ def test_skip_step_encoder():
     res = SkipStepEncoder(3)(PaddedBatch(t, [10, 9, 8, 7, 3, 2, 1, 0]))
 
     assert res.payload.shape == (8, 4, 2)
-
-
-def test_transf_seq_encoder():
-    config = {
-        'transf': {
-            'n_heads': 2,
-            'dim_hidden': 16,
-            'dropout': .1,
-            'n_layers': 2,
-            'max_seq_len': 200,
-            'use_after_mask': True,
-            'use_positional_encoding': True,
-            'sum_output': True,
-            'input_size': 32,
-            'shared_layers': False,
-            'use_src_key_padding_mask': False,
-            'train_starter': False
-        },
-        'head': {
-            'explicit_lengths': False,
-            'pred_all_states': False,
-            'pred_all_states_mean': False,
-            'norm_input': False,
-            'use_batch_norm': False,
-        },
-    }
-    config = OmegaConf.create(config)
-
-    m = tst_transf_model(config)
-
-    x = torch.rand(12, 100, 8)
-    length = torch.arange(0, 12, 1)
-    x = PaddedBatch(x, length)
-    out = m(x)
-
-    assert len(out.size()) == 1
-    assert out.size()[0] == 12
 
 
 def test_rnn_iterative_no_starter():

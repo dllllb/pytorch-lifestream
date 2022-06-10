@@ -5,8 +5,8 @@ from typing import List
 
 from ptls.seq_encoder.rnn_encoder import RnnEncoder
 from ptls.seq_encoder.utils import PerTransHead, PerTransTransf, TimeStepShuffle, scoring_head
-from ptls.seq_encoder.rnn_encoder import skip_rnn_encoder
-from ptls.seq_encoder.transf_seq_encoder import TransformerSeqEncoder
+from ptls.seq_encoder.skip_rnn_encoder import skip_rnn_encoder
+from ptls.seq_encoder.transformer_encoder import TransformerEncoder
 from ptls.trx_encoder import TrxEncoder
 from ptls.trx_encoder.trx_mean_encoder import TrxMeanEncoder
 from ptls.custom_layers import Squeeze
@@ -73,7 +73,7 @@ def transformer_model(params):
         inp_reshape = PerTransTransf(trx_size, enc_input_size)
         p = torch.nn.Sequential(p, inp_reshape)
 
-    e = TransformerSeqEncoder(enc_input_size, params.transf)
+    e = TransformerEncoder(enc_input_size, params.transf)
     h = scoring_head(enc_input_size, params.head)
 
     m = torch.nn.Sequential(p, e, h)

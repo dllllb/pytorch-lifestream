@@ -2,20 +2,63 @@ from collections import OrderedDict
 
 import torch
 
-from ptls.seq_encoder.abs_seq_encoder import AbsSeqEncoder
 from ptls.trx_encoder import PaddedBatch
 
 
-class AggFeatureModel(torch.nn.Module):
+class AggFeatureSeqEncoder(torch.nn.Module):
+    """Calculates statistics over feature arrays and return them as embedding.
+
+    Result is high dimension non learnable vector.
+    such embedding can be used in busting ML algorithm.
+
+    Statistics are calculated by numerical features, with grouping by category values.
+
+    This seq-encoder haven't TrxEncoder, they consume raw features.
+
+    Parameters
+        embeddings:
+            dict with categorical feature names.
+            Values must be like this `{'in': dictionary_size}`.
+            One hot encoding will be applied to these features.
+            Output vector size is (dictionary_size,)
+        numeric_values:
+            dict with numerical feature names.
+            Values may contains some options
+            numeric_values are multiplied with OHE categories.
+            Then statistics are calculated over time dimensions.
+        was_logified (bool):
+            True - means that original numerical features was log transformed
+            AggFeatureSeqEncoder will use `exp` to get original value
+        log_scale_factor:
+            Use it with `was_logified=True`. value will be multiplied by log_scale_factor before exp.
+        is_used_count (bool):
+            Use of not count by values
+        is_used_mean (bool):
+            Use of not mean by values
+        is_used_std (bool):
+            Use of not std by values
+        use_topk_cnt (int):
+            Define the K for topk features calculation. 0 if not used
+        distribution_targets_task (bool):
+            Calc more features
+        logify_sum_mean_seqlens (bool):
+            True - apply log transform to sequence length
+
+    Example:
+
+    """
     def __init__(self,
                  embeddings=None,
                  numeric_values=None,
                  was_logified=True,
                  log_scale_factor=1,
-                 num_aggregators={'count': True, 'sum': True, 'std': True},
-                 cat_aggregators={},
+                 is_used_count=True,
+                 is_used_mean=True,
+                 is_used_std=True,
+                 use_topk_cnt=0,
                  distribution_targets_task=False,
-                 logify_sum_mean_seqlens=False):
+                 logify_sum_mean_seqlens=False,
+                 ):
 
         super().__init__()
 
@@ -35,8 +78,10 @@ class AggFeatureModel(torch.nn.Module):
             self.ohe_buffer[col_embed] = ohe
             self.register_buffer(f'ohe_{col_embed}', ohe)
 
-        self.num_aggregators = num_aggregators
-        self.cat_aggregators = cat_aggregators
+        self.is_used_count = is_used_count
+        self.is_used_mean = is_used_mean
+        self.is_used_std = is_used_std
+        self.use_topk_cnt = use_topk_cnt
 
     def forward(self, x: PaddedBatch):
         """
@@ -119,16 +164,16 @@ class AggFeatureModel(torch.nn.Module):
                 mask = (1.0 - ohe[0]).unsqueeze(0)  # 0, 1, 1, 1, ..., 1
 
                 e_cnt = ohe_transform.sum(dim=1) * mask
-                if self.num_aggregators.get('count', False):
+                if self.is_used_count:
                     processed.append(e_cnt)
 
                 # sum over val_embed
-                if self.num_aggregators.get('sum', False):
+                if self.is_used_mean:
                     e_sum = m_sum.sum(dim=1)
                     e_mean = e_sum.div(e_cnt + 1e-9)
                     processed.append(e_mean)
 
-                if self.num_aggregators.get('std', False):
+                if self.is_used_std:
                     a = torch.clamp(m_sum.pow(2).sum(dim=1) - m_sum.sum(dim=1).pow(2).div(e_cnt + 1e-9), min=0.0)
                     e_std = a.div(torch.clamp(e_cnt - 1, min=0) + 1e-9).pow(0.5)
                     processed.append(e_std)
@@ -146,8 +191,8 @@ class AggFeatureModel(torch.nn.Module):
 
             processed.append(e_cnt.gt(0.0).float().sum(dim=1, keepdim=True))
 
-            if self.cat_aggregators and self.cat_aggregators['top_k']:
-                cat_processed.append(torch.topk(e_cnt, self.cat_aggregators['top_k'], dim=1)[1])
+            if self.use_topk_cnt > 0:
+                cat_processed.append(torch.topk(e_cnt, self.use_topk_cnt, dim=1)[1])
 
         for i, t in enumerate(processed):
             if torch.isnan(t).any():
@@ -158,7 +203,7 @@ class AggFeatureModel(torch.nn.Module):
         return out
 
     @property
-    def output_size(self):
+    def embedding_size(self):
         numeric_values = self.numeric_values
         embeddings = self.embeddings
 
@@ -166,15 +211,15 @@ class AggFeatureModel(torch.nn.Module):
 
         out_size = 1
 
-        n_features = sum(self.num_aggregators.values())
+        n_features = sum([int(v) for v in [self.is_used_count, self.is_used_mean, self.is_used_std]])
         out_size += len(numeric_values) * (3 + n_features * sum(e_sizes)) + len(embeddings)
-        out_size += len(e_sizes) * self.cat_aggregators.get('top_k', 0)
+        out_size += len(e_sizes) * self.use_topk_cnt
         return out_size
 
     @property
     def cat_output_size(self):
         e_sizes = [options_embed['in'] for col_embed, options_embed in self.embeddings.items()]
-        return len(e_sizes) * self.cat_aggregators.get('top_k', 0)
+        return len(e_sizes) * self.use_topk_cnt
 
     @property
     def category_names(self):
@@ -185,34 +230,3 @@ class AggFeatureModel(torch.nn.Module):
     @property
     def category_max_size(self):
         return {k: v['in'] for k, v in self.embeddings.items()}
-
-
-class AggFeatureSeqEncoder(AbsSeqEncoder):
-    def __init__(self,
-                 embeddings=None,
-                 numeric_values=None,
-                 was_logified=True,
-                 log_scale_factor=1):
-
-        super().__init__()
-
-        self.model = AggFeatureModel(embeddings,
-                                     numeric_values,
-                                     was_logified,
-                                     log_scale_factor)
-
-    @property
-    def category_max_size(self):
-        return self.model.category_max_size
-
-    @property
-    def category_names(self):
-        return self.model.category_names
-
-    @property
-    def embedding_size(self):
-        return self.model.output_size
-
-    def forward(self, x):
-        x = self.model(x)
-        return x

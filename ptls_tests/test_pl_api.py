@@ -6,7 +6,7 @@ from sklearn.model_selection import train_test_split
 
 from ptls.data_preprocessing.pandas_preprocessor import PandasDataPreprocessor
 from ptls.trx_encoder import TrxEncoder
-from ptls.seq_encoder.rnn_encoder import RnnSeqEncoder
+from ptls.seq_encoder import RnnSeqEncoder
 from ptls.models import Head
 from ptls.lightning_modules.emb_module import EmbModule
 from ptls.data_load.data_module.emb_data_module import train_data_loader, inference_data_loader

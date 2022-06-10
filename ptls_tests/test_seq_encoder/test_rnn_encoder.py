@@ -2,7 +2,6 @@ import torch
 
 from ptls.seq_encoder.rnn_encoder import RnnEncoder
 from ptls.trx_encoder import PaddedBatch
-from ptls.seq_encoder.utils import LastStepEncoder
 
 
 def get_data():
@@ -12,31 +11,27 @@ def get_data():
     )
 
 
-def test_shape():
-    params = {
-        'hidden_size': 6,
-        'type': 'gru',
-        'bidir': False,
-        'trainable_starter': 'static',
-    }
-    model = RnnEncoder(5, **params)
+def test_example():
+    model = RnnEncoder(
+        input_size=5,
+        hidden_size=6,
+        is_reduce_sequence=False,
+    )
 
     x = get_data()
 
     out = model(x)
-    print(out.payload.shape)
+    assert out.payload.shape == (4, 8, 6)
 
 
 def test_last_step():
-    params = {
-        'hidden_size': 6,
-        'type': 'gru',
-        'bidir': False,
-        'trainable_starter': 'static',
-    }
-    model = torch.nn.Sequential(RnnEncoder(5, **params), LastStepEncoder())
+    model = RnnEncoder(
+        input_size=5,
+        hidden_size=6,
+        is_reduce_sequence=True,
+    )
 
     x = get_data()
 
     h = model(x)
-    print(h.shape)
+    assert h.shape == (4, 6)

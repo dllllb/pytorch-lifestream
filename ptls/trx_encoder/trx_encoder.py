@@ -22,10 +22,12 @@ class TrxEncoder(nn.Module):
         embeddings:
             dict with categorical feature names.
             Values must be like this `{'in': dictionary_size, 'out': embedding_size}`
+            These features will be encoded with lookup embedding table of shape (dictionary_size, embedding_size)
         numeric_values:
             dict with numerical feature names.
             Values must be a string with scaler_name.
             Possible values are: 'identity', 'sigmoid', 'log', 'year'.
+            These features will be scaled with selected scaler and batch norm applyed.
         embeddings_noise (float):
             Noise level for embedding. `0` meens without noise
 

@@ -5,7 +5,7 @@ from pyhocon import ConfigFactory
 from ptls.trx_encoder import TrxEncoder
 from ptls.lightning_modules.emb_module import EmbModule
 from ptls.models import Head
-from ptls.seq_encoder.rnn_encoder import RnnSeqEncoder
+from ptls.seq_encoder import RnnSeqEncoder
 from ..test_data_load import RandomEventData
 
 

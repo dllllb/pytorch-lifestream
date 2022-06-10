@@ -3,16 +3,16 @@ from ptls.metric_learn.losses import ContrastiveLoss
 from ptls.metric_learn.sampling_strategies import HardNegativePairSelector
 from ptls.metric_learn.metric import BatchRecallTopPL
 from ptls.models import Head
-from ptls.seq_encoder.abs_seq_encoder import AbsSeqEncoder
+from ptls.seq_encoder.containers import SeqEncoderContainer
 
 
 class CoLESModule(ABSModule):
     def __init__(self, validation_metric=None,
-                       seq_encoder: AbsSeqEncoder=None,
-                       head=None,
-                       loss=None,
-                       optimizer_partial=None,
-                       lr_scheduler_partial=None):
+                 seq_encoder: SeqEncoderContainer=None,
+                 head=None,
+                 loss=None,
+                 optimizer_partial=None,
+                 lr_scheduler_partial=None):
 
         if loss is None:
             sampling_strategy = HardNegativePairSelector(neg_count=5)
