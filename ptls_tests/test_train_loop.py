@@ -5,7 +5,7 @@ from sklearn.metrics import roc_auc_score
 
 from ptls.data_load import create_validation_loader, TrxDataset
 from ptls.models import rnn_model
-from .test_data_load import gen_trx_data
+from ptls_tests.utils.data_generation import gen_trx_data
 from ptls.train import score_model, score_model
 
 

@@ -7,7 +7,8 @@ from ptls.seq_encoder.rnn_encoder import RnnEncoder
 from ptls.seq_encoder.utils import PerTransHead, PerTransTransf, TimeStepShuffle, scoring_head
 from ptls.seq_encoder.rnn_encoder import skip_rnn_encoder
 from ptls.seq_encoder.transf_seq_encoder import TransformerSeqEncoder
-from ptls.trx_encoder import TrxEncoder, TrxMeanEncoder
+from ptls.trx_encoder import TrxEncoder
+from ptls.trx_encoder.trx_mean_encoder import TrxMeanEncoder
 from ptls.custom_layers import Squeeze
 from ptls.seq_encoder.utils import NormEncoder
 

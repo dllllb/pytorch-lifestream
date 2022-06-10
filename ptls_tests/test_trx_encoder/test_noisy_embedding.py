@@ -1,6 +1,6 @@
 import torch
 
-from ptls.trx_encoder import NoisyEmbedding
+from ptls.trx_encoder.noisy_embedding import NoisyEmbedding
 
 
 def test_no_noise():

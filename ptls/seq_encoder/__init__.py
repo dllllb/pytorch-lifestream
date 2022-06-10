@@ -87,10 +87,10 @@ class SequenceEncoder(torch.nn.Module):
         embeddings = {k: {'in': v, 'out': trx_embedding_size} for k, v in category_features.items()}
         numeric_values = {k: 'identity' for k in numeric_features}
 
-        trx_encoder = TrxEncoder(trx_norm_embeddings,
-                                 trx_embedding_noise,
-                                 embeddings,
+        trx_encoder = TrxEncoder(embeddings,
                                  numeric_values,
+                                 trx_embedding_noise,
+                                 trx_norm_embeddings,
                                  trx_use_batch_norm_with_lens,
                                  trx_clip_replace_value)
 
