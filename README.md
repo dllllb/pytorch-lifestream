@@ -47,6 +47,9 @@ pytest
 - Self-supervised TrxEncoder only training with Masked Language Model task and fine-tuning [notebook](demo/mlm-emb.ipynb)
 - PySpark and Parquet for data preprocessing [notebook](demo/pyspark-parquet.ipynb)
 
+## 
+Library description [index](docs/index.md)
+
 ## Experiments on public datasets
 
 `pytorch-lifestream` usage experiments on several public event datasets are available in the separate [repo](https://github.com/dllllb/pytorch-lifestream-experiments)
