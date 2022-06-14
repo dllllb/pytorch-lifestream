@@ -4,7 +4,7 @@ import torch.optim
 from ptls.lightning_modules.coles_module import CoLESModule
 from ..test_data_load import RandomEventData
 from pyhocon import ConfigFactory
-from ptls.seq_encoder.rnn_encoder import RnnSeqEncoder
+from ptls.seq_encoder import RnnSeqEncoder
 from ptls.models import Head
 from ptls.trx_encoder import TrxEncoder
 from functools import partial

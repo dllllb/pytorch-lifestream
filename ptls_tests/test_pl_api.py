@@ -5,9 +5,8 @@ from pathlib import Path
 from sklearn.model_selection import train_test_split
 
 from ptls.data_preprocessing.pandas_preprocessor import PandasDataPreprocessor
-from ptls.metric_learn.losses import ContrastiveLoss
-from ptls.metric_learn.sampling_strategies import HardNegativePairSelector
-from ptls.seq_encoder import SequenceEncoder
+from ptls.trx_encoder import TrxEncoder
+from ptls.seq_encoder import RnnSeqEncoder
 from ptls.models import Head
 from ptls.lightning_modules.emb_module import EmbModule
 from ptls.data_load.data_module.emb_data_module import train_data_loader, inference_data_loader
@@ -30,12 +29,15 @@ def test_train_inference():
 
     train, test = train_test_split(dataset, test_size=0.4, random_state=42)
 
-    seq_encoder = SequenceEncoder(
-        category_features=preprocessor.get_category_sizes(),
-        numeric_features=[],
-        trx_embedding_noise=0.003
+    seq_encoder = RnnSeqEncoder(
+        trx_encoder=TrxEncoder(
+            embeddings={k: {'in': v, 'out': 16} for k, v in preprocessor.get_category_sizes().items()},
+            numeric_values={},
+            embeddings_noise=0.003,
+        ),
+        hidden_size=16,
+        type='gru',
     )
-
     head = Head(input_size=seq_encoder.embedding_size, use_norm_encoder=True)
 
     model = EmbModule(seq_encoder=seq_encoder, head=head)

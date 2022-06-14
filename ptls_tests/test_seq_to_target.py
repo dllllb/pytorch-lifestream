@@ -7,9 +7,9 @@ from pyhocon import ConfigFactory
 from ptls.seq_to_target import LogAccuracy
 import torch
 from ptls.trx_encoder import TrxEncoder
-from ptls.seq_encoder.rnn_encoder import RnnSeqEncoder
-from ptls.seq_encoder.transf_seq_encoder import TransfSeqEncoder
+from ptls.seq_encoder.containers import RnnSeqEncoder, TransformerSeqEncoder
 from ptls.loss import BCELoss
+from ptls.seq_encoder.utils import PBLinear
 
 
 def get_rnn_params():
@@ -127,16 +127,17 @@ def test_train_loop_rnn_regression():
 
 
 def test_train_loop_transf():
-    seq_encoder = TransfSeqEncoder(
-        trx_encoder=TrxEncoder(
-            norm_embeddings=False,
-            embeddings_noise=0.1,
-            embeddings={
-                'mcc_code': {'in': 21, 'out': 3},
-                'trans_type': {'in': 11, 'out': 2},
-            },
-            numeric_values={'amount': 'log'},
-        ),
+    trx_encoder = TrxEncoder(
+        norm_embeddings=False,
+        embeddings_noise=0.1,
+        embeddings={
+            'mcc_code': {'in': 21, 'out': 3},
+            'trans_type': {'in': 11, 'out': 2},
+        },
+        numeric_values={'amount': 'log'},
+    )
+    seq_encoder = TransformerSeqEncoder(
+        trx_encoder=torch.nn.Sequential(trx_encoder, PBLinear(trx_encoder.output_size, 20)),
         input_size=20,
         n_heads=1,
         n_layers=1,

@@ -1,4 +1,3 @@
-import numpy as np
 import torch
 from torch import nn as nn
 
@@ -7,13 +6,51 @@ from ptls.seq_encoder.utils import LastStepEncoder
 from ptls.trx_encoder import PaddedBatch
 
 
-class RnnEncoder(nn.Module):
-    def __init__(self, input_size=None,
-                       hidden_size=None,
-                       type=None,
-                       bidir=False,
-                       trainable_starter=None):
-        super().__init__()
+# TODO: split it on GRU Rnn Encoder and LSTM Rnn Encoder
+class RnnEncoder(AbsSeqEncoder):
+    """Use torch recurrent layer network
+    Based on `torch.nn.GRU` and `torch.nn.LSTM`
+
+    Parameters
+        input_size:
+            input embedding size
+        hidden_size:
+            intermediate and output layer size
+        type:
+            'gru' or 'lstm'
+            Type of rnn network
+        bidir:
+            Not implemented. Use default value for this parameter
+        trainable_starter:
+            'static' - use random learnable vector for rnn starter
+            other values - use None as starter
+        is_reduce_sequence:
+            False - returns PaddedBatch with all transactions embeddings
+            True - returns one embedding for sequence based on CLS token
+
+    Example:
+    >>> model = RnnEncoder(
+    >>>     input_size=5,
+    >>>     hidden_size=6,
+    >>>     is_reduce_sequence=False,
+    >>> )
+    >>> x = PaddedBatch(
+    >>>     payload=torch.arange(4*5*8).view(4, 8, 5).float(),
+    >>>     length=torch.tensor([4, 2, 6, 8])
+    >>> )
+    >>> out = model(x)
+    >>> assert out.payload.shape == (4, 8, 6)
+
+    """
+    def __init__(self,
+                 input_size=None,
+                 hidden_size=None,
+                 type='gru',
+                 bidir=False,
+                 trainable_starter='static',
+                 is_reduce_sequence=False,  # previous default behavior RnnEncoder
+                 ):
+        super().__init__(is_reduce_sequence=is_reduce_sequence)
 
         self.hidden_size = hidden_size
         self.rnn_type = type
@@ -46,6 +83,8 @@ class RnnEncoder(nn.Module):
         if self.trainable_starter == 'static':
             num_dir = 2 if self.bidirectional else 1
             self.starter_h = nn.Parameter(torch.randn(num_dir, 1, self.hidden_size))
+
+        self.reducer = LastStepEncoder()
 
     def forward(self, x: PaddedBatch, h_0: torch.Tensor = None):
         """
@@ -82,156 +121,11 @@ class RnnEncoder(nn.Module):
         else:
             raise Exception(f'wrong rnn type "{self.rnn_type}"')
 
-        return PaddedBatch(out, x.seq_lens)
-
-
-class RnnSeqEncoder(AbsSeqEncoder):
-    def __init__(self,
-                 trx_encoder=None,
-                 input_size=None,
-                 hidden_size=None,
-                 type=None,
-                 bidir=False,
-                 trainable_starter=None,
-                 ):
-
-        super().__init__()
-        self.trx_encoder = trx_encoder
-        self.rnn_encoder = RnnEncoder(
-            input_size=input_size if input_size is not None else trx_encoder.output_size,
-            hidden_size=hidden_size,
-            type=type,
-            bidir=bidir,
-            trainable_starter=trainable_starter,
-        )
-
-
-        p = self.trx_encoder
-        e = self.rnn_encoder
-        layers = [p, e]
-        self.reducer = LastStepEncoder()
-        self.model = torch.nn.Sequential(*layers)
-
-    @property
-    def category_max_size(self):
-        return self.model[0].category_max_size
-
-    @property
-    def category_names(self):
-        return self.model[0].category_names
+        out = PaddedBatch(out, x.seq_lens)
+        if self.is_reduce_sequence:
+            return self.reducer(out)
+        return out
 
     @property
     def embedding_size(self):
-        return self.rnn_encoder.hidden_size
-
-    def forward(self, x):
-        x = self.model(x)
-        if self.is_reduce_sequence:
-            x = self.reducer(x)
-        return x
-
-
-class RnnInference(torch.nn.Module):
-    def __init__(self, model: RnnSeqEncoder):
-        super().__init__()
-
-        self.hidden_size = hidden_size
-        self.is_reduce_sequence = model.seq_encoder.is_reduce_sequence
-        self.p = model.seq_encoder.model[0]
-        self.e = model.seq_encoder.model[1]
-        self.reducer = model.seq_encoder.reducer
-
-    def forward(self, x, h_0=None):
-        x_ = self.p(x)
-        x = self.e(x_, h_0)
-        if self.is_reduce_sequence:
-            x = self.reducer(x)
-        return x
-
-
-class RnnSeqEncoderDistributionTarget(RnnSeqEncoder):
-    def transform(self, x):
-        return np.sign(x) * np.log(np.abs(x) + 1)
-
-    def transform_inv(self, x):
-        return np.sign(x) * (np.exp(np.abs(x)) - 1)
-
-    def __init__(self,
-                 trx_encoder,
-                 hidden_size,
-                 type,
-                 bidir,
-                 trainable_starter,
-                 head_layers,
-                 input_size=None,
-                 ):
-        super().__init__(
-            trx_encoder,
-            input_size,
-            hidden_size,
-            type,
-            bidir,
-            trainable_starter,
-        )
-        head_params = dict(head_layers).get('CombinedTargetHeadFromRnn', None)
-        self.pass_samples = head_params.get('pass_samples', True)
-        self.numeric_name = list(trx_encoder.scalers.keys())[0]
-        self.collect_pos, self.collect_neg = (head_params.get('pos', True), head_params.get('neg', True)) if head_params else (0, 0)
-        self.eps = 1e-7
-
-    def forward(self, x):
-        amount_col = []
-        for i, row in enumerate(x.payload[self.numeric_name]):
-            amount_col += [list(row[:x.seq_lens[i].item()].cpu().numpy())]
-        amount_col = np.array(amount_col, dtype=object)
-        neg_sums = []
-        pos_sums = []
-        for list_row in amount_col:
-            np_row = np.array(list_row)
-            if self.collect_neg:
-                neg_sums += [np.sum(self.transform_inv(np_row[np.where(np_row < 0)]))]
-            if self.collect_pos:
-                pos_sums += [np.sum(self.transform_inv(np_row[np.where(np_row >= 0)]))]
-        neg_sum_logs = np.log(np.abs(np.array(neg_sums)) + self.eps)
-        pos_sum_logs = np.log(np.array(pos_sums) + self.eps)
-
-        x = super().forward(x)
-        if (not self.pass_samples):
-            return x
-        if self.collect_neg and self.collect_pos:
-            return x, neg_sum_logs, pos_sum_logs
-        elif self.collect_neg:
-            return x, neg_sum_logs
-        elif self.collect_pos:
-            return x, pos_sum_logs
-
-
-class SkipStepEncoder(nn.Module):
-    def __init__(self, step_size):
-        super().__init__()
-        self.step_size = step_size
-
-    def forward(self, x: PaddedBatch):
-        max_len = x.payload.shape[1] - 1
-        s = self.step_size
-
-        first_dim_idx = []
-        second_dim_idx = []
-        for i, l in enumerate(x.seq_lens):
-            idx_to_take = np.arange(min(l - 1, s - 1 + l % s), l, s)
-            pad_idx = np.array([max_len - 1] * (max_len // s - len(idx_to_take)), dtype=np.int32)
-            idx_to_take = np.concatenate([[-1], idx_to_take, pad_idx]) + 1
-            first_dim_idx.append(np.ones(len(idx_to_take)) * i)
-            second_dim_idx.append(idx_to_take)
-
-        out = x.payload[first_dim_idx, second_dim_idx]
-        out_lens = torch.tensor([min(1, l // self.step_size) for l in x.seq_lens])
-
-        return PaddedBatch(out, out_lens)
-
-
-def skip_rnn_encoder(input_size, params):
-    rnn0 = RnnEncoder(input_size, params.rnn0)
-    rnn1 = RnnEncoder(params.rnn0.hidden_size, params.rnn1)
-    sse = SkipStepEncoder(params.skip_step_size)
-    return nn.Sequential(rnn0, sse, rnn1)
+        return self.hidden_size

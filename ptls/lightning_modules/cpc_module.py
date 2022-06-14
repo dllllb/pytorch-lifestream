@@ -5,7 +5,7 @@ from torch.nn import functional as F
 import torchmetrics
 
 from ptls.lightning_modules.AbsModule import ABSModule
-from ptls.seq_encoder.rnn_encoder import RnnSeqEncoder
+from ptls.seq_encoder import RnnSeqEncoder
 from ptls.trx_encoder import PaddedBatch
 
 
@@ -115,13 +115,15 @@ class CpcModule(ABSModule):
         if seq_encoder is not None and not isinstance(seq_encoder, RnnSeqEncoder):
             raise NotImplementedError(f'Only rnn encoder supported in CpcModule. Found {type(seq_encoder)}')
 
+        seq_encoder.seq_encoder.is_reduce_sequence = False
+
         super().__init__(validation_metric,
                          seq_encoder,
                          loss,
                          optimizer_partial,
                          lr_scheduler_partial)
 
-        linear_size = self.seq_encoder.model[0].output_size
+        linear_size = self.seq_encoder.trx_encoder.output_size
         embedding_size = self.seq_encoder.embedding_size
         self._linears = torch.nn.ModuleList([torch.nn.Linear(embedding_size, linear_size)
                                              for _ in range(loss.n_forward_steps)])
@@ -135,8 +137,8 @@ class CpcModule(ABSModule):
         return False
 
     def shared_step(self, x, y):
-        trx_encoder = self._seq_encoder.model[0]
-        seq_encoder = self._seq_encoder.model[1]
+        trx_encoder = self._seq_encoder.trx_encoder
+        seq_encoder = self._seq_encoder.seq_encoder
 
         base_embeddings = trx_encoder(x)
         context_embeddings = seq_encoder(base_embeddings)

@@ -6,7 +6,7 @@ from ptls.data_load import TrxDataset
 from ptls.data_load import create_train_loader, create_validation_loader
 from ptls.lightning_modules.cpc_module import CpcModule
 from ptls_tests.utils.data_generation import gen_trx_data
-from ptls.seq_encoder.rnn_encoder import RnnSeqEncoder
+from ptls.seq_encoder import RnnSeqEncoder
 from ptls.trx_encoder import TrxEncoder
 from functools import partial
 

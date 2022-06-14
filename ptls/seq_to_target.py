@@ -1,19 +1,14 @@
 import logging
 from copy import deepcopy
 
+import numpy as np
 import pytorch_lightning as pl
 import torch
-import numpy as np
-from torchmetrics.functional.classification import auroc
 import torchmetrics
+from torchmetrics.functional.classification import auroc
 
 from ptls.loss import cross_entropy, kl, mape_metric, mse_loss, r_squared
-from ptls.train import get_optimizer, get_lr_scheduler
-from ptls.models import create_head_layers
 from ptls.trx_encoder import PaddedBatch
-from collections import defaultdict
-from ptls.seq_encoder.abs_seq_encoder import AbsSeqEncoder
-
 
 logger = logging.getLogger(__name__)
 
@@ -125,7 +120,7 @@ class R_squared(DistributionTargets):
 
 class SequenceToTarget(pl.LightningModule):
     def __init__(self,
-                 seq_encoder: AbsSeqEncoder,
+                 seq_encoder: torch.nn.Module,
                  head: torch.nn.Module=None,
                  loss: torch.nn.Module=None,
                  metric_list: torchmetrics.Metric=None,
@@ -261,7 +256,8 @@ class SequenceToTarget(pl.LightningModule):
     def configure_optimizers(self):
         if self.hparams.pretrained_lr is not None:
             if self.hparams.pretrained_lr == 'freeze':
-                self.seq_encoder.freeze()
+                for p in self.seq_encoder.parameters():
+                    p.requires_grad = False
                 logger.info('Created optimizer with frozen encoder')
                 parameters = self.parameters()
             else:

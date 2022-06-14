@@ -3,7 +3,7 @@ import numpy as np
 from omegaconf import OmegaConf
 
 from ptls.trx_encoder import PaddedBatch
-from ptls.seq_encoder.rnn_encoder import RnnSeqEncoderDistributionTarget
+from ptls.seq_encoder.rnn_seq_encoder_distribution_target import RnnSeqEncoderDistributionTarget
 from ptls.trx_encoder import TrxEncoder
 
 
@@ -19,7 +19,7 @@ def get_data():
                       )
 
 
-def test_shape():
+def _test_shape():
     eps = 1e-5
     params = {
         'trx_encoder': {
