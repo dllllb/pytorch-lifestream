@@ -27,7 +27,7 @@ Here `x` contains three features. Two are categorical and one is numerical:
 - `currency` is categorical with `dictionary_size=4`
 - `amount` is numerical with `mean=5` and `std=4`
 
-`x` contains 5 sequences with `maximum length=12`. Real lengths of each sequence are `[2, 8, 5]`.
+`x` contains 5 sequences with `maximum_length=12`. Real lengths of each sequence are `[2, 8, 5]`.
 
 We can access `x` content via `PaddedBatch` properties `x.payload` and `x.seq_lens`.
 
@@ -43,7 +43,9 @@ tensor([[1, 1, 0, 0, 0, 0, 0, 0],
 ```
 There are 2, 8 and 5 valid tokens in lines.
 
-We can update our `x`:
+More way of `seq_len_mask` usage are in `PaddedBatch` docstring.
+
+We can recreate our `x` with modified content:
 ```python
 x = PaddedBatch({k: v * x.seq_len_mask for k, v in x.payload.items()}, x.seq_lens)
 ```
@@ -59,7 +61,7 @@ tensor([[8, 1, 0, 0, 0, 0, 0, 0],
 
 All invalid tokens are replaced with zeros.
 
-Usually all layers respect `PaddedBatch.seq_lens` and there are not required to replace padded simbols.
+Generally, all layers respect `PaddedBatch.seq_lens` and no explicit zeroing of padded characters is required.
 
 # `ptls.trx_encoder.TrxEncoder`
 
@@ -84,7 +86,7 @@ model = TrxEncoder(
     numeric_values={'amount': 'identity'},
 )
 ```
-We can provide feature description to `TrxEncoder`.
+We should provide feature description to `TrxEncoder`.
 Dictionary size and embedding size for categorical features. Scaler name for numerical features.
 `identity` means no rescaling.
 

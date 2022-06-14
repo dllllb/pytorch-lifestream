@@ -51,9 +51,9 @@ trx_encoder = TrxEncoder(
 seq_encoder = RnnEncoder(input_size=trx_encoder.output_size, hidden_size=16)
 
 z = trx_encoder(x)
-y = seq_encoder(z)
+y = seq_encoder(z)  # embeddings wor each transaction
 seq_encoder.is_reduce_sequence = True
-h = seq_encoder(z)
+h = seq_encoder(z)  # embeddings for sequences, aggregate all transactions in one embedding
 
 assert y.payload.size() == (3, 8, 16)
 assert h.size() == (3, 16)
@@ -74,7 +74,7 @@ There are:
 - `ptls.seq_encoder.RnnSeqEncoder` with `RnnEncoder`
 - `ptls.seq_encoder.TransformerSeqEncoder` with `TransformerEncoder`
 
-They work as simple `Sequensial(trx_encoder, seq_encoder)` and support `is_reduce_sequence` property.
+They work as simple `Sequential(trx_encoder, seq_encoder)` and support `is_reduce_sequence` property.
 The main advantage that you can simply create such encoder from config file using `hydra instantiate` tools.
 You can avoid of explicit set of `seq_encoder.input_size`, they will be taken from `trx_encoder`.  Let's compare.
 
@@ -140,9 +140,9 @@ y = model(x)
 
 Also we have `ptls.seq_encoder.AggFeatureSeqEncoder`.
 It looks like seq_encoder. It take raw features at input and provide reduced representation at output.
-This encoder can be used as baseline features, which are fed into boosting model.
-It's eat the same input as other seq_encoders, and it can easily be replaced by rnn of transformer seq encoder.
-It use gpu and works fast. It havn't parameters for learn.
+This encoder creates features, which are good for boosting model. This is a strong baseline for many tasks.
+`AggFeatureSeqEncoder` eat the same input as other seq_encoders, and it can easily be replaced
+by rnn of transformer seq encoder.  It use gpu and works fast. It haven't parameters for learn.
 
 Possible pipeline:
 ```python
@@ -152,7 +152,7 @@ catboost_model.fit(agg_embeddings, target)
 ```
 
 We plain to split `AggFeatureSeqEncoder` into components which will be compatible with other ptls-layers.
-It will be possible to use flexible between `TrxEncoder` with `AggSeqEncoder` and `OheEncoder` with `RnnEncoder`.
+It will be possible to choose flexible between `TrxEncoder` with `AggSeqEncoder` and `OheEncoder` with `RnnEncoder`.
 
 
 ## Classes

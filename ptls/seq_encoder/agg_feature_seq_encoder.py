@@ -9,7 +9,7 @@ class AggFeatureSeqEncoder(torch.nn.Module):
     """Calculates statistics over feature arrays and return them as embedding.
 
     Result is high dimension non learnable vector.
-    such embedding can be used in busting ML algorithm.
+    Such embedding can be used in busting ML algorithm.
 
     Statistics are calculated by numerical features, with grouping by category values.
 

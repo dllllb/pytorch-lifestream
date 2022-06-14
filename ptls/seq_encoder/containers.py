@@ -69,6 +69,28 @@ class SeqEncoderContainer(torch.nn.Module):
 class RnnSeqEncoder(SeqEncoderContainer):
     """SeqEncoderContainer with RnnEncoder
 
+    Supports incremental embedding calculation.
+    Each RNN step requires previous hidden state. Hidden state passed through the iterations during sequence processing.
+    Starting hidden state required by RNN. Starting hidden state are depends on `RnnEncoder.trainable_starter`.
+    You can also provide starting hidden state to `forward` method as `h_0`.
+    This can be useful when you need to `update` your embedding with new transactions.
+
+    Example:
+        >>> seq_encoder = RnnSeqEncoder(...)
+        >>> embedding_0 = seq_encoder(data_0)
+        >>> embedding_1 = seq_encoder(data_1, h_0=embedding_0)
+        >>> embedding_2a = seq_encoder(data_2, h_0=embedding_1)
+        >>> embedding_2b = seq_encoder(data_2)
+        >>> embedding_2c = seq_encoder(data_0 + data_1 + data_2)
+
+    `embedding_2a` takes into account all transactions from `data_0`, `data_1` and `data_2`.
+    `embedding_2b` takes into account only transactions from `data_2`.
+    `embedding_2c` is the same as `embedding_2a`.
+    `embedding_2a` calculated faster than `embedding_2c`.
+
+    Incremental calculation works fast when you have long sequences and short updates. RNN just process short update.
+
+
     Parameters
         trx_encoder:
             TrxEncoder object

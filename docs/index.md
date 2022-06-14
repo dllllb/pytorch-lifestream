@@ -2,7 +2,9 @@
 
 ## Library content
 
-Here is a breaf overview of library with links to detail description
+Here is a breaf overview of library with links to detail description.
+
+Some sections are in the process of description.
 
 Library modules:
  - `ptls.data` - all you need for prepare your data for neural network feeding. [Link](data_preparation.md)
@@ -14,9 +16,9 @@ Library modules:
  CoLES, SimCLR, CPC, VICReg, ... [Link TBD](#)
  - Build your encoder with layers. [Link TBD](#):
    - `ptls.trx_encoder` - layers which makes representation for single transactions. [Link](trx_encoder.md)
-   - `ptls.seq_encoder` - layers which works with sequences. [Link](seq_encoder.md)
+   - `ptls.seq_encoder` - layers which works with sequences.
    There are cross transactional interaction (like convolution of self attention) and reduce sequence to single vector.
-   [Link TBD](#)
+   [Link](seq_encoder.md)
    - `ptls.heads` - composite layers for final embedding transformation (L2Norm, MLP, ResNet, FFT, ...). [Link TBD](#)
  - `ptls.contrastive_learning` - propose tools for contrastive learning tasks.
  There are losses, mining strategies and metrics. [Link TBD](#)
