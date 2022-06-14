@@ -16,6 +16,6 @@ experiments/*/conf/embeddings_validation*.work
 dist
 build
 tags
-
+site
 *.log
 *.code-workspace

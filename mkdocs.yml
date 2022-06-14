@@ -1,5 +1,9 @@
 site_name: PyTorch-LifeStream
-site_url: https://example.com/
 nav:
     - Home: index.md
+    - 'User Guide':
+        - 'Data Preparation': 'data_preparation.md'
+        - 'Losses': 'embeddings_with_other_losses.md'
+        - 'seq_encoder': 'seq_encoder.md'
+        - 'trx_encoder': 'trx_encoder.md'
 theme: readthedocs
