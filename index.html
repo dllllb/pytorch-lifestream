@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="description" content="None" /><link rel="canonical" href="https://example.com/" />
+      <link rel="shortcut icon" href="img/favicon.ico" />
+    <title>PyTorch-LifeStream</title>
+    <link rel="stylesheet" href="css/theme.css" />
+    <link rel="stylesheet" href="css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Home";
+        var mkdocs_page_input_path = "index.md";
+        var mkdocs_page_url = "/";
+      </script>
+    
+    <script src="js/jquery-3.6.0.min.js" defer></script>
+    <!--[if lt IE 9]>
+      <script src="js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/highlight.min.js"></script>
+      <script>hljs.initHighlightingOnLoad();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href="." class="icon icon-home"> PyTorch-LifeStream
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="./search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+                <li class="toctree-l1 current"><a class="reference internal current" href=".">Home</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#library-content">Library content</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#how-to-guide">How to guide</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#how-to-create-your-own-components">How to create your own components</a>
+    </li>
+    </ul>
+                </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href=".">PyTorch-LifeStream</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="." class="icon icon-home" alt="Docs"></a> &raquo;</li><li>Home</li>
+    <li class="wy-breadcrumbs-aside">
+    </li>
+  </ul>
+  <hr/>
+</div>
+
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="welcome-to-pytorch-lifestream-docs">Welcome to pytorch-lifestream docs</h1>
+<h2 id="library-content">Library content</h2>
+<p>Here is a breaf overview of library with links to detail description.</p>
+<p>Some sections are in the process of description.</p>
+<p>Library modules:
+ - <code>ptls.data</code> - all you need for prepare your data for neural network feeding. <a href="data_preparation/">Link</a>
+   - <code>ptls.data.preprocessing</code> - common patters for feature transformation. 
+   Categorical encoding, datetime transformation, numerical feature preprocessing.
+   - <code>ptls.data.split_tools</code> - convert data to ptls-data-format. Split by users and features. 
+   - <code>ptls.data.datasets</code> - <code>torch.Dataset</code> interface access to the data.
+ - <code>ptls.lightning_modules</code> - propose tools for training your encoders with popular frameworks like 
+ CoLES, SimCLR, CPC, VICReg, ... <a href="#">Link TBD</a>
+ - Build your encoder with layers. <a href="#">Link TBD</a>:
+   - <code>ptls.trx_encoder</code> - layers which makes representation for single transactions. <a href="trx_encoder/">Link</a>
+   - <code>ptls.seq_encoder</code> - layers which works with sequences.
+   There are cross transactional interaction (like convolution of self attention) and reduce sequence to single vector.
+   <a href="seq_encoder/">Link</a>
+   - <code>ptls.heads</code> - composite layers for final embedding transformation (L2Norm, MLP, ResNet, FFT, ...). <a href="#">Link TBD</a>
+ - <code>ptls.contrastive_learning</code> - propose tools for contrastive learning tasks.
+ There are losses, mining strategies and metrics. <a href="#">Link TBD</a></p>
+<h2 id="how-to-guide">How to guide</h2>
+<ol>
+<li><strong>Prepare your data</strong>.</li>
+<li>Use <code>Pyspark</code> in local or cluster mode for big dataset and <code>Pandas</code> for small.</li>
+<li>Split data into required parts (train, valid, test, ...).</li>
+<li>Transform features to compatible format using <code>Pyspark</code> or <code>Pandas</code> functions. 
+   You can use also <code>ptls.data.preprocessing</code> for common data transformation patterns.</li>
+<li>Split sequences to ptls-data format with <code>ptls.data.split_tools</code>. Save prepared data into <code>Parquet</code> format or 
+   keep it in memory (<code>Pickle</code> also works).</li>
+<li>Use one of available <code>ptls.data.datasets</code> which provide data access.</li>
+<li><strong>Choose framework for encoder train</strong>.</li>
+<li>There are both supervised of unsupervised in <code>ptls.lightning_modules</code>. </li>
+<li>Keep in mind that each framework requires his own batch format.
+   Tools for batch collate can be found in the selected framework package.</li>
+<li><strong>Build encoder</strong>.</li>
+<li>All parts are available in <code>ptls.trx_encoder</code>, <code>ptls.seq_encoder</code>, <code>ptls.heads</code>.</li>
+<li>You can also use pretrained layers.</li>
+<li><strong>Train your encoder</strong> with selected framework.</li>
+<li>Some frameworks require certain options to be selected. It can be loss, metrics or something else. 
+   <code>ptls.contrastive_learning</code> contains all of them. </li>
+<li>Provide data with selected framework compatible dataloader. </li>
+<li>Check the progress on tensorboard.</li>
+<li>Tune hyperparameters if you need.</li>
+<li><strong>Save trained encoder</strong> for future use.</li>
+<li>You can use it as single solution (e.g. get class label probabilities).</li>
+<li>It can be a pretrained part of other neural network.</li>
+<li><strong>Use encoder</strong> in your project.</li>
+<li>Run predict for your data and get logits, probas, scores or embeddings. </li>
+<li>Use <code>ptls.data</code> and <code>ptls.data.datasets</code> tools to keep your data transformation and collect batches for inference.</li>
+</ol>
+<h2 id="how-to-create-your-own-components">How to create your own components</h2>
+<p>Your task may require some specific solution. 
+You may create a new component for every library modules. 
+There are links with description:
+ - <code>ptls.data</code> - new data processing tools and datasets for new type of data. <a href="#">Link TBD</a>
+ - <code>ptls.lightning_modules</code> - new modules which train network for your problem. <a href="#">Link TBD</a>
+ - New layers for <code>ptls.trx_encoder</code>, <code>ptls.seq_encoder</code>, <code>ptls.heads</code>. <a href="#">Link TBD</a>
+ - <code>ptls.contrastive_learning</code> - New losses, mining strategies and metrics. <a href="#">Link TBD</a></p>
+              
+            </div>
+          </div><footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+    
+  </span>
+</div>
+    <script>var base_url = '.';</script>
+    <script src="js/theme_extra.js" defer></script>
+    <script src="js/theme.js" defer></script>
+      <script src="search/main.js" defer></script>
+    <script defer>
+        window.onload = function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        };
+    </script>
+
+</body>
+</html>
+
+<!--
+MkDocs version : 1.3.0
+Build Date UTC : 2022-06-14 21:18:16.978322+00:00
+-->
