@@ -1,0 +1,5 @@
+site_name: PyTorch-LifeStream
+site_url: https://example.com/
+nav:
+    - Home: index.md
+theme: readthedocs
