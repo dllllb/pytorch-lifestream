@@ -1,9 +1,9 @@
 site_name: PyTorch-LifeStream
 nav:
-    - Home: index.md
+    - Welcome: index.md
     - 'User Guide':
         - 'Data Preparation': 'data_preparation.md'
-        - 'Losses': 'embeddings_with_other_losses.md'
-        - 'seq_encoder': 'seq_encoder.md'
-        - 'trx_encoder': 'trx_encoder.md'
+        - 'Training Methods': 'methods.md'
+        - seq_encoder: 'seq_encoder.md'
+        - trx_encoder: 'trx_encoder.md'
 theme: readthedocs
