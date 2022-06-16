@@ -1,7 +1,7 @@
 import torch
 import numpy as np
 
-from ptls.seq_encoder.utils import NormEncoder
+from ptls.nn.seq_encoder.utils import NormEncoder
 
 
 def test_norm_encoder():

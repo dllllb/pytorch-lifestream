@@ -1,5 +1,4 @@
 import logging
-import torch
 import hydra
 import pytorch_lightning as pl
 import pyspark.sql.functions as F
@@ -56,7 +55,7 @@ class InferenceSpark(object):
         def inference_func(data_feature, data_length):
 
             import torch
-            from ptls.trx_encoder import PaddedBatch
+            from ptls.nn.trx_encoder import PaddedBatch
             import subprocess
 
             if torch.cuda.is_available():

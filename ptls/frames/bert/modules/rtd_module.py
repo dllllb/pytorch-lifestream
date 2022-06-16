@@ -4,7 +4,7 @@ from torch.nn import BCELoss
 
 from ptls.custom_layers import Squeeze
 from ptls.frames.abs_module import ABSModule
-from ptls.seq_encoder.utils import AllStepsHead, FlattenHead
+from ptls.nn.seq_encoder.utils import AllStepsHead, FlattenHead
 
 
 class RtdModule(ABSModule):

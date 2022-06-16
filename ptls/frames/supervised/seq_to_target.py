@@ -5,7 +5,7 @@ import pytorch_lightning as pl
 import torch
 import torchmetrics
 
-from ptls.trx_encoder import PaddedBatch
+from ptls.nn.trx_encoder import PaddedBatch
 
 logger = logging.getLogger(__name__)
 

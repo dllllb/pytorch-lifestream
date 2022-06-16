@@ -12,14 +12,12 @@ client_2          -> client_2_features, client_2_id
 import logging
 from functools import partial
 
-import numpy as np
 import pytorch_lightning as pl
 import torch
-from pyhocon.config_parser import ConfigFactory
 from torch.utils.data import DataLoader
 from tqdm.auto import tqdm
 
-from ptls.data_load import IterableAugmentations, IterableChain, augmentation_chain, padded_collate_wo_target
+from ptls.data_load import IterableAugmentations, IterableChain, padded_collate_wo_target
 from ptls.data_load.augmentations.build_augmentations import build_augmentations
 from ptls.data_load.data_module.map_augmentation_dataset import MapAugmentationDataset
 from ptls.data_load.iterable_processing.category_size_clip import CategorySizeClip
@@ -29,7 +27,7 @@ from ptls.data_load.iterable_processing.seq_len_filter import SeqLenFilter
 from ptls.data_load.list_splitter import ListSplitter
 from ptls.data_load.parquet_dataset import ParquetDataset, ParquetFiles
 from ptls.data_load.partitioned_dataset import PartitionedDataset, PartitionedDataFiles
-from ptls.trx_encoder import PaddedBatch
+from ptls.nn.trx_encoder import PaddedBatch
 
 logger = logging.getLogger(__name__)
 

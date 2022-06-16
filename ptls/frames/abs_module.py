@@ -1,6 +1,6 @@
 import torch
 import pytorch_lightning as pl
-from ptls.trx_encoder import PaddedBatch
+from ptls.nn.trx_encoder import PaddedBatch
 
 
 class ABSModule(pl.LightningModule):

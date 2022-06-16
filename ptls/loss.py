@@ -2,7 +2,7 @@ import torch
 from torch import nn
 import numpy as np
 
-from ptls.trx_encoder import PaddedBatch
+from ptls.nn.trx_encoder import PaddedBatch
 
 
 def cross_entropy(pred, soft_targets):

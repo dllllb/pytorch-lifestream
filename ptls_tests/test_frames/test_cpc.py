@@ -4,10 +4,10 @@ from pyhocon import ConfigFactory
 
 from ptls.data_load import TrxDataset
 from ptls.data_load import create_train_loader, create_validation_loader
-from ptls.frames.cpc.modules.cpc_module import CpcModule
+from ptls.frames.cpc import CpcModule
 from ptls_tests.utils.data_generation import gen_trx_data
-from ptls.seq_encoder import RnnSeqEncoder
-from ptls.trx_encoder import TrxEncoder
+from ptls.nn import RnnSeqEncoder
+from ptls.nn import TrxEncoder
 from functools import partial
 
 

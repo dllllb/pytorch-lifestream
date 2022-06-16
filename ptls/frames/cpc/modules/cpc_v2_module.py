@@ -3,8 +3,8 @@ import torch
 from ptls.frames.abs_module import ABSModule
 from ptls.frames.cpc.losses.cpc_loss import CPC_Loss
 from ptls.frames.cpc.metrics.cpc_accuracy import CpcAccuracy
-from ptls.seq_encoder import RnnSeqEncoder
-from ptls.trx_encoder import PaddedBatch
+from ptls.nn.seq_encoder import RnnSeqEncoder
+from ptls.nn.trx_encoder import PaddedBatch
 
 
 class CpcV2Module(ABSModule):
