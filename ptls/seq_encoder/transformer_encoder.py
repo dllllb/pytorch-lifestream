@@ -11,8 +11,13 @@ logger = logging.getLogger(__name__)
 
 
 class PositionalEncoding(nn.Module):
-    def __init__(self, d_model, max_len=5000):
+    def __init__(self,
+                 d_model,
+                 use_start_random_shift=True,
+                 max_len=5000,
+                 ):
         super(PositionalEncoding, self).__init__()
+        self.use_start_random_shift = use_start_random_shift
         self.max_len = max_len
 
         pe = torch.zeros(max_len, d_model)
@@ -25,7 +30,7 @@ class PositionalEncoding(nn.Module):
 
     def forward(self, x):
         T = x.size(1)
-        if self.training:
+        if self.training and self.use_start_random_shift:
             start_pos = random.randint(0, self.max_len - T)
         else:
             start_pos = 0
@@ -57,6 +62,10 @@ class TransformerEncoder(AbsSeqEncoder):
             The number of sub-encoder-layers in the encoder
         use_positional_encoding (bool):
             Use or not positional encoding
+        use_start_random_shift (bool):
+            True - starting pos of positional encoding randomly shifted when training
+            This allow to train transformer with all range of positional encoding values
+            False - starting pos is not shifted.
         max_seq_len:
             The possible maximum sequence length for positional encoding
         use_after_mask:
@@ -65,7 +74,7 @@ class TransformerEncoder(AbsSeqEncoder):
             Padding simbols aren't used in attention bases on sequences lenghts
         use_norm_layer:
             Use or not LayerNorm
-        is_reduce_sequence:
+        is_reduce_sequence (bool):
             False - returns PaddedBatch with all transactions embeddings
             True - returns one embedding for sequence based on CLS token
 
@@ -89,6 +98,7 @@ class TransformerEncoder(AbsSeqEncoder):
                  dropout=0.1,
                  n_layers=6,
                  use_positional_encoding=True,
+                 use_start_random_shift=True,
                  max_seq_len=5000,
                  use_after_mask=False,
                  use_src_key_padding_mask=True,
@@ -127,7 +137,11 @@ class TransformerEncoder(AbsSeqEncoder):
             self.enc = torch.nn.TransformerEncoder(enc_layer, n_layers, enc_norm)
 
         if self.use_positional_encoding:
-            self.pe = PositionalEncoding(max_len=max_seq_len, d_model=input_size)
+            self.pe = PositionalEncoding(
+                use_start_random_shift=use_start_random_shift,
+                max_len=max_seq_len,
+                d_model=input_size,
+            )
 
     @staticmethod
     def generate_square_subsequent_mask(sz):
@@ -143,8 +157,6 @@ class TransformerEncoder(AbsSeqEncoder):
     def forward(self, x: PaddedBatch):
         B, T, H = x.payload.size()
 
-        x_in = torch.cat([self.starter.expand(B, 1, H), x.payload], dim=1)
-
         if self.use_after_mask:
             src_mask = self.generate_square_subsequent_mask(T + 1).to(x.device)
         else:
@@ -158,8 +170,10 @@ class TransformerEncoder(AbsSeqEncoder):
         else:
             src_key_padding_mask = None
 
+        x_in = x.payload
         if self.use_positional_encoding:
             x_in = self.pe(x_in)
+        x_in = torch.cat([self.starter.expand(B, 1, H), x_in], dim=1)
 
         if self.shared_layers:
             out = x_in

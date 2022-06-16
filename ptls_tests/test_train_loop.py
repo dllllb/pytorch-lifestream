@@ -6,7 +6,7 @@ from sklearn.metrics import roc_auc_score
 from ptls.data_load import create_validation_loader, TrxDataset
 from ptls.models import rnn_model
 from ptls_tests.utils.data_generation import gen_trx_data
-from ptls.train import score_model, score_model
+from ptls.pl_inference import score_model
 
 
 def tst_params():

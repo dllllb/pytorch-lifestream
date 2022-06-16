@@ -6,7 +6,6 @@ from omegaconf import DictConfig, OmegaConf
 from pytorch_lightning.callbacks import ModelCheckpoint
 from pytorch_lightning.loggers import TensorBoardLogger
 
-from ptls.util import get_conf, get_cls
 from pytorch_lightning.callbacks import LearningRateMonitor
 
 logger = logging.getLogger(__name__)

@@ -1,9 +1,8 @@
 import torch
 
-from ptls.metric_learn.losses import ContrastiveLoss, HistogramLoss, BinomialDevianceLoss, TripletLoss, MarginLoss, \
-    ComplexLoss
-from ptls.metric_learn.sampling_strategies import AllPositivePairSelector
-from ptls.metric_learn.sampling_strategies import AllTripletSelector
+from ptls.frames.coles.losses.complex_loss import ComplexLoss
+from ptls.frames.coles.losses import MarginLoss, HistogramLoss, TripletLoss, BinomialDevianceLoss, ContrastiveLoss
+from ptls.frames.coles.sampling_strategies import AllPositivePairSelector, AllTripletSelector
 
 
 def get_data():

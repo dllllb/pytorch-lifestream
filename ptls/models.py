@@ -1,16 +1,15 @@
-import torch
-
-from torch.nn import Linear, BatchNorm1d, Sigmoid, Sequential, ReLU, Dropout, LogSoftmax
 from typing import List
 
+import torch
+from torch.nn import Linear, BatchNorm1d, Sigmoid, Sequential, ReLU, LogSoftmax
+
+from ptls.custom_layers import Squeeze
 from ptls.seq_encoder.rnn_encoder import RnnEncoder
-from ptls.seq_encoder.utils import PerTransHead, PerTransTransf, TimeStepShuffle, scoring_head
 from ptls.seq_encoder.skip_rnn_encoder import skip_rnn_encoder
-from ptls.seq_encoder.transformer_encoder import TransformerEncoder
+from ptls.seq_encoder.utils import NormEncoder
+from ptls.seq_encoder.utils import PerTransHead, TimeStepShuffle, scoring_head
 from ptls.trx_encoder import TrxEncoder
 from ptls.trx_encoder.trx_mean_encoder import TrxMeanEncoder
-from ptls.custom_layers import Squeeze
-from ptls.seq_encoder.utils import NormEncoder
 
 
 def trx_avg_model(params):
@@ -65,54 +64,6 @@ def skip_rnn2_model(params):
     return m
 
 
-def transformer_model(params):
-    p = TrxEncoder(params.trx_encoder)
-    trx_size = p.output_size
-    enc_input_size = params.transf.input_size
-    if enc_input_size != trx_size:
-        inp_reshape = PerTransTransf(trx_size, enc_input_size)
-        p = torch.nn.Sequential(p, inp_reshape)
-
-    e = TransformerEncoder(enc_input_size, params.transf)
-    h = scoring_head(enc_input_size, params.head)
-
-    m = torch.nn.Sequential(p, e, h)
-    return m
-
-
-def model_by_type(model_type):
-    model = {
-        'avg': trx_avg_model,
-        'avg2': trx_avg2_model,
-        'rnn': rnn_model,
-        'rnn-shuffle': rnn_shuffle_model,
-        'skip-rnn2': skip_rnn2_model,
-        'transf': transformer_model,
-    }[model_type]
-    return model
-
-
-def freeze_layers(model):
-    for p in model.parameters():
-        p.requires_grad = False
-
-
-def create_head_layers(params, seq_encoder=None):
-    from torch.nn import Linear, BatchNorm1d, ReLU, Sigmoid, LogSoftmax, Dropout
-    from ptls.custom_layers import Squeeze, CombinedTargetHeadFromRnn, TargetHeadFromAggFeatures, DummyHead
-    from ptls.seq_encoder.utils import NormEncoder
-
-    layers = []
-    _locals = locals()
-    for l_name, l_params in params.head_layers:
-        l_params = {k: int(v.format(**_locals)) if type(v) is str else v
-                    for k, v in l_params.items()}
-
-        cls = _locals.get(l_name, None)
-        layers.append(cls(**l_params))
-    return torch.nn.Sequential(*layers)
-
-
 class Head(torch.nn.Module):
     r"""Head for the sequence encoder
 
@@ -133,13 +84,15 @@ class Head(torch.nn.Module):
 
      """
     def __init__(self,
-                 input_size: int = 1,
+                 input_size: int = None,
                  use_norm_encoder: bool = False,
                  use_batch_norm: bool = False,
                  hidden_layers_sizes: List[int] = None,
                  objective: str = None,
                  num_classes: int = 1):
         super().__init__()
+        # TODO: check possibility to create empty head with do nothing
+
         layers = []
 
         if use_norm_encoder:

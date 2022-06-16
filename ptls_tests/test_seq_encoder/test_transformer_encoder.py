@@ -6,12 +6,12 @@ from ptls.seq_encoder.transformer_encoder import PositionalEncoding
 
 
 def test_positional_encoding_shape():
-    pe = PositionalEncoding(256, 4000)
+    pe = PositionalEncoding(256, max_len=4000)
     assert pe.pe.size() == (1, 4000, 256)
 
 
 def test_positional_encoding_forward_train():
-    pe = PositionalEncoding(256, 4000)
+    pe = PositionalEncoding(256, max_len=4000)
     pe.train()
     x = torch.randn(10, 128, 256)
     y = pe(x)
@@ -48,6 +48,7 @@ def test_transformer_params():
         TransformerEncoder(input_size=32, starter='zeros'),
         TransformerEncoder(input_size=32, shared_layers=True),
         TransformerEncoder(input_size=32, use_positional_encoding=False),
+        TransformerEncoder(input_size=32, use_start_random_shift=False),
         TransformerEncoder(input_size=32, use_after_mask=True),
         TransformerEncoder(input_size=32, use_src_key_padding_mask=False),
         TransformerEncoder(input_size=32, use_norm_layer=False),

@@ -1,15 +1,16 @@
-import torch
-import pytorch_lightning as pl
-import pandas as pd
+from functools import partial
 from pathlib import Path
+
+import pandas as pd
+import pytorch_lightning as pl
+import torch
 from sklearn.model_selection import train_test_split
 
-from ptls.data_preprocessing.pandas_preprocessor import PandasDataPreprocessor
-from ptls.trx_encoder import TrxEncoder
-from ptls.seq_encoder import RnnSeqEncoder
-from ptls.models import Head
-from ptls.lightning_modules.emb_module import EmbModule
 from ptls.data_load.data_module.emb_data_module import train_data_loader, inference_data_loader
+from ptls.data_preprocessing.pandas_preprocessor import PandasDataPreprocessor
+from ptls.frames.coles import CoLESModule
+from ptls.seq_encoder import RnnSeqEncoder
+from ptls.trx_encoder import TrxEncoder
 
 
 def test_train_inference():
@@ -38,9 +39,12 @@ def test_train_inference():
         hidden_size=16,
         type='gru',
     )
-    head = Head(input_size=seq_encoder.embedding_size, use_norm_encoder=True)
 
-    model = EmbModule(seq_encoder=seq_encoder, head=head)
+    model = CoLESModule(
+        seq_encoder=seq_encoder,
+        optimizer_partial=partial(torch.optim.Adam),
+        lr_scheduler_partial=partial(torch.optim.lr_scheduler.StepLR, step_size=1, gamma=1.0),
+    )
 
     trainer = pl.Trainer(
         max_epochs=1,

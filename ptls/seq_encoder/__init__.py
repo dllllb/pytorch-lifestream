@@ -1,5 +1,6 @@
 from ptls.seq_encoder.rnn_encoder import RnnEncoder
 from ptls.seq_encoder.transformer_encoder import TransformerEncoder
+from ptls.seq_encoder.longformer_encoder import LongformerEncoder
 
 from ptls.seq_encoder.containers import RnnSeqEncoder, TransformerSeqEncoder
 from ptls.seq_encoder.agg_feature_seq_encoder import AggFeatureSeqEncoder

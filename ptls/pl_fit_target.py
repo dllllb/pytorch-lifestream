@@ -1,15 +1,11 @@
-import hydra
 import json
 import logging
+
+import hydra
 import numpy as np
+import pytorch_lightning as pl
 from omegaconf import DictConfig, OmegaConf
 from pytorch_lightning.loggers import TensorBoardLogger
-
-from ptls.data_load.data_module.cls_data_module import ClsDataModuleTrain
-import pytorch_lightning as pl
-
-from ptls.seq_to_target import SequenceToTarget
-
 
 logger = logging.getLogger(__name__)
 

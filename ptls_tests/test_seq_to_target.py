@@ -1,10 +1,10 @@
 import pytorch_lightning as pl
 import torchmetrics
 from functools import partial
-from ptls.seq_to_target import SequenceToTarget
+from ptls.frames.supervised.seq_to_target import SequenceToTarget
 from .test_data_load import RandomEventData
 from pyhocon import ConfigFactory
-from ptls.seq_to_target import LogAccuracy
+from ptls.frames.supervised.metrics import LogAccuracy
 import torch
 from ptls.trx_encoder import TrxEncoder
 from ptls.seq_encoder.containers import RnnSeqEncoder, TransformerSeqEncoder
