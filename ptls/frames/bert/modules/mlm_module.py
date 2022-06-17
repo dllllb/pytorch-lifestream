@@ -4,8 +4,7 @@ from torchmetrics import MeanMetric
 
 from ptls.frames.bert.losses.query_soft_max import QuerySoftmaxLoss
 from ptls.nn.seq_encoder.abs_seq_encoder import AbsSeqEncoder
-from ptls.nn.pb import PBL2Norm
-from ptls.nn.trx_encoder import PaddedBatch
+from ptls.nn import PaddedBatch, PBL2Norm
 
 
 class MLMPretrainModule(pl.LightningModule):
