@@ -1,7 +1,7 @@
 import torch
 import numpy as np
 
-from ptls.nn.seq_encoder.utils import NormEncoder
+from ptls.nn.normalization import L2NormEncoder
 
 
 def test_norm_encoder():
@@ -11,7 +11,7 @@ def test_norm_encoder():
         [3.0, 4.0],
     ], dtype=torch.float64)
 
-    f = NormEncoder()
+    f = L2NormEncoder()
     out = f(x).numpy()
     exp = np.array([
         [1.0, 0.0],

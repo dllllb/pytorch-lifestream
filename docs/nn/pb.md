@@ -34,12 +34,12 @@ assert y.payload.size() == (4, 12, 10)
 
 ### Class mapping
 
-| Pb layer    | Parent Layer       |
-| ----------- | ------------------ | 
-| PBLinear    | torch.nn.Linear    |
-| PBLayerNorm | torch.nn.LayerNorm |
-| PBReLU      | torch.nn.ReLU      |
-
+| Pb layer    | Parent Layer           |
+| ----------- | ---------------------- | 
+| PBLinear    | torch.nn.Linear        |
+| PBLayerNorm | torch.nn.LayerNorm     |
+| PBReLU      | torch.nn.ReLU          |
+| PBL2Norm    | ptls.nn.L2NormEncoder  |
 
 ## Classes
 See docstrings for classes.
@@ -47,3 +47,4 @@ See docstrings for classes.
 - `ptls.nn.PBLayerNorm`
 - `ptls.nn.PBL2Norm`
 - `ptls.nn.PBReLU`
+- `ptls.nn.PBL2Norm`

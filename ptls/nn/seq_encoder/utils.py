@@ -5,6 +5,7 @@ from torch import nn as nn
 from torch.nn import functional as tf
 
 from ptls.custom_layers import Squeeze
+from ptls.nn.normalization import L2NormEncoder
 from ptls.nn.trx_encoder import PaddedBatch
 
 
@@ -80,15 +81,6 @@ class MeanStepEncoder(nn.Module):
         return means
 
 
-class NormEncoder(nn.Module):
-    def __init__(self, eps=1e-9):
-        super().__init__()
-        self.eps = eps
-
-    def forward(self, x: torch.Tensor):
-        return x / (x.pow(2).sum(dim=1) + self.eps).pow(0.5).unsqueeze(-1).expand(*x.size())
-
-
 class PayloadEncoder(nn.Module):
     def forward(self, x: PaddedBatch):
         return x.payload
@@ -146,7 +138,7 @@ def scoring_head(input_size, params):
             layers.append(e0)
 
     if params.norm_input:
-        layers.append(NormEncoder())
+        layers.append(L2NormEncoder())
 
     if params.use_batch_norm:
         layers.append(nn.BatchNorm1d(input_size))

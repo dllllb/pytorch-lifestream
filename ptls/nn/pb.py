@@ -1,7 +1,8 @@
 from functools import WRAPPER_ASSIGNMENTS
 import torch
 
-from ptls.nn.trx_encoder import PaddedBatch
+from ptls.nn.normalization import L2NormEncoder
+from ptls.nn import PaddedBatch
 
 
 def _pb_shell(cls):
@@ -20,9 +21,4 @@ def _pb_shell(cls):
 PBLinear = _pb_shell(torch.nn.Linear)
 PBLayerNorm = _pb_shell(torch.nn.LayerNorm)
 PBReLU = _pb_shell(torch.nn.ReLU)
-
-
-class PBL2Norm(torch.nn.Module):
-    def forward(self, x):
-        return PaddedBatch(x.payload / (x.payload.pow(2).sum(dim=-1, keepdim=True) + 1e-9).pow(0.5),
-                           x.seq_lens)
+PBL2Norm = _pb_shell(L2NormEncoder)

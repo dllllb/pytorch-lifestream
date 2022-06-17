@@ -4,7 +4,7 @@ import torch
 from torch.nn import Linear, BatchNorm1d, Sigmoid, Sequential, ReLU, LogSoftmax
 
 from ptls.custom_layers import Squeeze
-from ptls.nn.seq_encoder.utils import NormEncoder
+from ptls.nn.normalization import L2NormEncoder
 
 
 class Head(torch.nn.Module):
@@ -39,7 +39,7 @@ class Head(torch.nn.Module):
         layers = []
 
         if use_norm_encoder:
-            layers.append(NormEncoder())
+            layers.append(L2NormEncoder())
 
         if use_batch_norm:
             layers.append(BatchNorm1d(input_size))

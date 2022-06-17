@@ -9,4 +9,6 @@ from .pb import PBLinear, PBL2Norm, PBLayerNorm, PBReLU
 
 from .head import Head
 
+from .normalization import L2NormEncoder
+
 from .binarization import BinarizationLayer
