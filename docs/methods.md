@@ -1,6 +1,8 @@
-# Using Vicreg Loss with Metric Learn training
+# Training methods
 
-## Define the model
+## Using Vicreg Loss with Metric Learn training
+
+### Define the model
 
 ```python
 from dltranz.seq_encoder import SequenceEncoder
@@ -29,7 +31,7 @@ model = EmbModule(seq_encoder=seq_encoder,
                   lr_scheduler_step_gamma=0.9025)
 ```
 
-## Data module
+### Data module
 
 To use VicregLoss and BarlowTwinsLoss it is crucial to set `split_count=2`
 ```python
@@ -52,7 +54,7 @@ dm = EmbeddingTrainDataModule(
 )
 ```
 
-## Training
+### Training
 
 ```python
 import torch
