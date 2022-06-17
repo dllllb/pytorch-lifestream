@@ -4,6 +4,9 @@ nav:
     - 'User Guide':
         - 'Data Preparation': 'data_preparation.md'
         - 'Losses': 'embeddings_with_other_losses.md'
-        - 'seq_encoder': 'seq_encoder.md'
-        - 'trx_encoder': 'trx_encoder.md'
+        - 'ptls.nn':
+            - 'seq_encoder': 'seq_encoder.md'
+            - 'trx_encoder': 'trx_encoder.md'
+            - 'padded_batch': 'pb.md'
+            - 'head': 'head.md'
 theme: readthedocs

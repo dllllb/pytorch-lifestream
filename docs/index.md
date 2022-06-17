@@ -25,9 +25,10 @@ There are currently three groups of unsupervised frameworks and one group for su
  - `ptls.nn` - layers for model creation:
    - `ptls.nn.trx_encoder` - layers which makes representation for single transactions. [Link](nn/trx_encoder.md)
    - `ptls.nn.seq_encoder` - layers which works with sequences like `Rnn` of `Transformer`. [Link](nn/seq_encoder.md)
-   - `ptls.nn.pb` - `PaddedBatch` compatible layers. Looks like `torch.nn` but works with ptls-data [link](nn/pb.md)
+   - `ptls.nn.pb` - `PaddedBatch` compatible layers. Looks like `torch.nn` but works with ptls-data. [link](nn/pb.md)
    - `ptls.nn.head` - composite layers for final embedding transformation [Link](nn/head.md)
-   - `ptls.nn.binarization` - Experimental binarization layer. More info is in docstring. [link TBD](#)
+   - `ptls.nn.seq_step.py` - change the sequence along the time axis.
+   - `ptls.nn.binarization`, `ptls.nn.normalization` - other groups of layers.
 
 
 ## How to guide

@@ -3,8 +3,7 @@ import torch
 from omegaconf import OmegaConf
 
 from ptls.nn.seq_encoder.rnn_encoder import RnnEncoder
-from ptls.nn.seq_encoder.skip_rnn_encoder import SkipStepEncoder
-from ptls.nn.seq_encoder.utils import PerTransHead, TimeStepShuffle, scoring_head
+from ptls.nn.seq_encoder.utils import PerTransHead, scoring_head
 from ptls.nn.trx_encoder import PaddedBatch
 
 
@@ -309,25 +308,6 @@ def test_trx_avg_encoder():
 
     assert len(out.size()) == 1
     assert out.size()[0] == 12
-
-
-def test_timestep_shuffle():
-    t = torch.tensor([
-        [[0, 0], [1, 2], [3, 4], [0, 0]],
-        [[0, 0], [10, 11], [0, 0], [0, 0]],
-    ])
-
-    res = TimeStepShuffle()(PaddedBatch(t, [2, 1]))
-
-    assert res.payload.shape == (2, 4, 2)
-
-
-def test_skip_step_encoder():
-    t = torch.arange(8*11*2).view(8, 11, 2)
-
-    res = SkipStepEncoder(3)(PaddedBatch(t, [10, 9, 8, 7, 3, 2, 1, 0]))
-
-    assert res.payload.shape == (8, 4, 2)
 
 
 def test_rnn_iterative_no_starter():

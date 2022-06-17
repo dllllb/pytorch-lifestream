@@ -1,8 +1,7 @@
 import torch
 
 from ptls.nn.seq_encoder.rnn_encoder import RnnEncoder
-from ptls.nn.seq_encoder.skip_rnn_encoder import skip_rnn_encoder
-from ptls.nn.seq_encoder.utils import PerTransHead, TimeStepShuffle, scoring_head
+from ptls.nn.seq_encoder.utils import PerTransHead, scoring_head
 from ptls.nn.trx_encoder import TrxEncoder
 from ptls.nn.trx_encoder.trx_mean_encoder import TrxMeanEncoder
 
@@ -26,32 +25,6 @@ def rnn_model(params):
     e = RnnEncoder(p.output_size, **params.rnn)
     h = scoring_head(
         input_size=params.rnn.hidden_size * (2 if params.rnn.bidir else 1),
-        params=params.head
-    )
-
-    m = torch.nn.Sequential(p, e, h)
-    return m
-
-
-def rnn_shuffle_model(params):
-    p = TrxEncoder(params.trx_encoder)
-    p_size = p.output_size
-    p = torch.nn.Sequential(p, TimeStepShuffle())
-    e = RnnEncoder(p_size, params.rnn)
-    h = scoring_head(
-        input_size=params.rnn.hidden_size * (2 if params.rnn.bidir else 1),
-        params=params.head
-    )
-
-    m = torch.nn.Sequential(p, e, h)
-    return m
-
-
-def skip_rnn2_model(params):
-    p = TrxEncoder(params.trx_encoder)
-    e = skip_rnn_encoder(p.output_size, params.skip_rnn)
-    h = scoring_head(
-        input_size=params.skip_rnn.rnn1.hidden_size * (2 if params.skip_rnn.rnn1.bidir else 1),
         params=params.head
     )
 
