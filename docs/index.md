@@ -17,17 +17,17 @@ Some sections are in the process of description.
 - `ptls.frames` - propose tools for training your encoders with popular frameworks like 
 CoLES, SimCLR, CPC, VICReg, ... [Link](methods.md)
     - `ptls.frames.coles` - contrastive leaning on split sequences. 
-    Samples from original sequence are near in embedding space. [link TBD](#)
+    Samples from original sequence are near in embedding space.
     - `ptls.frames.cpc` - Contrast learning on a changing time sequence.
-    Embeddings are trained to predict their future state. [link TBD](#)
-    - `ptls.frames.bert` - methods are inspired by nlp with transformer models. [link TBD](#)
-    - `ptls.framed.supervised` - modules fo supervised training. [link TBD](#)
+    Embeddings are trained to predict their future state.
+    - `ptls.frames.bert` - methods are inspired by nlp with transformer models.
+    - `ptls.framed.supervised` - modules fo supervised training.
 
 - `ptls.nn` - layers for model creation:
-    - `ptls.nn.trx_encoder` - layers which makes representation for single transactions. [Link](nn/trx_encoder.md)
-    - `ptls.nn.seq_encoder` - layers which works with sequences like `Rnn` of `Transformer`. [Link](nn/seq_encoder.md)
-    - `ptls.nn.pb` - `PaddedBatch` compatible layers. Looks like `torch.nn` but works with ptls-data. [link](nn/pb.md)
-    - `ptls.nn.head` - composite layers for final embedding transformation [Link](nn/head.md)
+    - `ptls.nn.trx_encoder` - layers which makes representation for single transactions.
+    - `ptls.nn.seq_encoder` - layers which works with sequences like `Rnn` of `Transformer`.
+    - `ptls.nn.pb` - `PaddedBatch` compatible layers. Looks like `torch.nn` but works with ptls-data.
+    - `ptls.nn.head` - composite layers for final embedding transformation.
     - `ptls.nn.seq_step.py` - change the sequence along the time axis.
     - `ptls.nn.binarization`, `ptls.nn.normalization` - other groups of layers.
 
