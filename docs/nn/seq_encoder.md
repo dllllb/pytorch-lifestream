@@ -11,6 +11,7 @@ There are 2 types of seq encoders:
 ## Embeddings as input
 
 We implement ptls-api for `torch` and `huggingface` sequential layers:
+
 - `ptls.nn.RnnEncoder` for `torch.nn.GRU`
 - `ptls.nn.TransformerEncoder` for `torch.nn.TransformerEncoder`
 - `ptls.nn.LongformerEncoder` for `transformers.LongformerModel`
@@ -72,6 +73,7 @@ with `is_reduce_sequence=False`.
 As you can see `TrxEncoder` works with raw features and compatible with embedding seq encoder.
 We make a composition layers, which contains `TrxEncoder` and one `SeqEncoder` implementation.
 There are:
+
 - `ptls.nn.RnnSeqEncoder` with `RnnEncoder`
 - `ptls.nn.TransformerSeqEncoder` with `TransformerEncoder`
 - `ptls.nn.LongformerSeqEncoder` with `LongformerEncoder`
@@ -140,7 +142,9 @@ x = PaddedBatch(
 y = model(x)
 ```
 
-Also we have `ptls.nn.AggFeatureSeqEncoder`.
+## AggFeatureSeqEncoder
+
+`ptls.nn.AggFeatureSeqEncoder`.
 It looks like seq_encoder. It take raw features at input and provide reduced representation at output.
 This encoder creates features, which are good for boosting model. This is a strong baseline for many tasks.
 `AggFeatureSeqEncoder` eat the same input as other seq_encoders, and it can easily be replaced
@@ -161,11 +165,13 @@ It will be possible to choose flexible between `TrxEncoder` with `AggSeqEncoder`
 See docstrings for classes.
 
 Take trx embedding as input:
+
 - `ptls.nn.RnnEncoder`
 - `ptls.nn.TransformerEncoder`
 - `ptls.nn.LongformerEncoder`
 
 Take raw features as input:
+
 - `ptls.nn.RnnSeqEncoder`
 - `ptls.nn.TransformerSeqEncoder`
 - `ptls.nn.LongformerSeqEncoder`

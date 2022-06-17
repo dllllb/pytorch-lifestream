@@ -5,8 +5,8 @@ nav:
         - 'Data Preparation': 'data_preparation.md'
         - 'Training Methods': 'methods.md'
         - 'ptls.nn':
-            - 'seq_encoder': 'seq_encoder.md'
-            - 'trx_encoder': 'trx_encoder.md'
-            - 'padded_batch': 'pb.md'
-            - 'head': 'head.md'
+            - 'trx_encoder': 'nn/trx_encoder.md'
+            - 'seq_encoder': 'nn/seq_encoder.md'
+            - 'head': 'nn/head.md'
+            - 'pb layers': 'nn/pb.md'
 theme: readthedocs

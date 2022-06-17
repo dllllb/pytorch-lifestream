@@ -23,6 +23,7 @@ x = PaddedBatch(
 ```
 
 Here `x` contains three features. Two are categorical and one is numerical:
+
 - `mcc_code` is categorical with `dictionary_size=10`
 - `currency` is categorical with `dictionary_size=4`
 - `amount` is numerical with `mean=5` and `std=4`
@@ -111,5 +112,6 @@ Now we can use other layers which consume transactional embeddings.
 
 ## Classes
 See docstrings for classes:
+
 - `ptls.nn.PaddedBatch`
 - `ptls.nn.TrxEncoder`
