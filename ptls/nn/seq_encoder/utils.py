@@ -5,6 +5,7 @@ from torch import nn as nn
 from torch.nn import functional as tf
 
 from ptls.custom_layers import Squeeze
+from ptls.nn.seq_step import LastStepEncoder
 from ptls.nn.normalization import L2NormEncoder
 from ptls.nn.trx_encoder import PaddedBatch
 
@@ -48,31 +49,6 @@ class ConcatLenEncoder(nn.Module):
 
         embeddings = torch.cat([h, lens_normed, -torch.log(lens_normed)], -1)
         return embeddings
-
-
-class TimeStepShuffle(nn.Module):
-    def forward(self, x: PaddedBatch):
-        shuffled = []
-        for seq, slen in zip(x.payload, x.seq_lens):
-            idx = torch.randperm(slen) + 1
-            pad_idx = torch.arange(slen + 1, len(seq))
-            idx = torch.cat([torch.zeros(1, dtype=torch.long), idx, pad_idx])
-            shuffled.append(seq[idx])
-
-        shuffled = PaddedBatch(torch.stack(shuffled), x.seq_lens)
-        return shuffled
-
-
-class LastStepEncoder(nn.Module):
-    def forward(self, x: PaddedBatch):
-        h = x.payload[range(len(x.payload)), [l - 1 for l in x.seq_lens]]
-        return h
-
-
-class FirstStepEncoder(nn.Module):
-    def forward(self, x: PaddedBatch):
-        h = x.payload[:, 0, :]  # [B, T, H] -> [B, H]
-        return h
 
 
 class MeanStepEncoder(nn.Module):

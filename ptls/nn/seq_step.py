@@ -2,8 +2,32 @@ import numpy as np
 import torch
 from torch import nn as nn
 
-from ptls.nn.seq_encoder.rnn_encoder import RnnEncoder
-from ptls.nn.trx_encoder import PaddedBatch
+from ptls.nn import PaddedBatch
+
+
+class TimeStepShuffle(nn.Module):
+    def forward(self, x: PaddedBatch):
+        shuffled = []
+        for seq, slen in zip(x.payload, x.seq_lens):
+            idx = torch.randperm(slen) + 1
+            pad_idx = torch.arange(slen + 1, len(seq))
+            idx = torch.cat([torch.zeros(1, dtype=torch.long), idx, pad_idx])
+            shuffled.append(seq[idx])
+
+        shuffled = PaddedBatch(torch.stack(shuffled), x.seq_lens)
+        return shuffled
+
+
+class LastStepEncoder(nn.Module):
+    def forward(self, x: PaddedBatch):
+        h = x.payload[range(len(x.payload)), [l - 1 for l in x.seq_lens]]
+        return h
+
+
+class FirstStepEncoder(nn.Module):
+    def forward(self, x: PaddedBatch):
+        h = x.payload[:, 0, :]  # [B, T, H] -> [B, H]
+        return h
 
 
 class SkipStepEncoder(nn.Module):
@@ -28,10 +52,3 @@ class SkipStepEncoder(nn.Module):
         out_lens = torch.tensor([min(1, l // self.step_size) for l in x.seq_lens])
 
         return PaddedBatch(out, out_lens)
-
-
-def skip_rnn_encoder(input_size, params):
-    rnn0 = RnnEncoder(input_size, params.rnn0)
-    rnn1 = RnnEncoder(params.rnn0.hidden_size, params.rnn1)
-    sse = SkipStepEncoder(params.skip_step_size)
-    return nn.Sequential(rnn0, sse, rnn1)

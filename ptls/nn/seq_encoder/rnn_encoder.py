@@ -2,7 +2,7 @@ import torch
 from torch import nn as nn
 
 from ptls.nn.seq_encoder.abs_seq_encoder import AbsSeqEncoder
-from ptls.nn.seq_encoder.utils import LastStepEncoder
+from ptls.nn.seq_step import LastStepEncoder
 from ptls.nn.trx_encoder import PaddedBatch
 
 

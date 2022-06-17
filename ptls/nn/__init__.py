@@ -12,3 +12,5 @@ from .head import Head
 from .normalization import L2NormEncoder
 
 from .binarization import BinarizationLayer
+
+from .seq_step import FirstStepEncoder, LastStepEncoder, TimeStepShuffle, SkipStepEncoder
