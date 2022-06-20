@@ -197,7 +197,7 @@ class SequenceToTarget(pl.LightningModule):
         self.loss = loss
 
         if type(metric_list) is not list:
-            metric_list = list(metric_list.values())
+            metric_list = list(dict(metric_list).values())
         else:
             metric_list = [metric_list]
         metric_list = [(m.__class__.__name__, m) for m in metric_list]
