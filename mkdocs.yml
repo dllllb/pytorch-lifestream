@@ -17,4 +17,10 @@ nav:
                 - 'seq_encoder': 'nn/seq_encoder.md'
                 - 'head': 'nn/head.md'
                 - 'pb': 'nn/pb.md'
+            - 'ptls.frames':
+                - 'coles': 'frames/coles.md'
+                - 'cpc': 'frames/cpc.md'
+                - 'bert': 'frames/bert.md'
+                - 'supervised': 'frames/supervised.md'
+
 theme: readthedocs

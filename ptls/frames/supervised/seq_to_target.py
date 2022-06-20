@@ -49,7 +49,7 @@ class SequenceToTarget(pl.LightningModule):
     seq_encoder:
         Sequence encoder. May be pretrained or with random initialisation
     head:
-        Head layers for your problem. May be simple or multilayer.
+        Head layers for your problem. May be simple or multilayer or None.
     loss:
         Your loss for specific problem.
     metric_list:
