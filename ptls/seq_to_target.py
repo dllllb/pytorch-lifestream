@@ -1,4 +1,5 @@
 import logging
+import omegaconf
 from copy import deepcopy
 
 import numpy as np
