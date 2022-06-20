@@ -1,6 +1,6 @@
 import logging
-import omegaconf
 from copy import deepcopy
+from omegaconf import DictConfig
 
 import numpy as np
 import pytorch_lightning as pl
@@ -196,10 +196,13 @@ class SequenceToTarget(pl.LightningModule):
         self.head = head
         self.loss = loss
 
-        if type(metric_list) is not list:
-            metric_list = list(dict(metric_list).values())
-        else:
+        if type(metric_list) is DictConfig:
+            metric_list = dict(metric_list)
+
+        if type(metric_list) is not dict:
             metric_list = [metric_list]
+        else:
+            metric_list = list(metric_list.values())
         metric_list = [(m.__class__.__name__, m) for m in metric_list]
 
         self.train_metrics = torch.nn.ModuleDict([(name, deepcopy(mc)) for name, mc in metric_list])
