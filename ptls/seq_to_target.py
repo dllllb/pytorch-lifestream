@@ -196,12 +196,10 @@ class SequenceToTarget(pl.LightningModule):
         self.head = head
         self.loss = loss
 
-        if type(metric_list) is list:
-            metric_list = [metric_list]
-        elif type(metric_list) in [dict, omegaconf.dictconfig.DictConfig]:
+        if type(metric_list) is not list:
             metric_list = list(metric_list.values())
         else:
-            assert True, 'should not be reached'
+            metric_list = [metric_list]
         metric_list = [(m.__class__.__name__, m) for m in metric_list]
 
         self.train_metrics = torch.nn.ModuleDict([(name, deepcopy(mc)) for name, mc in metric_list])
