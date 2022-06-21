@@ -119,6 +119,51 @@ class R_squared(DistributionTargets):
         return r_squared(self.sign * torch.exp(y_hat - 1), y[:, None])
 
 
+class RMSE(torchmetrics.Metric):
+    is_differentiable = True
+    higher_is_better = False
+    full_state_update = False
+
+    def __init__(self):
+        super().__init__()
+        self.add_state("psum", default=torch.tensor(0.0), dist_reduce_fx="sum")
+        self.add_state("pnum", default=torch.tensor(0), dist_reduce_fx="sum")
+
+    def update(self, y1, y):
+        if y.dim() == 1:
+            delta = y1 - y if y1.dim() == 1 else y1[:, 0].exp() - y
+        else:
+            delta = y1[:, 0].exp() - y.sum(dim=1)
+        self.psum += torch.sum(delta.square())
+        self.pnum += y.shape[0]
+
+    def compute(self):
+        return torch.sqrt(self.psum / self.pnum)
+
+
+class BucketAccuracy(torchmetrics.Metric):
+    is_differentiable = False
+    higher_is_better = True
+    full_state_update = True
+
+    def __init__(self, n_buckets=10):
+        super().__init__()
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        self.q = torch.linspace(0.0, 1.0, 1 + n_buckets, device=device)[1:]
+        self.add_state("y1", default=[])
+        self.add_state("y", default=[])
+
+    def update(self, y1, y):
+        self.y1.append(y1 if y1.dim() == 1 else y1[:, 0].exp())
+        self.y.append(y if y.dim() == 1 else y.sum(dim=1))
+
+    def compute(self):
+        y1, y = torch.cat(self.y1), torch.cat(self.y)
+        buckets = y.quantile(self.q, interpolation="nearest")
+        y1, y = torch.bucketize(y1, buckets), torch.bucketize(y, buckets)
+        return torchmetrics.functional.accuracy(y1, y)
+
+
 class SequenceToTarget(pl.LightningModule):
     def __init__(self,
                  seq_encoder: torch.nn.Module,

@@ -4,11 +4,7 @@ import logging
 import numpy as np
 from omegaconf import DictConfig, OmegaConf
 from pytorch_lightning.loggers import TensorBoardLogger
-
-from ptls.data_load.data_module.cls_data_module import ClsDataModuleTrain
 import pytorch_lightning as pl
-
-from ptls.seq_to_target import SequenceToTarget
 
 
 logger = logging.getLogger(__name__)
