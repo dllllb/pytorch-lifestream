@@ -15,7 +15,6 @@ from functools import partial
 import numpy as np
 import pytorch_lightning as pl
 import torch
-from pyhocon.config_parser import ConfigFactory
 from torch.utils.data import DataLoader
 from tqdm.auto import tqdm
 
