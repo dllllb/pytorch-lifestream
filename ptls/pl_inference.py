@@ -1,6 +1,7 @@
 import logging
 
 import glob
+import torch
 import hydra
 import pandas as pd
 import pytorch_lightning as pl
@@ -15,6 +16,7 @@ from ptls.data_load.iterable_processing.category_size_clip import CategorySizeCl
 from ptls.data_load.iterable_processing.feature_filter import FeatureFilter
 from ptls.data_load.iterable_processing.target_extractor import TargetExtractor
 from ptls.data_load.parquet_dataset import ParquetDataset, ParquetFiles
+from ptls.lightning_modules.rtd_module import RtdModule
 from ptls.metric_learn.inference_tools import save_scores
 from ptls.train import score_model
 from ptls.util import get_conf, get_cls
@@ -64,7 +66,11 @@ def main(conf: DictConfig):
     model = hydra.utils.instantiate(conf.pl_module)
 
     if not conf.get('random_model', False):
-        model = model.load_from_checkpoint(conf.model_path)
+        # model = model.load_from_checkpoint(conf.model_path)
+        state_dict = torch.load(conf.model_path)['state_dict']
+        if not isinstance(pl_module, RtdModule):
+            state_dict = {k: v for k, v in state_dict.items() if not k.startswith('_head')}
+        model.load_state_dict(state_dict)
 
     model.seq_encoder.is_reduce_sequence = True
 
