@@ -6,6 +6,7 @@ from omegaconf import DictConfig, OmegaConf
 from pytorch_lightning.loggers import TensorBoardLogger
 
 from ptls.data_load.data_module.cls_data_module import ClsDataModuleTrain
+from ptls.lightning_modules.rtd_module import RtdModule
 import pytorch_lightning as pl
 
 from ptls.seq_to_target import SequenceToTarget
@@ -71,7 +72,8 @@ def main(conf: DictConfig):
         # pl_module = pl_module_cls.load_from_checkpoint(pretrained_encoder_path)
         pl_module = hydra.utils.instantiate(conf.pretrained_module)
         state_dict = torch.load(pretrained_encoder_path)['state_dict']
-        state_dict = {k: v for k, v in state_dict.items() if not k.startswith('_head')}
+        if not isinstance(pl_module, RtdModule):
+            state_dict = {k: v for k, v in state_dict.items() if not k.startswith('_head')}
         pl_module.load_state_dict(state_dict)
         pl_module.seq_encoder.is_reduce_sequence = True
     else:
