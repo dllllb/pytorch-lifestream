@@ -26,16 +26,19 @@ class RtdModule(ABSModule):
                          optimizer_partial,
                          lr_scheduler_partial)
 
-        self._head = torch.nn.Sequential(
-            AllStepsHead(
-                torch.nn.Sequential(
-                    torch.nn.Linear(self.seq_encoder.embedding_size, 1),
-                    torch.nn.Sigmoid(),
-                    Squeeze(),
-                )
-            ),
-            FlattenHead(),
-        )
+        if head is None:
+            self._head = torch.nn.Sequential(
+                AllStepsHead(
+                    torch.nn.Sequential(
+                        torch.nn.Linear(self.seq_encoder.embedding_size, 1),
+                        torch.nn.Sigmoid(),
+                        Squeeze(),
+                    )
+                ),
+                FlattenHead(),
+            )
+        else:
+            self._head = head
 
     @property
     def metric_name(self):
