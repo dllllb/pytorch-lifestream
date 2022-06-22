@@ -68,7 +68,7 @@ def main(conf: DictConfig):
     if not conf.get('random_model', False):
         # model = model.load_from_checkpoint(conf.model_path)
         state_dict = torch.load(conf.model_path)['state_dict']
-        if not isinstance(pl_module, RtdModule):
+        if not isinstance(model, RtdModule):
             state_dict = {k: v for k, v in state_dict.items() if not k.startswith('_head')}
         model.load_state_dict(state_dict)
 
