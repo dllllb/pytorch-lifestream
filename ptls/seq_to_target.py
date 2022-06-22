@@ -148,8 +148,7 @@ class BucketAccuracy(torchmetrics.Metric):
 
     def __init__(self, n_buckets=10):
         super().__init__()
-        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        self.q = torch.linspace(0.0, 1.0, 1 + n_buckets, device=device)[1:]
+        self.n_buckets = n_buckets
         self.add_state("y1", default=[])
         self.add_state("y", default=[])
 
@@ -158,9 +157,11 @@ class BucketAccuracy(torchmetrics.Metric):
         self.y.append(y if y.dim() == 1 else y.sum(dim=1))
 
     def compute(self):
-        y1, y = torch.cat(self.y1), torch.cat(self.y)
-        buckets = y.quantile(self.q, interpolation="nearest")
-        y1, y = torch.bucketize(y1, buckets), torch.bucketize(y, buckets)
+        y1, y = torch.cat(self.y1).float(), torch.cat(self.y).float()
+        q = torch.linspace(0, 1, self.n_buckets + 1, dtype=y.dtype, device=y.device)[1:]
+        buckets = torch.quantile(y, q, interpolation="nearest")
+        y1 = torch.bucketize(y1, buckets, out_int32=True)
+        y = torch.bucketize(y, buckets, out_int32=True)
         return torchmetrics.functional.accuracy(y1, y)
 
 
