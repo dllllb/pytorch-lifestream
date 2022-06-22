@@ -19,7 +19,7 @@ Loss is contrastive, it uses random negative samples to avoid a trivial solution
 - embedding for all sequence is `c` - context state of CPC encoder
 
 
-## Usage
+## CpcModule
 `ptls.frames.cpc.CpcModule` and `ptls.frames.cpc.CpcV2Module` is a `LightningModule` with CPC framework.
 It should be parametrized by `n_negatives` and `n_forward_steps` parameters.
 `CpcV2Module` parametrized also by `aggregator` network.
@@ -27,8 +27,6 @@ CPC V2 datamodule requires a split strategy.
 
 Example:
 ```python
-split_strategy = ...
-datamodule = some_function(data, split_strategy)
 seq_encoder = ...
 coles_module = CpcModule(
     seq_encoder=seq_encoder,
@@ -37,17 +35,22 @@ coles_module = CpcModule(
         n_forward_steps=3,
     )
 )
-trainer = pl.Trainer()
-trainer.fit(coles_module, datamodule)
 ```
 
-## CpcDataModule and split strategies
+## CpcDataset and split strategies
+Use `ptls.frames.cpc.CpcDataset` or `ptls.frames.cpc.CpcIterableDataset` with `CpcModule`.
 
-- `ptls.data_load.data_module.cpc_data_module.CpcDataModuleTrain`
-
+Use `ptls.frames.cpc.CpcV2Dataset` or `ptls.frames.cpc.CpcV2IterableDataset` with `CpcV2Module`. 
+Take `splitter` from `ptls.frames.coles.split_strategy` which preserve order in samples.
+Like `SampleSlices(is_sorted=True)`
 
 ## Classes
 See docstrings for classes.
 
+- `ptls.frames.cpc.CpcDataset`
+- `ptls.frames.cpc.CpcIterableDataset`
+- `ptls.frames.cpc.CpcV2Dataset`
+- `ptls.frames.cpc.CpcV2IterableDataset`
 - `ptls.frames.cpc.CpcModule`
 - `ptls.frames.cpc.CpcV2Module`
+- `ptls.frames.coles.split_strategy`

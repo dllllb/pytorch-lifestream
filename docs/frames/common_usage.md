@@ -13,6 +13,7 @@ Trainer is a `pytorch_lightning.Trainer`. It automates training process.
 You can read its description [here](https://pytorch-lightning.readthedocs.io/en/latest/common/trainer.html).
 
 We make a special `torch.nn.Dataset` implementation for each framework. All of them:
+
 - support `map` and `iterable` version. You can use any of them. [More info about](https://pytorch.org/docs/stable/data.html#dataset-types)
 - have `collate_fn` for batch collection
 - consume `map` or `iterable` input as dict of feature arrays
@@ -23,7 +24,7 @@ We provide a model to framework assigned `LightningModule`.
 
 ## Example
 
-This example is for CoLES framework. You can try an others with the same vay.
+This example is for CoLES framework. You can try an others with the same way.
 See module list in `ptls.frames` submodules. Check docstring for precise parameter tuning.
 
 ### Data generation
@@ -45,7 +46,7 @@ from sklearn.model_selection import train_test_split
 train_data, valid_data = train_test_split(dataset, test_size=0.1)
 ```
 
-We can use an others sources for train and valid data. Next steps will be the same.
+We can use an others sources for train and valid data.
 
 
 ### DataModule creation
@@ -55,8 +56,8 @@ or `ptls.frames.coles.ColesIterableDataset` for `iterable`.
 
 Our demo data is in memory, so we can use both `map` or `iterable`.
 `map` style seems better because it provides better shuffle.
-If our data is iterable like `ptls.data_load.parquet_dataset.ParquetDataset` 
-we can not use `map` style until we read it to `list`.
+If data is iterable like `ptls.data_load.parquet_dataset.ParquetDataset` 
+we can't use `map` style until we read it to `list`.
 
 ```python
 from ptls.frames.coles import ColesDataset
@@ -74,14 +75,14 @@ Manual:
 ```python
 train_dataloader = torch.utils.data.DataLoader(
     dataset=train_dataset,
-    collate_fn=train_dataset.collate_fn,
+    collate_fn=train_dataset.collate_fn,  # collate_fn from dataset
     shuffle=True,
     num_workers=4,
     batch_size=32,
 )
 valid_dataloader = torch.utils.data.DataLoader(
     dataset=valid_dataset,
-    collate_fn=valid_dataset.collate_fn,
+    collate_fn=valid_dataset.collate_fn,  # collate_fn from dataset
     shuffle=False,
     num_workers=0,
     batch_size=32,
@@ -162,14 +163,14 @@ This demo shows how to make embedding with pretrained `seq_encoder`.
 
 `pytorch_lightning.Trainer` have `predict` method that calls `seq_encoder.forward`.
 `predict` requires `LightningModule` but `seq_encoder` is `torch.nn.Module`.
-We should cower `seq_encoder` to `LightningModule`.
+We should cover `seq_encoder` to `LightningModule`.
 
 We can use `CoLESModule` or any other module if available. In this example we can use `coles_module` object.
 Sometimes we have only `seq_encoder`, e.g. loaded from disk.
-`CoLESModule` have a little overhead there are head loss and metrics inside.
+`CoLESModule` have a little overhead. There are head, loss and metrics inside.
 
 Other way is using lightweight `ptls.frames.supervised.SequenceToTarget` module.
-It can make for inference only with `seq_encoder`.
+It can run inference with only `seq_encoder`.
 ```python
 import torch
 import pytorch_lightning as pl
@@ -192,4 +193,4 @@ Final shape is depends on:
 ## Next steps
 
 Now you can try to change hyperparameters of `ColesDataset`, `CoLESModule` and `Trainer`.
-Or try an others frameworks.
+Or try an others frameworks from `ptls.frames`.

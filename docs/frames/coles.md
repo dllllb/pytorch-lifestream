@@ -22,7 +22,7 @@ allows the similarity of embeddings for original sequence and his subsequence.
 - embedding for each transaction is an internal state of `seq_encoder`
 - embedding for all sequence is an output of `seq_encoder`
 
-## Usage
+## CoLESModule
 `ptls.frames.coles.CoLESModule` is a `LightningModule` with CoLES framework.
 It should be parametrized by `head` and `loss`. Usually, `loss` requires a definition of `sampling_strategy`.
 CoLES datamodule requires a `split_strategy`.
@@ -30,8 +30,6 @@ Combination of these parameters provides a variety of training methods.
 
 Example:
 ```python
-split_strategy = ...
-datamodule = some_function(data, split_strategy)
 seq_encoder = ...
 coles_module = CoLESModule(
     seq_encoder=seq_encoder,
@@ -41,25 +39,31 @@ coles_module = CoLESModule(
         sampling_strategy=HardNegativePairSelector(neg_count=5),
     )
 )
-trainer = pl.Trainer()
-trainer.fit(coles_module, datamodule)
 ```
 
-## ColesDataModule and split strategies
-
-- `ptls.data_load.data_module.coles_data_module.ColesDataModuleTrain`
-- `ptls.frames.coles.split_strategy`
+## ColesDataset and split strategies
+Use `ptls.frames.coles.ColesDataset` or `ptls.frames.coles.ColesIterableDataset`. 
+They are parametrised with `splitter` from `ptls.frames.coles.split_strategy`
 
 ## Coles losses and sampling strategies
+Use classes from:
 
 - `ptls.frames.coles.losses`
 - `ptls.frames.coles.sampling_strategies`
 
 ## Head selection
+Use `ptls.nn.Head`.
+Default head has only l2-norm layer (`Head(use_norm_encoder=True)`).
 
-- `ptls.nn.Head`
+Head with MLP inside realise `projection head` concept from SimCLR.
 
 ## Classes
 See docstrings for classes.
 
+- `ptls.frames.coles.ColesDataset`
+- `ptls.frames.coles.ColesIterableDataset`
 - `ptls.frames.coles.CoLESModule`
+
+- `ptls.frames.coles.split_strategy`
+- `ptls.frames.coles.losses`
+- `ptls.frames.coles.sampling_strategies`

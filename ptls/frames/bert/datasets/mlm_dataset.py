@@ -4,7 +4,7 @@ from ptls.data_load import padded_collate_wo_target
 from ptls.data_load.augmentations.random_slice import RandomSlice
 
 
-class MlmDataset(torch.utils.date.Dataset):
+class MlmDataset(torch.utils.data.Dataset):
     """
 
     Parameters

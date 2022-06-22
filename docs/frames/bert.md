@@ -30,15 +30,28 @@ All of these tasks learn internal structure of the data and use it to make repre
 - embedding for each transaction from `trx_encoder`
 - pretrained MLM transformer as `seq_encoder`, CLS token aren't learned
 
-## Lightning modules:
+## MLM
+`ptls.frames.bert.MLMPretrainModule` is a lightning module.
 
-- `ptls.frames.bert.MLMPretrainModule`
-- `ptls.frames.bert.RtdModule`
-- `ptls.frames.bert.SopNspModule`
+`ptls.frames.bert.MlmDataset`, `ptls.frames.bert.MlmIterableDataset` is a compatible datasets.
+`ptls.frames.bert.MlmIndexedDataset` is also compatible with MLM.
+`MlmDataset` dataset sample one slice for one user. `MlmIndexedDataset` sample all possible slices for each user.
+`MlmIndexedDataset` index the data this because it hasn't iterable-style variant.
 
-## Data modules
+## RTD
+`ptls.frames.bert.RtdModule` is a lightning module.
 
-- `ptls.data_load.data_module.mlm_data.MLMDataset`
-- `ptls.data_load.data_module.rtd_data_module.RtdDataModuleTrain`
-- `ptls.data_load.data_module.sop_data_module.SopDataModuleTrain`
-- `ptls.data_load.data_module.nsp_data_module.NspDataModuleTrain`
+`ptls.frames.bert.RtdDataset`, `ptls.frames.bert.RtdIterableDataset` is a compatible datasets.
+
+
+## SOP
+`ptls.frames.bert.SopModule` is a lightning module.
+
+`ptls.frames.bert.SopDataset`, `ptls.frames.bert.SopIterableDataset` is a compatible datasets.
+Requires `splitter` from `ptls.frames.coles.split_strategy`
+
+## NSP
+`ptls.frames.bert.NspModule` is a lightning module.
+
+`ptls.frames.bert.NspDataset`, `ptls.frames.bert.NspIterableDataset` is a compatible datasets.
+Requires `splitter` from `ptls.frames.coles.split_strategy`

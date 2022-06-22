@@ -4,7 +4,7 @@ from ptls.data_load import padded_collate_wo_target
 from ptls.data_load.augmentations.random_slice import RandomSlice
 
 
-class CpcDataset(torch.utils.date.Dataset):
+class CpcDataset(torch.utils.data.Dataset):
     """
 
     Parameters
