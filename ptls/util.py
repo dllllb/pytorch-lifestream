@@ -24,6 +24,8 @@ def cycle_block_iterator(iterator, size):
 
 
 class ListSubset:
+    """The same as torch.utils.data.Subset
+    """
     def __init__(self, delegate, idx_to_take):
         self.delegate = delegate
         self.idx_to_take = idx_to_take

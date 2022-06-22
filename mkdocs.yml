@@ -18,6 +18,7 @@ nav:
                 - 'head': 'nn/head.md'
                 - 'pb': 'nn/pb.md'
             - 'ptls.frames':
+                - 'Common Usage Pattern': 'common_usage.md'
                 - 'coles': 'frames/coles.md'
                 - 'cpc': 'frames/cpc.md'
                 - 'bert': 'frames/bert.md'

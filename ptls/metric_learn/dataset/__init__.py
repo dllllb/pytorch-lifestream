@@ -15,6 +15,8 @@ from ptls.metric_learn.dataset.complex_target_dataset import ComplexTargetDatase
 
 
 def nested_list_to_flat_with_collate(collate_fn):
+    """Deprecated
+    """
     def _func(batch):
         batch = functools.reduce(operator.iadd, batch)
         return collate_fn(batch)
