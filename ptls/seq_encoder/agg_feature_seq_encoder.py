@@ -39,7 +39,7 @@ class AggFeatureSeqEncoder(torch.nn.Module):
             Use of not std by values
         use_topk_cnt (int):
             Define the K for topk features calculation. 0 if not used
-        distribution_targets_task (bool):
+        distribution_target_task (bool):
             Calc more features
         logify_sum_mean_seqlens (bool):
             True - apply log transform to sequence length
@@ -56,7 +56,7 @@ class AggFeatureSeqEncoder(torch.nn.Module):
                  is_used_mean=True,
                  is_used_std=True,
                  use_topk_cnt=0,
-                 distribution_targets_task=False,
+                 distribution_target_task=False,
                  logify_sum_mean_seqlens=False,
                  ):
 
