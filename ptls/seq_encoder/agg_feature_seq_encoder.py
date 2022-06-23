@@ -39,7 +39,7 @@ class AggFeatureSeqEncoder(torch.nn.Module):
             Use of not std by values
         use_topk_cnt (int):
             Define the K for topk features calculation. 0 if not used
-        distribution_targets_task (bool):
+        distribution_target_task (bool):
             Calc more features
         logify_sum_mean_seqlens (bool):
             True - apply log transform to sequence length
@@ -56,7 +56,7 @@ class AggFeatureSeqEncoder(torch.nn.Module):
                  is_used_mean=True,
                  is_used_std=True,
                  use_topk_cnt=0,
-                 distribution_targets_task=False,
+                 distribution_target_task=False,
                  logify_sum_mean_seqlens=False,
                  ):
 
@@ -66,7 +66,7 @@ class AggFeatureSeqEncoder(torch.nn.Module):
         self.embeddings = OrderedDict(embeddings.items())
         self.was_logified = was_logified
         self.log_scale_factor = log_scale_factor
-        self.distribution_targets_task = distribution_targets_task
+        self.distribution_target_task = distribution_target_task
         self.logify_sum_mean_seqlens = logify_sum_mean_seqlens
 
         self.eps = 1e-9
@@ -131,7 +131,7 @@ class AggFeatureSeqEncoder(torch.nn.Module):
             mean_ = val_orig.sum(dim=1).div(seq_lens + self.eps).unsqueeze(1)  # mean
             std_ = a.div(torch.clamp(seq_lens - 1, min=0.0) + self.eps).pow(0.5).unsqueeze(1)  # std
 
-            if self.distribution_targets_task:
+            if self.distribution_target_task:
                 sum_pos = torch.clamp(val_orig, min=0).sum(dim=1).unsqueeze(1)
                 processed.append(torch.log(sum_pos + 1))  # log sum positive
 
@@ -147,7 +147,7 @@ class AggFeatureSeqEncoder(torch.nn.Module):
 
             processed.append(mean_)
 
-            if not self.distribution_targets_task:
+            if not self.distribution_target_task:
                 processed.append(std_)
 
             # TODO: percentiles
