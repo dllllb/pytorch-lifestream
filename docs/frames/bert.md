@@ -55,3 +55,22 @@ Requires `splitter` from `ptls.frames.coles.split_strategy`
 
 `ptls.frames.bert.NspDataset`, `ptls.frames.bert.NspIterableDataset` is a compatible datasets.
 Requires `splitter` from `ptls.frames.coles.split_strategy`
+
+## Classes
+See docstrings for classes.
+
+- `ptls.frames.bert.MlmDataset`
+- `ptls.frames.bert.MlmIterableDataset`
+- `ptls.frames.bert.MlmIndexedDataset`
+- `ptls.frames.bert.RtdDataset`
+- `ptls.frames.bert.RtdIterableDataset`
+- `ptls.frames.bert.SopDataset`
+- `ptls.frames.bert.SopIterableDataset`
+- `ptls.frames.bert.NspDataset`
+- `ptls.frames.bert.NspIterableDataset`
+
+
+- `ptls.frames.bert.MLMPretrainModule`
+- `ptls.frames.bert.RtdModule`
+- `ptls.frames.bert.SopModule`
+- `ptls.frames.bert.NspModule`

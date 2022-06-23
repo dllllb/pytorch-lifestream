@@ -1,6 +1,6 @@
 import torch
 
-from ptls.data_load.data_module.mlm_data import MLMDataset
+from ptls.frames.bert.datasets.mlm_indexed_dataset import MlmIndexedDataset
 
 
 def get_data():
@@ -17,7 +17,7 @@ def get_data():
 
 
 def test_mlm_dataset():
-    ds = MLMDataset(
+    ds = MlmIndexedDataset(
         data=get_data(),
         seq_len=3,
     )
@@ -33,11 +33,12 @@ def test_mlm_dataset():
 
 
 def test_mlm_dataloader():
-    dl = MLMDataset(
+    ds = MlmIndexedDataset(
         data=get_data(),
         seq_len=3,
         step_rate=2/3,
-    ).data_loader(batch_size=3)
+    )
+    dl = torch.utils.data.DataLoader(ds, batch_size=3, collate_fn=ds.collate_fn)
     assert len(dl) == 3
 
     for batch, exp_len in zip(dl, [3, 3, 1]):
