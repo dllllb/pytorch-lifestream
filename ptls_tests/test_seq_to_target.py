@@ -4,11 +4,11 @@ from functools import partial
 from ptls.seq_to_target import SequenceToTarget
 from .test_data_load import RandomEventData
 from pyhocon import ConfigFactory
-from ptls.seq_to_target import LogAccuracy
+from ptls.seq_to_target import LogAccuracy, RMSE, BucketAccuracy
 import torch
 from ptls.trx_encoder import TrxEncoder
 from ptls.seq_encoder.containers import RnnSeqEncoder, TransformerSeqEncoder
-from ptls.loss import BCELoss
+from ptls.loss import BCELoss, ZILNLoss
 from ptls.seq_encoder.utils import PBLinear
 
 
@@ -179,3 +179,24 @@ def test_accuracy_mul():
     y = torch.tensor([0, 1, 1, 2, 2])
     acc(y_hat, y)
     assert acc.compute() == 0.6
+
+
+def test_ziln_loss():
+    ziln, B = ZILNLoss(), 10
+    assert ziln(torch.randn(B, 3), torch.randn(B, 1)) >= 0
+    assert ziln(torch.randn(B, 3 + 3), torch.randn(B, 3)) >= 0
+
+
+def test_bucket_accuracy():
+    bacc, B = BucketAccuracy(), 100
+    assert bacc(torch.randn(B), torch.randn(B)) >= 0
+    assert bacc(torch.randn(B, 3), torch.randn(B)) >= 0
+    assert bacc(torch.randn(B), torch.randn(B, 3)) >= 0
+    assert bacc(torch.randn(B, 3), torch.randn(B, 3)) >= 0
+
+
+def test_rmse():
+    rmse, B = RMSE(), 10
+    assert rmse(torch.randn(B), torch.randn(B)) >= 0
+    assert rmse(torch.randn(B, 3), torch.randn(B)) >= 0
+    assert rmse(torch.randn(B, 3), torch.randn(B, 3)) >= 0

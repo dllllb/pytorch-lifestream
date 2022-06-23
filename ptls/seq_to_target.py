@@ -120,6 +120,10 @@ class R_squared(DistributionTargets):
 
 
 class RMSE(torchmetrics.Metric):
+    """
+    RMSE for multiple outputs with exponential scaler.
+    Should be elaborated via adaptor-classes like in [ptls/trx_encoder/scalers.py].
+    """
     is_differentiable = True
     higher_is_better = False
     full_state_update = False
@@ -142,6 +146,10 @@ class RMSE(torchmetrics.Metric):
 
 
 class BucketAccuracy(torchmetrics.Metric):
+    """
+    Multiclass Accuracy for bucketized regression variable.
+    Should be elaborated via adaptor-classes like in [ptls/trx_encoder/scalers.py].
+    """
     is_differentiable = False
     higher_is_better = True
     full_state_update = True

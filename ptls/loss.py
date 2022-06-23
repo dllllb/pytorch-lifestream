@@ -210,6 +210,15 @@ class DistributionTargetsLoss(nn.Module):
 
 
 class ZILNLoss(nn.Module):
+    """
+    Zero-inflated lognormal (ZILN) loss adapted for multinomial target with K categories.
+    Please cite [https://arxiv.org/abs/1912.07753] and [https://github.com/google/lifetime_value].
+
+    Parameters
+    ----------
+    pred: tensor of shape Bx3 or Bx(K+3) of predicted logits
+    target: tensor of shape Bx1 or BxK of target variable
+    """
     def __init__(self):
         super().__init__()
         self.eps = 1e-6
