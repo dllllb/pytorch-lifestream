@@ -23,6 +23,7 @@ setuptools.setup(
     install_requires=[
         'pytorch-lightning==1.5.*',
         'pyarrow==7.*',
-        'transformers==4.*'
+        'transformers==4.*',
+        'omegaconf>=2.1',
     ],
 )

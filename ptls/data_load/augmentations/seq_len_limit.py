@@ -1,4 +1,5 @@
 import numpy as np
+import torch
 
 
 class SeqLenLimit:
@@ -12,7 +13,7 @@ class SeqLenLimit:
         seq_len = len(next(iter(x.values())))
 
         idx = self.get_idx(seq_len)
-        new_x = {k: v[idx] for k, v in x.items()}
+        new_x = {k: v[idx] if type(v) is torch.Tensor else v for k, v in x.items()}
         return new_x
 
     def get_idx(self, seq_len):
