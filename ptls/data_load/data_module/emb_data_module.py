@@ -5,10 +5,9 @@ import torch
 from torch.utils.data import DataLoader
 from typing import List, Dict
 
-from ptls.data_load import IterableChain, padded_collate_wo_target
+from ptls.data_load import IterableChain
 from ptls.data_load.augmentations.build_augmentations import build_augmentations
 from ptls.data_load.data_module.coles_data_module import coles_collate_fn
-from ptls.data_load.filter_dataset import FilterDataset
 from ptls.data_load.iterable_processing.feature_filter import FeatureFilter
 from ptls.data_load.iterable_processing.filter_non_array import FilterNonArray
 from ptls.data_load.iterable_processing.seq_len_filter import SeqLenFilter
@@ -93,37 +92,4 @@ def train_data_loader(
         shuffle=False,
         num_workers=num_workers,
         batch_size=batch_size
-    )
-
-
-r"""Generate an inference data loader
-
-Parameters
-----------
-data: List[Dict]
-The dataset
-num_workers: int. Default: 0.
-The number of workers for the dataloader. 0 = single-process loader
-train_batch_size: int. Default: 512.
-The number of samples (before splitting to subsequences) in each batch
-"""
-def inference_data_loader(
-    data: List[Dict],
-    num_workers: int = 0,
-    batch_size: int = 512):
-
-    dataset = FilterDataset(
-        data,
-        post_processing=IterableChain(
-            FilterNonArray(),
-            ToTorch()
-        )
-    )
-
-    return DataLoader(
-        dataset=dataset,
-        collate_fn=padded_collate_wo_target,
-        shuffle=False,
-        num_workers=num_workers,
-        batch_size=batch_size,
     )

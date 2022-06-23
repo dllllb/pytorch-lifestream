@@ -29,7 +29,7 @@ See module list in `ptls.frames` submodules. Check docstring for precise paramet
 
 ### Data generation
 
-We make a small test dataset. In real life you can use a many ways to load a data. See `ptls.data`.
+We make a small test dataset. In real life you can use a many ways to load a data. See `ptls.data_load`.
 
 ```python
 import torch
@@ -171,12 +171,13 @@ Sometimes we have only `seq_encoder`, e.g. loaded from disk.
 
 Other way is using lightweight `ptls.frames.supervised.SequenceToTarget` module.
 It can run inference with only `seq_encoder`.
+
 ```python
 import torch
 import pytorch_lightning as pl
 
 from ptls.frames.supervised import SequenceToTarget
-from ptls.data_load.data_module.emb_data_module import inference_data_loader
+from ptls.data_load.datasets.dataloaders import inference_data_loader
 
 inference_dataloader = inference_data_loader(dataset, num_workers=4, batch_size=256)
 model = SequenceToTarget(seq_encoder)

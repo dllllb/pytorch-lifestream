@@ -6,7 +6,7 @@ import pytorch_lightning as pl
 import torch
 from sklearn.model_selection import train_test_split
 
-from ptls.data_load.data_module.emb_data_module import inference_data_loader
+from ptls.data_load.datasets.dataloaders import inference_data_loader
 from ptls.frames.coles import CoLESModule
 from ptls.frames.coles import ColesDataset
 from ptls.frames.coles.split_strategy import SampleSlices

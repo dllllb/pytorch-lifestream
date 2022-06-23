@@ -8,11 +8,11 @@ Some sections are in the process of description.
 
 **Library modules:**
 
-- `ptls.data` - all you need for prepare your data for neural network feeding.
-    - `ptls.data.preprocessing` - common patters for feature transformation.
+- `ptls.data_load` - all you need for prepare your data for neural network feeding.
+    - `ptls.data_load.preprocessing` - common patters for feature transformation.
     Categorical encoding, datetime transformation, numerical feature preprocessing.
-    - `ptls.data.split_tools` - convert data to ptls-data-format. Split by users and features. 
-    - `ptls.data.datasets` - `torch.Dataset` interface access to the data.
+    - `ptls.data_load.split_tools` - convert data to ptls-data-format. Split by users and features. 
+    - `ptls.data_load.datasets` - `torch.Dataset` interface access to the data.
 
 - `ptls.frames` - propose tools for training your encoders with popular frameworks like 
 CoLES, SimCLR, CPC, VICReg, ... [Link](methods.md)
@@ -37,10 +37,10 @@ CoLES, SimCLR, CPC, VICReg, ... [Link](methods.md)
     - Use `Pyspark` in local or cluster mode for big dataset and `Pandas` for small.
     - Split data into required parts (train, valid, test, ...).
     - Transform features to compatible format using `Pyspark` or `Pandas` functions. 
-    You can use also `ptls.data.preprocessing` for common data transformation patterns.
-    - Split sequences to ptls-data format with `ptls.data.split_tools`. Save prepared data into `Parquet` format or 
+    You can use also `ptls.data_load.preprocessing` for common data transformation patterns.
+    - Split sequences to ptls-data format with `ptls.data_load.split_tools`. Save prepared data into `Parquet` format or 
     keep it in memory (`Pickle` also works).
-    - Use one of available `ptls.data.datasets` which provide data access.
+    - Use one of available `ptls.data_load.datasets` which provide data access.
 2. **Choose framework for encoder train**.
     - There are both supervised of unsupervised in `ptls.frames`. 
     - Keep in mind that each framework requires his own batch format.
@@ -57,7 +57,7 @@ CoLES, SimCLR, CPC, VICReg, ... [Link](methods.md)
     - It can be a pretrained part of other neural network.
 6. **Use encoder** in your project.
     - Run predict for your data and get logits, probas, scores or embeddings. 
-    - Use `ptls.data` and `ptls.data.datasets` tools to keep your data transformation and collect batches for inference.
+    - Use `ptls.data_load` and `ptls.data_load.datasets` tools to keep your data transformation and collect batches for inference.
 
 ## How to create your own components
 
@@ -65,6 +65,6 @@ Your task may require some specific solution.
 You may create a new component for every library modules. 
 There are links with description:
 
-- `ptls.data` - new data processing tools and datasets for new type of data. [Link TBD](#)
+- `ptls.data_load` - new data processing tools and datasets for new type of data. [Link TBD](#)
 - `ptls.frames` - new modules which train network for your problem. [Link TBD](#)
 - New layers for `ptls.nn`. [Link TBD](#)
