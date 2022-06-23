@@ -1,7 +1,7 @@
 import torch
 import torchmetrics
-from torch.nn import BCELoss
 
+from ptls.loss import BCELoss
 from ptls.frames.abs_module import ABSModule
 
 
