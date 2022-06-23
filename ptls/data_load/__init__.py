@@ -5,10 +5,8 @@ import random
 from functools import partial
 from collections import defaultdict
 from multiprocessing.pool import Pool
-from datetime import datetime
 
 import numpy as np
-import pandas as pd
 import pyarrow.parquet as pq
 import torch
 from torch.utils.data import WeightedRandomSampler, Sampler, Dataset
@@ -16,7 +14,7 @@ from torch.utils.data.dataloader import DataLoader
 
 from ptls.data_load.augmentations.all_time_shuffle import AllTimeShuffle
 from ptls.data_load.iterable_processing_dataset import IterableProcessingDataset
-from ptls.trx_encoder import PaddedBatch
+from ptls.nn.trx_encoder import PaddedBatch
 
 
 logger = logging.getLogger(__name__)

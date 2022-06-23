@@ -19,14 +19,12 @@ client_k          -> [client_k_smpl_1, client_k_smpl_2, ..., client_k_smpl_n]
 
 import logging
 
-import pytorch_lightning as pl
 import torch
 
 from collections import defaultdict
 from torch.utils.data import DataLoader
-from tqdm.auto import tqdm
 
-from ptls.trx_encoder import PaddedBatch
+from ptls.nn.trx_encoder import PaddedBatch
 from ptls.data_load.data_module.coles_data_module import ColesDataModuleTrain
 
 import torch.multiprocessing

@@ -1,14 +1,16 @@
 import logging
+import os
 
-import glob
-import torch
 import hydra
+import numpy as np
 import pandas as pd
 import pytorch_lightning as pl
+import torch
 import torch.multiprocessing
 from omegaconf import DictConfig, OmegaConf
 from torch.utils.data import ChainDataset
 from torch.utils.data.dataloader import DataLoader
+from tqdm import tqdm
 
 from ptls.data_load import IterableChain, padded_collate, IterableAugmentations
 from ptls.data_load.augmentations.seq_len_limit import SeqLenLimit
@@ -16,10 +18,7 @@ from ptls.data_load.iterable_processing.category_size_clip import CategorySizeCl
 from ptls.data_load.iterable_processing.feature_filter import FeatureFilter
 from ptls.data_load.iterable_processing.target_extractor import TargetExtractor
 from ptls.data_load.parquet_dataset import ParquetDataset, ParquetFiles
-from ptls.lightning_modules.rtd_module import RtdModule
-from ptls.metric_learn.inference_tools import save_scores
-from ptls.train import score_model
-from ptls.util import get_conf, get_cls
+from ptls.frames.bert import RtdModule
 
 logger = logging.getLogger(__name__)
 
@@ -49,6 +48,60 @@ def create_inference_dataloader(conf, pl_module):
         num_workers=conf.loader.num_workers,
         batch_size=conf.loader.batch_size,
     )
+
+
+def save_scores(df_scores, part_num, output_conf):
+    # output
+    output_name = output_conf.path
+    output_format = output_conf.format
+    if output_format not in ('pickle', 'csv'):
+        logger.warning(f'Format "{output_format}" is not supported. Used default "pickle"')
+        output_format = 'pickle'
+
+    if part_num is None:
+        output_path = f'{output_name}.{output_format}'
+    else:
+        os.makedirs(output_conf.path, exist_ok=True)
+        output_path = f'{output_name}/{part_num:03}.{output_format}'
+
+    if output_format == 'pickle':
+        df_scores.to_pickle(output_path)
+    elif output_format == 'csv':
+        df_scores.to_csv(output_path, sep=',', header=True, index=False)
+    else:
+        raise AssertionError('Never happens')
+    logger.info(f'{len(df_scores)} records saved to: "{output_path}"')
+
+
+def score_model(model, valid_loader, device=None):
+    """
+      - extended valid_loader. input format: x, * in batch:
+      - output: pred(x), * in score_model
+
+    Returns:
+
+    """
+
+    if torch.cuda.is_available():
+        device = torch.device(device if device else 'cuda')
+    else:
+        device = torch.device(device if device else 'cpu')
+    model.to(device)
+    model.eval()
+
+    outputs = []
+    with torch.no_grad():
+        for batch in tqdm(valid_loader, leave=False):
+            x, *others = batch
+            x = x.to(device)
+            out = model(x)
+
+            batch_output = [out.cpu().numpy(), *others]
+            outputs.append(batch_output)
+
+    outputs = zip(*outputs)
+    outputs = (np.concatenate(l) for l in outputs)
+    return outputs
 
 
 @hydra.main()

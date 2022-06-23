@@ -159,17 +159,6 @@ class TabularRowEncoder(torch.nn.Module):
         return self.post_embed_dim
 
 
-class EmbedderNetwork(nn.Module):
-    def __init__(self, embedder, network):
-        super().__init__()
-        self.embedder = embedder
-        self.network = network
-
-    def forward(self, x):
-        embedded_x = self.embedder(x)
-        return embedded_x, self.network(embedded_x)
-
-
 class DistributionTargetHead(torch.nn.Module):
     def __init__(self, in_size=256, num_distr_classes_pos=4, num_distr_classes_neg=14, pos=True, neg=True):
         super().__init__()

@@ -2,7 +2,7 @@ import torch
 import torch.nn.functional as F
 from torch import nn
 import numpy as np
-from ptls.trx_encoder import PaddedBatch
+from ptls.nn import PaddedBatch
 
 
 def cross_entropy(pred, soft_targets):
@@ -73,6 +73,9 @@ class PairwiseMarginRankingLoss(nn.Module):
 
 
 class MultiLoss(nn.Module):
+    """Works like `ptls.contrastive_learning.losses.complex_loss.ComplexLoss`
+
+    """
     def __init__(self, losses):
         super().__init__()
         self.losses = nn.ModuleList(losses)

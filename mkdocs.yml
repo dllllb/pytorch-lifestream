@@ -2,8 +2,26 @@ site_name: PyTorch-LifeStream
 nav:
     - Welcome: index.md
     - 'User Guide':
-        - 'Data Preparation': 'data_preparation.md'
+        - 'Sequential Data Definition': 'data_preparation.md'
         - 'Training Methods': 'methods.md'
-        - seq_encoder: 'seq_encoder.md'
-        - trx_encoder: 'trx_encoder.md'
+        - 'How to guide':
+              - 'Data preparation': '#'
+              - 'Sequential model creation': '#'
+              - 'Frameworks usage': '#'
+              - 'Encoder training': '#'
+              - 'Inference': '#'
+
+        - 'ptls':
+            - 'ptls.nn':
+                - 'trx_encoder': 'nn/trx_encoder.md'
+                - 'seq_encoder': 'nn/seq_encoder.md'
+                - 'head': 'nn/head.md'
+                - 'pb': 'nn/pb.md'
+            - 'ptls.frames':
+                - 'Common Usage Pattern': 'frames/common_usage.md'
+                - 'coles': 'frames/coles.md'
+                - 'cpc': 'frames/cpc.md'
+                - 'bert': 'frames/bert.md'
+                - 'supervised': 'frames/supervised.md'
+
 theme: readthedocs

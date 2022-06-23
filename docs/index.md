@@ -8,21 +8,28 @@ Some sections are in the process of description.
 
 **Library modules:**
 
-- `ptls.data` - all you need for prepare your data for neural network feeding. [Link](data_preparation.md)
-    - `ptls.data.preprocessing` - common patters for feature transformation. 
+- `ptls.data_load` - all you need for prepare your data for neural network feeding.
+    - `ptls.data_load.preprocessing` - common patters for feature transformation.
     Categorical encoding, datetime transformation, numerical feature preprocessing.
-    - `ptls.data.split_tools` - convert data to ptls-data-format. Split by users and features. 
-    - `ptls.data.datasets` - `torch.Dataset` interface access to the data.
-- `ptls.lightning_modules` - propose tools for training your encoders with popular frameworks like 
+    - `ptls.data_load.split_tools` - convert data to ptls-data-format. Split by users and features. 
+    - `ptls.data_load.datasets` - `torch.Dataset` interface access to the data.
+
+- `ptls.frames` - propose tools for training your encoders with popular frameworks like 
 CoLES, SimCLR, CPC, VICReg, ... [Link](methods.md)
-- Build your encoder with layers. [Link TBD](#):
-    - `ptls.trx_encoder` - layers which makes representation for single transactions. [Link](trx_encoder.md)
-    - `ptls.seq_encoder` - layers which works with sequences.
-    There are cross transactional interaction (like convolution of self attention) and reduce sequence to single vector.
-    [Link](seq_encoder.md)
-    - `ptls.heads` - composite layers for final embedding transformation (L2Norm, MLP, ResNet, FFT, ...). [Link TBD](#)
-- `ptls.contrastive_learning` - propose tools for contrastive learning tasks.
-There are losses, mining strategies and metrics. [Link TBD](#)
+    - `ptls.frames.coles` - contrastive leaning on split sequences. 
+    Samples from original sequence are near in embedding space.
+    - `ptls.frames.cpc` - Contrast learning on a changing time sequence.
+    Embeddings are trained to predict their future state.
+    - `ptls.frames.bert` - methods are inspired by nlp with transformer models.
+    - `ptls.framed.supervised` - modules fo supervised training.
+
+- `ptls.nn` - layers for model creation:
+    - `ptls.nn.trx_encoder` - layers which makes representation for single transactions.
+    - `ptls.nn.seq_encoder` - layers which works with sequences like `Rnn` of `Transformer`.
+    - `ptls.nn.pb` - `PaddedBatch` compatible layers. Looks like `torch.nn` but works with ptls-data.
+    - `ptls.nn.head` - composite layers for final embedding transformation.
+    - `ptls.nn.seq_step.py` - change the sequence along the time axis.
+    - `ptls.nn.binarization`, `ptls.nn.normalization` - other groups of layers.
 
 ## How to guide
 
@@ -30,20 +37,18 @@ There are losses, mining strategies and metrics. [Link TBD](#)
     - Use `Pyspark` in local or cluster mode for big dataset and `Pandas` for small.
     - Split data into required parts (train, valid, test, ...).
     - Transform features to compatible format using `Pyspark` or `Pandas` functions. 
-    You can use also `ptls.data.preprocessing` for common data transformation patterns.
-    - Split sequences to ptls-data format with `ptls.data.split_tools`. Save prepared data into `Parquet` format or 
+    You can use also `ptls.data_load.preprocessing` for common data transformation patterns.
+    - Split sequences to ptls-data format with `ptls.data_load.split_tools`. Save prepared data into `Parquet` format or 
     keep it in memory (`Pickle` also works).
-    - Use one of available `ptls.data.datasets` which provide data access.
+    - Use one of available `ptls.data_load.datasets` which provide data access.
 2. **Choose framework for encoder train**.
-    - There are both supervised of unsupervised in `ptls.lightning_modules`. 
+    - There are both supervised of unsupervised in `ptls.frames`. 
     - Keep in mind that each framework requires his own batch format.
     Tools for batch collate can be found in the selected framework package.
 3. **Build encoder**.
-    - All parts are available in `ptls.trx_encoder`, `ptls.seq_encoder`, `ptls.heads`.
+    - All parts are available in `ptls.nn`.
      - You can also use pretrained layers.
 4. **Train your encoder** with selected framework.
-    - Some frameworks require certain options to be selected. It can be loss, metrics or something else. 
-    `ptls.contrastive_learning` contains all of them. 
     - Provide data with selected framework compatible dataloader. 
     - Check the progress on tensorboard.
     - Tune hyperparameters if you need.
@@ -52,7 +57,7 @@ There are losses, mining strategies and metrics. [Link TBD](#)
     - It can be a pretrained part of other neural network.
 6. **Use encoder** in your project.
     - Run predict for your data and get logits, probas, scores or embeddings. 
-    - Use `ptls.data` and `ptls.data.datasets` tools to keep your data transformation and collect batches for inference.
+    - Use `ptls.data_load` and `ptls.data_load.datasets` tools to keep your data transformation and collect batches for inference.
 
 ## How to create your own components
 
@@ -60,7 +65,6 @@ Your task may require some specific solution.
 You may create a new component for every library modules. 
 There are links with description:
 
-- `ptls.data` - new data processing tools and datasets for new type of data. [Link TBD](#)
-- `ptls.lightning_modules` - new modules which train network for your problem. [Link TBD](#)
-- New layers for `ptls.trx_encoder`, `ptls.seq_encoder`, `ptls.heads`. [Link TBD](#)
-- `ptls.contrastive_learning` - New losses, mining strategies and metrics. [Link TBD](#)
+- `ptls.data_load` - new data processing tools and datasets for new type of data. [Link TBD](#)
+- `ptls.frames` - new modules which train network for your problem. [Link TBD](#)
+- New layers for `ptls.nn`. [Link TBD](#)

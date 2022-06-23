@@ -5,7 +5,7 @@ from ptls.data_load.iterable_processing_dataset import IterableProcessingDataset
 
 
 class FeatureFilter(IterableProcessingDataset):
-    def __init__(self, keep_feature_names=None, drop_feature_names=None, drop_non_iterable=False):
+    def __init__(self, keep_feature_names=None, drop_feature_names=None, drop_non_iterable=True):
         """
 
         Args:
@@ -24,10 +24,15 @@ class FeatureFilter(IterableProcessingDataset):
         self._drop_non_iterable = drop_non_iterable
 
     def process(self, features):
-        if self._drop_non_iterable:
-            features = {k: v for k, v in features.items() if type(v) in (np.ndarray, torch.Tensor)}
-        if self._keep_feature_names is not None:
-            features = {k: v for k, v in features.items() if k in self._keep_feature_names}
         if self._drop_feature_names is not None:
-            features = {k: v for k, v in features.items() if k not in self._drop_feature_names}
+            features = {k: v for k, v in features.items()
+                        if k not in self._drop_feature_names or self.is_keep(k)}
+        if self._drop_non_iterable:
+            features = {k: v for k, v in features.items()
+                        if type(v) in (np.ndarray, torch.Tensor) or self.is_keep(k)}
         return features
+
+    def is_keep(self, k):
+        if self._keep_feature_names is None:
+            return False
+        return k in self._keep_feature_names

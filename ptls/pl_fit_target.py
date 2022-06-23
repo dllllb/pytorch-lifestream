@@ -1,12 +1,14 @@
-import hydra
 import json
 import logging
+
+import hydra
 import numpy as np
+import pytorch_lightning as pl
+import torch
 from omegaconf import DictConfig, OmegaConf
 from pytorch_lightning.loggers import TensorBoardLogger
-from ptls.lightning_modules.rtd_module import RtdModule
-import pytorch_lightning as pl
 
+from ptls.frames.bert import RtdModule
 
 logger = logging.getLogger(__name__)
 
@@ -61,7 +63,7 @@ def main(conf: DictConfig):
     else:
         raise NotImplementedError(f'Only `embeddings_validation` split supported,'
                                   f'found "{conf.data_module.setup.split_by}"')
-        
+
     pretrained_encoder_path = conf.get('pretrained_encoder_path', None)
     if pretrained_encoder_path:
         # pl_module_cls = hydra.utils.instantiate(conf.pretrained_module_cls)

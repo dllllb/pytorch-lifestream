@@ -1,12 +1,10 @@
 import logging
-import torch
 import hydra
 import pytorch_lightning as pl
 import pyspark.sql.functions as F
 import pyspark.sql.types as T
 from omegaconf import DictConfig, OmegaConf
 from pyspark.sql import SparkSession
-from ptls.util import get_conf, get_cls
 
 logger = logging.getLogger(__name__)
 
@@ -47,9 +45,9 @@ class InferenceSpark(object):
 
         pl.seed_everything(42)
 
-        pl_module = get_cls(self.pl_module_class)
+        model = hydra.utils.instantiate(self.pl_module_class)
 
-        model = pl_module.load_from_checkpoint(f"{self.work_path}/{self.model_path}")
+        model = model.load_from_checkpoint(f"{self.work_path}/{self.model_path}")
         model.seq_encoder.is_reduce_sequence = True
 
         br_m = self.spark.sparkContext.broadcast(model.seq_encoder)
@@ -57,7 +55,7 @@ class InferenceSpark(object):
         def inference_func(data_feature, data_length):
 
             import torch
-            from ptls.trx_encoder import PaddedBatch
+            from ptls.nn.trx_encoder import PaddedBatch
             import subprocess
 
             if torch.cuda.is_available():

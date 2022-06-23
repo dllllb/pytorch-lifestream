@@ -7,6 +7,7 @@ It supports various methods of self-supervised training, adapted for event seque
 - Replaced Token Detection (RTD) from [ELECTRA](https://arxiv.org/abs/2003.10555)
 - Next Sequence Prediction (NSP) from [BERT](https://arxiv.org/abs/1810.04805)
 - Sequences Order Prediction (SOP) from [ALBERT](https://arxiv.org/abs/1909.11942)
+- Masked Language Model (MLM) from [ROBERTA](https://arxiv.org/abs/1907.11692)
 
 It supports several types of encoders, including Transformer and RNN. It also supports many types of self-supervised losses.
 

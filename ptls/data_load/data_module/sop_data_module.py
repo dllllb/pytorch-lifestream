@@ -15,7 +15,6 @@ client_2          -> (client_2_smpl_1_right, client_2_smpl_1_left), 1
 """
 import logging
 
-import numpy as np
 import pytorch_lightning as pl
 import torch
 from torch.utils.data import DataLoader
@@ -31,7 +30,8 @@ from ptls.data_load.iterable_processing.seq_len_filter import SeqLenFilter
 from ptls.data_load.list_splitter import ListSplitter
 from ptls.data_load.parquet_dataset import ParquetDataset, ParquetFiles
 from ptls.data_load.partitioned_dataset import PartitionedDataset, PartitionedDataFiles
-from ptls.metric_learn.dataset import split_strategy, nested_list_to_flat_with_collate
+from ptls.metric_learn.dataset import nested_list_to_flat_with_collate
+from ptls.frames.coles import split_strategy
 from ptls.metric_learn.dataset.splitting_dataset import IterableSplittingDataset, MapSplittingDataset
 
 logger = logging.getLogger(__name__)
