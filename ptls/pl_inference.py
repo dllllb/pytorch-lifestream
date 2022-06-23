@@ -1,7 +1,4 @@
 import logging
-
-import glob
-import torch
 import os
 
 import hydra
@@ -21,9 +18,7 @@ from ptls.data_load.iterable_processing.category_size_clip import CategorySizeCl
 from ptls.data_load.iterable_processing.feature_filter import FeatureFilter
 from ptls.data_load.iterable_processing.target_extractor import TargetExtractor
 from ptls.data_load.parquet_dataset import ParquetDataset, ParquetFiles
-from ptls.lightning_modules.rtd_module import RtdModule
-from ptls.train import score_model
-from ptls.util import get_conf, get_cls
+from ptls.frames.bert import RtdModule
 
 logger = logging.getLogger(__name__)
 

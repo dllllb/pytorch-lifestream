@@ -84,7 +84,7 @@ class ABSModule(pl.LightningModule):
             params = self._lr_scheduler_partial.keywords
             defaults = {'mode': 'max', 'factor': 0.1,
                         'patience': 10, 'threshold': 0.001, 'min_lr': 1e-6}
-            lr_sheduler_params = {k: v for k, v in defaults.items() if k not in params}
+            lr_scheduler_params = {k: v for k, v in defaults.items() if k not in params}
         scheduler = self._lr_scheduler_partial(optimizer, **lr_scheduler_params)
         
         if isinstance(scheduler, torch.optim.lr_scheduler.ReduceLROnPlateau):

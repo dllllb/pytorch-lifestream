@@ -4,6 +4,7 @@ from copy import deepcopy
 import pytorch_lightning as pl
 import torch
 import torchmetrics
+from omegaconf import DictConfig
 
 from ptls.nn.trx_encoder import PaddedBatch
 
@@ -87,6 +88,11 @@ class SequenceToTarget(pl.LightningModule):
         self.seq_encoder = seq_encoder
         self.head = head
         self.loss = loss
+
+        # TODO: metric_list should support dict (names from keys), list(names from __class__.__name__)
+        #  and single value for metrics
+        if type(metric_list) is DictConfig:
+            metric_list = dict(metric_list)
 
         if type(metric_list) is not dict:
             metric_list = [metric_list]

@@ -4,16 +4,11 @@ import pytorch_lightning as pl
 import torch
 import torchmetrics
 from pyhocon import ConfigFactory
-from ptls.seq_to_target import LogAccuracy, RMSE, BucketAccuracy
-import torch
-from ptls.trx_encoder import TrxEncoder
-from ptls.seq_encoder.containers import RnnSeqEncoder, TransformerSeqEncoder
-from ptls.loss import BCELoss, ZILNLoss
-from ptls.seq_encoder.utils import PBLinear
 
 from ptls.frames.supervised import SequenceToTarget
-from ptls.frames.supervised.metrics import LogAccuracy
+from ptls.frames.supervised.metrics import LogAccuracy, RMSE, BucketAccuracy
 from ptls.loss import BCELoss
+from ptls.loss import ZILNLoss
 from ptls.nn import PBLinear
 from ptls.nn import RnnSeqEncoder, TransformerSeqEncoder
 from ptls.nn import TrxEncoder

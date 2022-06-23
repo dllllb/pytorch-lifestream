@@ -4,11 +4,11 @@ import logging
 import hydra
 import numpy as np
 import pytorch_lightning as pl
+import torch
 from omegaconf import DictConfig, OmegaConf
 from pytorch_lightning.loggers import TensorBoardLogger
-from ptls.lightning_modules.rtd_module import RtdModule
-import pytorch_lightning as pl
 
+from ptls.frames.bert import RtdModule
 
 logger = logging.getLogger(__name__)
 
