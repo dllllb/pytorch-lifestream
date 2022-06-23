@@ -1,6 +1,7 @@
 import torch
 import pytorch_lightning as pl
 from ptls.nn import PaddedBatch
+from torchmetrics.classification.auroc import AUROC
 
 
 class ABSModule(pl.LightningModule):
@@ -71,6 +72,8 @@ class ABSModule(pl.LightningModule):
 
     def validation_step(self, batch, _):
         y_h, y = self.shared_step(*batch)
+        if isinstance(self._validation_metric, AUROC):
+            y = y.long()
         self._validation_metric(y_h, y)
 
     def validation_epoch_end(self, outputs):
