@@ -55,7 +55,7 @@ class SeqEncoderContainer(torch.nn.Module):
 
     @property
     def category_names(self):
-        raise self.trx_encoder.category_names
+        return self.trx_encoder.category_names
 
     @property
     def embedding_size(self):

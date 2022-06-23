@@ -43,8 +43,8 @@ class ClsDataModuleTrain(pl.LightningDataModule):
         self._type = type
         assert self._type in ('map', 'iterable')
 
-        self.distribution_targets_task = distribution_targets_task
-        self.y_function = int if not self.distribution_targets_task else lambda x: \
+        self.distribution_target_task = distribution_target_task
+        self.y_function = int if not self.distribution_target_task else lambda x: \
                                                     np.array(ast.literal_eval(x), dtype=object)
         self.setup_conf = setup
         self.train_conf = train
@@ -184,7 +184,7 @@ class ClsDataModuleTrain(pl.LightningDataModule):
     def train_dataloader(self):
         return DataLoader(
             dataset=self.train_dataset,
-            collate_fn=padded_collate_distribution_target if self.distribution_targets_task else padded_collate,
+            collate_fn=padded_collate_distribution_target if self.distribution_target_task else padded_collate,
             shuffle=False if self._type == 'iterable' else True,
             num_workers=self.train_conf.num_workers,
             batch_size=self.train_conf.batch_size,
@@ -215,7 +215,7 @@ class ClsDataModuleTrain(pl.LightningDataModule):
     def val_dataloader(self):
         return DataLoader(
             dataset=self.valid_dataset,
-            collate_fn=padded_collate_distribution_target if self.distribution_targets_task else padded_collate,
+            collate_fn=padded_collate_distribution_target if self.distribution_target_task else padded_collate,
             num_workers=self.valid_conf.num_workers,
             batch_size=self.valid_conf.batch_size,
         )
@@ -223,7 +223,7 @@ class ClsDataModuleTrain(pl.LightningDataModule):
     def test_dataloader(self):
         return DataLoader(
             dataset=self.test_dataset,
-            collate_fn=padded_collate_distribution_target if self.distribution_targets_task else padded_collate,
+            collate_fn=padded_collate_distribution_target if self.distribution_target_task else padded_collate,
             num_workers=self.test_conf.num_workers,
             batch_size=self.test_conf.batch_size,
         )

@@ -6,6 +6,9 @@ import numpy as np
 import pytorch_lightning as pl
 from omegaconf import DictConfig, OmegaConf
 from pytorch_lightning.loggers import TensorBoardLogger
+from ptls.lightning_modules.rtd_module import RtdModule
+import pytorch_lightning as pl
+
 
 logger = logging.getLogger(__name__)
 
@@ -61,13 +64,19 @@ def main(conf: DictConfig):
         raise NotImplementedError(f'Only `embeddings_validation` split supported,'
                                   f'found "{conf.data_module.setup.split_by}"')
 
-    use_pretrained_path = conf.get('use_pretrained_path', None)
-    if use_pretrained_path:
-        pl_module_cls = hydra.utils.instantiate(conf.pretrained_module_cls)
-        pl_module = pl_module_cls.load_from_checkpoint(use_pretrained_path)
+    pretrained_encoder_path = conf.get('pretrained_encoder_path', None)
+    if pretrained_encoder_path:
+        # pl_module_cls = hydra.utils.instantiate(conf.pretrained_module_cls)
+        # pl_module = pl_module_cls.load_from_checkpoint(pretrained_encoder_path)
+        pl_module = hydra.utils.instantiate(conf.pretrained_module)
+        state_dict = torch.load(pretrained_encoder_path)['state_dict']
+        if not isinstance(pl_module, RtdModule):
+            state_dict = {k: v for k, v in state_dict.items() if not k.startswith('_head')}
+        pl_module.load_state_dict(state_dict)
         pl_module.seq_encoder.is_reduce_sequence = True
     else:
         pl_module = None
+    use_pretrained_path = conf.get('use_pretrained_path', None)
 
     results = []
     for fold_id in fold_list:
