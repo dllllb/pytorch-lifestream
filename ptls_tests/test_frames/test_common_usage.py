@@ -115,6 +115,6 @@ def test_datamodule_way():
     # inference
     inference_dataloader = inference_data_loader(dataset, num_workers=4, batch_size=256)
     model = SequenceToTarget(seq_encoder)
-    trainer = pl.Trainer(gpus=1)
+    trainer = pl.Trainer()
     embeddings = torch.vstack(trainer.predict(model, inference_dataloader))
     assert embeddings.size() == (1000, 16)
