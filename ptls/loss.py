@@ -1,7 +1,7 @@
 import torch
+import torch.nn.functional as F
 from torch import nn
 import numpy as np
-
 from ptls.trx_encoder import PaddedBatch
 
 
@@ -208,3 +208,29 @@ class DistributionTargetsLoss(nn.Module):
                     if isinstance(true['neg_sum'], np.ndarray) else loss_sum_pos * self.mults[1] + loss_distr_pos * self.mults[3]
         return loss.float()
 
+
+class ZILNLoss(nn.Module):
+    """
+    Zero-inflated lognormal (ZILN) loss adapted for multinomial target with K categories.
+    Please cite [https://arxiv.org/abs/1912.07753] and [https://github.com/google/lifetime_value].
+
+    Parameters
+    ----------
+    pred: tensor of shape Bx3 or Bx(K+3) of predicted logits
+    target: tensor of shape Bx1 or BxK of target variable
+    """
+    def __init__(self):
+        super().__init__()
+        self.eps = 1e-6
+
+    def forward(self, pred, target):
+        if pred.dim() == 1:
+            raise Exception(f"{self.__class__} has incorrect input dimension")
+        tsum = target if target.dim() == 1 else target.sum(dim=1)
+        s2 = pred[:, 1].square() + self.eps
+        loss = s2.log() + (tsum.log() - pred[:, 0]).square() / s2
+        if pred.shape[1] == 3:
+            loss -= 2 * F.logsigmoid(-pred[:, 2])
+        else:
+            loss -= 2 * target.mul(F.log_softmax(pred[:, 3:], dim=1)).sum(dim=1)
+        return torch.mean(loss.where(tsum > 0, -2 * F.logsigmoid(pred[:, 2])))
