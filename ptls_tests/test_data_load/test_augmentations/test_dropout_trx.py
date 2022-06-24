@@ -17,3 +17,10 @@ def test_with_dropout():
     data = i_filter(data)
     assert len(data['mcc']) == 91
     assert (np.diff(data['mcc']) >= 0).all()
+
+def test_with_target():
+    i_filter = DropoutTrx(0.1)
+    data = {'mcc': np.arange(100), 'target': 0}
+    data = i_filter(data)
+    assert len(data['mcc']) == 91
+    assert (np.diff(data['mcc']) >= 0).all()

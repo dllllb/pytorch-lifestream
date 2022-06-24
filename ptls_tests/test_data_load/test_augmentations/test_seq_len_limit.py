@@ -43,3 +43,10 @@ def test_random_with_limit():
     data = i_filter(data)
     assert len(data['mcc']) == 2
     assert data['mcc'][0] + 1 == data['mcc'][1]
+
+
+def test_tail_with_limit_and_target():
+    i_filter = SeqLenLimit(max_seq_len=4)
+    data = {'mcc': np.arange(8), 'target': 0}
+    data = i_filter(data)
+    np.testing.assert_equal(data['mcc'], np.array([4, 5, 6, 7]))

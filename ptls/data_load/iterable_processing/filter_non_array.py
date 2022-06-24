@@ -2,7 +2,11 @@ import numpy as np
 import torch
 from ptls.data_load.iterable_processing_dataset import IterableProcessingDataset
 
+
 class FilterNonArray(IterableProcessingDataset):
+    """Deprecated. Use FeatureFilter.
+
+    """
     def __init__(self):
         super().__init__()
 

@@ -1,7 +1,8 @@
 import torch
+from ptls.data_load.utils import DictTransformer
 
 
-class AllTimeShuffle:
+class AllTimeShuffle(DictTransformer):
     """Shuffle all transactions in event sequence
     """
     def __init__(self, event_time_name='event_time'):
@@ -14,5 +15,5 @@ class AllTimeShuffle:
 
     def __call__(self, x):
         ix = self.get_perm_ix(x[self.event_time_name])
-        new_x = {k: v[ix] for k, v in x.items()}
+        new_x = {k: self.seq_indexing(v, ix) for k, v in x.items()}
         return new_x

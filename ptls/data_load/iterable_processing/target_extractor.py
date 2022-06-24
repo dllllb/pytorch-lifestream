@@ -2,6 +2,9 @@ from ptls.data_load.iterable_processing_dataset import IterableProcessingDataset
 
 
 class TargetExtractor(IterableProcessingDataset):
+    """Deprecated. Use SeqToTargetDataset
+
+    """
     def __init__(self, target_col, drop_from_features=True):
         """Extract value from `target_col` and mention it as `y`
 
@@ -28,6 +31,9 @@ class TargetExtractor(IterableProcessingDataset):
 
 
 class FakeTarget(IterableProcessingDataset):
+    """Deprecated. Only single dict allowed
+
+    """
     def __init__(self):
         """Create target equal 0 (for consistency)
 

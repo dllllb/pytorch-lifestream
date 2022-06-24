@@ -1,7 +1,8 @@
 import numpy as np
+from ptls.data_load.utils import DictTransformer
 
 
-class DropoutTrx:
+class DropoutTrx(DictTransformer):
     def __init__(self, trx_dropout):
         self.trx_dropout = trx_dropout
 
@@ -9,7 +10,7 @@ class DropoutTrx:
         seq_len = len(next(iter(x.values())))
 
         idx = self.get_idx(seq_len)
-        new_x = {k: v[idx] for k, v in x.items()}
+        new_x = {k: self.seq_indexing(v, idx) for k, v in x.items()}
         return new_x
 
     def get_idx(self, seq_len):

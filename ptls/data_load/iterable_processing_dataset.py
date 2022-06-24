@@ -1,8 +1,11 @@
 from torch.utils.data.dataset import IterableDataset
+from ptls.data_load.utils import DictTransformer
 
 
-class IterableProcessingDataset(IterableDataset):
+class IterableProcessingDataset(DictTransformer, IterableDataset):
     def __init__(self):
+        super().__init__()
+
         self._src = None
 
     def __call__(self, src):

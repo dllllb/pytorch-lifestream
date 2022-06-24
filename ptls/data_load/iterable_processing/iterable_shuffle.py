@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 
 class IterableShuffle(IterableProcessingDataset):
     def __init__(self, buffer_size):
-        """Remove records which are not in `relevant_ids`
+        """
 
         Args:
             buffer_size: buffer size in records
