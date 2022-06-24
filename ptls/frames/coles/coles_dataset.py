@@ -5,9 +5,10 @@ import torch
 
 from ptls.data_load.utils import collate_feature_dict
 from ptls.frames.coles.split_strategy import AbsSplit
+from ptls.data_load.utils import DictTransformer
 
 
-class ColesDataset(torch.utils.data.Dataset):
+class ColesDataset(DictTransformer, torch.utils.data.Dataset):
     def __init__(self,
                  data,
                  splitter: AbsSplit,
@@ -33,7 +34,7 @@ class ColesDataset(torch.utils.data.Dataset):
     def get_splits(self, feature_arrays):
         local_date = feature_arrays[self.col_time]
         indexes = self.splitter.split(local_date)
-        return [{k: v[ix] for k, v in feature_arrays.items()} for ix in indexes]
+        return [{k: self.seq_indexing(v, ix) for k, v in feature_arrays.items()} for ix in indexes]
 
     @staticmethod
     def collate_fn(batch):

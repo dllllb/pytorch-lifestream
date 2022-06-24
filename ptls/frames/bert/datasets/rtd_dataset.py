@@ -3,7 +3,7 @@ from copy import deepcopy
 import torch
 
 from ptls.data_load.augmentations.random_slice import RandomSlice
-from ptls.data_load.utils import collate_feature_dict
+from ptls.data_load.utils import DictTransformer, collate_feature_dict
 from ptls.nn import PaddedBatch
 
 
@@ -49,7 +49,8 @@ class RtdDataset(torch.utils.data.Dataset):
         to_replace_flatten = to_replace.flatten()
         new_x = deepcopy(new_x)
         for k, v in new_x.items():
-            v.flatten()[to_replace_flatten] = v.flatten()[sampled_trx_ids]
+            if DictTransformer.is_seq_feature(v):
+                v.flatten()[to_replace_flatten] = v.flatten()[sampled_trx_ids]
 
         return PaddedBatch(new_x, lengths), to_replace.long().float().flatten()[mask.flatten().bool()]
 

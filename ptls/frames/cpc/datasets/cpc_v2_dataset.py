@@ -7,6 +7,8 @@ from ptls.nn import PaddedBatch
 class CpcV2Dataset(ColesDataset):
     @staticmethod
     def collate_fn(batch):
+        # TODO: refactoring required
+
         split_count = len(batch[0])
 
         sequences = [defaultdict(list) for _ in range(split_count)]
