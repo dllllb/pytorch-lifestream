@@ -2,7 +2,10 @@ from ptls.data_load.iterable_processing_dataset import IterableProcessingDataset
 
 
 class TargetMove(IterableProcessingDataset):
-    """Filter that takes target from sample dict and place it in tuple with dict
+    """Deprecated. Only single dict allowed.
+    Store target as scalar value in a feature dictionary
+
+    Filter that takes target from sample dict and place it in tuple with dict
     Parameters
      ----------
     target_col : str. Default: 'target'

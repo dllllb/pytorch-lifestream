@@ -1,7 +1,8 @@
 from ptls.data_load.iterable_processing.seq_len_filter import SeqLenFilter
+import numpy as np
 
 
-def get_data(id_type=int, array_type=list):
+def get_data(id_type=int, array_type=np.array):
     return [
         {
             'uid': id_type(1),
@@ -28,13 +29,15 @@ def get_data_with_target():
     return [
         ({
             'uid': "1",
-            'mcc_code': [1, 2, 3, 4],
-            'amount': [1, 2, 3, 4],
+            'mcc_code': np.array([1, 2, 3, 4]),
+            'amount': np.array([1, 2, 3, 4],),
+            'target': 1,
         }, 1),
         ({
              'uid': "2",
-             'mcc_code': [1, 2],
-             'amount': [1, 2],
+             'mcc_code': np.array([1, 2]),
+             'amount': np.array([1, 2]),
+             'target': 0,
          }, 0),
     ]
 

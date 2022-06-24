@@ -44,3 +44,15 @@ def test_seq_to_target_dataset_type_double():
     dl = torch.utils.data.DataLoader(dataset, batch_size=10, collate_fn=dataset.collate_fn)
     x, y = next(iter(dl))
     torch.testing.assert_close(y, torch.DoubleTensor([0.0, 0.0, 1.0, 1.0]))
+
+def test_seq_to_target_dataset_type_array():
+    dataset = SeqToTargetDataset([{
+        'mcc_code': torch.randint(1, 10, (seq_len,)),
+        'amount': torch.randn(seq_len),
+        'event_time': torch.arange(seq_len),  # shows order between transactions
+        'target': torch.randn(2, 8),
+    } for seq_len in torch.randint(100, 200, (1000,))], target_col_name='target')
+    dl = torch.utils.data.DataLoader(dataset, batch_size=10, collate_fn=dataset.collate_fn)
+    x, y = next(iter(dl))
+    assert y.size() == (10, 2, 8)
+    assert y.dtype == torch.float32

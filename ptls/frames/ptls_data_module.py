@@ -36,7 +36,7 @@ class PtlsDataModule(pl.LightningDataModule):
                 batch_size=train_batch_size,
             )
 
-        def valid_dataloader():
+        def val_dataloader():
             return torch.utils.data.DataLoader(
                 dataset=valid_data,
                 collate_fn=valid_data.collate_fn,
@@ -56,6 +56,6 @@ class PtlsDataModule(pl.LightningDataModule):
 
         self.train_dataloader = train_dataloader
         if valid_data is not None:
-            self.valid_dataloader = valid_dataloader
+            self.val_dataloader = val_dataloader
         if test_data is not None:
             self.test_dataloader = test_dataloader

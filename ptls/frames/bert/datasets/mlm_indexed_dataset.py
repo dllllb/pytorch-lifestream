@@ -2,7 +2,8 @@ import numpy as np
 import torch
 import random
 
-from ptls.data_load import padded_collate_wo_target
+from ptls.data_load.utils import collate_feature_dict
+from ptls.data_load.utils import DictTransformer
 
 
 class MlmIndexedDataset(torch.utils.data.Dataset):
@@ -52,16 +53,17 @@ class MlmIndexedDataset(torch.utils.data.Dataset):
     def __getitem__(self, item):
         item_id, start_pos = self.ix[item]
         v = self.data[item_id]
-        et = next(iter(v.values()))
+        seq_len = DictTransformer.get_seq_len(v)
 
         if self.random_shift > 0:
             start_pos = start_pos + random.randint(-self.random_shift, self.random_shift)
         start_pos = max(start_pos, 0)
-        start_pos = min(start_pos, len(et) - self.step)
+        start_pos = min(start_pos, seq_len - self.step)
         len_reduce = 0 if self.random_crop == 0 else random.randint(0, self.random_crop)
 
-        return {k: v[start_pos: start_pos + self.seq_len - len_reduce] for k, v in v.items()}
+        return {k: v[start_pos: start_pos + self.seq_len - len_reduce] if DictTransformer.is_seq_feature(v) else v
+                for k, v in v.items()}
 
     @staticmethod
     def collate_fn(batch):
-        return padded_collate_wo_target(batch)
+        return collate_feature_dict(batch)

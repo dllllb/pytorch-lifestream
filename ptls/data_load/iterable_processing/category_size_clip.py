@@ -6,7 +6,7 @@ from ptls.data_load.iterable_processing_dataset import IterableProcessingDataset
 
 class CategorySizeClip(IterableProcessingDataset):
     def __init__(self, category_max_size, replace_value='max'):
-        """
+        """Deprecated. _smart_clip implemented in TrxEncoder
 
         Args:
             category_max_size: {field_name, max_size}

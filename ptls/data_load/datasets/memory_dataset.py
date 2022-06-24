@@ -5,7 +5,9 @@ from ptls.data_load.iterable_processing.to_torch_tensor import ToTorch
 
 
 class MemoryMapDataset(torch.utils.data.Dataset):
-    def __init__(self, data, i_filters):
+    def __init__(self, data, i_filters=None):
+        if i_filters is None:
+            i_filters = []
         post_processor_filter = IterableChain(ToTorch(), *i_filters)
         self.processed_data = [rec for rec in post_processor_filter(data)]
 
@@ -17,7 +19,9 @@ class MemoryMapDataset(torch.utils.data.Dataset):
 
 
 class MemoryIterableDataset(torch.utils.data.IterableDataset):
-    def __init__(self, data, i_filters):
+    def __init__(self, data, i_filters=None):
+        if i_filters is None:
+            i_filters = []
         self.data = data
         self.post_processor_filter = IterableChain(ToTorch(), *i_filters)
 

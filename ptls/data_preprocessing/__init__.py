@@ -1,2 +1,6 @@
 from .pandas_preprocessor import PandasDataPreprocessor
-from .pyspark_preprocessor import PysparkDataPreprocessor
+try:
+    from .pyspark_preprocessor import PysparkDataPreprocessor
+except ImportError:
+    pass
+

@@ -2,6 +2,10 @@ from ptls.data_load.iterable_processing_dataset import IterableProcessingDataset
 
 
 class TargetJoin(IterableProcessingDataset):
+    """Deprecated. Only single dict allowed.
+    Store target as scalar value in a feature dictionary
+
+    """
     def __init__(self, id_col, target_values, func=int):
         """Extract value from `target_values` by id_col and mention it as `y`
 

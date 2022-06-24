@@ -36,6 +36,13 @@ def test_len_3_full():
     np.testing.assert_equal(data['mcc'], np.arange(5))
 
 
+def test_with_target():
+    i_filter = RandomSlice(10, 20)
+    data = {'mcc': np.arange(5), 'target': 0}
+    data = i_filter(data)
+    np.testing.assert_equal(data['mcc'], np.arange(5))
+
+
 def test_len_4():
     i_filter = RandomSlice(10, 20, rate_for_min=0.8)
     min_len, max_len = i_filter.get_min_max(100)
@@ -58,4 +65,3 @@ def test_len_7():
     i_filter = RandomSlice(10, 20, rate_for_min=0.01)
     min_len, max_len = i_filter.get_min_max(5)
     assert (min_len, max_len) == (1, 5)
-

@@ -9,3 +9,11 @@ def test_shuffle():
     data = i_filter(data)
     assert len(data['event_time']) == 5
     assert data['mcc'].sum() == 10
+
+
+def test_shuffle_with_target():
+    i_filter = AllTimeShuffle()
+    data = {'event_time': torch.arange(5), 'mcc': torch.arange(5), 'target': 0}
+    data = i_filter(data)
+    assert len(data['event_time']) == 5
+    assert data['mcc'].sum() == 10
