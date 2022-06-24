@@ -14,7 +14,7 @@ class RandomSlice(DictTransformer):
         self.rate_for_min = rate_for_min
 
     def __call__(self, x):
-        seq_len = len(next(v for v in x.values() if self.is_seq_feature(v)))
+        seq_len = self.get_seq_len(x)
 
         idx = self.get_idx(seq_len)
         new_x = {k: self.seq_indexing(v, idx) for k, v in x.items()}

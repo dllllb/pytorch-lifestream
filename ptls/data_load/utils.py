@@ -53,6 +53,18 @@ class DictTransformer:
             return x[ix]
         return x
 
+    @staticmethod
+    def get_seq_len(d):
+        """Finds a sequence column and return its length
+
+        Parameters
+        ----------
+        d:
+            feature-dict
+
+        """
+        return len(next(v for k, v in d.items() if DictTransformer.is_seq_feature(v)))
+
 
 def collate_feature_dict(batch, array_cols=None):
     """Collate feature with arrays to padded batch
@@ -89,7 +101,7 @@ def collate_feature_dict(batch, array_cols=None):
             lambda a, b: ((a[1] is not None and a[1] == b or a[1] is None) and a[0], b),
             map(len, new_x_.values()), (True, None))[0]
 
-    seq_col = next(iter(k for k, v in batch[0].items() if DictTransformer.is_seq_feature(v) and k not in array_cols))
+    seq_col = next(k for k, v in batch[0].items() if DictTransformer.is_seq_feature(v) and k not in array_cols)
     lengths = torch.LongTensor([len(rec[seq_col]) for rec in batch])
     new_x = {}
     for k, v in new_x_.items():

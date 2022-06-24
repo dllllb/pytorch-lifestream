@@ -53,12 +53,12 @@ class MlmIndexedDataset(torch.utils.data.Dataset):
     def __getitem__(self, item):
         item_id, start_pos = self.ix[item]
         v = self.data[item_id]
-        et = next(v_ for v_ in v.values() if DictTransformer.is_seq_feature(v_))
+        seq_len = DictTransformer.get_seq_len(v)
 
         if self.random_shift > 0:
             start_pos = start_pos + random.randint(-self.random_shift, self.random_shift)
         start_pos = max(start_pos, 0)
-        start_pos = min(start_pos, len(et) - self.step)
+        start_pos = min(start_pos, seq_len - self.step)
         len_reduce = 0 if self.random_crop == 0 else random.randint(0, self.random_crop)
 
         return {k: v[start_pos: start_pos + self.seq_len - len_reduce] if DictTransformer.is_seq_feature(v) else v
