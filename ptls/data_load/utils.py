@@ -1,5 +1,8 @@
 import numpy as np
 import torch
+from collections import defaultdict
+from functools import reduce
+from ptls.nn import PaddedBatch
 
 class DictTransformer:
     def __init__(self, *args, **kwargs):
@@ -49,3 +52,57 @@ class DictTransformer:
         if DictTransformer.is_seq_feature(x):
             return x[ix]
         return x
+
+
+def collate_feature_dict(batch, array_cols=None):
+    """Collate feature with arrays to padded batch
+
+    Check feature consistency. Keys for all batch samples should be the same.
+    Drops features which are not compatible with torch.Tensor like `str` or `datetime`
+    Convert scalar value to tensors like target col
+
+    Parameters
+    ----------
+    batch:
+        list with feature dicts
+    array_cols:
+        list of columns which are arrays.
+        There are `sequences` features and `arrays` which are 1-d array of tensor.
+        `sequences` have 1-d shape with different lengths per sample
+        `arrays` have any shape that is the same for all samples.
+        `sequences` will be padded, `arrays` will be stacked (which is faster)
+        Seq lens should be calculated by `sequences` not `arrays`.
+        Provide `array_cols` for correct split of array features into `sequences` and `arrays`.
+
+    Returns
+    -------
+        PaddedBatch
+    """
+    if array_cols is None:
+        array_cols = []
+
+    new_x_ = defaultdict(list)
+    for i, x in enumerate(batch):
+        for k, v in x.items():
+            new_x_[k].append(v)
+        assert reduce(
+            lambda a, b: ((a[1] is not None and a[1] == b or a[1] is None) and a[0], b),
+            map(len, new_x_.values()), (True, None))[0]
+
+    seq_col = next(iter(k for k, v in batch[0].items() if DictTransformer.is_seq_feature(v) and k not in array_cols))
+    lengths = torch.LongTensor([len(rec[seq_col]) for rec in batch])
+    new_x = {}
+    for k, v in new_x_.items():
+        if DictTransformer.is_seq_feature(v[0]):
+            if k not in array_cols:
+                new_x[k] = torch.nn.utils.rnn.pad_sequence(v, batch_first=True)
+            else:
+                new_x[k] = torch.stack(v, dim=0)
+        else:
+            v = np.array(v)
+            if v.dtype.kind == 'i':
+                new_x[k] = torch.from_numpy(v).long()
+            if v.dtype.kind == 'f':
+                new_x[k] = torch.from_numpy(v).float()
+
+    return PaddedBatch(new_x, lengths)

@@ -1,9 +1,11 @@
-import torch
-from ptls.data_load import padded_collate_wo_target
-from ptls.frames.coles import ColesDataset
-from ptls.data_load.augmentations.sequence_pair_augmentation import sequence_pair_augmentation
 from functools import reduce
 from operator import iadd
+
+import torch
+
+from ptls.data_load.augmentations.sequence_pair_augmentation import sequence_pair_augmentation
+from ptls.data_load.utils import collate_feature_dict
+from ptls.frames.coles import ColesDataset
 
 
 class SopDataset(ColesDataset):
@@ -21,8 +23,8 @@ class SopDataset(ColesDataset):
 
         return (
             (
-                padded_collate_wo_target(lefts),
-                padded_collate_wo_target(rights)
+                collate_feature_dict(lefts),
+                collate_feature_dict(rights)
             ),
             targets.float()
         )

@@ -1,9 +1,10 @@
+from copy import deepcopy
+
 import torch
 
-from ptls.data_load import padded_collate_wo_target
 from ptls.data_load.augmentations.random_slice import RandomSlice
+from ptls.data_load.utils import collate_feature_dict
 from ptls.nn import PaddedBatch
-from copy import deepcopy
 
 
 class RtdDataset(torch.utils.data.Dataset):
@@ -32,7 +33,7 @@ class RtdDataset(torch.utils.data.Dataset):
             yield self.r_slice(feature_arrays)
 
     def collate_fn(self, batch):
-        padded_batch = padded_collate_wo_target(batch)
+        padded_batch = collate_feature_dict(batch)
 
         new_x, lengths, mask = padded_batch.payload, padded_batch.seq_lens, padded_batch.seq_len_mask
 

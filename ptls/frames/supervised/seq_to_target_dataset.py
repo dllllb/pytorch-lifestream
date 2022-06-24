@@ -1,6 +1,6 @@
 import torch
 
-from ptls.data_load import padded_collate_wo_target
+from ptls.data_load.utils import collate_feature_dict
 
 
 class SeqToTargetDataset(torch.utils.data.Dataset):
@@ -21,20 +21,20 @@ class SeqToTargetDataset(torch.utils.data.Dataset):
 
     def __getitem__(self, item):
         feature_arrays = self.data[item]
-        return self.get_target(feature_arrays)
+        return feature_arrays
 
     def __iter__(self):
         for feature_arrays in self.data:
-            yield self.get_target(feature_arrays)
+            yield feature_arrays
 
-    def get_target(self, feature_arrays):
-        return {k: v for k, v in feature_arrays.items() if k != self.target_col_name}, \
-               feature_arrays[self.target_col_name]
 
-    def collate_fn(self, batch):
-        features = [x for x, y in batch]
-        target = [y for x, y in batch]
-        return padded_collate_wo_target(features), torch.tensor(target, dtype=self.target_dtype)
+    def collate_fn(self, padded_batch):
+        padded_batch = collate_feature_dict(padded_batch, array_cols=self.target_col_name)
+        target = padded_batch.payload[self.target_col_name]
+        del padded_batch.payload[self.target_col_name]
+        if self.target_dtype is not None:
+            target = target.to(dtype=self.target_dtype)
+        return padded_batch, target
 
 
 class SeqToTargetIterableDataset(SeqToTargetDataset, torch.utils.data.IterableDataset):

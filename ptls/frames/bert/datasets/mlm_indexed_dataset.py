@@ -2,7 +2,7 @@ import numpy as np
 import torch
 import random
 
-from ptls.data_load import padded_collate_wo_target
+from ptls.data_load.utils import collate_feature_dict
 
 
 class MlmIndexedDataset(torch.utils.data.Dataset):
@@ -64,4 +64,4 @@ class MlmIndexedDataset(torch.utils.data.Dataset):
 
     @staticmethod
     def collate_fn(batch):
-        return padded_collate_wo_target(batch)
+        return collate_feature_dict(batch)

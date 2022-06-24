@@ -3,7 +3,7 @@ from operator import iadd
 
 import torch
 
-from ptls.data_load import padded_collate_wo_target
+from ptls.data_load.utils import collate_feature_dict
 from ptls.frames.coles.split_strategy import AbsSplit
 
 
@@ -39,7 +39,7 @@ class ColesDataset(torch.utils.data.Dataset):
     def collate_fn(batch):
         class_labels = [i for i, class_samples in enumerate(batch) for _ in class_samples]
         batch = reduce(iadd, batch)
-        padded_batch = padded_collate_wo_target(batch)
+        padded_batch = collate_feature_dict(batch)
         return padded_batch, torch.LongTensor(class_labels)
 
 

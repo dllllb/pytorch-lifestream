@@ -1,6 +1,6 @@
 import torch
 
-from ptls.data_load import padded_collate_wo_target
+from ptls.data_load.utils import collate_feature_dict
 from ptls.data_load.augmentations.random_slice import RandomSlice
 
 
@@ -41,7 +41,7 @@ class MlmDataset(torch.utils.data.Dataset):
 
     @staticmethod
     def collate_fn(batch):
-        return padded_collate_wo_target(batch)
+        return collate_feature_dict(batch)
 
 
 class MlmIterableDataset(MlmDataset, torch.utils.data.IterableDataset):
