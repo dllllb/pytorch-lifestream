@@ -1,6 +1,7 @@
 import random
-import math
+
 import numpy as np
+
 from ptls.data_load.utils import DictTransformer
 
 
@@ -13,7 +14,7 @@ class RandomSlice(DictTransformer):
         self.rate_for_min = rate_for_min
 
     def __call__(self, x):
-        seq_len = len(next(iter(x.values())))
+        seq_len = len(next(v for v in x.values() if self.is_seq_feature(v)))
 
         idx = self.get_idx(seq_len)
         new_x = {k: self.seq_indexing(v, idx) for k, v in x.items()}
