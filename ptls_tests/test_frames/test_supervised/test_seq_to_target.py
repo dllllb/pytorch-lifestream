@@ -167,7 +167,7 @@ def test_accuracy_bin():
     y_hat = torch.tensor([0.1, 0.4, 0.6, 0.8, 0.9])
     y = torch.tensor([0, 1, 0, 1, 0])
     acc(y_hat, y)
-    assert acc.compute().mul(100).int().item() == 40
+    assert acc.compute().mul(100).int() == 40
 
 
 def test_accuracy_mul():
@@ -181,7 +181,7 @@ def test_accuracy_mul():
     ]).float(), dim=1)
     y = torch.tensor([0, 1, 1, 2, 2])
     acc(y_hat, y)
-    assert acc.compute().mul(100).int().item() == 60
+    assert acc.compute().mul(100).int() == 60
 
 
 def test_ziln_loss():

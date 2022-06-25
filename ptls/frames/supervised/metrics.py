@@ -90,8 +90,8 @@ class LogAccuracy(torchmetrics.Accuracy):
     def __init__(self, **params):
         super().__init__(**params)
 
-        self.add_state('correct', default=torch.tensor([0.0]))
-        self.add_state('total', default=torch.tensor([0.0]))
+        self.add_state('correct', default=torch.tensor(0.0))
+        self.add_state('total', default=torch.tensor(0.0))
 
     def update(self, preds, target):
         if len(preds.shape) == 1:
