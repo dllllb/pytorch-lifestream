@@ -86,7 +86,7 @@ class MAPE(DistributionTargets):
         return mape_metric(self.sign * torch.exp(y_hat - 1), y[:, None])
 
 
-class LogAccuracy(torchmetrics.Accuracy):
+class LogAccuracy(torchmetrics.Metric):
     def __init__(self, **params):
         super().__init__(**params)
 
