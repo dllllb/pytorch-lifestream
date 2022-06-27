@@ -163,7 +163,8 @@ class ClsDataModuleTrain(pl.LightningDataModule):
         else:
             raise AttributeError(f'Unknown part: {part}')
 
-        yield FeatureFilter(keep_feature_names=self.category_names)
+        yield FeatureFilter(keep_feature_names=self.category_names,
+                            drop_feature_names=self.setup_conf.get('drop_feature_names', None))
         yield CategorySizeClip(self.category_max_size)
 
         if self._type == 'iterable':

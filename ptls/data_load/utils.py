@@ -63,6 +63,8 @@ class DictTransformer:
             feature-dict
 
         """
+        if 'event_time' in d:
+            return list(d['event_time'])
         return len(next(v for k, v in d.items() if DictTransformer.is_seq_feature(v)))
 
 

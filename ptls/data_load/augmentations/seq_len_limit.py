@@ -11,7 +11,7 @@ class SeqLenLimit(DictTransformer):
         assert strategy in ('tail', 'head', 'random')
 
     def __call__(self, x):
-        seq_len = len(next(iter(x.values())))
+        seq_len = self.get_seq_len(x)
 
         idx = self.get_idx(seq_len)
         new_x = {k: self.seq_indexing(v, idx) for k, v in x.items()}
