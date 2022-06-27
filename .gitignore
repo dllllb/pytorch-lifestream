@@ -20,3 +20,4 @@ tags
 site
 *.log
 *.code-workspace
+*.pyc

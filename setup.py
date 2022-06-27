@@ -24,6 +24,6 @@ setuptools.setup(
         'pytorch-lightning==1.6.*',
         'pyarrow==7.*',
         'transformers==4.*',
-        'omegaconf>=2.1',
+        'hydra-core>=1.1.2'
     ],
 )
