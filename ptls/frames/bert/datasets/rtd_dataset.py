@@ -26,11 +26,15 @@ class RtdDataset(torch.utils.data.Dataset):
 
     def __getitem__(self, item):
         feature_arrays = self.data[item]
-        return self.r_slice(feature_arrays)
+        return self.process(feature_arrays)
 
     def __iter__(self):
         for feature_arrays in self.data:
-            yield self.r_slice(feature_arrays)
+            yield self.process(feature_arrays)
+
+    def process(self, feature_arrays):
+        feature_arrays = {k: v for k, v in feature_arrays.items() if DictTransformer.is_seq_feature(k, v)}
+        return self.r_slice(feature_arrays)
 
     def collate_fn(self, batch):
         padded_batch = collate_feature_dict(batch)
@@ -49,7 +53,7 @@ class RtdDataset(torch.utils.data.Dataset):
         to_replace_flatten = to_replace.flatten()
         new_x = deepcopy(new_x)
         for k, v in new_x.items():
-            if DictTransformer.is_seq_feature(v):
+            if DictTransformer.is_seq_feature(k, v):
                 v.flatten()[to_replace_flatten] = v.flatten()[sampled_trx_ids]
 
         return PaddedBatch(new_x, lengths), to_replace.long().float().flatten()[mask.flatten().bool()]

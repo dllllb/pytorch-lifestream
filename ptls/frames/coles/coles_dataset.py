@@ -34,7 +34,7 @@ class ColesDataset(DictTransformer, torch.utils.data.Dataset):
     def get_splits(self, feature_arrays):
         local_date = feature_arrays[self.col_time]
         indexes = self.splitter.split(local_date)
-        return [{k: self.seq_indexing(v, ix) for k, v in feature_arrays.items()} for ix in indexes]
+        return [{k: v[ix] for k, v in feature_arrays.items() if self.is_seq_feature(k, v)} for ix in indexes]
 
     @staticmethod
     def collate_fn(batch):

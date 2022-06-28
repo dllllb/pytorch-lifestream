@@ -4,6 +4,7 @@ from collections import defaultdict
 from functools import reduce
 from ptls.nn import PaddedBatch
 
+
 class DictTransformer:
     def __init__(self, *args, **kwargs):
         """Mixin constructor
@@ -11,7 +12,7 @@ class DictTransformer:
         super().__init__(*args, **kwargs)
 
     @staticmethod
-    def is_seq_feature(x):
+    def is_seq_feature(k: str, x):
         """Check is value sequential feature
 
         Iterables are:
@@ -23,6 +24,8 @@ class DictTransformer:
 
         Parameters
         ----------
+        k:
+            feature_name
         x:
             value for check
 
@@ -30,16 +33,22 @@ class DictTransformer:
         -------
             True if value is iterable
         """
+        if k == 'event_time':
+            return True
+        if k.startswith('target'):
+            return False
         if type(x) in (np.ndarray, torch.Tensor):
             return True
         return False
 
     @staticmethod
-    def seq_indexing(x, ix):
+    def seq_indexing(k: str, x, ix):
         """Apply indexing for seq_features only
 
         Parameters
         ----------
+        k:
+            feature name
         x:
             value
         ix:
@@ -49,7 +58,7 @@ class DictTransformer:
         -------
 
         """
-        if DictTransformer.is_seq_feature(x):
+        if DictTransformer.is_seq_feature(k, x):
             return x[ix]
         return x
 
@@ -65,7 +74,7 @@ class DictTransformer:
         """
         if 'event_time' in d:
             return len(d['event_time'])
-        return len(next(v for k, v in d.items() if DictTransformer.is_seq_feature(v)))
+        return len(next(v for k, v in d.items() if DictTransformer.is_seq_feature(k, v)))
 
 
 def collate_feature_dict(batch, array_cols=None):
@@ -103,15 +112,15 @@ def collate_feature_dict(batch, array_cols=None):
             lambda a, b: ((a[1] is not None and a[1] == b or a[1] is None) and a[0], b),
             map(len, new_x_.values()), (True, None))[0]
 
-    seq_col = next(k for k, v in batch[0].items() if DictTransformer.is_seq_feature(v) and k not in array_cols)
+    seq_col = next(k for k, v in batch[0].items() if DictTransformer.is_seq_feature(k, v) and k not in array_cols)
     lengths = torch.LongTensor([len(rec[seq_col]) for rec in batch])
     new_x = {}
     for k, v in new_x_.items():
-        if DictTransformer.is_seq_feature(v[0]):
-            if k not in array_cols:
-                new_x[k] = torch.nn.utils.rnn.pad_sequence(v, batch_first=True)
-            else:
+        if type(v[0]) in (np.ndarray, torch.Tensor):
+            if k in array_cols or k.startswith('target'):
                 new_x[k] = torch.stack(v, dim=0)
+            else:
+                new_x[k] = torch.nn.utils.rnn.pad_sequence(v, batch_first=True)
         else:
             v = np.array(v)
             if v.dtype.kind == 'i':

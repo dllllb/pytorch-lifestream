@@ -17,7 +17,7 @@ class RandomSlice(DictTransformer):
         seq_len = self.get_seq_len(x)
 
         idx = self.get_idx(seq_len)
-        new_x = {k: self.seq_indexing(v, idx) for k, v in x.items()}
+        new_x = {k: self.seq_indexing(k, v, idx) for k, v in x.items()}
         return new_x
 
     def get_idx(self, seq_len):

@@ -11,6 +11,7 @@ from ptls.nn import TrxEncoder
 from functools import partial
 
 
+
 def tst_params():
     params = {
         'rnn': {
@@ -57,6 +58,7 @@ def test_rnn_model():
             trx_encoder=TrxEncoder(**config['trx_encoder']),
             **config['rnn'],
         ),
+        n_negatives=10, n_forward_steps=3,
         optimizer_partial=partial(torch.optim.Adam),
         lr_scheduler_partial=partial(torch.optim.lr_scheduler.StepLR, step_size=1, gamma=1.0),
     )

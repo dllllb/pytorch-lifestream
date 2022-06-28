@@ -28,14 +28,14 @@ class TakeFirstTrx(IterableProcessingDataset):
             seq_len = self.get_len(features)
             take_first_n = int(seq_len * self._take_first_fraction)
             for key, val in features.items():
-                if self.is_seq_feature(val):
+                if self.is_seq_feature(key, val):
                     features[key] = val[:take_first_n]
             rec = (features, rec[1]) if type(rec) is tuple else features
             yield rec
 
     def get_sequence_col(self, rec):
         if self._sequence_col is None:
-            arrays = [k for k, v in rec.items() if self.is_seq_feature(v)]
+            arrays = [k for k, v in rec.items() if self.is_seq_feature(k, v)]
             if len(arrays) == 0:
                 raise ValueError(f'Can not find field with sequence from record: {rec}')
             self._sequence_col = arrays[0]

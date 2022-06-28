@@ -2,14 +2,16 @@ site_name: PyTorch-LifeStream
 nav:
     - Welcome: index.md
     - 'User Guide':
-        - 'Sequential Data Definition': 'data_preparation.md'
+        - 'Sequential Data':
+            - 'Sequential Data Definition': 'data_preparation.md'
+            - 'Feature naming': 'feature_naming.md'
         - 'Training Methods': 'methods.md'
         - 'How to guide':
-              - 'Data preparation': '#'
-              - 'Sequential model creation': '#'
-              - 'Frameworks usage': '#'
-              - 'Encoder training': '#'
-              - 'Inference': '#'
+            - 'Data preparation': '#'
+            - 'Sequential model creation': '#'
+            - 'Frameworks usage': '#'
+            - 'Encoder training': '#'
+            - 'Inference': '#'
 
         - 'ptls':
             - 'ptls.nn':

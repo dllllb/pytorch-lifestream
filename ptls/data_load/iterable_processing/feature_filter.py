@@ -29,7 +29,7 @@ class FeatureFilter(IterableProcessingDataset):
                         if k not in self._drop_feature_names or self.is_keep(k)}
         if self._drop_non_iterable:
             features = {k: v for k, v in features.items()
-                        if self.is_seq_feature(v) or self.is_keep(k)}
+                        if self.is_seq_feature(k, v) or self.is_keep(k)}
         return features
 
     def is_keep(self, k):

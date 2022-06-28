@@ -1,6 +1,6 @@
 import torch
 
-from ptls.data_load.utils import collate_feature_dict
+from ptls.data_load.utils import collate_feature_dict, DictTransformer
 from ptls.data_load.augmentations.random_slice import RandomSlice
 
 
@@ -33,11 +33,15 @@ class MlmDataset(torch.utils.data.Dataset):
 
     def __getitem__(self, item):
         feature_arrays = self.data[item]
-        return self.r_slice(feature_arrays)
+        return self.process(feature_arrays)
 
     def __iter__(self):
         for feature_arrays in self.data:
-            yield self.r_slice(feature_arrays)
+            yield self.process(feature_arrays)
+
+    def process(self, feature_arrays):
+        feature_arrays = {k: v for k, v in feature_arrays.items() if DictTransformer.is_seq_feature(k, v)}
+        return self.r_slice(feature_arrays)
 
     @staticmethod
     def collate_fn(batch):
