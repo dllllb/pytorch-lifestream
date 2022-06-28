@@ -38,13 +38,12 @@ class CpcV2Module(ABSModule):
     def __init__(self, validation_metric=None,
                        seq_encoder=None,
                        head=None,
-                       loss=None,
+                       n_negatives=40, n_forward_steps=6,
                        aggregator=None,
                        optimizer_partial=None,
                        lr_scheduler_partial=None):
 
-        if loss is None:
-            loss = CPC_Loss(n_negatives=40, n_forward_steps=6)
+        loss = CPC_Loss(n_negatives=n_negatives, n_forward_steps=n_forward_steps)
         if validation_metric is None:
             validation_metric = CpcAccuracy(loss)
 
