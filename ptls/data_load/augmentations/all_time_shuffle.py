@@ -15,5 +15,5 @@ class AllTimeShuffle(DictTransformer):
 
     def __call__(self, x):
         ix = self.get_perm_ix(x[self.event_time_name])
-        new_x = {k: self.seq_indexing(v, ix) for k, v in x.items()}
+        new_x = {k: self.seq_indexing(k, v, ix) for k, v in x.items()}
         return new_x

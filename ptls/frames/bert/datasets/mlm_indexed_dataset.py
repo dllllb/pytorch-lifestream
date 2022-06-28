@@ -61,8 +61,9 @@ class MlmIndexedDataset(torch.utils.data.Dataset):
         start_pos = min(start_pos, seq_len - self.step)
         len_reduce = 0 if self.random_crop == 0 else random.randint(0, self.random_crop)
 
-        return {k: v[start_pos: start_pos + self.seq_len - len_reduce] if DictTransformer.is_seq_feature(v) else v
-                for k, v in v.items()}
+        return {k: v[start_pos: start_pos + self.seq_len - len_reduce]
+                for k, v in v.items()
+                if DictTransformer.is_seq_feature(k, v)}
 
     @staticmethod
     def collate_fn(batch):
