@@ -1,6 +1,7 @@
 import torch
 import pytorch_lightning as pl
 from ptls.nn import PaddedBatch
+from torchmetrics.classification.auroc import AUROC
 
 
 class ABSModule(pl.LightningModule):
