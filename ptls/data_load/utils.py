@@ -41,7 +41,7 @@ def collate_feature_dict(batch):
         else:
             v = np.array(v)
             if v.dtype.kind == 'i':
-                new_x[k] = torch.from_numpy(v).int()
+                new_x[k] = torch.from_numpy(v).long()
             elif v.dtype.kind == 'f':
                 new_x[k] = torch.from_numpy(v).float()
             else:
