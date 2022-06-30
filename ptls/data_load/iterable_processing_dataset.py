@@ -1,8 +1,8 @@
 from torch.utils.data.dataset import IterableDataset
-from ptls.data_load.utils import DictTransformer
+from ptls.data_load.feature_dict import FeatureDict
 
 
-class IterableProcessingDataset(DictTransformer, IterableDataset):
+class IterableProcessingDataset(FeatureDict, IterableDataset):
     def __init__(self):
         super().__init__()
 

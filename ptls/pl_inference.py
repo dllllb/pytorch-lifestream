@@ -17,7 +17,7 @@ from ptls.data_load.augmentations.seq_len_limit import SeqLenLimit
 from ptls.data_load.iterable_processing.category_size_clip import CategorySizeClip
 from ptls.data_load.iterable_processing.feature_filter import FeatureFilter
 from ptls.data_load.iterable_processing.target_extractor import TargetExtractor
-from ptls.data_load.parquet_dataset import ParquetDataset, ParquetFiles
+from ptls.data_load.datasets.parquet_dataset import ParquetDataset, ParquetFiles
 from ptls.frames.bert import RtdModule
 
 logger = logging.getLogger(__name__)

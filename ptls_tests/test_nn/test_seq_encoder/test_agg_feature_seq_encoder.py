@@ -2,7 +2,7 @@ import torch
 from pyhocon import ConfigFactory
 
 from ptls.nn.seq_encoder import AggFeatureSeqEncoder
-from ptls.nn.trx_encoder import PaddedBatch
+from ptls.data_load.padded_batch import PaddedBatch
 
 
 def get_data():

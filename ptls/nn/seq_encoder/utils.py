@@ -7,7 +7,7 @@ from torch.nn import functional as tf
 from ptls.custom_layers import Squeeze
 from ptls.nn.seq_step import LastStepEncoder
 from ptls.nn.normalization import L2NormEncoder
-from ptls.nn.trx_encoder import PaddedBatch
+from ptls.data_load.padded_batch import PaddedBatch
 
 
 class PerTransHead(nn.Module):

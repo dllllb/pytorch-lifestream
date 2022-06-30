@@ -2,7 +2,7 @@ import numpy as np
 import torch
 
 from ptls.nn.seq_encoder.utils import get_distributions, transform_inv
-from ptls.nn.trx_encoder import PaddedBatch
+from ptls.data_load.padded_batch import PaddedBatch
 
 
 class StatisticsEncoder(torch.nn.Module):

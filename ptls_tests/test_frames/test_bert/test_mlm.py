@@ -1,7 +1,7 @@
 import torch
 from omegaconf import OmegaConf
 from ptls.frames.bert.modules.mlm_module import MLMPretrainModule
-from ptls.nn import PaddedBatch
+from ptls.data_load.padded_batch import PaddedBatch
 from ptls.nn.seq_encoder.abs_seq_encoder import AbsSeqEncoder
 from ptls.nn import RnnEncoder, TransformerEncoder, LongformerEncoder
 

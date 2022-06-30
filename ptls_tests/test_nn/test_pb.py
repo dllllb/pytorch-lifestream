@@ -1,6 +1,6 @@
 import torch
+from ptls.data_load.padded_batch import PaddedBatch
 from ptls.nn import (
-    PaddedBatch,
     PBLinear, PBL2Norm, PBLayerNorm, PBReLU,
 )
 

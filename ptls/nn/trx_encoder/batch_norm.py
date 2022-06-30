@@ -1,6 +1,6 @@
 import torch
 
-from ptls.nn.trx_encoder import PaddedBatch
+from ptls.data_load.padded_batch import PaddedBatch
 
 
 class RBatchNorm(torch.nn.Module):

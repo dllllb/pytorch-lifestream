@@ -1,7 +1,8 @@
 import torch
 from omegaconf import OmegaConf
 
-from ptls.nn.trx_encoder import PaddedBatch, TrxEncoder
+from ptls.nn.trx_encoder import TrxEncoder
+from ptls.data_load.padded_batch import PaddedBatch
 from ptls.nn.seq_encoder import RnnSeqEncoder, TransformerSeqEncoder
 from hydra.utils import instantiate
 

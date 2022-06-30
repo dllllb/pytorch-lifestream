@@ -1,15 +1,15 @@
 import numpy as np
 import torch
-from ptls.data_load.utils import DictTransformer
+from ptls.data_load.feature_dict import FeatureDict
 
 
-class DropDay(DictTransformer):
+class DropDay(FeatureDict):
     def __init__(self, event_time_name='event_time'):
         self.event_time_name = event_time_name
 
     def __call__(self, x):
         mask = self.get_perm_ix(x[self.event_time_name])
-        new_x = {k: self.seq_indexing(k, v, mask) for k, v in x.items()}
+        new_x = self.seq_indexing(x, mask)
         return new_x
 
     @staticmethod

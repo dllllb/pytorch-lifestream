@@ -21,7 +21,7 @@ from ptls.data_load.iterable_processing.id_filter import IdFilter
 from ptls.data_load.iterable_processing.iterable_shuffle import IterableShuffle
 from ptls.data_load.iterable_processing.seq_len_filter import SeqLenFilter
 from ptls.data_load.iterable_processing.target_join import TargetJoin
-from ptls.data_load.parquet_dataset import ParquetFiles, ParquetDataset
+from ptls.data_load.datasets.parquet_dataset import ParquetFiles, ParquetDataset
 
 
 logger = logging.getLogger(__name__)

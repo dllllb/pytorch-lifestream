@@ -1,6 +1,9 @@
 from typing import Dict
 
+import numpy as np
 import torch
+
+from ptls.data_load.feature_dict import FeatureDict
 
 
 class PaddedBatch:
@@ -67,7 +70,8 @@ class PaddedBatch:
     def to(self, device, non_blocking=False):
         length = self._length.to(device=device, non_blocking=non_blocking)
         payload = {
-            k: v.to(device=device, non_blocking=non_blocking) for k, v in self._payload.items()
+            k: v.to(device=device, non_blocking=non_blocking) if type(v) is torch.Tensor else v
+            for k, v in self._payload.items()
         }
         return PaddedBatch(payload, length)
 
@@ -76,8 +80,58 @@ class PaddedBatch:
         """mask with B*T size for valid tokens in `payload`
         """
         if type(self._payload) is dict:
-            B, T = next(iter(self._payload.values())).size()
+            B, T = next(v for k, v in self._payload.items() if self.is_seq_feature(k, v)).size()
         else:
             B, T = self._payload.size()[:2]
         return (torch.arange(T, device=self._length.device).unsqueeze(0).expand(B, T) < \
                 self._length.unsqueeze(1)).long()
+
+    @staticmethod
+    def is_seq_feature(k: str, x):
+        """Check is value sequential feature
+        Synchronized with ptls.data_load.feature_dict.FeatureDict.is_seq_feature
+
+                     1-d        2-d
+        event_time | True      True
+        target_    | False     False  # from FeatureDict.is_seq_feature
+        tensor     | False     True
+
+        Parameters
+        ----------
+        k:
+            feature_name
+        x:
+            value for check
+
+        Returns
+        -------
+
+        """
+        if not FeatureDict.is_seq_feature(k, x):
+            return False  # target fields
+        if type(x) is np.ndarray:
+            return False
+        if len(x.shape) == 1:
+            return False
+        return True
+
+    def drop_seq_features(self):
+        """Returns new dict without sequential features
+
+        Returns
+        -------
+
+        """
+        return {k: v for k, v in self.payload.items() if not PaddedBatch.is_seq_feature(k, v)}
+
+    def keep_seq_features(self):
+        """Returns new PaddedBatch with sequential features only
+
+        Returns
+        -------
+
+        """
+        return PaddedBatch(
+            payload={k: v for k, v in self.payload.items() if PaddedBatch.is_seq_feature(k, v)},
+            length=self.seq_lens,
+        )

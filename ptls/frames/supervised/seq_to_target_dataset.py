@@ -29,7 +29,7 @@ class SeqToTargetDataset(torch.utils.data.Dataset):
 
 
     def collate_fn(self, padded_batch):
-        padded_batch = collate_feature_dict(padded_batch, array_cols=self.target_col_name)
+        padded_batch = collate_feature_dict(padded_batch)
         target = padded_batch.payload[self.target_col_name]
         del padded_batch.payload[self.target_col_name]
         if self.target_dtype is not None:

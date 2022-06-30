@@ -2,7 +2,7 @@ import random
 import torch
 from transformers import LongformerConfig, LongformerModel
 
-from ptls.nn.trx_encoder import PaddedBatch
+from ptls.data_load.padded_batch import PaddedBatch
 from ptls.nn.seq_encoder.abs_seq_encoder import AbsSeqEncoder
 
 

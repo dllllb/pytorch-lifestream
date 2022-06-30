@@ -4,7 +4,7 @@ from omegaconf import OmegaConf
 
 from ptls.nn.seq_encoder.rnn_encoder import RnnEncoder
 from ptls.nn.seq_encoder.utils import PerTransHead, scoring_head
-from ptls.nn.trx_encoder import PaddedBatch
+from ptls.data_load.padded_batch import PaddedBatch
 
 
 class TrxEncoderTest(torch.nn.Module):

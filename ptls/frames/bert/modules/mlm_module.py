@@ -4,8 +4,8 @@ from torchmetrics import MeanMetric
 
 from ptls.frames.bert.losses.query_soft_max import QuerySoftmaxLoss
 from ptls.nn.seq_encoder.abs_seq_encoder import AbsSeqEncoder
-from ptls.nn import PaddedBatch, PBL2Norm
-
+from ptls.nn import PBL2Norm
+from ptls.data_load.padded_batch import PaddedBatch
 
 class MLMPretrainModule(pl.LightningModule):
     """Masked Language Model (MLM) from [ROBERTA](https://arxiv.org/abs/1907.11692)
