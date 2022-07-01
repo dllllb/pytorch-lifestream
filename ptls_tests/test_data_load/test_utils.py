@@ -40,8 +40,8 @@ def test_collate_feature_dict():
     ]
     pb = collate_feature_dict(batch)
     torch.testing.assert_close(pb.seq_lens, torch.LongTensor((5, 2, 4)))
-    torch.testing.assert_close(pb.payload['bin'], torch.IntTensor([0, 4, 5]))
-    torch.testing.assert_close(pb.payload['target_bin'], torch.IntTensor([2, 3, 0]))
+    torch.testing.assert_close(pb.payload['bin'], torch.LongTensor([0, 4, 5]))
+    torch.testing.assert_close(pb.payload['target_bin'], torch.LongTensor([2, 3, 0]))
     torch.testing.assert_close(pb.payload['pp'], torch.FloatTensor([0.6, 0.2, 0.1]))
     np.testing.assert_equal(pb.payload['user_id'], np.array(['a', 'b', 'c']))
     assert type(pb.payload['lists']) is np.ndarray

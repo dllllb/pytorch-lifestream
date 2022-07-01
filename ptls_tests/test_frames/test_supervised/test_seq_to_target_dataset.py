@@ -14,7 +14,7 @@ def test_seq_to_target_dataset_default_long():
     )], target_col_name='target')
     dl = torch.utils.data.DataLoader(dataset, batch_size=10, collate_fn=dataset.collate_fn)
     x, y = next(iter(dl))
-    torch.testing.assert_close(y, torch.IntTensor([0, 0, 1, 1]))
+    torch.testing.assert_close(y, torch.LongTensor([0, 0, 1, 1]))
 
 def test_seq_to_target_dataset_default_double():
     dataset = SeqToTargetDataset([{
