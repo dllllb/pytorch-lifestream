@@ -3,7 +3,7 @@ nav:
     - Welcome: index.md
     - 'User Guide':
         - 'Sequential Data':
-            - 'Sequential Data Definition': 'data_preparation.md'
+            - 'Sequential Data Definition': 'sequential_data_definition.md'
             - 'Feature naming': 'feature_naming.md'
         - 'Training Methods': 'methods.md'
         - 'How to guide':

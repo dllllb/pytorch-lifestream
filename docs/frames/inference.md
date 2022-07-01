@@ -20,3 +20,5 @@ Usually we don't need sequential features in output, they will be dropped with `
 Output transformed to `pandas.DataFrame` with `InferenceModule.pandas_output=True`.
 
 You can't use `InferenceModule` for train due to output format.
+
+`InferenceModule` can be used with any pretrained models.

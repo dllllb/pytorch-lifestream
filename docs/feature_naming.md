@@ -92,3 +92,24 @@ dataset = MemoryMapDataset(
 
 print(dataset[0])
 ```
+
+## Code usage
+
+Need to take into account the type of features and the use of naming rules is in the classes:
+
+- `ptls.data_load.feature_dict.FeatureDict`
+- `ptls.data_load.padded_batch.PaddedBatch`
+- `ptls.data_load.utils.collate_feature_dict`
+
+All methods are tested with all types of features.
+
+| Type           | FeatureDict               | PaddedBatch   | collate_feature_dict | is_seq |
+| -------------- | ------------------------- | ------------- | -------------------- | ------ | 
+| scalar int     | `int`                     | 1-d `tensor`  | `torch.IntTensor`    |   X    |
+| target int     | `int`                     | 1-d `tensor`  | `torch.IntTensor`    |   X    |
+| scalar float   | `float`                   | 1-d `tensor`  | `torch.FloatTensor`  |   X    |
+| scalar str     | `str`                     | 1-d `ndarray` | `np.array`           |   X    |
+| list           | `list`                    | 1-d `ndarray` | `np.array`           |   X    |
+| sequential     | 1-d `ndarray` or `tensor` | 2-d `tensor`  | `pad_sequence`       |   V    |
+| sequential et  | 1-d `ndarray` or `tensor` | 2-d `tensor`  | `pad_sequence`       |   V    |
+| target array   | 1-d `ndarray` or `tensor` | 2-d `tensor`  | `stack`              |   X    |

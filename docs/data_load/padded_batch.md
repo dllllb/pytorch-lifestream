@@ -1,7 +1,7 @@
 # `ptls.data_load.padded_batch.PaddedBatch`
 
 Input data is a raw feature formats. You can transform your transaction to correct format with `ptls.data` module.
-Common description or sequential data and used data formats are here [data_preparation.md](../data_preparation.md)
+Common description or sequential data and used data formats are [here](../sequential_data_definition.md)
 Input data are covered in `ptls.data_load.padded_batch.PaddedBatch` class.
 
 We can create `PaddedBatch` object manually for demo and test purposes.

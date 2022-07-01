@@ -13,6 +13,7 @@ Some sections are in the process of description.
     Categorical encoding, datetime transformation, numerical feature preprocessing.
     - `ptls.data_load.split_tools` - convert data to ptls-data-format. Split by users and features. 
     - `ptls.data_load.datasets` - `torch.Dataset` interface access to the data.
+    - `ptls.data_load.iterable_processing` - generator-style filters for data transformation. 
 
 - `ptls.frames` - propose tools for training your encoders with popular frameworks like 
 CoLES, SimCLR, CPC, VICReg, ... [Link](methods.md)
@@ -22,6 +23,7 @@ CoLES, SimCLR, CPC, VICReg, ... [Link](methods.md)
     Embeddings are trained to predict their future state.
     - `ptls.frames.bert` - methods are inspired by nlp with transformer models.
     - `ptls.framed.supervised` - modules fo supervised training.
+    - `ptls.frames.inference` - inference module.
 
 - `ptls.nn` - layers for model creation:
     - `ptls.nn.trx_encoder` - layers which makes representation for single transactions.
@@ -36,6 +38,7 @@ CoLES, SimCLR, CPC, VICReg, ... [Link](methods.md)
 1. **Prepare your data**.
     - Use `Pyspark` in local or cluster mode for big dataset and `Pandas` for small.
     - Split data into required parts (train, valid, test, ...).
+    - Use `ptls.data_preprocessing` for simple data preparation. 
     - Transform features to compatible format using `Pyspark` or `Pandas` functions. 
     You can use also `ptls.data_load.preprocessing` for common data transformation patterns.
     - Split sequences to ptls-data format with `ptls.data_load.split_tools`. Save prepared data into `Parquet` format or 
@@ -48,7 +51,7 @@ CoLES, SimCLR, CPC, VICReg, ... [Link](methods.md)
 3. **Build encoder**.
     - All parts are available in `ptls.nn`.
      - You can also use pretrained layers.
-4. **Train your encoder** with selected framework.
+4. **Train your encoder** with selected framework and `pytorch_lightning`.
     - Provide data with selected framework compatible dataloader. 
     - Check the progress on tensorboard.
     - Tune hyperparameters if you need.
