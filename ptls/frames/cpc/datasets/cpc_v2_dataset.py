@@ -1,7 +1,7 @@
 from ptls.frames.coles.coles_dataset import ColesDataset
 from collections import defaultdict
 import torch
-from ptls.nn import PaddedBatch
+from ptls.data_load.padded_batch import PaddedBatch
 
 
 class CpcV2Dataset(ColesDataset):

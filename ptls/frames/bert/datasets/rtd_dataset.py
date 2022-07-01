@@ -3,8 +3,9 @@ from copy import deepcopy
 import torch
 
 from ptls.data_load.augmentations.random_slice import RandomSlice
-from ptls.data_load.utils import DictTransformer, collate_feature_dict
-from ptls.nn import PaddedBatch
+from ptls.data_load.utils import collate_feature_dict
+from ptls.data_load.feature_dict import FeatureDict
+from ptls.data_load.padded_batch import PaddedBatch
 
 
 class RtdDataset(torch.utils.data.Dataset):
@@ -33,7 +34,7 @@ class RtdDataset(torch.utils.data.Dataset):
             yield self.process(feature_arrays)
 
     def process(self, feature_arrays):
-        feature_arrays = {k: v for k, v in feature_arrays.items() if DictTransformer.is_seq_feature(k, v)}
+        feature_arrays = {k: v for k, v in feature_arrays.items() if FeatureDict.is_seq_feature(k, v)}
         return self.r_slice(feature_arrays)
 
     def collate_fn(self, batch):
@@ -53,7 +54,7 @@ class RtdDataset(torch.utils.data.Dataset):
         to_replace_flatten = to_replace.flatten()
         new_x = deepcopy(new_x)
         for k, v in new_x.items():
-            if DictTransformer.is_seq_feature(k, v):
+            if FeatureDict.is_seq_feature(k, v):
                 v.flatten()[to_replace_flatten] = v.flatten()[sampled_trx_ids]
 
         return PaddedBatch(new_x, lengths), to_replace.long().float().flatten()[mask.flatten().bool()]

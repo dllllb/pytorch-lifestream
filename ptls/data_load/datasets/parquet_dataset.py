@@ -1,11 +1,11 @@
-from itertools import chain
-import os
-
-from glob import glob
-import torch
 import logging
+import os
+import warnings
+from glob import glob
+from itertools import chain
 
 import numpy as np
+import torch
 
 from ptls.data_load import read_pyarrow_file
 
@@ -40,9 +40,15 @@ class ParquetDataset(torch.utils.data.IterableDataset):
     """
     def __init__(self, data_files,
                  post_processing=None,
+                 i_filters=None,
                  shuffle_files=False, cache_schema=True, shuffle_seed=42):
         self.data_files = data_files
-        self.post_processing = post_processing
+        if i_filters is not None:
+            self.post_processing = post_processing
+        else:
+            self.post_processing = post_processing
+        if post_processing is not None:
+            warnings.warn('`post_processing` parameter is deprecated, use `i_filters`')
         self.shuffle_files = shuffle_files
         self.cache_schema = cache_schema
         self.shuffle_seed = shuffle_seed

@@ -5,10 +5,10 @@ import torch
 
 from ptls.data_load.utils import collate_feature_dict
 from ptls.frames.coles.split_strategy import AbsSplit
-from ptls.data_load.utils import DictTransformer
+from ptls.data_load.feature_dict import FeatureDict
 
 
-class ColesDataset(DictTransformer, torch.utils.data.Dataset):
+class ColesDataset(FeatureDict, torch.utils.data.Dataset):
     def __init__(self,
                  data,
                  splitter: AbsSplit,

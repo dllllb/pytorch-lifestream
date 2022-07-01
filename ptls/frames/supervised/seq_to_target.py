@@ -6,7 +6,7 @@ import torch
 import torchmetrics
 from omegaconf import DictConfig
 
-from ptls.nn.trx_encoder import PaddedBatch
+from ptls.data_load.padded_batch import PaddedBatch
 
 logger = logging.getLogger(__name__)
 

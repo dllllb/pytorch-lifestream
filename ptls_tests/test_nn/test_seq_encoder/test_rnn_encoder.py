@@ -1,7 +1,7 @@
 import torch
 
 from ptls.nn.seq_encoder.rnn_encoder import RnnEncoder
-from ptls.nn.trx_encoder import PaddedBatch
+from ptls.data_load.padded_batch import PaddedBatch
 
 
 def get_data():

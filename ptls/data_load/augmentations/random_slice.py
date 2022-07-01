@@ -2,10 +2,10 @@ import random
 
 import numpy as np
 
-from ptls.data_load.utils import DictTransformer
+from ptls.data_load.feature_dict import FeatureDict
 
 
-class RandomSlice(DictTransformer):
+class RandomSlice(FeatureDict):
     def __init__(self, min_len, max_len, rate_for_min=1.0):
         super().__init__()
 
@@ -17,7 +17,7 @@ class RandomSlice(DictTransformer):
         seq_len = self.get_seq_len(x)
 
         idx = self.get_idx(seq_len)
-        new_x = {k: self.seq_indexing(k, v, idx) for k, v in x.items()}
+        new_x = self.seq_indexing(x, idx)
         return new_x
 
     def get_idx(self, seq_len):

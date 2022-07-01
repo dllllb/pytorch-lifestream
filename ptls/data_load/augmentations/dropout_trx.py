@@ -1,8 +1,8 @@
 import numpy as np
-from ptls.data_load.utils import DictTransformer
+from ptls.data_load.feature_dict import FeatureDict
 
 
-class DropoutTrx(DictTransformer):
+class DropoutTrx(FeatureDict):
     def __init__(self, trx_dropout):
         self.trx_dropout = trx_dropout
 
@@ -10,7 +10,7 @@ class DropoutTrx(DictTransformer):
         seq_len = len(next(iter(x.values())))
 
         idx = self.get_idx(seq_len)
-        new_x = {k: self.seq_indexing(k, v, idx) for k, v in x.items()}
+        new_x = self.seq_indexing(x, idx)
         return new_x
 
     def get_idx(self, seq_len):

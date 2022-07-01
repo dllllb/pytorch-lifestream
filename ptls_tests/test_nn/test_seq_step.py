@@ -1,6 +1,7 @@
 import torch
 
-from ptls.nn import TimeStepShuffle, PaddedBatch
+from ptls.nn import TimeStepShuffle
+from ptls.data_load.padded_batch import PaddedBatch
 from ptls.nn.seq_step import SkipStepEncoder
 
 

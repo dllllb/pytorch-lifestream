@@ -1,17 +1,15 @@
-import json
 import logging
 
 import pytorch_lightning as pl
 import numpy as np
-from embeddings_validation.file_reader import TargetFile, ID_TYPE_MAPPING
 from torch.utils.data import DataLoader
 from tqdm.auto import tqdm
 from sklearn.model_selection import train_test_split
 import random
 import glob
 
-from ptls.data_load import padded_collate_emb_valid, IterableChain, IterableAugmentations
-from ptls.data_load.parquet_dataset import ParquetFiles, ParquetDataset
+from ptls.data_load import padded_collate_emb_valid
+from ptls.data_load.datasets.parquet_dataset import ParquetFiles, ParquetDataset
 
 
 logger = logging.getLogger(__name__)

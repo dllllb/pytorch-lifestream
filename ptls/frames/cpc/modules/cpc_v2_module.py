@@ -4,7 +4,7 @@ from ptls.frames.abs_module import ABSModule
 from ptls.frames.cpc.losses.cpc_loss import CPC_Loss
 from ptls.frames.cpc.metrics.cpc_accuracy import CpcAccuracy
 from ptls.nn.seq_encoder import RnnSeqEncoder
-from ptls.nn.trx_encoder import PaddedBatch
+from ptls.data_load.padded_batch import PaddedBatch
 
 
 class CpcV2Module(ABSModule):

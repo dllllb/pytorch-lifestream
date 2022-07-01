@@ -2,7 +2,7 @@ from functools import WRAPPER_ASSIGNMENTS
 import torch
 
 from ptls.nn.normalization import L2NormEncoder
-from ptls.nn import PaddedBatch
+from ptls.data_load.padded_batch import PaddedBatch
 
 
 def _pb_shell(cls):

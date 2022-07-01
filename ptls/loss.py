@@ -2,7 +2,7 @@ import torch
 import torch.nn.functional as F
 from torch import nn
 import numpy as np
-from ptls.nn import PaddedBatch
+from ptls.data_load.padded_batch import PaddedBatch
 
 
 def cross_entropy(pred, soft_targets):

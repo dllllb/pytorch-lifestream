@@ -1,9 +1,9 @@
 import numpy as np
 import torch
-from ptls.data_load.utils import DictTransformer
+from ptls.data_load.feature_dict import FeatureDict
 
 
-class SeqLenLimit(DictTransformer):
+class SeqLenLimit(FeatureDict):
     def __init__(self, max_seq_len, strategy='tail'):
         self.max_seq_len = max_seq_len
         self.strategy = strategy
@@ -14,7 +14,7 @@ class SeqLenLimit(DictTransformer):
         seq_len = self.get_seq_len(x)
 
         idx = self.get_idx(seq_len)
-        new_x = {k: self.seq_indexing(k, v, idx) for k, v in x.items()}
+        new_x = self.seq_indexing(x, idx)
         return new_x
 
     def get_idx(self, seq_len):

@@ -1,7 +1,7 @@
 import torch
 from torch import nn as nn
 
-from ptls.nn.trx_encoder import PaddedBatch
+from ptls.data_load.padded_batch import PaddedBatch
 from ptls.nn.trx_encoder.batch_norm import RBatchNorm, RBatchNormWithLens
 from ptls.nn.trx_encoder.noisy_embedding import NoisyEmbedding
 from ptls.nn.trx_encoder.float_positional_encoding import FloatPositionalEncoding

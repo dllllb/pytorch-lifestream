@@ -2,7 +2,7 @@ import numpy as np
 import torch
 from torch import nn as nn
 
-from ptls.nn import PaddedBatch
+from ptls.data_load.padded_batch import PaddedBatch
 
 
 class TimeStepShuffle(nn.Module):

@@ -14,7 +14,7 @@ from torch.utils.data.dataloader import DataLoader
 
 from ptls.data_load.augmentations.all_time_shuffle import AllTimeShuffle
 from ptls.data_load.iterable_processing_dataset import IterableProcessingDataset
-from ptls.nn.trx_encoder import PaddedBatch
+from ptls.data_load.padded_batch import PaddedBatch
 
 
 logger = logging.getLogger(__name__)
@@ -547,6 +547,8 @@ def create_train_loader(dataset, params):
 
 
 class MapStyleDatasetWrapper(torch.utils.data.Dataset):
+    """Deprecated. Use ptls.data_load.datasets.memory_dataset.MemoryMapDataset
+    """
     def __init__(self, data):
         self.data = data
 
@@ -558,6 +560,8 @@ class MapStyleDatasetWrapper(torch.utils.data.Dataset):
 
 
 class IterableDatasetWrapper(torch.utils.data.IterableDataset):
+    """Deprecated. Use ptls.data_load.datasets.memory_dataset.MemoryIterableDataset
+    """
     def __init__(self, data):
         self.data = data
 
@@ -566,6 +570,9 @@ class IterableDatasetWrapper(torch.utils.data.IterableDataset):
 
 
 def create_validation_loader(dataset, params):
+    """Deprecated
+
+    """
     dataset = DropoutTrxDataset(dataset, 0, params.max_seq_len)
 
     if dataset.style == 'iterable':

@@ -3,7 +3,7 @@ nav:
     - Welcome: index.md
     - 'User Guide':
         - 'Sequential Data':
-            - 'Sequential Data Definition': 'data_preparation.md'
+            - 'Sequential Data Definition': 'sequential_data_definition.md'
             - 'Feature naming': 'feature_naming.md'
         - 'Training Methods': 'methods.md'
         - 'How to guide':
@@ -14,16 +14,20 @@ nav:
             - 'Inference': '#'
 
         - 'ptls':
+            - 'ptls.data_load':
+                - 'padded batch': 'data_load/padded_batch.md'
+                - 'datasets': 'data_load/datasets.md'
             - 'ptls.nn':
                 - 'trx_encoder': 'nn/trx_encoder.md'
                 - 'seq_encoder': 'nn/seq_encoder.md'
                 - 'head': 'nn/head.md'
                 - 'pb': 'nn/pb.md'
             - 'ptls.frames':
-                - 'Common Usage Pattern': 'frames/common_usage.md'
+                - 'common usage pattern': 'frames/common_usage.md'
                 - 'coles': 'frames/coles.md'
                 - 'cpc': 'frames/cpc.md'
                 - 'bert': 'frames/bert.md'
                 - 'supervised': 'frames/supervised.md'
+                - 'inference': 'frames/inference.md'
 
 theme: readthedocs

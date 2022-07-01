@@ -1,4 +1,4 @@
-from .trx_encoder import PaddedBatch, TrxEncoder
+from .trx_encoder import TrxEncoder
 
 from .seq_encoder import (
     RnnEncoder,  TransformerEncoder, LongformerEncoder,

@@ -3,7 +3,7 @@ import torch
 import random
 
 from ptls.data_load.utils import collate_feature_dict
-from ptls.data_load.utils import DictTransformer
+from ptls.data_load.feature_dict import FeatureDict
 
 
 class MlmIndexedDataset(torch.utils.data.Dataset):
@@ -53,7 +53,7 @@ class MlmIndexedDataset(torch.utils.data.Dataset):
     def __getitem__(self, item):
         item_id, start_pos = self.ix[item]
         v = self.data[item_id]
-        seq_len = DictTransformer.get_seq_len(v)
+        seq_len = FeatureDict.get_seq_len(v)
 
         if self.random_shift > 0:
             start_pos = start_pos + random.randint(-self.random_shift, self.random_shift)
@@ -63,7 +63,7 @@ class MlmIndexedDataset(torch.utils.data.Dataset):
 
         return {k: v[start_pos: start_pos + self.seq_len - len_reduce]
                 for k, v in v.items()
-                if DictTransformer.is_seq_feature(k, v)}
+                if FeatureDict.is_seq_feature(k, v)}
 
     @staticmethod
     def collate_fn(batch):

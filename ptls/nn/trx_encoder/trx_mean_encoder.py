@@ -3,7 +3,7 @@ from collections import OrderedDict
 import torch
 from torch import nn as nn
 
-from ptls.nn.trx_encoder import PaddedBatch
+from ptls.data_load.padded_batch import PaddedBatch
 from ptls.nn.trx_encoder.scalers import scaler_by_name
 
 
