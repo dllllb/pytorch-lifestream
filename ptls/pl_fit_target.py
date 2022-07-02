@@ -28,14 +28,14 @@ def fold_fit_test(conf, pl_module, fold_id):
             name=conf.get('logger_name'),
         )
     trainer = pl.Trainer(**_trainer_params, **_trainer_params_additional)
-    trainer.fit(model, dm)
+    trainer.fit(model, datamodule=dm)
 
     if 'model_path' in conf:
         trainer.save_checkpoint(conf.model_path, weights_only=True)
         logger.info(f'Model weights saved to "{conf.model_path}"')
 
     valid_metrics = {name: float(mf.compute().item()) for name, mf in model.valid_metrics.items()}
-    trainer.test(test_dataloaders=dm.test_dataloader(), ckpt_path=None, verbose=False)
+    trainer.test(dataloaders=dm.test_dataloader(), ckpt_path="best", verbose=False)
     test_metrics = {name: float(mf.compute().item()) for name, mf in model.test_metrics.items()}
 
     print(', '.join([f'valid_{name}: {v:.4f}' for name, v in valid_metrics.items()]))
@@ -49,7 +49,7 @@ def fold_fit_test(conf, pl_module, fold_id):
         'scores_test': test_metrics,
     }
 
-@hydra.main()
+@hydra.main(version_base=None)
 def main(conf: DictConfig):
     OmegaConf.set_struct(conf, False)
 

@@ -117,15 +117,16 @@ class R_squared(DistributionTargets):
 
 class RMSE(torchmetrics.Metric):
     """
-    RMSE for multiple outputs with exponential scaler.
-    Should be elaborated via adaptor-classes like in [ptls/trx_encoder/scalers.py].
+    RMSE/MAE for multiple outputs with exponential scaler.
+    Should be elaborated via adaptor-classes like in [ptls/nn/trx_encoder/scalers.py].
     """
     is_differentiable = True
     higher_is_better = False
     full_state_update = False
 
-    def __init__(self):
+    def __init__(self, calc_mae=True):
         super().__init__()
+        self.calc_mae = calc_mae
         self.add_state("psum", default=torch.tensor(0.0), dist_reduce_fx="sum")
         self.add_state("pnum", default=torch.tensor(0), dist_reduce_fx="sum")
 
@@ -134,24 +135,25 @@ class RMSE(torchmetrics.Metric):
             delta = y1 - y if y1.dim() == 1 else y1[:, 0].exp() - y
         else:
             delta = y1[:, 0].exp() - y.sum(dim=1)
-        self.psum += torch.sum(delta.square())
+        self.psum += torch.sum(delta.abs() if self.calc_mae else delta.square())
         self.pnum += y.shape[0]
 
     def compute(self):
-        return torch.sqrt(self.psum / self.pnum)
+        res = self.psum / self.pnum
+        return res if self.calc_mae else res.sqrt()
 
 
 class BucketAccuracy(torchmetrics.Metric):
     """
     Multiclass Accuracy for bucketized regression variable.
-    Should be elaborated via adaptor-classes like in [ptls/trx_encoder/scalers.py].
+    Should be elaborated via adaptor-classes like in [ptls/nn/trx_encoder/scalers.py].
     """
     is_differentiable = False
     higher_is_better = True
-    full_state_update = True
+    full_state_update = False
 
-    def __init__(self, n_buckets=10):
-        super().__init__()
+    def __init__(self, n_buckets=10, compute_on_cpu=True):
+        super().__init__(compute_on_cpu=compute_on_cpu)
         self.n_buckets = n_buckets
         self.add_state("y1", default=[])
         self.add_state("y", default=[])
