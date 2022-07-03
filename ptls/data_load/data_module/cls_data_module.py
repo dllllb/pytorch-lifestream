@@ -4,7 +4,7 @@ import logging
 import pytorch_lightning as pl
 import numpy as np
 import ast
-from embeddings_validation.file_reader import TargetFile, ID_TYPE_MAPPING
+from embeddings_validation.file_reader import TargetFile
 from torch.utils.data import DataLoader
 from tqdm.auto import tqdm
 from sklearn.model_selection import train_test_split
@@ -14,7 +14,6 @@ import glob
 from ptls.data_load import padded_collate, padded_collate_distribution_target, IterableChain, IterableAugmentations
 from ptls.data_load.augmentations.build_augmentations import build_augmentations
 from ptls.data_load.data_module.map_augmentation_dataset import MapAugmentationDataset
-from ptls.data_load.iterable_processing.category_size_clip import CategorySizeClip
 from ptls.data_load.iterable_processing.feature_filter import FeatureFilter
 from ptls.data_load.iterable_processing.feature_type_cast import FeatureTypeCast
 from ptls.data_load.iterable_processing.id_filter import IdFilter
@@ -36,7 +35,8 @@ class ClsDataModuleTrain(pl.LightningDataModule):
                  pl_module,
                  fold_id,
                  test=None,
-                 distribution_target_task=False):
+                 distribution_target_task=False,
+                 downstream_task=None):
         super().__init__()
 
         self.fold_id = fold_id
@@ -44,8 +44,16 @@ class ClsDataModuleTrain(pl.LightningDataModule):
         assert self._type in ('map', 'iterable')
 
         self.distribution_target_task = distribution_target_task
-        self.y_function = int if not self.distribution_target_task else lambda x: \
-                                                    np.array(ast.literal_eval(x), dtype=object)
+        if downstream_task is None:
+            self.y_function = int if not self.distribution_target_task else \
+                lambda x: np.array(ast.literal_eval(x), dtype=object)
+        elif downstream_task == "regression":
+            self.y_function = np.float32
+        elif downstream_task == "distribution":
+            self.y_function = lambda x: np.array(ast.literal_eval(x), dtype=np.float32)
+        else:
+            raise AttributeError(f"Undefined downstream task type: {downstream_task}")
+
         self.setup_conf = setup
         self.train_conf = train
         self.valid_conf = valid
@@ -103,22 +111,25 @@ class ClsDataModuleTrain(pl.LightningDataModule):
             self.read_external_splits()
             self.train_dataset = ParquetDataset(
                 train_data_files,
-                post_processing=IterableChain(*self.build_iterable_processing('train')),
+                i_filters=IterableChain(*self.build_iterable_processing('train')),
                 shuffle_files=True if self._type == 'iterable' else False,
             )
             self.valid_dataset = ParquetDataset(
                 train_data_files,
-                post_processing=IterableChain(*self.build_iterable_processing('valid')),
+                i_filters=IterableChain(*self.build_iterable_processing('valid')),
                 shuffle_files=False,
             )
             self.test_dataset = ParquetDataset(
                 test_data_files,
-                post_processing=IterableChain(*self.build_iterable_processing('test')),
+                i_filters=IterableChain(*self.build_iterable_processing('test')),
                 shuffle_files=False,
             )
 
         else:
             raise AttributeError(f'Unknown split strategy: {self.setup_conf.split_by}')
+
+    def setup_iterable_parts(self):
+        raise NotImplementedError()
 
     def read_external_splits(self):
         if self.setup_conf.split_by == 'embeddings_validation':
@@ -165,7 +176,6 @@ class ClsDataModuleTrain(pl.LightningDataModule):
 
         yield FeatureFilter(keep_feature_names=self.category_names,
                             drop_feature_names=self.setup_conf.get('drop_feature_names', None))
-        yield CategorySizeClip(self.category_max_size)
 
         if self._type == 'iterable':
             # all processing in single chain
