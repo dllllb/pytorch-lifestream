@@ -1,9 +1,7 @@
 from typing import List
 
 import torch
-from torch.nn import Linear, BatchNorm1d, Sigmoid, Sequential, ReLU, LogSoftmax
-
-from ptls.custom_layers import Squeeze
+from torch.nn import Linear, BatchNorm1d, Sigmoid, Sequential, ReLU, LogSoftmax, Flatten
 from ptls.nn.normalization import L2NormEncoder
 
 
@@ -19,9 +17,9 @@ class Head(torch.nn.Module):
          use_batch_norm: bool. Default: False.
             whether to use BatchNorm.
          hidden_layers_sizes: List[int]. Default: None.
-            sizes of linear layers. If None without additional linear layers. Default = None,
+            sizes of linear layers. If None without additional linear layers.
          objective: str. Default: None.
-            Options: None, 'classification', 'regression'. Default = None.
+            Options: 'classification', 'regression', 'multioutput' and None.
          num_classes: int. Default: 1.
             The number of classed in classification problem. Default correspond to binary classification.
 
@@ -55,17 +53,21 @@ class Head(torch.nn.Module):
 
         if objective == 'classification':
             if num_classes == 1:
-                h = Sequential(Linear(input_size, num_classes), Sigmoid(), Squeeze())
+                h = Sequential(Linear(input_size, num_classes), Sigmoid(), Flatten(0))
             else:
                 h = Sequential(Linear(input_size, num_classes), LogSoftmax(dim=1))
             layers.append(h)
 
         elif objective == 'regression':
-            h = Sequential(Linear(input_size, 1), Squeeze())
-            layers.append(h)
+            layers.append(Sequential(Linear(input_size, 1), Flatten(0)))
+
+        elif objective == 'multioutput':
+            if num_classes == 1:
+                raise AttributeError("For multioutput should be: num_classes > 1.")
+            layers.append(Linear(input_size, num_classes))
 
         elif objective is not None:
-            raise AttributeError(f"unknown objective {objective}. Supported: classification and regression")
+            raise AttributeError(f"Unknown objective {objective}. Supported: classification, regression and multioutput.")
 
         self.model = torch.nn.Sequential(*layers)
 

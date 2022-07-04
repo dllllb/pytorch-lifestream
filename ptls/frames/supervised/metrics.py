@@ -2,6 +2,7 @@ import logging
 
 import numpy as np
 import torch
+import torch.nn.functional as F
 import torchmetrics
 from torchmetrics.functional.classification import auroc
 
@@ -169,3 +170,27 @@ class BucketAccuracy(torchmetrics.Metric):
         y1 = torch.bucketize(y1, buckets, out_int32=True)
         y = torch.bucketize(y, buckets, out_int32=True)
         return torchmetrics.functional.accuracy(y1, y)
+
+
+class KLDiv(torchmetrics.Metric):
+    """
+    KL divergence for distribution-like target.
+    Should be elaborated via adaptor-classes like in [ptls/nn/trx_encoder/scalers.py].
+    """
+    is_differentiable = True
+    higher_is_better = False
+    full_state_update = False
+
+    def __init__(self):
+        super().__init__()
+        self.add_state("psum", default=torch.tensor(0.0), dist_reduce_fx="sum")
+        self.add_state("pnum", default=torch.tensor(0), dist_reduce_fx="sum")
+
+    def update(self, y1, y):
+        prob, ysum = F.softmax(y1[:, 3:], dim=1), y.sum(dim=1)
+        kl = torchmetrics.functional.kl_divergence(y, prob, reduction=None)
+        self.psum += torch.sum(kl.where(ysum > 0, -F.logsigmoid(y1[:, 2])))
+        self.pnum += y.shape[0]
+
+    def compute(self):
+        return self.psum / self.pnum

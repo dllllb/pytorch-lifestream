@@ -120,6 +120,7 @@ class SequenceToTarget(pl.LightningModule):
         self.log('loss', loss)
         if isinstance(x, PaddedBatch):
             self.log('seq_len', x.seq_lens.float().mean(), prog_bar=True)
+            self.log('y', y.unsqueeze(-1).sum(1).squeeze().mean(), prog_bar=True)
         train_update_n_steps = self.hparams.train_update_n_steps
         if train_update_n_steps is None or \
                 train_update_n_steps is not None and self.global_step % train_update_n_steps == 0:

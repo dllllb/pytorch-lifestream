@@ -2,16 +2,14 @@ from functools import partial
 
 import pytorch_lightning as pl
 import torch
+import torch.nn.functional as F
 import torchmetrics
 from pyhocon import ConfigFactory
 
 from ptls.frames.supervised import SequenceToTarget
-from ptls.frames.supervised.metrics import LogAccuracy, RMSE, BucketAccuracy
-from ptls.loss import BCELoss
-from ptls.loss import ZILNLoss
-from ptls.nn import PBLinear
-from ptls.nn import RnnSeqEncoder, TransformerSeqEncoder
-from ptls.nn import TrxEncoder
+from ptls.frames.supervised.metrics import LogAccuracy, RMSE, BucketAccuracy, KLDiv
+from ptls.loss import BCELoss, ZILNLoss
+from ptls.nn import PBLinear, RnnSeqEncoder, TransformerSeqEncoder, TrxEncoder
 from ptls_tests.test_data_load import RandomEventData
 
 
@@ -203,3 +201,12 @@ def test_rmse():
     assert rmse(torch.randn(B), torch.randn(B)) >= 0
     assert rmse(torch.randn(B, 3), torch.randn(B)) >= 0
     assert rmse(torch.randn(B, 3), torch.randn(B, 3)) >= 0
+
+
+def test_kldiv():
+    kl, B = KLDiv(), 10
+    pred = torch.randn(B, 2 * B + 3)
+    target = F.softmax(torch.randn(B, 2 * B), dim=1)
+    assert kl(pred, target) >= 0
+    assert kl(pred, torch.zeros_like(target)) >= 0
+    assert kl(pred, F.softmax(pred[:, 3:], dim=1)) == 0

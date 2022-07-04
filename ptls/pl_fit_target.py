@@ -80,7 +80,7 @@ def main(conf: DictConfig):
 
     results = []
     for fold_id in fold_list:
-        logger.info(f'==== Fold [{fold_id}] fit-test start ====')
+        logger.info(f'==== Fold [{fold_id}/{len(fold_list)}] fit-test start ====')
         result = fold_fit_test(conf, pl_module, fold_id)
         results.append(result)
 

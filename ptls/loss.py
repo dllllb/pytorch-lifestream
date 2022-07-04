@@ -231,7 +231,7 @@ class ZILNLoss(nn.Module):
             raise Exception(f"{self.__class__} has incorrect input dimension")
         tsum = target if target.dim() == 1 else target.sum(dim=1)
         s2 = F.softplus(pred[:, 1]).square() + self.eps
-        loss = s2.log() + (tsum.log() - pred[:, 0]).square() / s2
+        loss = s2.log() + ((tsum + self.eps).log() - pred[:, 0]).square() / s2
         if pred.shape[1] == 3:
             loss -= 2 * F.logsigmoid(-pred[:, 2])
         else:
