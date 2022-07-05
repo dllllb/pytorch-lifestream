@@ -1,14 +1,14 @@
 from functools import partial
 
+import omegaconf
 import pytorch_lightning as pl
 import torch
+import hydra
 import torchmetrics
 from pyhocon import ConfigFactory
 
 from ptls.frames.supervised import SequenceToTarget
-from ptls.frames.supervised.metrics import LogAccuracy, RMSE, BucketAccuracy
 from ptls.loss import BCELoss
-from ptls.loss import ZILNLoss
 from ptls.nn import PBLinear
 from ptls.nn import RnnSeqEncoder, TransformerSeqEncoder
 from ptls.nn import TrxEncoder
@@ -85,7 +85,7 @@ def test_train_loop_rnn_binary_classification():
             torch.nn.Flatten(start_dim=0),
         ),
         loss=BCELoss(),
-        metric_list=torchmetrics.AUROC(num_classes=2, compute_on_step=False),
+        metric_list=torchmetrics.AUROC(num_classes=2),
         **get_rnn_params(),
     )
     dl = RandomEventData(tst_params_data(), target_type='bin_cls')
@@ -102,8 +102,8 @@ def test_train_loop_rnn_milti_classification():
         ),
         loss=torch.nn.NLLLoss(),
         metric_list={
-            'auroc': torchmetrics.AUROC(num_classes=4, compute_on_step=False),
-            'accuracy': torchmetrics.Accuracy(compute_on_step=False),
+            'auroc': torchmetrics.AUROC(num_classes=4),
+            'accuracy': torchmetrics.Accuracy(),
         },
         **get_rnn_params(),
     )
@@ -153,7 +153,7 @@ def test_train_loop_transf():
             torch.nn.Flatten(start_dim=0),
         ),
         loss=BCELoss(),
-        metric_list=torchmetrics.AUROC(num_classes=2, compute_on_step=False),
+        metric_list=torchmetrics.AUROC(num_classes=2),
         optimizer_partial=partial(torch.optim.Adam, lr=0.004),
         lr_scheduler_partial=partial(torch.optim.lr_scheduler.StepLR, step_size=10, gamma=0.8),
     )
@@ -161,45 +161,48 @@ def test_train_loop_transf():
     trainer = pl.Trainer(max_epochs=1, logger=None, checkpoint_callback=False)
     trainer.fit(model, dl)
 
-
-def test_accuracy_bin():
-    acc = LogAccuracy()
-    y_hat = torch.tensor([0.1, 0.4, 0.6, 0.8, 0.9])
-    y = torch.tensor([0, 1, 0, 1, 0])
-    acc(y_hat, y)
-    assert acc.compute().mul(100).int() == 40
+# SequenceToTarget.metric_list
+def test_seq_to_target_metric_list_single_metric():
+    model = SequenceToTarget(metric_list=torchmetrics.Accuracy(), seq_encoder=None)
+    metric_name = next(iter(model.valid_metrics.keys()))
+    assert metric_name == 'Accuracy'
 
 
-def test_accuracy_mul():
-    acc = LogAccuracy()
-    y_hat = torch.log_softmax(torch.tensor([
-        [-1, 2, 1],
-        [1, 2, -1],
-        [1, -2, 0],
-        [1, 1, 2],
-        [1, 1, 2],
-    ]).float(), dim=1)
-    y = torch.tensor([0, 1, 1, 2, 2])
-    acc(y_hat, y)
-    assert acc.compute().mul(100).int() == 60
+def test_seq_to_target_metric_list_list_with_metric():
+    model = SequenceToTarget(metric_list=[
+        torchmetrics.Accuracy(),
+        torchmetrics.AUROC(num_classes=2),
+    ], seq_encoder=None)
+    assert 'Accuracy' in model.valid_metrics
+    assert 'AUROC' in model.valid_metrics
 
 
-def test_ziln_loss():
-    ziln, B = ZILNLoss(), 10
-    assert ziln(torch.randn(B, 3), torch.randn(B, 1)) >= 0
-    assert ziln(torch.randn(B, 3 + 3), torch.randn(B, 3)) >= 0
+def test_seq_to_target_metric_list_dict_with_single_metric():
+    model = SequenceToTarget(metric_list={
+        'acc': torchmetrics.Accuracy(),
+    }, seq_encoder=None)
+    metric_name = next(iter(model.valid_metrics.keys()))
+    assert metric_name == 'acc'
 
 
-def test_bucket_accuracy():
-    bacc, B = BucketAccuracy(), 100
-    assert bacc(torch.randn(B), torch.randn(B)) >= 0
-    assert bacc(torch.randn(B, 3), torch.randn(B)) >= 0
-    assert bacc(torch.randn(B), torch.randn(B, 3)) >= 0
-    assert bacc(torch.randn(B, 3), torch.randn(B, 3)) >= 0
+def test_seq_to_target_metric_list_dict_with_metric():
+    model = SequenceToTarget(metric_list={
+        'acc': torchmetrics.Accuracy(),
+        'auroc': torchmetrics.AUROC(num_classes=2),
+    }, seq_encoder=None)
+    assert 'acc' in model.valid_metrics
+    assert 'auroc' in model.valid_metrics
 
 
-def test_rmse():
-    rmse, B = RMSE(), 10
-    assert rmse(torch.randn(B), torch.randn(B)) >= 0
-    assert rmse(torch.randn(B, 3), torch.randn(B)) >= 0
-    assert rmse(torch.randn(B, 3), torch.randn(B, 3)) >= 0
+def test_seq_to_target_metric_list_dict_config_with_metric():
+    conf = omegaconf.OmegaConf.create("""
+        auroc:
+            _target_: torchmetrics.AUROC
+            num_classes: 2
+        acc:
+            _target_: torchmetrics.Accuracy
+    """)
+    model = SequenceToTarget(metric_list=hydra.utils.instantiate(conf), seq_encoder=None)
+    assert 'acc' in model.valid_metrics
+    assert 'auroc' in model.valid_metrics
+

@@ -10,28 +10,9 @@ from ptls.loss import cross_entropy, kl, mape_metric, mse_loss, r_squared
 logger = logging.getLogger(__name__)
 
 
-class EpochAuroc(torchmetrics.Metric):
-    """Deprecated. Use `torchmetrics.AUROC`
-    """
-    def __init__(self):
-        super().__init__(compute_on_step=False)
-
-        self.add_state('y_hat', default=[])
-        self.add_state('y', default=[])
-
-    def update(self, y_hat, y):
-        self.y_hat.append(y_hat)
-        self.y.append(y)
-
-    def compute(self):
-        y_hat = torch.cat(self.y_hat)
-        y = torch.cat(self.y)
-        return auroc(y_hat, y.long())
-
-
 class DistributionTargets(torchmetrics.Metric):
     def __init__(self, col_name):
-        super().__init__(compute_on_step=False)
+        super().__init__()
 
         self.add_state('y_hat', default=[])
         self.add_state('y', default=[])

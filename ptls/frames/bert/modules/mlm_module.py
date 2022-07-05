@@ -7,6 +7,7 @@ from ptls.nn.seq_encoder.abs_seq_encoder import AbsSeqEncoder
 from ptls.nn import PBL2Norm
 from ptls.data_load.padded_batch import PaddedBatch
 
+
 class MLMPretrainModule(pl.LightningModule):
     """Masked Language Model (MLM) from [ROBERTA](https://arxiv.org/abs/1907.11692)
 
@@ -77,8 +78,8 @@ class MLMPretrainModule(pl.LightningModule):
 
         self.loss_fn = QuerySoftmaxLoss(temperature=loss_temperature, reduce=False)
 
-        self.train_mlm_loss = MeanMetric(compute_on_step=False)
-        self.valid_mlm_loss = MeanMetric(compute_on_step=False)
+        self.train_mlm_loss = MeanMetric()
+        self.valid_mlm_loss = MeanMetric()
 
     def configure_optimizers(self):
         optim = torch.optim.Adam(self.parameters(),

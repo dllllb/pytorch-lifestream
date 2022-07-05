@@ -59,7 +59,7 @@ def collate_nsp_pairs(batch):
             padded_collate_wo_target(lefts),
             padded_collate_wo_target(rights)
         ),
-        targets.float(),
+        targets.long(),
     )
 
 

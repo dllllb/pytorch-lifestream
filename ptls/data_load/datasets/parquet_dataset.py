@@ -8,6 +8,7 @@ import numpy as np
 import torch
 
 from ptls.data_load import read_pyarrow_file
+from ptls.data_load import IterableChain
 
 logger = logging.getLogger(__name__)
 
@@ -44,7 +45,7 @@ class ParquetDataset(torch.utils.data.IterableDataset):
                  shuffle_files=False, cache_schema=True, shuffle_seed=42):
         self.data_files = data_files
         if i_filters is not None:
-            self.post_processing = post_processing
+            self.post_processing = IterableChain(*i_filters)
         else:
             self.post_processing = post_processing
         if post_processing is not None:
