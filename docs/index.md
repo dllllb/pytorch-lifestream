@@ -16,7 +16,7 @@ Some sections are in the process of description.
     - `ptls.data_load.iterable_processing` - generator-style filters for data transformation. 
 
 - `ptls.frames` - propose tools for training your encoders with popular frameworks like 
-CoLES, SimCLR, CPC, VICReg, ... [Link](methods.md)
+CoLES, SimCLR, CPC, VICReg, ...
     - `ptls.frames.coles` - contrastive leaning on split sequences. 
     Samples from original sequence are near in embedding space.
     - `ptls.frames.cpc` - Contrast learning on a changing time sequence.
