@@ -24,7 +24,7 @@ nav:
             - 'ptls.frames':
                 - 'common usage pattern': 'frames/common_usage.md'
                 - 'coles': 'frames/coles.md'
-                    - 'vicreg': frames/vicreg.md
+                - 'vicreg': 'frames/vicreg.md'
                 - 'cpc': 'frames/cpc.md'
                 - 'bert': 'frames/bert.md'
                 - 'supervised': 'frames/supervised.md'
