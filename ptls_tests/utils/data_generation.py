@@ -2,7 +2,7 @@ import torch
 
 
 # TODO: update this, split into 3 functions for corresponding targets, remove 'feature_arrays'
-def gen_trx_data(lengths, target_share=.5, target_type='bin_cls'):
+def gen_trx_data(lengths, target_share=.5, target_type='bin_cls', use_feature_arrays_key=True):
     n = len(lengths)
     # TODO: replace `lengths` with `min_len`, `max_len`, `num_sample`
     if target_type == 'bin_cls':
@@ -21,6 +21,10 @@ def gen_trx_data(lengths, target_share=.5, target_type='bin_cls'):
         s['mcc_code'] = (torch.rand(length) * 20 + 1).long()
         s['amount'] = (torch.rand(length) * 1000 + 1).long()
 
-        samples.append({'feature_arrays': s, 'target': target})
+        if use_feature_arrays_key:
+            samples.append({'feature_arrays': s, 'target': target})
+        else:
+            s['target'] = target
+            samples.append(s)
 
     return samples

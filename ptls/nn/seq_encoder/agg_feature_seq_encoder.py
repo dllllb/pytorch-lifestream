@@ -98,8 +98,8 @@ class AggFeatureSeqEncoder(torch.nn.Module):
         """
 
         feature_arrays = x.payload
-        device = next(iter(feature_arrays.values())).device
-        B, T = next(iter(feature_arrays.values())).size()
+        device = x.device
+        B, T = x.seq_feature_shape
         seq_lens = x.seq_lens.to(device).float()
         # if (seq_lens == 0).any():
         #     raise Exception('seq_lens == 0')

@@ -4,7 +4,7 @@ import pytorch_lightning as pl
 
 class PtlsDataModule(pl.LightningDataModule):
     def __init__(self,
-                 train_data,
+                 train_data=None,
                  train_batch_size=1,
                  train_num_workers=0,
                  valid_data=None,
@@ -54,7 +54,8 @@ class PtlsDataModule(pl.LightningDataModule):
                 batch_size=test_batch_size,
             )
 
-        self.train_dataloader = train_dataloader
+        if train_data is not None:
+            self.train_dataloader = train_dataloader
         if valid_data is not None:
             self.val_dataloader = val_dataloader
         if test_data is not None:
