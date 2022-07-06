@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="shortcut icon" href="../../img/favicon.ico" />
+    <title>datasets - PyTorch-LifeStream</title>
+    <link rel="stylesheet" href="../../css/theme.css" />
+    <link rel="stylesheet" href="../../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "datasets";
+        var mkdocs_page_input_path = "data_load/datasets.md";
+        var mkdocs_page_url = null;
+      </script>
+    
+    <script src="../../js/jquery-3.6.0.min.js" defer></script>
+    <!--[if lt IE 9]>
+      <script src="../../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/highlight.min.js"></script>
+      <script>hljs.initHighlightingOnLoad();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href="../.." class="icon icon-home"> PyTorch-LifeStream
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../..">Welcome</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">User Guide</span></p>
+              <ul class="current">
+                  <li class="toctree-l1"><a class="reference internal" href="#">Sequential Data</a>
+    <ul>
+                <li class="toctree-l2"><a class="reference internal" href="../../sequential_data_definition/">Sequential Data Definition</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../feature_naming/">Feature naming</a>
+                </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="#">How to guide</a>
+    <ul>
+                <li class="toctree-l2"><a class="" href="#">Data preparation</a>
+                </li>
+                <li class="toctree-l2"><a class="" href="#">Sequential model creation</a>
+                </li>
+                <li class="toctree-l2"><a class="" href="#">Frameworks usage</a>
+                </li>
+                <li class="toctree-l2"><a class="" href="#">Encoder training</a>
+                </li>
+                <li class="toctree-l2"><a class="" href="#">Inference</a>
+                </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1 current"><a class="reference internal current" href="#">ptls</a>
+    <ul class="current">
+                <li class="toctree-l2 current"><a class="reference internal current" href="#">ptls.data_load</a>
+    <ul class="current">
+                <li class="toctree-l3"><a class="reference internal" href="../padded_batch/">padded batch</a>
+                </li>
+                <li class="toctree-l3 current"><a class="reference internal current" href="./">datasets</a>
+    <ul class="current">
+    <li class="toctree-l4"><a class="reference internal" href="#simple-example">Simple example</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#i_filters-iterable-filters">i_filters - iterable filters</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#in-memory-data">In memory data</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#parquet-file-read">Parquet file read</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#classes">Classes</a>
+    </li>
+    </ul>
+                </li>
+    </ul>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="#">ptls.nn</a>
+    <ul>
+                <li class="toctree-l3"><a class="reference internal" href="../../nn/trx_encoder/">trx_encoder</a>
+                </li>
+                <li class="toctree-l3"><a class="reference internal" href="../../nn/seq_encoder/">seq_encoder</a>
+                </li>
+                <li class="toctree-l3"><a class="reference internal" href="../../nn/head/">head</a>
+                </li>
+                <li class="toctree-l3"><a class="reference internal" href="../../nn/pb/">pb</a>
+                </li>
+    </ul>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="#">ptls.frames</a>
+    <ul>
+                <li class="toctree-l3"><a class="reference internal" href="../../frames/common_usage/">common usage pattern</a>
+                </li>
+                <li class="toctree-l3"><a class="reference internal" href="../../frames/coles/">coles</a>
+                </li>
+                <li class="toctree-l3"><a class="reference internal" href="../../frames/vicreg/">vicreg</a>
+                </li>
+                <li class="toctree-l3"><a class="reference internal" href="../../frames/cpc/">cpc</a>
+                </li>
+                <li class="toctree-l3"><a class="reference internal" href="../../frames/bert/">bert</a>
+                </li>
+                <li class="toctree-l3"><a class="reference internal" href="../../frames/supervised/">supervised</a>
+                </li>
+                <li class="toctree-l3"><a class="reference internal" href="../../frames/inference/">inference</a>
+                </li>
+    </ul>
+                </li>
+    </ul>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../..">PyTorch-LifeStream</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../.." class="icon icon-home" alt="Docs"></a> &raquo;</li>
+          <li>User Guide &raquo;</li>
+          <li>ptls &raquo;</li>
+          <li>ptls.data_load &raquo;</li><li>datasets</li>
+    <li class="wy-breadcrumbs-aside">
+    </li>
+  </ul>
+  <hr/>
+</div>
+
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="ptlsdata_loaddatasets"><code>ptls.data_load.datasets</code></h1>
+<p>Here are the datasets (<code>torch.utils.data.Dataset</code>) which assure interface to the data.</p>
+<h2 id="simple-example">Simple example</h2>
+<p>Dict features in a list is a simple example of data.
+Python's <code>list</code> have the same interface as <code>torch.Dataset</code>, so you can just provide it to dataloader.</p>
+<pre><code class="language-python">import torch
+from ptls.data_load.utils import collate_feature_dict
+
+data_list = [
+    {
+        'mcc': torch.arange(seq_len),
+        'id': f'user_{i}'
+    }
+    for i, seq_len in enumerate([4, 3, 6])
+]
+
+dl = torch.utils.data.DataLoader(
+    dataset=data_list,
+    collate_fn=collate_feature_dict,
+    batch_size=2,
+)
+
+for batch in dl:
+    print(batch.payload, batch.seq_lens, sep='\n')
+</code></pre>
+<p>In this example we use simple list as dataset.</p>
+<p>Sometimes you need to make changes in the dataset. We propose a filter approach for this.</p>
+<h2 id="i_filters-iterable-filters"><code>i_filters</code> - iterable filters</h2>
+<p><code>ptls</code> propose filters for dataset transformation. All of them are in <code>ptls.data_load.iterable_processing</code>.
+These filter implemented in generator-style. Call filter object to get generator with modified records.</p>
+<pre><code class="language-python">from ptls.data_load.iterable_processing import SeqLenFilter
+
+i_filter = SeqLenFilter(min_seq_len=4)
+for rec in i_filter(data_list):
+    print(rec)
+</code></pre>
+<p>There were 3 examples in the list, it became 2 cause SeqLenFilter drop short sequence.</p>
+<p>Many kinds of filters possible: dropping records, multiply records, records transformation.</p>
+<p><code>i_filters</code> can be chained. Datasets provide a convenient way to do it. 
+All datasets in <code>ptls.data_load.datasets</code> support <code>i_filters</code>. 
+They takes <code>i_filters</code> as list of <code>iterable_processing</code> objects.</p>
+<h2 id="in-memory-data">In memory data</h2>
+<p>In memory data is common case. Data can a list or generator with feature dicts.</p>
+<pre><code class="language-python">import torch
+import random
+
+data_list = [
+    {
+        'mcc': torch.arange(seq_len),
+        'id': f'user_{i}'
+    }
+    for i, seq_len in enumerate([4, 3, 6])
+]
+
+def data_gen(n):
+    for i in range(n):
+        seq_len = random.randint(4, 8)
+        yield {
+            'mcc': torch.arange(seq_len),
+            'id': f'user_{i}'
+        }
+</code></pre>
+<p>More info about <a href="https://pytorch.org/docs/stable/data.html#dataset-types">dataset types</a> to understand <code>map</code> and <code>iterable</code>.</p>
+<p><code>ptls.data_load.datasets.MemoryMapDataset</code>:</p>
+<ul>
+<li>implements <code>map</code> dataset</li>
+<li>iterates over the data and stores it in an internal list</li>
+<li>looks like a list</li>
+</ul>
+<p><code>ptls.data_load.datasets.MemoryIterableDataset</code>: </p>
+<ul>
+<li>implements <code>iterable</code> dataset</li>
+<li>just iterates over the data</li>
+<li>looks like a generator</li>
+</ul>
+<p>Both datasets support any kind of input: list or generator.
+As all datasets supports tha same format (list or generator) as input and output they can be chained.
+This make sense for some cases.</p>
+<p>Data pipelines:</p>
+<ul>
+<li><code>list</code> input with <code>MemoryMapDataset</code> - dataset keep modified with <code>i_filters</code> data. Original data is unchanged.
+<code>i_filters</code> applied once for each record. This assures fast item access but slow start.
+You should wait until all data are passed through <code>i_filters</code>.</li>
+<li><code>generator</code> input with <code>MemoryMapDataset</code> - dataset iterate over generator and keep the result in memory.
+More memory are used, but faster access is possible. <code>i_filters</code> applied once for each record.
+Freezes items taken from generator if it uses some random during generation.</li>
+<li><code>list</code> with <code>MemoryIterableDataset</code> - take more times for data access cause <code>i_filters</code> 
+applied during each record access (for each epoch). Faster start,
+you don't wait until all data are passed through <code>i_filters</code>.</li>
+<li><code>generator</code> input with <code>MemoryIterableDataset</code> - generator output modified with <code>i_filters</code> data.
+Less memory used. Infinite dataset is possible.</li>
+</ul>
+<p>Example:</p>
+<pre><code class="language-python">import torch
+from ptls.data_load.datasets import MemoryMapDataset
+from ptls.data_load.utils import collate_feature_dict
+from ptls.data_load.iterable_processing import SeqLenFilter, FeatureRename
+
+
+data_list = [
+    {
+        'mcc': torch.arange(seq_len),
+        'id': f'user_{i}'
+    }
+    for i, seq_len in enumerate([4, 3, 6, 2, 8, 3, 5, 4])
+]
+
+dataset = MemoryMapDataset(
+    data=data_list,
+    i_filters=[
+        SeqLenFilter(min_seq_len=4),
+        FeatureRename({'id': 'user_id'}),
+    ]
+)
+
+dl = torch.utils.data.DataLoader(
+    dataset=dataset,
+    collate_fn=collate_feature_dict,
+    batch_size=10,
+)
+
+for batch in dl:
+    print(batch.payload, batch.seq_lens, sep='\n')
+
+</code></pre>
+<h2 id="parquet-file-read">Parquet file read</h2>
+<p>For large amount of data <code>pyspark</code> is possible engine to prepare data and convert it in feature dict format.
+See <code>demo/pyspark-parquet.ipynb</code> with example of data preprocessing with <code>pyspark</code> and parquet file preparation.</p>
+<p><code>ptls.data_load.datasets.ParquetDataset</code> is a dataset which reads parquet files with feature dicts.</p>
+<p><code>ptls.data_load.datasets.ParquetDataset</code>: </p>
+<ul>
+<li>implements <code>iterable</code> dataset</li>
+<li>looks like a generator</li>
+<li>supports <code>i_filters</code></li>
+</ul>
+<p>You can feed <code>ParquetDataset</code> directly fo dataloader for <code>iterable</code> way of usage.
+Cou can combine <code>ParquetDataset</code> with <code>MemoryMapDataset</code> to <code>map</code> way of usage.</p>
+<p><code>ParquetDataset</code> requires parquet file names. Usually <code>spark</code> saves many parquet files for one dataset, 
+depending on the number of partitions. You can get all file names with <code>ptls.data_load.datasets.ParquetFiles</code>.
+Many files for one dataset allows you to:</p>
+<ul>
+<li>control amount of data by reading more or less files</li>
+<li>split data on train, valid, test</li>
+</ul>
+<h2 id="classes">Classes</h2>
+<p>See docstrings for classes:</p>
+<ul>
+<li><code>ptls.data_load.datasets.MemoryMapDataset</code></li>
+<li><code>ptls.data_load.datasets.MemoryIterableDataset</code></li>
+<li><code>ptls.data_load.datasets.ParquetFiles</code></li>
+<li><code>ptls.data_load.datasets.ParquetDataset</code></li>
+</ul>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../padded_batch/" class="btn btn-neutral float-left" title="padded batch"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../../nn/trx_encoder/" class="btn btn-neutral float-right" title="trx_encoder">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+      <span><a href="../padded_batch/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../../nn/trx_encoder/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script>var base_url = '../..';</script>
+    <script src="../../js/theme_extra.js" defer></script>
+    <script src="../../js/theme.js" defer></script>
+      <script src="../../search/main.js" defer></script>
+    <script defer>
+        window.onload = function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        };
+    </script>
+
+</body>
+</html>

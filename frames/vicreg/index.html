@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="shortcut icon" href="../../img/favicon.ico" />
+    <title>vicreg - PyTorch-LifeStream</title>
+    <link rel="stylesheet" href="../../css/theme.css" />
+    <link rel="stylesheet" href="../../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "vicreg";
+        var mkdocs_page_input_path = "frames/vicreg.md";
+        var mkdocs_page_url = null;
+      </script>
+    
+    <script src="../../js/jquery-3.6.0.min.js" defer></script>
+    <!--[if lt IE 9]>
+      <script src="../../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/highlight.min.js"></script>
+      <script>hljs.initHighlightingOnLoad();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href="../.." class="icon icon-home"> PyTorch-LifeStream
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../..">Welcome</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">User Guide</span></p>
+              <ul class="current">
+                  <li class="toctree-l1"><a class="reference internal" href="#">Sequential Data</a>
+    <ul>
+                <li class="toctree-l2"><a class="reference internal" href="../../sequential_data_definition/">Sequential Data Definition</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../feature_naming/">Feature naming</a>
+                </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="#">How to guide</a>
+    <ul>
+                <li class="toctree-l2"><a class="" href="#">Data preparation</a>
+                </li>
+                <li class="toctree-l2"><a class="" href="#">Sequential model creation</a>
+                </li>
+                <li class="toctree-l2"><a class="" href="#">Frameworks usage</a>
+                </li>
+                <li class="toctree-l2"><a class="" href="#">Encoder training</a>
+                </li>
+                <li class="toctree-l2"><a class="" href="#">Inference</a>
+                </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1 current"><a class="reference internal current" href="#">ptls</a>
+    <ul class="current">
+                <li class="toctree-l2"><a class="reference internal" href="#">ptls.data_load</a>
+    <ul>
+                <li class="toctree-l3"><a class="reference internal" href="../../data_load/padded_batch/">padded batch</a>
+                </li>
+                <li class="toctree-l3"><a class="reference internal" href="../../data_load/datasets/">datasets</a>
+                </li>
+    </ul>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="#">ptls.nn</a>
+    <ul>
+                <li class="toctree-l3"><a class="reference internal" href="../../nn/trx_encoder/">trx_encoder</a>
+                </li>
+                <li class="toctree-l3"><a class="reference internal" href="../../nn/seq_encoder/">seq_encoder</a>
+                </li>
+                <li class="toctree-l3"><a class="reference internal" href="../../nn/head/">head</a>
+                </li>
+                <li class="toctree-l3"><a class="reference internal" href="../../nn/pb/">pb</a>
+                </li>
+    </ul>
+                </li>
+                <li class="toctree-l2 current"><a class="reference internal current" href="#">ptls.frames</a>
+    <ul class="current">
+                <li class="toctree-l3"><a class="reference internal" href="../common_usage/">common usage pattern</a>
+                </li>
+                <li class="toctree-l3"><a class="reference internal" href="../coles/">coles</a>
+                </li>
+                <li class="toctree-l3 current"><a class="reference internal current" href="./">vicreg</a>
+    <ul class="current">
+    <li class="toctree-l4"><a class="reference internal" href="#using-vicreg-loss-with-metric-learn-training">Using Vicreg Loss with Metric Learn training</a>
+    </li>
+    </ul>
+                </li>
+                <li class="toctree-l3"><a class="reference internal" href="../cpc/">cpc</a>
+                </li>
+                <li class="toctree-l3"><a class="reference internal" href="../bert/">bert</a>
+                </li>
+                <li class="toctree-l3"><a class="reference internal" href="../supervised/">supervised</a>
+                </li>
+                <li class="toctree-l3"><a class="reference internal" href="../inference/">inference</a>
+                </li>
+    </ul>
+                </li>
+    </ul>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../..">PyTorch-LifeStream</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../.." class="icon icon-home" alt="Docs"></a> &raquo;</li>
+          <li>User Guide &raquo;</li>
+          <li>ptls &raquo;</li>
+          <li>ptls.frames &raquo;</li><li>vicreg</li>
+    <li class="wy-breadcrumbs-aside">
+    </li>
+  </ul>
+  <hr/>
+</div>
+
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="training-methods">Training methods</h1>
+<h2 id="using-vicreg-loss-with-metric-learn-training">Using Vicreg Loss with Metric Learn training</h2>
+<h3 id="define-the-model">Define the model</h3>
+<pre><code class="language-python">from dltranz.seq_encoder import SequenceEncoder
+from dltranz.models import Head
+from dltranz.lightning_modules.emb_module import EmbModule
+from dltranz.metric_learn.losses import VicregLoss
+
+vicreg_loss = VicregLoss(sim_coeff=10.0,
+                         std_coeff=10.0,
+                         cov_coeff=5.0)
+
+seq_encoder = SequenceEncoder(
+    category_features=preprocessor.get_category_sizes(),
+    numeric_features=[&quot;amount_rur&quot;],
+    trx_embedding_noize=0.003
+)
+
+head = Head(input_size=seq_encoder.embedding_size, hidden_layers_sizes=[256], use_batch_norm=True)
+
+
+model = EmbModule(seq_encoder=seq_encoder,
+                  head=head,
+                  loss=vicreg_loss,
+                  lr=0.01,
+                  lr_scheduler_step_size=10,
+                  lr_scheduler_step_gamma=0.9025)
+</code></pre>
+<h3 id="data-module">Data module</h3>
+<p>To use VicregLoss and BarlowTwinsLoss it is crucial to set <code>split_count=2</code></p>
+<pre><code class="language-python">from dltranz.data_load.data_module.emb_data_module import EmbeddingTrainDataModule
+
+dm = EmbeddingTrainDataModule(
+    dataset=train,
+    pl_module=model,
+    min_seq_len=25,
+    seq_split_strategy='SampleSlices',
+    category_names = model.seq_encoder.category_names,
+    category_max_size = model.seq_encoder.category_max_size,
+    split_count=2,
+    split_cnt_min=25,
+    split_cnt_max=200,
+    train_num_workers=16,
+    train_batch_size=256,
+    valid_num_workers=16,
+    valid_batch_size=256
+)
+</code></pre>
+<h3 id="training">Training</h3>
+<pre><code class="language-python">import torch
+import pytorch_lightning as pl
+
+import logging
+
+trainer = pl.Trainer(
+    max_epochs=150,
+    gpus=1 if torch.cuda.is_available() else 0
+)
+
+trainer.fit(model, dm)
+</code></pre>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../coles/" class="btn btn-neutral float-left" title="coles"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../cpc/" class="btn btn-neutral float-right" title="cpc">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+      <span><a href="../coles/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../cpc/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script>var base_url = '../..';</script>
+    <script src="../../js/theme_extra.js" defer></script>
+    <script src="../../js/theme.js" defer></script>
+      <script src="../../search/main.js" defer></script>
+    <script defer>
+        window.onload = function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        };
+    </script>
+
+</body>
+</html>

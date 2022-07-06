@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="shortcut icon" href="../img/favicon.ico" />
+    <title>Feature naming - PyTorch-LifeStream</title>
+    <link rel="stylesheet" href="../css/theme.css" />
+    <link rel="stylesheet" href="../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Feature naming";
+        var mkdocs_page_input_path = "feature_naming.md";
+        var mkdocs_page_url = null;
+      </script>
+    
+    <script src="../js/jquery-3.6.0.min.js" defer></script>
+    <!--[if lt IE 9]>
+      <script src="../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/highlight.min.js"></script>
+      <script>hljs.initHighlightingOnLoad();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href=".." class="icon icon-home"> PyTorch-LifeStream
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="..">Welcome</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">User Guide</span></p>
+              <ul class="current">
+                  <li class="toctree-l1 current"><a class="reference internal current" href="#">Sequential Data</a>
+    <ul class="current">
+                <li class="toctree-l2"><a class="reference internal" href="../sequential_data_definition/">Sequential Data Definition</a>
+                </li>
+                <li class="toctree-l2 current"><a class="reference internal current" href="./">Feature naming</a>
+    <ul class="current">
+    <li class="toctree-l3"><a class="reference internal" href="#feature-types">Feature types</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#feature-names">Feature names</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#naming-rules">Naming rules</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#feature-rename">Feature rename</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#code-usage">Code usage</a>
+    </li>
+    </ul>
+                </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="#">How to guide</a>
+    <ul>
+                <li class="toctree-l2"><a class="" href="#">Data preparation</a>
+                </li>
+                <li class="toctree-l2"><a class="" href="#">Sequential model creation</a>
+                </li>
+                <li class="toctree-l2"><a class="" href="#">Frameworks usage</a>
+                </li>
+                <li class="toctree-l2"><a class="" href="#">Encoder training</a>
+                </li>
+                <li class="toctree-l2"><a class="" href="#">Inference</a>
+                </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="#">ptls</a>
+    <ul>
+                <li class="toctree-l2"><a class="reference internal" href="#">ptls.data_load</a>
+    <ul>
+                <li class="toctree-l3"><a class="reference internal" href="../data_load/padded_batch/">padded batch</a>
+                </li>
+                <li class="toctree-l3"><a class="reference internal" href="../data_load/datasets/">datasets</a>
+                </li>
+    </ul>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="#">ptls.nn</a>
+    <ul>
+                <li class="toctree-l3"><a class="reference internal" href="../nn/trx_encoder/">trx_encoder</a>
+                </li>
+                <li class="toctree-l3"><a class="reference internal" href="../nn/seq_encoder/">seq_encoder</a>
+                </li>
+                <li class="toctree-l3"><a class="reference internal" href="../nn/head/">head</a>
+                </li>
+                <li class="toctree-l3"><a class="reference internal" href="../nn/pb/">pb</a>
+                </li>
+    </ul>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="#">ptls.frames</a>
+    <ul>
+                <li class="toctree-l3"><a class="reference internal" href="../frames/common_usage/">common usage pattern</a>
+                </li>
+                <li class="toctree-l3"><a class="reference internal" href="../frames/coles/">coles</a>
+                </li>
+                <li class="toctree-l3"><a class="reference internal" href="../frames/vicreg/">vicreg</a>
+                </li>
+                <li class="toctree-l3"><a class="reference internal" href="../frames/cpc/">cpc</a>
+                </li>
+                <li class="toctree-l3"><a class="reference internal" href="../frames/bert/">bert</a>
+                </li>
+                <li class="toctree-l3"><a class="reference internal" href="../frames/supervised/">supervised</a>
+                </li>
+                <li class="toctree-l3"><a class="reference internal" href="../frames/inference/">inference</a>
+                </li>
+    </ul>
+                </li>
+    </ul>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="..">PyTorch-LifeStream</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href=".." class="icon icon-home" alt="Docs"></a> &raquo;</li>
+          <li>User Guide &raquo;</li>
+          <li>Sequential Data &raquo;</li><li>Feature naming</li>
+    <li class="wy-breadcrumbs-aside">
+    </li>
+  </ul>
+  <hr/>
+</div>
+
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="feature-naming-and-types">Feature naming and types</h1>
+<h2 id="feature-types">Feature types</h2>
+<p>Information about transaction features are stored as array in dictionary.</p>
+<p>There are feature types:</p>
+<ul>
+<li>Sequential feature - is a <code>np.ndarray</code> or <code>torch.tensor</code> of shape <code>(seq_len,)</code><ul>
+<li>for categorical features contains category indexes with type <code>long</code></li>
+<li>for numerical features contains feature value with type <code>float</code></li>
+</ul>
+</li>
+<li>Scalar values. It can be <code>target</code>, <code>id</code>, <code>labels</code> or <code>scalar features</code>.
+Types are depends on purpose. Type should be compatible with torch if value will be fed into neural network</li>
+<li>Array values. It also can be <code>target</code>, <code>id</code>, <code>labels</code> or <code>vector features</code>.
+Type is <code>np.ndarray</code> or <code>torch.tensor</code>.</li>
+</ul>
+<p>Sequential features correspond user's transactions.
+The length of each user's sequential feature is equal to the length of the entire sequence.
+The order of each user's sequential feature is the same as sequence order.
+Sequential feature length <code>seq_len</code> may vary from user to user.</p>
+<p>Array features have a constant shape. This shape is the same for all users.</p>
+<p>This why we use <code>pad_sequence</code> which align length for sequential features and <code>stack</code> for array features
+during batch collection.</p>
+<p><code>ptls</code> extract only sequential features for unsupervised task and additional target for the supervised task.
+Other fields used during preprocessing and inference.</p>
+<h2 id="feature-names">Feature names</h2>
+<p>The main purpose of the feature naming convention is sequential and array features distinguish.
+They both are <code>np.ndarray</code> or <code>torch.tensor</code> and we can't use data type for distinguish.</p>
+<p>It's important to know feature type because:</p>
+<ul>
+<li>sequential align lengths with <code>pad_sequence</code>, arrays use <code>stack</code> during batch collection.</li>
+<li>only sequential features used to get length of entire sequence</li>
+<li>only sequential features are augmented by timeline modifications like slice, trx dropout or shuffle</li>
+</ul>
+<p>We introduce naming rules to solve type discrimination problems.
+All arrays which are not sequential should have <code>target</code> prefix in feature name.
+Otherwise, they can be processed as sequential and may be corrupted.</p>
+<pre><code class="language-python"># correct example
+x = {
+    'mcc': torch.tensor([1, 2, 3, 4]),
+    'amount': torch.tensor([0.1, 2.0, 0.3, 4.0]),
+    'target_bin': 1,
+    'target_distribution': torch.tensor([0.1, 0.0, 0.9]),
+}
+
+# wrong example
+x = {
+    'mcc': torch.tensor([1, 2, 3, 4]),
+    'amount': torch.tensor([0.1, 2.0, 0.3, 4.0]),
+    'bin': 1,
+    'distribution': torch.tensor([0.1, 0.0, 0.9]),
+}
+</code></pre>
+<p><code>target</code> prefix are mandatory only for array features.</p>
+<p>Sometimes we need a time sequence. It used fo trx correct order, for time features and for some splits.
+We expect that transaction timestamp stored in <code>event_time</code> field.</p>
+<h2 id="naming-rules">Naming rules</h2>
+<ul>
+<li>all arrays which are not sequential should have <code>target</code> prefix in feature name.</li>
+<li><code>event_time</code> fields contains transaction timestamps sequence.</li>
+</ul>
+<h2 id="feature-rename">Feature rename</h2>
+<p>You can use <code>ptls.data_load.iterable_processing.FeatureRename</code> during data read pipeline
+to fit your feature names with ptls naming convention.</p>
+<pre><code class="language-python">x = [{
+    'mcc': torch.tensor([1, 2, 3, 4]),
+    'amount': torch.tensor([0.1, 2.0, 0.3, 4.0]),
+    'bin': 1,
+    'distribution': torch.tensor([0.1, 0.0, 0.9]),
+} for _ in range(10)]
+
+from ptls.data_load.datasets import MemoryMapDataset
+from ptls.data_load.iterable_processing import FeatureRename
+dataset = MemoryMapDataset(
+    data=x,
+    i_filters=[FeatureRename({'distribution': 'target_distribution', 'bin': 'target_bin'})]
+)
+
+print(dataset[0])
+</code></pre>
+<h2 id="code-usage">Code usage</h2>
+<p>Need to take into account the type of features and the use of naming rules is in the classes:</p>
+<ul>
+<li><code>ptls.data_load.feature_dict.FeatureDict</code></li>
+<li><code>ptls.data_load.padded_batch.PaddedBatch</code></li>
+<li><code>ptls.data_load.utils.collate_feature_dict</code></li>
+</ul>
+<p>All methods are tested with all types of features.</p>
+<table>
+<thead>
+<tr>
+<th>Type</th>
+<th>FeatureDict</th>
+<th>PaddedBatch</th>
+<th>collate_feature_dict</th>
+<th>is_seq</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>scalar int</td>
+<td><code>int</code></td>
+<td>1-d <code>tensor</code></td>
+<td><code>torch.IntTensor</code></td>
+<td>X</td>
+</tr>
+<tr>
+<td>target int</td>
+<td><code>int</code></td>
+<td>1-d <code>tensor</code></td>
+<td><code>torch.IntTensor</code></td>
+<td>X</td>
+</tr>
+<tr>
+<td>scalar float</td>
+<td><code>float</code></td>
+<td>1-d <code>tensor</code></td>
+<td><code>torch.FloatTensor</code></td>
+<td>X</td>
+</tr>
+<tr>
+<td>scalar str</td>
+<td><code>str</code></td>
+<td>1-d <code>ndarray</code></td>
+<td><code>np.array</code></td>
+<td>X</td>
+</tr>
+<tr>
+<td>list</td>
+<td><code>list</code></td>
+<td>1-d <code>ndarray</code></td>
+<td><code>np.array</code></td>
+<td>X</td>
+</tr>
+<tr>
+<td>sequential</td>
+<td>1-d <code>ndarray</code> or <code>tensor</code></td>
+<td>2-d <code>tensor</code></td>
+<td><code>pad_sequence</code></td>
+<td>V</td>
+</tr>
+<tr>
+<td>sequential et</td>
+<td>1-d <code>ndarray</code> or <code>tensor</code></td>
+<td>2-d <code>tensor</code></td>
+<td><code>pad_sequence</code></td>
+<td>V</td>
+</tr>
+<tr>
+<td>target array</td>
+<td>1-d <code>ndarray</code> or <code>tensor</code></td>
+<td>2-d <code>tensor</code></td>
+<td><code>stack</code></td>
+<td>X</td>
+</tr>
+</tbody>
+</table>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../sequential_data_definition/" class="btn btn-neutral float-left" title="Sequential Data Definition"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../data_load/padded_batch/" class="btn btn-neutral float-right" title="padded batch">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+      <span><a href="../sequential_data_definition/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../data_load/padded_batch/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script>var base_url = '..';</script>
+    <script src="../js/theme_extra.js" defer></script>
+    <script src="../js/theme.js" defer></script>
+      <script src="../search/main.js" defer></script>
+    <script defer>
+        window.onload = function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        };
+    </script>
+
+</body>
+</html>

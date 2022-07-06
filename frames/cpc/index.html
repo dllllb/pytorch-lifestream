@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="shortcut icon" href="../../img/favicon.ico" />
+    <title>cpc - PyTorch-LifeStream</title>
+    <link rel="stylesheet" href="../../css/theme.css" />
+    <link rel="stylesheet" href="../../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "cpc";
+        var mkdocs_page_input_path = "frames/cpc.md";
+        var mkdocs_page_url = null;
+      </script>
+    
+    <script src="../../js/jquery-3.6.0.min.js" defer></script>
+    <!--[if lt IE 9]>
+      <script src="../../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/highlight.min.js"></script>
+      <script>hljs.initHighlightingOnLoad();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href="../.." class="icon icon-home"> PyTorch-LifeStream
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../..">Welcome</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">User Guide</span></p>
+              <ul class="current">
+                  <li class="toctree-l1"><a class="reference internal" href="#">Sequential Data</a>
+    <ul>
+                <li class="toctree-l2"><a class="reference internal" href="../../sequential_data_definition/">Sequential Data Definition</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../feature_naming/">Feature naming</a>
+                </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="#">How to guide</a>
+    <ul>
+                <li class="toctree-l2"><a class="" href="#">Data preparation</a>
+                </li>
+                <li class="toctree-l2"><a class="" href="#">Sequential model creation</a>
+                </li>
+                <li class="toctree-l2"><a class="" href="#">Frameworks usage</a>
+                </li>
+                <li class="toctree-l2"><a class="" href="#">Encoder training</a>
+                </li>
+                <li class="toctree-l2"><a class="" href="#">Inference</a>
+                </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1 current"><a class="reference internal current" href="#">ptls</a>
+    <ul class="current">
+                <li class="toctree-l2"><a class="reference internal" href="#">ptls.data_load</a>
+    <ul>
+                <li class="toctree-l3"><a class="reference internal" href="../../data_load/padded_batch/">padded batch</a>
+                </li>
+                <li class="toctree-l3"><a class="reference internal" href="../../data_load/datasets/">datasets</a>
+                </li>
+    </ul>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="#">ptls.nn</a>
+    <ul>
+                <li class="toctree-l3"><a class="reference internal" href="../../nn/trx_encoder/">trx_encoder</a>
+                </li>
+                <li class="toctree-l3"><a class="reference internal" href="../../nn/seq_encoder/">seq_encoder</a>
+                </li>
+                <li class="toctree-l3"><a class="reference internal" href="../../nn/head/">head</a>
+                </li>
+                <li class="toctree-l3"><a class="reference internal" href="../../nn/pb/">pb</a>
+                </li>
+    </ul>
+                </li>
+                <li class="toctree-l2 current"><a class="reference internal current" href="#">ptls.frames</a>
+    <ul class="current">
+                <li class="toctree-l3"><a class="reference internal" href="../common_usage/">common usage pattern</a>
+                </li>
+                <li class="toctree-l3"><a class="reference internal" href="../coles/">coles</a>
+                </li>
+                <li class="toctree-l3"><a class="reference internal" href="../vicreg/">vicreg</a>
+                </li>
+                <li class="toctree-l3 current"><a class="reference internal current" href="./">cpc</a>
+    <ul class="current">
+    <li class="toctree-l4"><a class="reference internal" href="#cpcmodule">CpcModule</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#cpcdataset-and-split-strategies">CpcDataset and split strategies</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#classes">Classes</a>
+    </li>
+    </ul>
+                </li>
+                <li class="toctree-l3"><a class="reference internal" href="../bert/">bert</a>
+                </li>
+                <li class="toctree-l3"><a class="reference internal" href="../supervised/">supervised</a>
+                </li>
+                <li class="toctree-l3"><a class="reference internal" href="../inference/">inference</a>
+                </li>
+    </ul>
+                </li>
+    </ul>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../..">PyTorch-LifeStream</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../.." class="icon icon-home" alt="Docs"></a> &raquo;</li>
+          <li>User Guide &raquo;</li>
+          <li>ptls &raquo;</li>
+          <li>ptls.frames &raquo;</li><li>cpc</li>
+    <li class="wy-breadcrumbs-aside">
+    </li>
+  </ul>
+  <hr/>
+</div>
+
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="contrastive-predictive-coding-cpc">Contrastive Predictive Coding (CPC)</h1>
+<p>Original paper: <a href="https://arxiv.org/abs/1807.03748">Representation Learning with Contrastive Predictive Coding</a></p>
+<p>CPC is a framework that learn neural network to predict the future state of sequence.</p>
+<p>CPC splits original sequence into small parts. Smallest part is a one transaction.
+<code>trx_encoder</code> or <code>seq_encoder</code> make a representation for each small part.
+So the original transaction sequence turns into sequence of embeddings.</p>
+<p>CPC tries to predict a next embedding in sequence. It takes into account some history of embeddings.
+Loss is contrastive, it uses random negative samples to avoid a trivial solution.</p>
+<p><strong>CPC</strong> learn:</p>
+<ul>
+<li>more 'local' representation of sequence</li>
+<li>embedding for each transaction is a <code>z</code> state for <code>CpcModule</code></li>
+<li>embedding for small parts of sequence is a <code>z</code> state for <code>CpcV2Module</code></li>
+<li>embedding for all sequence is <code>c</code> - context state of CPC encoder</li>
+</ul>
+<h2 id="cpcmodule">CpcModule</h2>
+<p><code>ptls.frames.cpc.CpcModule</code> and <code>ptls.frames.cpc.CpcV2Module</code> is a <code>LightningModule</code> with CPC framework.
+It should be parametrized by <code>n_negatives</code> and <code>n_forward_steps</code> parameters.
+<code>CpcV2Module</code> parametrized also by <code>aggregator</code> network.
+CPC V2 datamodule requires a split strategy.</p>
+<p>Example:</p>
+<pre><code class="language-python">seq_encoder = ...
+coles_module = CpcModule(
+    seq_encoder=seq_encoder,
+    loss=CPC_Loss(
+        n_negatives=16,
+        n_forward_steps=3,
+    )
+)
+</code></pre>
+<h2 id="cpcdataset-and-split-strategies">CpcDataset and split strategies</h2>
+<p>Use <code>ptls.frames.cpc.CpcDataset</code> or <code>ptls.frames.cpc.CpcIterableDataset</code> with <code>CpcModule</code>.</p>
+<p>Use <code>ptls.frames.cpc.CpcV2Dataset</code> or <code>ptls.frames.cpc.CpcV2IterableDataset</code> with <code>CpcV2Module</code>. 
+Take <code>splitter</code> from <code>ptls.frames.coles.split_strategy</code> which preserve order in samples.
+Like <code>SampleSlices(is_sorted=True)</code></p>
+<h2 id="classes">Classes</h2>
+<p>See docstrings for classes.</p>
+<ul>
+<li><code>ptls.frames.cpc.CpcDataset</code></li>
+<li><code>ptls.frames.cpc.CpcIterableDataset</code></li>
+<li><code>ptls.frames.cpc.CpcV2Dataset</code></li>
+<li><code>ptls.frames.cpc.CpcV2IterableDataset</code></li>
+<li><code>ptls.frames.cpc.CpcModule</code></li>
+<li><code>ptls.frames.cpc.CpcV2Module</code></li>
+<li><code>ptls.frames.coles.split_strategy</code></li>
+</ul>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../vicreg/" class="btn btn-neutral float-left" title="vicreg"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../bert/" class="btn btn-neutral float-right" title="bert">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+      <span><a href="../vicreg/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../bert/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script>var base_url = '../..';</script>
+    <script src="../../js/theme_extra.js" defer></script>
+    <script src="../../js/theme.js" defer></script>
+      <script src="../../search/main.js" defer></script>
+    <script defer>
+        window.onload = function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        };
+    </script>
+
+</body>
+</html>

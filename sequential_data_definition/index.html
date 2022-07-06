@@ -5,15 +5,15 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
       <link rel="shortcut icon" href="../img/favicon.ico" />
-    <title>Data Preparation - PyTorch-LifeStream</title>
+    <title>Sequential Data Definition - PyTorch-LifeStream</title>
     <link rel="stylesheet" href="../css/theme.css" />
     <link rel="stylesheet" href="../css/theme_extra.css" />
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/styles/github.min.css" />
     
       <script>
         // Current page data
-        var mkdocs_page_name = "Data Preparation";
-        var mkdocs_page_input_path = "data_preparation.md";
+        var mkdocs_page_name = "Sequential Data Definition";
+        var mkdocs_page_input_path = "sequential_data_definition.md";
         var mkdocs_page_url = null;
       </script>
     
@@ -41,32 +41,88 @@
 
       <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <ul>
-                <li class="toctree-l1"><a class="reference internal" href="..">Home</a>
+                <li class="toctree-l1"><a class="reference internal" href="..">Welcome</a>
                 </li>
               </ul>
               <p class="caption"><span class="caption-text">User Guide</span></p>
               <ul class="current">
-                  <li class="toctree-l1 current"><a class="reference internal current" href="./">Data Preparation</a>
+                  <li class="toctree-l1 current"><a class="reference internal current" href="#">Sequential Data</a>
     <ul class="current">
-    <li class="toctree-l2"><a class="reference internal" href="#source-data">Source data</a>
+                <li class="toctree-l2 current"><a class="reference internal current" href="./">Sequential Data Definition</a>
+    <ul class="current">
+    <li class="toctree-l3"><a class="reference internal" href="#source-data">Source data</a>
         <ul>
-    <li class="toctree-l3"><a class="reference internal" href="#raw-table-data">Raw table data</a>
+    <li class="toctree-l4"><a class="reference internal" href="#raw-table-data">Raw table data</a>
     </li>
-    <li class="toctree-l3"><a class="reference internal" href="#data-collected-in-lists">Data collected in lists</a>
+    <li class="toctree-l4"><a class="reference internal" href="#data-collected-in-lists">Data collected in lists</a>
     </li>
         </ul>
     </li>
-    <li class="toctree-l2"><a class="reference internal" href="#dataset">Dataset</a>
+    <li class="toctree-l3"><a class="reference internal" href="#dataset">Dataset</a>
     </li>
-    <li class="toctree-l2"><a class="reference internal" href="#dataloader">DataLoader</a>
+    <li class="toctree-l3"><a class="reference internal" href="#dataloader">DataLoader</a>
     </li>
     </ul>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../feature_naming/">Feature naming</a>
+                </li>
+    </ul>
                   </li>
-                  <li class="toctree-l1"><a class="reference internal" href="../embeddings_with_other_losses/">Losses</a>
+                  <li class="toctree-l1"><a class="reference internal" href="#">How to guide</a>
+    <ul>
+                <li class="toctree-l2"><a class="" href="#">Data preparation</a>
+                </li>
+                <li class="toctree-l2"><a class="" href="#">Sequential model creation</a>
+                </li>
+                <li class="toctree-l2"><a class="" href="#">Frameworks usage</a>
+                </li>
+                <li class="toctree-l2"><a class="" href="#">Encoder training</a>
+                </li>
+                <li class="toctree-l2"><a class="" href="#">Inference</a>
+                </li>
+    </ul>
                   </li>
-                  <li class="toctree-l1"><a class="reference internal" href="../seq_encoder/">seq_encoder</a>
-                  </li>
-                  <li class="toctree-l1"><a class="reference internal" href="../trx_encoder/">trx_encoder</a>
+                  <li class="toctree-l1"><a class="reference internal" href="#">ptls</a>
+    <ul>
+                <li class="toctree-l2"><a class="reference internal" href="#">ptls.data_load</a>
+    <ul>
+                <li class="toctree-l3"><a class="reference internal" href="../data_load/padded_batch/">padded batch</a>
+                </li>
+                <li class="toctree-l3"><a class="reference internal" href="../data_load/datasets/">datasets</a>
+                </li>
+    </ul>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="#">ptls.nn</a>
+    <ul>
+                <li class="toctree-l3"><a class="reference internal" href="../nn/trx_encoder/">trx_encoder</a>
+                </li>
+                <li class="toctree-l3"><a class="reference internal" href="../nn/seq_encoder/">seq_encoder</a>
+                </li>
+                <li class="toctree-l3"><a class="reference internal" href="../nn/head/">head</a>
+                </li>
+                <li class="toctree-l3"><a class="reference internal" href="../nn/pb/">pb</a>
+                </li>
+    </ul>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="#">ptls.frames</a>
+    <ul>
+                <li class="toctree-l3"><a class="reference internal" href="../frames/common_usage/">common usage pattern</a>
+                </li>
+                <li class="toctree-l3"><a class="reference internal" href="../frames/coles/">coles</a>
+                </li>
+                <li class="toctree-l3"><a class="reference internal" href="../frames/vicreg/">vicreg</a>
+                </li>
+                <li class="toctree-l3"><a class="reference internal" href="../frames/cpc/">cpc</a>
+                </li>
+                <li class="toctree-l3"><a class="reference internal" href="../frames/bert/">bert</a>
+                </li>
+                <li class="toctree-l3"><a class="reference internal" href="../frames/supervised/">supervised</a>
+                </li>
+                <li class="toctree-l3"><a class="reference internal" href="../frames/inference/">inference</a>
+                </li>
+    </ul>
+                </li>
+    </ul>
                   </li>
               </ul>
       </div>
@@ -83,7 +139,8 @@
         <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
   <ul class="wy-breadcrumbs">
     <li><a href=".." class="icon icon-home" alt="Docs"></a> &raquo;</li>
-          <li>User Guide &raquo;</li><li>Data Preparation</li>
+          <li>User Guide &raquo;</li>
+          <li>Sequential Data &raquo;</li><li>Sequential Data Definition</li>
     <li class="wy-breadcrumbs-aside">
     </li>
   </ul>
@@ -93,19 +150,21 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
             <div class="section" itemprop="articleBody">
               
-                <h1 id="data-preparation">Data preparation</h1>
+                <h1 id="sequential-data-definition">Sequential Data Definition</h1>
 <h2 id="source-data">Source data</h2>
 <p>We address the problem of learning on discrete event sequences generated by real-world users.</p>
 <h3 id="raw-table-data">Raw table data</h3>
 <p>Lifestream data can be presented as table where rows are events and columns are event attributes.</p>
-<p>Columns can be of the following data types:
-- <code>user_id</code> - id for collecting events in sequences.
+<p>Columns can be of the following data types:</p>
+<ul>
+<li><code>user_id</code> - id for collecting events in sequences.
 We assume that there are many users in the dataset and associated sequences of events.
-An event can only be linked to one user.
-- <code>event_time</code> - is timestamp, used for ordering events in sequence.
+An event can only be linked to one user.</li>
+<li><code>event_time</code> - is timestamp, used for ordering events in sequence.
 It's possible extract date-time features from timestamp.
-If the timestamp is not available, you can use any data type that can define the order.
-- <code>feature fields</code> - describe a properties of events. Can be numerical, categorical or any type that can be converted to feature vector.</p>
+If the timestamp is not available, you can use any data type that can define the order.</li>
+<li><code>feature fields</code> - describe a properties of events. Can be numerical, categorical or any type that can be converted to feature vector.</li>
+</ul>
 <p>Credit card transaction history is a example of lifestream data.</p>
 <table>
 <thead>
@@ -169,13 +228,15 @@ These fields allow to distinguish events, vectorize them na use as a features.</
 Data can be <code>pandas.DataFrame</code> or <code>pyspark.DataFrame</code>.</p>
 <h3 id="data-collected-in-lists">Data collected in lists</h3>
 <p>Table data should be converted to format more convenient for neural network feeding.
-There are steps:
-1. Feature field transformation: encoding categorical features, amount normalizing, missing values imputing.
-This works like sklearn fit-transform preprocessors.
-2. Splitting all events by <code>user_id</code> and sort events by <code>event_time</code>. 
-We transfer flat table with events to set of users with event collections.
-3. Split events by feature fields.
-Features are stored as 1d-arrays. Sequence orders are kept.</p>
+There are steps:</p>
+<ol>
+<li>Feature field transformation: encoding categorical features, amount normalizing, missing values imputing.
+This works like sklearn fit-transform preprocessors.</li>
+<li>Splitting all events by <code>user_id</code> and sort events by <code>event_time</code>. 
+We transfer flat table with events to set of users with event collections.</li>
+<li>Split events by feature fields.
+Features are stored as 1d-arrays. Sequence orders are kept.</li>
+</ol>
 <p>Previous example with can be presented as (feature transformation missed for visibility):</p>
 <pre><code>[
     {
@@ -192,27 +253,30 @@ Features are stored as 1d-arrays. Sequence orders are kept.</p>
     },
 ]
 </code></pre>
-<p>This is a main input data format in <code>pytorch-lifeatream</code>. Supported:
-- convert from raw table to collected lists both for <code>pandas.DataFrame</code> and <code>pyspark.DataFrame</code>
-- fast end effective storage in parquet format
-- compatible <code>torch.Dataset</code> and <code>torch.Dataloader</code>
-- in-memory augmentations and transformations</p>
+<p>This is a main input data format in <code>pytorch-lifeatream</code>. Supported:</p>
+<ul>
+<li>convert from raw table to collected lists both for <code>pandas.DataFrame</code> and <code>pyspark.DataFrame</code></li>
+<li>fast end effective storage in parquet format</li>
+<li>compatible <code>torch.Dataset</code> and <code>torch.Dataloader</code></li>
+<li>in-memory augmentations and transformations</li>
+</ul>
 <h2 id="dataset">Dataset</h2>
 <p><code>pytorch-lifeatream</code> provide multiple <code>torch.Dataset</code> implementations.
-Dataset item present single user information and can be a combination of:
-- <code>record</code> - is a dictionary where kees are feature names and values are 1d-tensors with feature sequences.
-Similar as data collected in lists. 
-- <code>id</code> - how to identify a sequence
-- <code>target</code> - target value for supervised learning</p>
+Dataset item present single user information and can be a combination of:</p>
+<ul>
+<li><code>record</code> - is a dictionary where kees are feature names and values are 1d-tensors with feature sequences.
+Similar as data collected in lists. </li>
+<li><code>id</code> - how to identify a sequence</li>
+<li><code>target</code> - target value for supervised learning</li>
+</ul>
 <p>Code example:</p>
 <pre><code class="language-python">dataset = SomeDataset(params)
-X, y = dataset[0]
-
+X = dataset[0]
 </code></pre>
 <h2 id="dataloader">DataLoader</h2>
-<p>The main feature of <code>putorch-lifestream</code> dataloader is customized <code>collate_fn</code>, provided to <code>torch.DataLoader</code> class.
+<p>The main feature of <code>pytorch-lifestream</code> dataloader is customized <code>collate_fn</code>, provided to <code>torch.DataLoader</code> class.
 <code>collate_fn</code> collects single records of dictionaries to batch.
-Usually <code>collate_fn</code> pad and pack sequences into 2d tensors with size <code>BxT</code>, where <code>B</code> - is sample num and <code>T</code> is max sequence length.
+Usually <code>collate_fn</code> pad and pack sequences into 2d tensors with shape <code>(B, T)</code>, where <code>B</code> - is sample num and <code>T</code> is max sequence length.
 Each feature packed separately.</p>
 <p>Output is <code>PaddedBatch</code> type which collect together packed sequences and lengths.
 <code>PaddedBatch</code> compatible with all <code>putorch-lifestream</code> modules.</p>
@@ -245,8 +309,8 @@ batch = PaddedBatch(
             </div>
           </div><footer>
     <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
-        <a href=".." class="btn btn-neutral float-left" title="Home"><span class="icon icon-circle-arrow-left"></span> Previous</a>
-        <a href="../embeddings_with_other_losses/" class="btn btn-neutral float-right" title="Losses">Next <span class="icon icon-circle-arrow-right"></span></a>
+        <a href=".." class="btn btn-neutral float-left" title="Welcome"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../feature_naming/" class="btn btn-neutral float-right" title="Feature naming">Next <span class="icon icon-circle-arrow-right"></span></a>
     </div>
 
   <hr/>
@@ -272,7 +336,7 @@ batch = PaddedBatch(
       <span><a href=".." style="color: #fcfcfc">&laquo; Previous</a></span>
     
     
-      <span><a href="../embeddings_with_other_losses/" style="color: #fcfcfc">Next &raquo;</a></span>
+      <span><a href="../feature_naming/" style="color: #fcfcfc">Next &raquo;</a></span>
     
   </span>
 </div>

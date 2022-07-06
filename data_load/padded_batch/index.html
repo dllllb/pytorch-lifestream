@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="shortcut icon" href="../../img/favicon.ico" />
+    <title>padded batch - PyTorch-LifeStream</title>
+    <link rel="stylesheet" href="../../css/theme.css" />
+    <link rel="stylesheet" href="../../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "padded batch";
+        var mkdocs_page_input_path = "data_load/padded_batch.md";
+        var mkdocs_page_url = null;
+      </script>
+    
+    <script src="../../js/jquery-3.6.0.min.js" defer></script>
+    <!--[if lt IE 9]>
+      <script src="../../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/highlight.min.js"></script>
+      <script>hljs.initHighlightingOnLoad();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href="../.." class="icon icon-home"> PyTorch-LifeStream
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../..">Welcome</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">User Guide</span></p>
+              <ul class="current">
+                  <li class="toctree-l1"><a class="reference internal" href="#">Sequential Data</a>
+    <ul>
+                <li class="toctree-l2"><a class="reference internal" href="../../sequential_data_definition/">Sequential Data Definition</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../feature_naming/">Feature naming</a>
+                </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="#">How to guide</a>
+    <ul>
+                <li class="toctree-l2"><a class="" href="#">Data preparation</a>
+                </li>
+                <li class="toctree-l2"><a class="" href="#">Sequential model creation</a>
+                </li>
+                <li class="toctree-l2"><a class="" href="#">Frameworks usage</a>
+                </li>
+                <li class="toctree-l2"><a class="" href="#">Encoder training</a>
+                </li>
+                <li class="toctree-l2"><a class="" href="#">Inference</a>
+                </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1 current"><a class="reference internal current" href="#">ptls</a>
+    <ul class="current">
+                <li class="toctree-l2 current"><a class="reference internal current" href="#">ptls.data_load</a>
+    <ul class="current">
+                <li class="toctree-l3 current"><a class="reference internal current" href="./">padded batch</a>
+    <ul class="current">
+    <li class="toctree-l4"><a class="reference internal" href="#classes">Classes</a>
+    </li>
+    </ul>
+                </li>
+                <li class="toctree-l3"><a class="reference internal" href="../datasets/">datasets</a>
+                </li>
+    </ul>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="#">ptls.nn</a>
+    <ul>
+                <li class="toctree-l3"><a class="reference internal" href="../../nn/trx_encoder/">trx_encoder</a>
+                </li>
+                <li class="toctree-l3"><a class="reference internal" href="../../nn/seq_encoder/">seq_encoder</a>
+                </li>
+                <li class="toctree-l3"><a class="reference internal" href="../../nn/head/">head</a>
+                </li>
+                <li class="toctree-l3"><a class="reference internal" href="../../nn/pb/">pb</a>
+                </li>
+    </ul>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="#">ptls.frames</a>
+    <ul>
+                <li class="toctree-l3"><a class="reference internal" href="../../frames/common_usage/">common usage pattern</a>
+                </li>
+                <li class="toctree-l3"><a class="reference internal" href="../../frames/coles/">coles</a>
+                </li>
+                <li class="toctree-l3"><a class="reference internal" href="../../frames/vicreg/">vicreg</a>
+                </li>
+                <li class="toctree-l3"><a class="reference internal" href="../../frames/cpc/">cpc</a>
+                </li>
+                <li class="toctree-l3"><a class="reference internal" href="../../frames/bert/">bert</a>
+                </li>
+                <li class="toctree-l3"><a class="reference internal" href="../../frames/supervised/">supervised</a>
+                </li>
+                <li class="toctree-l3"><a class="reference internal" href="../../frames/inference/">inference</a>
+                </li>
+    </ul>
+                </li>
+    </ul>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../..">PyTorch-LifeStream</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../.." class="icon icon-home" alt="Docs"></a> &raquo;</li>
+          <li>User Guide &raquo;</li>
+          <li>ptls &raquo;</li>
+          <li>ptls.data_load &raquo;</li><li>padded batch</li>
+    <li class="wy-breadcrumbs-aside">
+    </li>
+  </ul>
+  <hr/>
+</div>
+
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="ptlsdata_loadpadded_batchpaddedbatch"><code>ptls.data_load.padded_batch.PaddedBatch</code></h1>
+<p>Input data is a raw feature formats. You can transform your transaction to correct format with <code>ptls.data</code> module.
+Common description or sequential data and used data formats are <a href="../../sequential_data_definition/">here</a>
+Input data are covered in <code>ptls.data_load.padded_batch.PaddedBatch</code> class.</p>
+<p>We can create <code>PaddedBatch</code> object manually for demo and test purposes.</p>
+<pre><code class="language-python">x = PaddedBatch(
+    payload={
+        'mcc_code': torch.randint(1, 10, (3, 8)),
+        'currency': torch.randint(1, 4, (3, 8)),
+        'amount': torch.randn(3, 8) * 4 + 5,
+    },
+    length=torch.Tensor([2, 8, 5]).long()
+)
+</code></pre>
+<p>Here <code>x</code> contains three features. Two are categorical and one is numerical:</p>
+<ul>
+<li><code>mcc_code</code> is categorical with <code>dictionary_size=10</code></li>
+<li><code>currency</code> is categorical with <code>dictionary_size=4</code></li>
+<li><code>amount</code> is numerical with <code>mean=5</code> and <code>std=4</code></li>
+</ul>
+<p><code>x</code> contains 5 sequences with <code>maximum_length=12</code>. Real lengths of each sequence are <code>[2, 8, 5]</code>.</p>
+<p>We can access <code>x</code> content via <code>PaddedBatch</code> properties <code>x.payload</code> and <code>x.seq_lens</code>.</p>
+<p>Real data have sequences are padded with zeros. We can imitate it with <code>x.seq_len_mask</code>. 
+It returns tensor with 1 if a position inside corresponded seq_len and 0 if position outside.
+Let's check out example</p>
+<pre><code class="language-python">&gt;&gt;&gt; x.seq_len_mask
+Out: 
+tensor([[1, 1, 0, 0, 0, 0, 0, 0],
+        [1, 1, 1, 1, 1, 1, 1, 1],
+        [1, 1, 1, 1, 1, 0, 0, 0]])
+</code></pre>
+<p>There are 2, 8 and 5 valid tokens in lines.</p>
+<p>More way of <code>seq_len_mask</code> usage are in <code>PaddedBatch</code> docstring.</p>
+<p>We can recreate our <code>x</code> with modified content:</p>
+<pre><code class="language-python">x = PaddedBatch({k: v * x.seq_len_mask for k, v in x.payload.items()}, x.seq_lens)
+</code></pre>
+<p>Now we can check <code>x.payload</code> and see features looks like real padded data:</p>
+<pre><code class="language-python">&gt;&gt;&gt; x.payload['mcc_code']
+Out: 
+tensor([[8, 1, 0, 0, 0, 0, 0, 0],
+        [5, 5, 9, 9, 4, 9, 3, 1],
+        [4, 2, 2, 3, 3, 0, 0, 0]])
+</code></pre>
+<p>All invalid tokens are replaced with zeros.</p>
+<p>Generally, all layers respect <code>PaddedBatch.seq_lens</code> and no explicit zeroing of padded characters is required.</p>
+<h2 id="classes">Classes</h2>
+<p>See docstrings for classes:</p>
+<ul>
+<li><code>ptls.data_load.padded_batch.PaddedBatch</code></li>
+</ul>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../../feature_naming/" class="btn btn-neutral float-left" title="Feature naming"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../datasets/" class="btn btn-neutral float-right" title="datasets">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+      <span><a href="../../feature_naming/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../datasets/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script>var base_url = '../..';</script>
+    <script src="../../js/theme_extra.js" defer></script>
+    <script src="../../js/theme.js" defer></script>
+      <script src="../../search/main.js" defer></script>
+    <script defer>
+        window.onload = function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        };
+    </script>
+
+</body>
+</html>

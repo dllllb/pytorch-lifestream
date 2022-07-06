@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="shortcut icon" href="../../img/favicon.ico" />
+    <title>supervised - PyTorch-LifeStream</title>
+    <link rel="stylesheet" href="../../css/theme.css" />
+    <link rel="stylesheet" href="../../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "supervised";
+        var mkdocs_page_input_path = "frames/supervised.md";
+        var mkdocs_page_url = null;
+      </script>
+    
+    <script src="../../js/jquery-3.6.0.min.js" defer></script>
+    <!--[if lt IE 9]>
+      <script src="../../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/highlight.min.js"></script>
+      <script>hljs.initHighlightingOnLoad();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href="../.." class="icon icon-home"> PyTorch-LifeStream
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../..">Welcome</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">User Guide</span></p>
+              <ul class="current">
+                  <li class="toctree-l1"><a class="reference internal" href="#">Sequential Data</a>
+    <ul>
+                <li class="toctree-l2"><a class="reference internal" href="../../sequential_data_definition/">Sequential Data Definition</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../feature_naming/">Feature naming</a>
+                </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="#">How to guide</a>
+    <ul>
+                <li class="toctree-l2"><a class="" href="#">Data preparation</a>
+                </li>
+                <li class="toctree-l2"><a class="" href="#">Sequential model creation</a>
+                </li>
+                <li class="toctree-l2"><a class="" href="#">Frameworks usage</a>
+                </li>
+                <li class="toctree-l2"><a class="" href="#">Encoder training</a>
+                </li>
+                <li class="toctree-l2"><a class="" href="#">Inference</a>
+                </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1 current"><a class="reference internal current" href="#">ptls</a>
+    <ul class="current">
+                <li class="toctree-l2"><a class="reference internal" href="#">ptls.data_load</a>
+    <ul>
+                <li class="toctree-l3"><a class="reference internal" href="../../data_load/padded_batch/">padded batch</a>
+                </li>
+                <li class="toctree-l3"><a class="reference internal" href="../../data_load/datasets/">datasets</a>
+                </li>
+    </ul>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="#">ptls.nn</a>
+    <ul>
+                <li class="toctree-l3"><a class="reference internal" href="../../nn/trx_encoder/">trx_encoder</a>
+                </li>
+                <li class="toctree-l3"><a class="reference internal" href="../../nn/seq_encoder/">seq_encoder</a>
+                </li>
+                <li class="toctree-l3"><a class="reference internal" href="../../nn/head/">head</a>
+                </li>
+                <li class="toctree-l3"><a class="reference internal" href="../../nn/pb/">pb</a>
+                </li>
+    </ul>
+                </li>
+                <li class="toctree-l2 current"><a class="reference internal current" href="#">ptls.frames</a>
+    <ul class="current">
+                <li class="toctree-l3"><a class="reference internal" href="../common_usage/">common usage pattern</a>
+                </li>
+                <li class="toctree-l3"><a class="reference internal" href="../coles/">coles</a>
+                </li>
+                <li class="toctree-l3"><a class="reference internal" href="../vicreg/">vicreg</a>
+                </li>
+                <li class="toctree-l3"><a class="reference internal" href="../cpc/">cpc</a>
+                </li>
+                <li class="toctree-l3"><a class="reference internal" href="../bert/">bert</a>
+                </li>
+                <li class="toctree-l3 current"><a class="reference internal current" href="./">supervised</a>
+    <ul class="current">
+    <li class="toctree-l4"><a class="reference internal" href="#seqtotargetdataset">SeqToTargetDataset</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#sequencetotarget-in-supervised-mode">SequenceToTarget in supervised mode</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#sequencetotarget-in-inference-mode">SequenceToTarget in inference mode</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#classes">Classes</a>
+    </li>
+    </ul>
+                </li>
+                <li class="toctree-l3"><a class="reference internal" href="../inference/">inference</a>
+                </li>
+    </ul>
+                </li>
+    </ul>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../..">PyTorch-LifeStream</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../.." class="icon icon-home" alt="Docs"></a> &raquo;</li>
+          <li>User Guide &raquo;</li>
+          <li>ptls &raquo;</li>
+          <li>ptls.frames &raquo;</li><li>supervised</li>
+    <li class="wy-breadcrumbs-aside">
+    </li>
+  </ul>
+  <hr/>
+</div>
+
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="supervised-learning">Supervised learning</h1>
+<p><code>ptls.frames.supervised.SeqToTargetDataset</code> and <code>ptls.frames.supervised.SequenceToTarget</code>
+for supervised learning</p>
+<h2 id="seqtotargetdataset"><code>SeqToTargetDataset</code></h2>
+<p>Works similar as other datasets described in <a href="../common_usage/">common patterns</a></p>
+<p>Source data should have a scalar field with target value.</p>
+<p>Example:</p>
+<pre><code class="language-python">    dataset = SeqToTargetDataset([{
+        'mcc_code': torch.randint(1, 10, (seq_len,)),
+        'amount': torch.randn(seq_len),
+        'event_time': torch.arange(seq_len),  # shows order between transactions
+        'target': target,
+    } for seq_len, target in zip(
+        torch.randint(100, 200, (4,)),
+        [0, 0, 1, 1],
+    )], target_col_name='target')
+    dl = torch.utils.data.DataLoader(dataset, batch_size=10, collate_fn=dataset.collate_fn)
+    x, y = next(iter(dl))
+    torch.testing.assert_close(y, torch.LongTensor([0, 0, 1, 1]))
+</code></pre>
+<h2 id="sequencetotarget-in-supervised-mode"><code>SequenceToTarget</code> in supervised mode</h2>
+<p><code>SequenceToTarget</code> is a lightning module for supervised training.
+This module assumes a target for sequence.</p>
+<p>There can be a some types of supervised task, like classification of regression.
+<code>SequenceToTarget</code> parameters allows to fit this module to your task.</p>
+<p><code>SequenceToTarget</code> requires <code>seq_encoder</code>, <code>head</code>, <code>loss</code> and <code>metrics</code>.</p>
+<p>Se en examples of usage in <code>SequenceToTarget</code> docstring.</p>
+<p>Layers from <code>seq_encoder</code>, <code>head</code> can be randomly initialized or pretrained.</p>
+<h2 id="sequencetotarget-in-inference-mode"><code>SequenceToTarget</code> in inference mode</h2>
+<p>You may just provide pretrained <code>seq_encoder</code> to <code>SequenceToTarget</code> and 
+use <code>trainer.predict</code> to get embeddings from pretrained <code>seq_encoder</code>.</p>
+<h2 id="classes">Classes</h2>
+<p>See docstrings for classes.</p>
+<ul>
+<li><code>ptls.frames.supervised.SeqToTargetDataset</code></li>
+<li><code>ptls.frames.supervised.SequenceToTarget</code></li>
+</ul>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../bert/" class="btn btn-neutral float-left" title="bert"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../inference/" class="btn btn-neutral float-right" title="inference">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+      <span><a href="../bert/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../inference/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script>var base_url = '../..';</script>
+    <script src="../../js/theme_extra.js" defer></script>
+    <script src="../../js/theme.js" defer></script>
+      <script src="../../search/main.js" defer></script>
+    <script defer>
+        window.onload = function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        };
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="shortcut icon" href="../../img/favicon.ico" />
+    <title>common usage pattern - PyTorch-LifeStream</title>
+    <link rel="stylesheet" href="../../css/theme.css" />
+    <link rel="stylesheet" href="../../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "common usage pattern";
+        var mkdocs_page_input_path = "frames/common_usage.md";
+        var mkdocs_page_url = null;
+      </script>
+    
+    <script src="../../js/jquery-3.6.0.min.js" defer></script>
+    <!--[if lt IE 9]>
+      <script src="../../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/highlight.min.js"></script>
+      <script>hljs.initHighlightingOnLoad();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href="../.." class="icon icon-home"> PyTorch-LifeStream
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../..">Welcome</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">User Guide</span></p>
+              <ul class="current">
+                  <li class="toctree-l1"><a class="reference internal" href="#">Sequential Data</a>
+    <ul>
+                <li class="toctree-l2"><a class="reference internal" href="../../sequential_data_definition/">Sequential Data Definition</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../feature_naming/">Feature naming</a>
+                </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="#">How to guide</a>
+    <ul>
+                <li class="toctree-l2"><a class="" href="#">Data preparation</a>
+                </li>
+                <li class="toctree-l2"><a class="" href="#">Sequential model creation</a>
+                </li>
+                <li class="toctree-l2"><a class="" href="#">Frameworks usage</a>
+                </li>
+                <li class="toctree-l2"><a class="" href="#">Encoder training</a>
+                </li>
+                <li class="toctree-l2"><a class="" href="#">Inference</a>
+                </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1 current"><a class="reference internal current" href="#">ptls</a>
+    <ul class="current">
+                <li class="toctree-l2"><a class="reference internal" href="#">ptls.data_load</a>
+    <ul>
+                <li class="toctree-l3"><a class="reference internal" href="../../data_load/padded_batch/">padded batch</a>
+                </li>
+                <li class="toctree-l3"><a class="reference internal" href="../../data_load/datasets/">datasets</a>
+                </li>
+    </ul>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="#">ptls.nn</a>
+    <ul>
+                <li class="toctree-l3"><a class="reference internal" href="../../nn/trx_encoder/">trx_encoder</a>
+                </li>
+                <li class="toctree-l3"><a class="reference internal" href="../../nn/seq_encoder/">seq_encoder</a>
+                </li>
+                <li class="toctree-l3"><a class="reference internal" href="../../nn/head/">head</a>
+                </li>
+                <li class="toctree-l3"><a class="reference internal" href="../../nn/pb/">pb</a>
+                </li>
+    </ul>
+                </li>
+                <li class="toctree-l2 current"><a class="reference internal current" href="#">ptls.frames</a>
+    <ul class="current">
+                <li class="toctree-l3 current"><a class="reference internal current" href="./">common usage pattern</a>
+    <ul class="current">
+    <li class="toctree-l4"><a class="reference internal" href="#example">Example</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#next-steps">Next steps</a>
+    </li>
+    </ul>
+                </li>
+                <li class="toctree-l3"><a class="reference internal" href="../coles/">coles</a>
+                </li>
+                <li class="toctree-l3"><a class="reference internal" href="../vicreg/">vicreg</a>
+                </li>
+                <li class="toctree-l3"><a class="reference internal" href="../cpc/">cpc</a>
+                </li>
+                <li class="toctree-l3"><a class="reference internal" href="../bert/">bert</a>
+                </li>
+                <li class="toctree-l3"><a class="reference internal" href="../supervised/">supervised</a>
+                </li>
+                <li class="toctree-l3"><a class="reference internal" href="../inference/">inference</a>
+                </li>
+    </ul>
+                </li>
+    </ul>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../..">PyTorch-LifeStream</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../.." class="icon icon-home" alt="Docs"></a> &raquo;</li>
+          <li>User Guide &raquo;</li>
+          <li>ptls &raquo;</li>
+          <li>ptls.frames &raquo;</li><li>common usage pattern</li>
+    <li class="wy-breadcrumbs-aside">
+    </li>
+  </ul>
+  <hr/>
+</div>
+
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="ptlsframes-usage"><code>ptls.frames</code> usage</h1>
+<p><code>frames</code> means frameworks. They are collects a popular technics to train a models.
+Each framework is a <code>LightningModule</code>. It means that you can train it with <code>pytorch_lightning.Trainer</code>.
+Frameworks consume data in a special format, so a <code>LightningDataModule</code> required.
+So there are three <code>pytorch_lightning</code> entities a required:</p>
+<ul>
+<li>model</li>
+<li>data</li>
+<li>trainer</li>
+</ul>
+<p>Trainer is a <code>pytorch_lightning.Trainer</code>. It automates training process.
+You can read its description <a href="https://pytorch-lightning.readthedocs.io/en/latest/common/trainer.html">here</a>.</p>
+<p>We make a special <code>torch.nn.Dataset</code> implementation for each framework. All of them:</p>
+<ul>
+<li>support <code>map</code> and <code>iterable</code> version. You can use any of them. <a href="https://pytorch.org/docs/stable/data.html#dataset-types">More info about</a></li>
+<li>have <code>collate_fn</code> for batch collection</li>
+<li>consume <code>map</code> or <code>iterable</code> input as dict of feature arrays</li>
+<li>compatible with <code>ptls.frames.PtlsDataModule</code></li>
+</ul>
+<p>Model is usually <code>seq_encoder</code> with <code>head</code> optional.
+We provide a model to framework assigned <code>LightningModule</code>.</p>
+<h2 id="example">Example</h2>
+<p>This example is for CoLES framework. You can try an others with the same way.
+See module list in <code>ptls.frames</code> submodules. Check docstring for precise parameter tuning.</p>
+<h3 id="data-generation">Data generation</h3>
+<p>We make a small test dataset. In real life you can use a many ways to load a data. See <code>ptls.data_load</code>.</p>
+<pre><code class="language-python">import torch
+
+# Makes 1000 samples with `mcc_code` and `amount` features and seq_len randomly sampled in range (100, 200)
+dataset = [{
+    'mcc_code': torch.randint(1, 10, (seq_len,)),
+    'amount': torch.randn(seq_len),
+    'event_time': torch.arange(seq_len),  # shows order between transactions
+} for seq_len in torch.randint(100, 200, (1000,))]
+
+from sklearn.model_selection import train_test_split
+# split 10% for validation
+train_data, valid_data = train_test_split(dataset, test_size=0.1)
+</code></pre>
+<p>We can use an others sources for train and valid data.</p>
+<h3 id="datamodule-creation">DataModule creation</h3>
+<p>As we choose CoLES we should use <code>ptls.frames.coles.ColesDataset</code> for <code>map</code> style
+or <code>ptls.frames.coles.ColesIterableDataset</code> for <code>iterable</code>.</p>
+<p>Our demo data is in memory, so we can use both <code>map</code> or <code>iterable</code>.
+<code>map</code> style seems better because it provides better shuffle.
+If data is iterable like <code>ptls.data_load.parquet_dataset.ParquetDataset</code> 
+we can't use <code>map</code> style until we read it to <code>list</code>.</p>
+<pre><code class="language-python">from ptls.frames.coles import ColesDataset
+from ptls.frames.coles.split_strategy import SampleSlices
+
+splitter=SampleSlices(split_count=5, cnt_min=10, cnt_max=20)
+train_dataset = ColesDataset(data=train_data, splitter=splitter)
+valid_dataset = ColesDataset(data=valid_data, splitter=splitter)
+</code></pre>
+<p>Created datasets returns 5 subsample with length in range (10, 20) for each user.</p>
+<p>Now you need to create a dataloader that will collect batches. There are two ways to do this.
+Manual:</p>
+<pre><code class="language-python">train_dataloader = torch.utils.data.DataLoader(
+    dataset=train_dataset,
+    collate_fn=train_dataset.collate_fn,  # collate_fn from dataset
+    shuffle=True,
+    num_workers=4,
+    batch_size=32,
+)
+valid_dataloader = torch.utils.data.DataLoader(
+    dataset=valid_dataset,
+    collate_fn=valid_dataset.collate_fn,  # collate_fn from dataset
+    shuffle=False,
+    num_workers=0,
+    batch_size=32,
+)
+</code></pre>
+<p>With datamodule:</p>
+<pre><code class="language-python">from ptls.frames import PtlsDataModule
+
+datamodule = PtlsDataModule(
+    train_data=train_dataset,
+    train_batch_size=32,
+    train_num_workers=4,
+    valid_data=valid_dataset,
+    valid_num_workers=0,
+)
+</code></pre>
+<h3 id="model-creation">Model creation</h3>
+<p>We have to create <code>seq_cncoder</code> that transform sequences to embedding 
+and create <code>CoLESModule</code> that will train <code>seq_cncoder</code>.</p>
+<pre><code class="language-python">import torch.optim
+from functools import partial
+from ptls.nn import TrxEncoder, RnnSeqEncoder
+from ptls.frames.coles import CoLESModule
+
+seq_encoder = RnnSeqEncoder(
+    trx_encoder=TrxEncoder(
+        embeddings={'mcc_code': {'in': 10, 'out': 4}},
+        numeric_values={'amount': 'identity'},
+    ),
+    hidden_size=16,  # this is final embedding size
+)
+
+coles_module = CoLESModule(
+    seq_encoder=seq_encoder,
+    optimizer_partial=partial(torch.optim.Adam, lr=0.001),
+    lr_scheduler_partial=partial(torch.optim.lr_scheduler.StepLR, step_size=1, gamma=0.9),
+)
+</code></pre>
+<h3 id="training">Training</h3>
+<p>Everything is ready for training. Let's create a <code>Trainer</code>.</p>
+<pre><code class="language-python">import pytorch_lightning as pl
+
+trainer = pl.Trainer(gpus=1, max_epochs=50)
+</code></pre>
+<p>There are many options for <code>pytorch_lightning.Trainer</code> check docstring.</p>
+<p>We force trainer to use one gpu with setting <code>gpus=1</code>. If you haven't gpu keep <code>gpus=None</code>.
+Trainer will train our model until 50 epochs reached.</p>
+<p>Depending on the method of creating dataloaders, the learning interface changes slightly.
+With dataloaders:</p>
+<pre><code class="language-python">trainer.fit(coles_module, train_dataloader, valid_dataloader)
+</code></pre>
+<p>With datamodule:</p>
+<pre><code class="language-python">trainer.fit(coles_module, datamodule)
+</code></pre>
+<p>Result will be the same.</p>
+<p>Now <code>coles_module</code> with <code>seq_encoder</code> are trained.</p>
+<h3 id="inference">Inference</h3>
+<p>This demo shows how to make embedding with pretrained <code>seq_encoder</code>.</p>
+<p><code>pytorch_lightning.Trainer</code> have <code>predict</code> method that calls <code>seq_encoder.forward</code>.
+<code>predict</code> requires <code>LightningModule</code> but <code>seq_encoder</code> is <code>torch.nn.Module</code>.
+We should cover <code>seq_encoder</code> to <code>LightningModule</code>.</p>
+<p>We can use <code>CoLESModule</code> or any other module if available. In this example we can use <code>coles_module</code> object.
+Sometimes we have only <code>seq_encoder</code>, e.g. loaded from disk.
+<code>CoLESModule</code> have a little overhead. There are head, loss and metrics inside.</p>
+<p>Other way is using lightweight <code>ptls.frames.supervised.SequenceToTarget</code> module.
+It can run inference with only <code>seq_encoder</code>.</p>
+<pre><code class="language-python">import torch
+import pytorch_lightning as pl
+
+from ptls.frames.supervised import SequenceToTarget
+from ptls.data_load.datasets.dataloaders import inference_data_loader
+
+inference_dataloader = inference_data_loader(dataset, num_workers=4, batch_size=256)
+model = SequenceToTarget(seq_encoder)
+trainer = pl.Trainer(gpus=1)
+embeddings = torch.vstack(trainer.predict(model, inference_dataloader))
+assert embeddings.size() == (1000, 16)
+</code></pre>
+<p>Final shape is depends on:</p>
+<ul>
+<li><code>dataset</code> size, we have 1000 samples in out dataset.</li>
+<li><code>seq_encoder.embedding_size</code>, we set <code>hidden_size=16</code> during <code>RnnSeqEncoder</code> creation.</li>
+</ul>
+<h2 id="next-steps">Next steps</h2>
+<p>Now you can try to change hyperparameters of <code>ColesDataset</code>, <code>CoLESModule</code> and <code>Trainer</code>.
+Or try an others frameworks from <code>ptls.frames</code>.</p>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../../nn/pb/" class="btn btn-neutral float-left" title="pb"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../coles/" class="btn btn-neutral float-right" title="coles">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+      <span><a href="../../nn/pb/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../coles/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script>var base_url = '../..';</script>
+    <script src="../../js/theme_extra.js" defer></script>
+    <script src="../../js/theme.js" defer></script>
+      <script src="../../search/main.js" defer></script>
+    <script defer>
+        window.onload = function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        };
+    </script>
+
+</body>
+</html>

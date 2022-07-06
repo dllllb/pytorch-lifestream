@@ -4,22 +4,22 @@
     <meta charset="utf-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-      <link rel="shortcut icon" href="../img/favicon.ico" />
+      <link rel="shortcut icon" href="../../img/favicon.ico" />
     <title>seq_encoder - PyTorch-LifeStream</title>
-    <link rel="stylesheet" href="../css/theme.css" />
-    <link rel="stylesheet" href="../css/theme_extra.css" />
+    <link rel="stylesheet" href="../../css/theme.css" />
+    <link rel="stylesheet" href="../../css/theme_extra.css" />
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/styles/github.min.css" />
     
       <script>
         // Current page data
         var mkdocs_page_name = "seq_encoder";
-        var mkdocs_page_input_path = "seq_encoder.md";
+        var mkdocs_page_input_path = "nn/seq_encoder.md";
         var mkdocs_page_url = null;
       </script>
     
-    <script src="../js/jquery-3.6.0.min.js" defer></script>
+    <script src="../../js/jquery-3.6.0.min.js" defer></script>
     <!--[if lt IE 9]>
-      <script src="../js/html5shiv.min.js"></script>
+      <script src="../../js/html5shiv.min.js"></script>
     <![endif]-->
       <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/highlight.min.js"></script>
       <script>hljs.initHighlightingOnLoad();</script> 
@@ -31,9 +31,9 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
     <div class="wy-side-scroll">
       <div class="wy-side-nav-search">
-          <a href=".." class="icon icon-home"> PyTorch-LifeStream
+          <a href="../.." class="icon icon-home"> PyTorch-LifeStream
         </a><div role="search">
-  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+  <form id ="rtd-search-form" class="wy-form" action="../../search.html" method="get">
       <input type="text" name="q" placeholder="Search docs" title="Type search term here" />
   </form>
 </div>
@@ -41,30 +41,84 @@
 
       <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <ul>
-                <li class="toctree-l1"><a class="reference internal" href="..">Home</a>
+                <li class="toctree-l1"><a class="reference internal" href="../..">Welcome</a>
                 </li>
               </ul>
               <p class="caption"><span class="caption-text">User Guide</span></p>
               <ul class="current">
-                  <li class="toctree-l1"><a class="reference internal" href="../data_preparation/">Data Preparation</a>
-                  </li>
-                  <li class="toctree-l1"><a class="reference internal" href="../embeddings_with_other_losses/">Losses</a>
-                  </li>
-                  <li class="toctree-l1 current"><a class="reference internal current" href="./">seq_encoder</a>
-    <ul class="current">
-    <li class="toctree-l2"><a class="reference internal" href="#usage">Usage</a>
-        <ul>
-    <li class="toctree-l3"><a class="reference internal" href="#embeddings-as-input">Embeddings as input</a>
-    </li>
-    <li class="toctree-l3"><a class="reference internal" href="#features-as-input">Features as input</a>
-    </li>
-        </ul>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#classes">Classes</a>
-    </li>
+                  <li class="toctree-l1"><a class="reference internal" href="#">Sequential Data</a>
+    <ul>
+                <li class="toctree-l2"><a class="reference internal" href="../../sequential_data_definition/">Sequential Data Definition</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../feature_naming/">Feature naming</a>
+                </li>
     </ul>
                   </li>
-                  <li class="toctree-l1"><a class="reference internal" href="../trx_encoder/">trx_encoder</a>
+                  <li class="toctree-l1"><a class="reference internal" href="#">How to guide</a>
+    <ul>
+                <li class="toctree-l2"><a class="" href="#">Data preparation</a>
+                </li>
+                <li class="toctree-l2"><a class="" href="#">Sequential model creation</a>
+                </li>
+                <li class="toctree-l2"><a class="" href="#">Frameworks usage</a>
+                </li>
+                <li class="toctree-l2"><a class="" href="#">Encoder training</a>
+                </li>
+                <li class="toctree-l2"><a class="" href="#">Inference</a>
+                </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1 current"><a class="reference internal current" href="#">ptls</a>
+    <ul class="current">
+                <li class="toctree-l2"><a class="reference internal" href="#">ptls.data_load</a>
+    <ul>
+                <li class="toctree-l3"><a class="reference internal" href="../../data_load/padded_batch/">padded batch</a>
+                </li>
+                <li class="toctree-l3"><a class="reference internal" href="../../data_load/datasets/">datasets</a>
+                </li>
+    </ul>
+                </li>
+                <li class="toctree-l2 current"><a class="reference internal current" href="#">ptls.nn</a>
+    <ul class="current">
+                <li class="toctree-l3"><a class="reference internal" href="../trx_encoder/">trx_encoder</a>
+                </li>
+                <li class="toctree-l3 current"><a class="reference internal current" href="./">seq_encoder</a>
+    <ul class="current">
+    <li class="toctree-l4"><a class="reference internal" href="#embeddings-as-input">Embeddings as input</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#features-as-input">Features as input</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#aggfeatureseqencoder">AggFeatureSeqEncoder</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#classes">Classes</a>
+    </li>
+    </ul>
+                </li>
+                <li class="toctree-l3"><a class="reference internal" href="../head/">head</a>
+                </li>
+                <li class="toctree-l3"><a class="reference internal" href="../pb/">pb</a>
+                </li>
+    </ul>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="#">ptls.frames</a>
+    <ul>
+                <li class="toctree-l3"><a class="reference internal" href="../../frames/common_usage/">common usage pattern</a>
+                </li>
+                <li class="toctree-l3"><a class="reference internal" href="../../frames/coles/">coles</a>
+                </li>
+                <li class="toctree-l3"><a class="reference internal" href="../../frames/vicreg/">vicreg</a>
+                </li>
+                <li class="toctree-l3"><a class="reference internal" href="../../frames/cpc/">cpc</a>
+                </li>
+                <li class="toctree-l3"><a class="reference internal" href="../../frames/bert/">bert</a>
+                </li>
+                <li class="toctree-l3"><a class="reference internal" href="../../frames/supervised/">supervised</a>
+                </li>
+                <li class="toctree-l3"><a class="reference internal" href="../../frames/inference/">inference</a>
+                </li>
+    </ul>
+                </li>
+    </ul>
                   </li>
               </ul>
       </div>
@@ -74,14 +128,16 @@
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
       <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="..">PyTorch-LifeStream</a>
+          <a href="../..">PyTorch-LifeStream</a>
         
       </nav>
       <div class="wy-nav-content">
         <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
   <ul class="wy-breadcrumbs">
-    <li><a href=".." class="icon icon-home" alt="Docs"></a> &raquo;</li>
-          <li>User Guide &raquo;</li><li>seq_encoder</li>
+    <li><a href="../.." class="icon icon-home" alt="Docs"></a> &raquo;</li>
+          <li>User Guide &raquo;</li>
+          <li>ptls &raquo;</li>
+          <li>ptls.nn &raquo;</li><li>seq_encoder</li>
     <li class="wy-breadcrumbs-aside">
     </li>
   </ul>
@@ -91,17 +147,20 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
             <div class="section" itemprop="articleBody">
               
-                <h1 id="ptlsseq_encoder-usage"><code>ptls.seq_encoder</code> usage</h1>
-<h2 id="usage">Usage</h2>
-<p><code>trx_encoder</code> works with individual transaction.
-<code>seq_encoder</code> takes into account sequential structure and the links between transactions.</p>
+                <h1 id="ptlsnnseq_encoder"><code>ptls.nn.seq_encoder</code></h1>
+<p>All classes from <code>ptls.nn.seq_encoder</code> also available in <code>ptls.nn</code></p>
+<p><code>ptls.nn.trx_encoder</code> works with individual transaction.
+<code>ptls.nn.seq_encoder</code> takes into account sequential structure and the links between transactions.</p>
 <p>There are 2 types of seq encoders:
 - required embeddings as input
 - requires raw features as input</p>
-<h3 id="embeddings-as-input">Embeddings as input</h3>
-<p>We implement ptls-api for <code>torch</code> sequential layers:
-- <code>ptls.seq_encoder.RnnEncoder</code> for <code>torch.nn.GRU</code>
-- <code>ptls.seq_encoder.TransformerEncoder</code> for <code>torch.nn.TransformerEncoder</code></p>
+<h2 id="embeddings-as-input">Embeddings as input</h2>
+<p>We implement ptls-api for <code>torch</code> and <code>huggingface</code> sequential layers:</p>
+<ul>
+<li><code>ptls.nn.RnnEncoder</code> for <code>torch.nn.GRU</code></li>
+<li><code>ptls.nn.TransformerEncoder</code> for <code>torch.nn.TransformerEncoder</code></li>
+<li><code>ptls.nn.LongformerEncoder</code> for <code>transformers.LongformerModel</code></li>
+</ul>
 <p>They expect vectorized input, which can be obtained with <code>TrxEncoder</code>.</p>
 <p>Output format controlled by <code>is_reduce_sequence</code> property. <code>True</code> means that sequence will be reduced 
 to one single vector.  It's last hidden state for RNN and CLS token output for transformer.
@@ -145,12 +204,15 @@ assert h.size() == (3, 16)
 <p>It's possible to add more layers between <code>trx_encoder</code> and <code>seq_encoder</code> (linear, normalisation, convolutions, ...). 
 They should work with PaddedBatch. Examples will be presented later. Such layers also works after <code>seq_encoder</code>
 with <code>is_reduce_sequence=False</code>.</p>
-<h3 id="features-as-input">Features as input</h3>
+<h2 id="features-as-input">Features as input</h2>
 <p>As you can see <code>TrxEncoder</code> works with raw features and compatible with embedding seq encoder.
 We make a composition layers, which contains <code>TrxEncoder</code> and one <code>SeqEncoder</code> implementation.
-There are:
-- <code>ptls.seq_encoder.RnnSeqEncoder</code> with <code>RnnEncoder</code>
-- <code>ptls.seq_encoder.TransformerSeqEncoder</code> with <code>TransformerEncoder</code></p>
+There are:</p>
+<ul>
+<li><code>ptls.nn.RnnSeqEncoder</code> with <code>RnnEncoder</code></li>
+<li><code>ptls.nn.TransformerSeqEncoder</code> with <code>TransformerEncoder</code></li>
+<li><code>ptls.nn.LongformerSeqEncoder</code> with <code>LongformerEncoder</code></li>
+</ul>
 <p>They work as simple <code>Sequential(trx_encoder, seq_encoder)</code> and support <code>is_reduce_sequence</code> property.
 The main advantage that you can simply create such encoder from config file using <code>hydra instantiate</code> tools.
 You can avoid of explicit set of <code>seq_encoder.input_size</code>, they will be taken from <code>trx_encoder</code>.  Let's compare.</p>
@@ -160,7 +222,7 @@ You can avoid of explicit set of <code>seq_encoder.input_size</code>, they will 
         _target_: torch.nn.Sequential
         _args_:
         - 
-            _target_: ptls.trx_encoder.TrxEncoder
+            _target_: ptls.nn.TrxEncoder
             embeddings:
                 mcc_code:
                     in: 10
@@ -171,7 +233,7 @@ You can avoid of explicit set of <code>seq_encoder.input_size</code>, they will 
             numeric_values:
                 amount: identity
         -
-            _target_: ptls.seq_encoder.RnnEncoder
+            _target_: ptls.nn.RnnEncoder
             input_size: 9  # depends on TrxEncoder output
             hidden_size: 24
 &quot;&quot;&quot;
@@ -180,9 +242,9 @@ model = hydra.utils.instantiate(OmegaConf.create(config))['model']
 <p>SeqEncoder-style:</p>
 <pre><code class="language-python">config = &quot;&quot;&quot;
     model:
-        _target_: ptls.seq_encoder.RnnSeqEncoder
+        _target_: ptls.nn.RnnSeqEncoder
         trx_encoder:
-            _target_: ptls.trx_encoder.TrxEncoder
+            _target_: ptls.nn.TrxEncoder
             embeddings:
                 mcc_code:
                     in: 10
@@ -208,7 +270,8 @@ model = hydra.utils.instantiate(OmegaConf.create(config))['model']
 
 y = model(x)
 </code></pre>
-<p>Also we have <code>ptls.seq_encoder.AggFeatureSeqEncoder</code>.
+<h2 id="aggfeatureseqencoder">AggFeatureSeqEncoder</h2>
+<p><code>ptls.nn.AggFeatureSeqEncoder</code>.
 It looks like seq_encoder. It take raw features at input and provide reduced representation at output.
 This encoder creates features, which are good for boosting model. This is a strong baseline for many tasks.
 <code>AggFeatureSeqEncoder</code> eat the same input as other seq_encoders, and it can easily be replaced
@@ -222,19 +285,25 @@ catboost_model.fit(agg_embeddings, target)
 It will be possible to choose flexible between <code>TrxEncoder</code> with <code>AggSeqEncoder</code> and <code>OheEncoder</code> with <code>RnnEncoder</code>.</p>
 <h2 id="classes">Classes</h2>
 <p>See docstrings for classes.</p>
-<p>Take trx embedding as input:
-- <code>ptls.seq_encoder.RnnEncoder</code>
-- <code>ptls.seq_encoder.TransformerEncoder</code></p>
-<p>Take raw features as input:
-- <code>ptls.seq_encoder.RnnSeqEncoder</code>
-- <code>ptls.seq_encoder.TransformerSeqEncoder</code>
-- <code>ptls.seq_encoder.AggFeatureSeqEncoder</code></p>
+<p>Take trx embedding as input:</p>
+<ul>
+<li><code>ptls.nn.RnnEncoder</code></li>
+<li><code>ptls.nn.TransformerEncoder</code></li>
+<li><code>ptls.nn.LongformerEncoder</code></li>
+</ul>
+<p>Take raw features as input:</p>
+<ul>
+<li><code>ptls.nn.RnnSeqEncoder</code></li>
+<li><code>ptls.nn.TransformerSeqEncoder</code></li>
+<li><code>ptls.nn.LongformerSeqEncoder</code></li>
+<li><code>ptls.nn.AggFeatureSeqEncoder</code></li>
+</ul>
               
             </div>
           </div><footer>
     <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
-        <a href="../embeddings_with_other_losses/" class="btn btn-neutral float-left" title="Losses"><span class="icon icon-circle-arrow-left"></span> Previous</a>
-        <a href="../trx_encoder/" class="btn btn-neutral float-right" title="trx_encoder">Next <span class="icon icon-circle-arrow-right"></span></a>
+        <a href="../trx_encoder/" class="btn btn-neutral float-left" title="trx_encoder"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../head/" class="btn btn-neutral float-right" title="head">Next <span class="icon icon-circle-arrow-right"></span></a>
     </div>
 
   <hr/>
@@ -257,17 +326,17 @@ It will be possible to choose flexible between <code>TrxEncoder</code> with <cod
   <span class="rst-current-version" data-toggle="rst-current-version">
     
     
-      <span><a href="../embeddings_with_other_losses/" style="color: #fcfcfc">&laquo; Previous</a></span>
+      <span><a href="../trx_encoder/" style="color: #fcfcfc">&laquo; Previous</a></span>
     
     
-      <span><a href="../trx_encoder/" style="color: #fcfcfc">Next &raquo;</a></span>
+      <span><a href="../head/" style="color: #fcfcfc">Next &raquo;</a></span>
     
   </span>
 </div>
-    <script>var base_url = '..';</script>
-    <script src="../js/theme_extra.js" defer></script>
-    <script src="../js/theme.js" defer></script>
-      <script src="../search/main.js" defer></script>
+    <script>var base_url = '../..';</script>
+    <script src="../../js/theme_extra.js" defer></script>
+    <script src="../../js/theme.js" defer></script>
+      <script src="../../search/main.js" defer></script>
     <script defer>
         window.onload = function () {
             SphinxRtdTheme.Navigation.enable(true);

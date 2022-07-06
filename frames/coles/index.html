@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="shortcut icon" href="../../img/favicon.ico" />
+    <title>coles - PyTorch-LifeStream</title>
+    <link rel="stylesheet" href="../../css/theme.css" />
+    <link rel="stylesheet" href="../../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "coles";
+        var mkdocs_page_input_path = "frames/coles.md";
+        var mkdocs_page_url = null;
+      </script>
+    
+    <script src="../../js/jquery-3.6.0.min.js" defer></script>
+    <!--[if lt IE 9]>
+      <script src="../../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/highlight.min.js"></script>
+      <script>hljs.initHighlightingOnLoad();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href="../.." class="icon icon-home"> PyTorch-LifeStream
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../..">Welcome</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">User Guide</span></p>
+              <ul class="current">
+                  <li class="toctree-l1"><a class="reference internal" href="#">Sequential Data</a>
+    <ul>
+                <li class="toctree-l2"><a class="reference internal" href="../../sequential_data_definition/">Sequential Data Definition</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../feature_naming/">Feature naming</a>
+                </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="#">How to guide</a>
+    <ul>
+                <li class="toctree-l2"><a class="" href="#">Data preparation</a>
+                </li>
+                <li class="toctree-l2"><a class="" href="#">Sequential model creation</a>
+                </li>
+                <li class="toctree-l2"><a class="" href="#">Frameworks usage</a>
+                </li>
+                <li class="toctree-l2"><a class="" href="#">Encoder training</a>
+                </li>
+                <li class="toctree-l2"><a class="" href="#">Inference</a>
+                </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1 current"><a class="reference internal current" href="#">ptls</a>
+    <ul class="current">
+                <li class="toctree-l2"><a class="reference internal" href="#">ptls.data_load</a>
+    <ul>
+                <li class="toctree-l3"><a class="reference internal" href="../../data_load/padded_batch/">padded batch</a>
+                </li>
+                <li class="toctree-l3"><a class="reference internal" href="../../data_load/datasets/">datasets</a>
+                </li>
+    </ul>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="#">ptls.nn</a>
+    <ul>
+                <li class="toctree-l3"><a class="reference internal" href="../../nn/trx_encoder/">trx_encoder</a>
+                </li>
+                <li class="toctree-l3"><a class="reference internal" href="../../nn/seq_encoder/">seq_encoder</a>
+                </li>
+                <li class="toctree-l3"><a class="reference internal" href="../../nn/head/">head</a>
+                </li>
+                <li class="toctree-l3"><a class="reference internal" href="../../nn/pb/">pb</a>
+                </li>
+    </ul>
+                </li>
+                <li class="toctree-l2 current"><a class="reference internal current" href="#">ptls.frames</a>
+    <ul class="current">
+                <li class="toctree-l3"><a class="reference internal" href="../common_usage/">common usage pattern</a>
+                </li>
+                <li class="toctree-l3 current"><a class="reference internal current" href="./">coles</a>
+    <ul class="current">
+    <li class="toctree-l4"><a class="reference internal" href="#colesmodule">CoLESModule</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#colesdataset-and-split-strategies">ColesDataset and split strategies</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#coles-losses-and-sampling-strategies">Coles losses and sampling strategies</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#head-selection">Head selection</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#classes">Classes</a>
+    </li>
+    </ul>
+                </li>
+                <li class="toctree-l3"><a class="reference internal" href="../vicreg/">vicreg</a>
+                </li>
+                <li class="toctree-l3"><a class="reference internal" href="../cpc/">cpc</a>
+                </li>
+                <li class="toctree-l3"><a class="reference internal" href="../bert/">bert</a>
+                </li>
+                <li class="toctree-l3"><a class="reference internal" href="../supervised/">supervised</a>
+                </li>
+                <li class="toctree-l3"><a class="reference internal" href="../inference/">inference</a>
+                </li>
+    </ul>
+                </li>
+    </ul>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../..">PyTorch-LifeStream</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../.." class="icon icon-home" alt="Docs"></a> &raquo;</li>
+          <li>User Guide &raquo;</li>
+          <li>ptls &raquo;</li>
+          <li>ptls.frames &raquo;</li><li>coles</li>
+    <li class="wy-breadcrumbs-aside">
+    </li>
+  </ul>
+  <hr/>
+</div>
+
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="contrastive-learning-for-event-sequences-coles">Contrastive Learning for Event Sequences (CoLES)</h1>
+<p>Original paper: <a href="https://dl.acm.org/doi/10.1145/3514221.3526129">CoLES: Contrastive Learning for Event Sequences with Self-Supervision</a></p>
+<p>CoLES is a framework that learn neural network to compress sequential data into a single embedding.</p>
+<p>Imagine a credit card transaction history that can be an example of user behavioral.
+Each user have his own behavioral patterns which are projected to his transaction history.
+Repeatability of behavioral patterns lead to repeatability in transaction history.</p>
+<p>CoLES exploit repeatability of patterns to make embedding. It samples a few subsequences from original sequence
+and calculates an embeddings for each of them. Embeddings are assigned to his user.
+Subsequences represent the same user and contain the same behavioral patterns. 
+CoLES catch these patterns by making closer users embeddings. It also tries to distance different users embeddings.</p>
+<p>Subsequences represent also original sequence, and the similarity of behavioral patterns 
+allows the similarity of embeddings for original sequence and his subsequence.</p>
+<p><strong>CoLES</strong> learn:</p>
+<ul>
+<li>more 'global' representation of sequence</li>
+<li>embedding for each transaction is an internal state of <code>seq_encoder</code></li>
+<li>embedding for all sequence is an output of <code>seq_encoder</code></li>
+</ul>
+<h2 id="colesmodule">CoLESModule</h2>
+<p><code>ptls.frames.coles.CoLESModule</code> is a <code>LightningModule</code> with CoLES framework.
+It should be parametrized by <code>head</code> and <code>loss</code>. Usually, <code>loss</code> requires a definition of <code>sampling_strategy</code>.
+CoLES datamodule requires a <code>split_strategy</code>.
+Combination of these parameters provides a variety of training methods.</p>
+<p>Example:</p>
+<pre><code class="language-python">seq_encoder = ...
+coles_module = CoLESModule(
+    seq_encoder=seq_encoder,
+    head=Head(use_norm_encoder=True),
+    loss=ContrastiveLoss(
+        margin=0.5,
+        sampling_strategy=HardNegativePairSelector(neg_count=5),
+    )
+)
+</code></pre>
+<h2 id="colesdataset-and-split-strategies">ColesDataset and split strategies</h2>
+<p>Use <code>ptls.frames.coles.ColesDataset</code> or <code>ptls.frames.coles.ColesIterableDataset</code>. 
+They are parametrised with <code>splitter</code> from <code>ptls.frames.coles.split_strategy</code></p>
+<h2 id="coles-losses-and-sampling-strategies">Coles losses and sampling strategies</h2>
+<p>Use classes from:</p>
+<ul>
+<li><code>ptls.frames.coles.losses</code></li>
+<li><code>ptls.frames.coles.sampling_strategies</code></li>
+</ul>
+<h2 id="head-selection">Head selection</h2>
+<p>Use <code>ptls.nn.Head</code>.
+Default head has only l2-norm layer (<code>Head(use_norm_encoder=True)</code>).</p>
+<p>Head with MLP inside realise <code>projection head</code> concept from SimCLR.</p>
+<h2 id="classes">Classes</h2>
+<p>See docstrings for classes.</p>
+<ul>
+<li><code>ptls.frames.coles.ColesDataset</code></li>
+<li><code>ptls.frames.coles.ColesIterableDataset</code></li>
+<li>
+<p><code>ptls.frames.coles.CoLESModule</code></p>
+</li>
+<li>
+<p><code>ptls.frames.coles.split_strategy</code></p>
+</li>
+<li><code>ptls.frames.coles.losses</code></li>
+<li><code>ptls.frames.coles.sampling_strategies</code></li>
+</ul>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../common_usage/" class="btn btn-neutral float-left" title="common usage pattern"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../vicreg/" class="btn btn-neutral float-right" title="vicreg">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+      <span><a href="../common_usage/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../vicreg/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script>var base_url = '../..';</script>
+    <script src="../../js/theme_extra.js" defer></script>
+    <script src="../../js/theme.js" defer></script>
+      <script src="../../search/main.js" defer></script>
+    <script defer>
+        window.onload = function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        };
+    </script>
+
+</body>
+</html>
