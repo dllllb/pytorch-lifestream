@@ -11,9 +11,11 @@ logger = logging.getLogger(__name__)
 
 
 def fold_fit_test(conf, fold_id):
+    conf['fold_id'] = fold_id
+
     model = hydra.utils.instantiate(conf.pl_module)
     model.seq_encoder.is_reduce_sequence = True
-    dm = hydra.utils.instantiate(conf.data_module, pl_module=model, fold_id=fold_id)
+    dm = hydra.utils.instantiate(conf.data_module)
 
     _trainer_params = conf.trainer
     _trainer_params_additional = {}
@@ -45,13 +47,7 @@ def main(conf: DictConfig):
     if 'seed_everything' in conf:
         pl.seed_everything(conf.seed_everything)
 
-    if conf.data_module.setup.split_by == 'embeddings_validation':
-        with open(conf.data_module.setup.fold_info, 'r') as f:
-            fold_info = json.load(f)
-        fold_list = [k for k in sorted(fold_info.keys()) if not k.startswith('_')]
-    else:
-        raise NotImplementedError(f'Only `embeddings_validation` split supported,'
-                                  f'found "{conf.data_module.setup.split_by}"')
+    fold_list = hydra.utils.instantiate(conf.fold_list)
 
     results = []
     for fold_id in fold_list:

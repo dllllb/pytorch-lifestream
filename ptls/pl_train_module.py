@@ -17,7 +17,7 @@ def main(conf: DictConfig):
         pl.seed_everything(conf.seed_everything)
 
     model = hydra.utils.instantiate(conf.pl_module)
-    dm = hydra.utils.instantiate(conf.data_module, pl_module=model)
+    dm = hydra.utils.instantiate(conf.data_module)
 
     _trainer_params = conf.trainer
     _trainer_params_additional = {}

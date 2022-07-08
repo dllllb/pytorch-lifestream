@@ -7,7 +7,7 @@ class DropoutTrx(FeatureDict):
         self.trx_dropout = trx_dropout
 
     def __call__(self, x):
-        seq_len = len(next(iter(x.values())))
+        seq_len = FeatureDict.get_seq_len(x)
 
         idx = self.get_idx(seq_len)
         new_x = self.seq_indexing(x, idx)
