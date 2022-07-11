@@ -156,6 +156,7 @@ class AggFeatureSeqEncoder(torch.nn.Module):
             for col_embed, options_embed in self.embeddings.items():
                 ohe = getattr(self, f'ohe_{col_embed}')
                 val_embed = feature_arrays[col_embed].long()
+                val_embed = val_embed.clamp(0, options_embed['in'] - 1)
 
                 ohe_transform = ohe[val_embed.flatten()].view(*val_embed.size(), -1)  # B, T, size
                 m_sum = ohe_transform * val_orig.unsqueeze(-1)  # B, T, size
@@ -182,6 +183,7 @@ class AggFeatureSeqEncoder(torch.nn.Module):
         for col_embed, options_embed in self.embeddings.items():
             ohe = getattr(self, f'ohe_{col_embed}')
             val_embed = feature_arrays[col_embed].long()
+            val_embed = val_embed.clamp(0, options_embed['in'] - 1)
 
             ohe_transform = ohe[val_embed.flatten()].view(*val_embed.size(), -1)  # B, T, size
 
