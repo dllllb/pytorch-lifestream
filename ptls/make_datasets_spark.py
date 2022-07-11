@@ -27,6 +27,7 @@ class DatasetConverter:
         parser.add_argument('--data_path', type=os.path.abspath)
         parser.add_argument('--trx_files', nargs='+')
         parser.add_argument('--target_files', nargs='*', default=[])
+        parser.add_argument('--target_as_array', action='store_true')
 
         parser.add_argument('--print_dataset_info', action='store_true')
         parser.add_argument('--sample_fraction', type=float, default=None)
@@ -259,12 +260,20 @@ class DatasetConverter:
         return features
 
     def update_with_target(self, features, df_target, col_client_id, col_target):
-        if type(col_target) is list:
+        if type(col_target) is list and self.config.target_as_array:
             col_list = []
             for col in col_target:
                 col_list.append(F.col(col))
             df_target = df_target.withColumn("target", F.array(col_list)) 
             df_target = df_target.select(col_client_id, "target")
+        elif type(col_target) is list and not self.config.target_as_array:
+            col_list = []
+            for col in col_target:
+                if col.startswith('target'):
+                    col_list.append(F.col(col))
+                else:
+                    col_list.append(F.col(col).alias(f'target_{col}'))
+            df_target = df_target.select(col_client_id, *col_list)
         else:
             col_list = [F.col(col_client_id).alias(col_client_id)]
             col_list.append(F.col(col_target).cast('int').alias('target'))

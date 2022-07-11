@@ -10,7 +10,7 @@ class RBatchNorm(torch.nn.Module):
         self.bn = torch.nn.BatchNorm1d(1)
 
     def forward(self, x):
-        B, T, _ = x.size()  # B x T x 1
+        B, T = x.size()  # B x T
         x = x.view(B * T, 1)
         x = self.bn(x)
         x = x.view(B, T, 1)
@@ -32,7 +32,7 @@ class RBatchNormWithLens(torch.nn.Module):
         seq_lens = v.seq_lens
         B, T = x.size()  # B x T
 
-        mask = v.seq_len_mask
+        mask = v.seq_len_mask.bool()
         x_new = x
         x_new[mask] = self.bn(x[mask].view(-1, 1)).view(-1)
         return x_new.view(B, T, 1)
