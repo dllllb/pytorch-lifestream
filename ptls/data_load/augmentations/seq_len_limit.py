@@ -20,9 +20,11 @@ class SeqLenLimit(FeatureDict):
     def get_idx(self, seq_len):
         ix = np.arange(seq_len)
         if self.strategy == 'tail':
-            return ix[-self.max_seq_len:]
+            # return ix[-self.max_seq_len:]
+            return slice(-self.max_seq_len, None)
         elif self.strategy == 'head':
-            return ix[:self.max_seq_len]
+            # return ix[:self.max_seq_len]
+            return slice(self.max_seq_len)
         elif self.strategy == 'random':
             if seq_len <= self.max_seq_len:
                 return ix
