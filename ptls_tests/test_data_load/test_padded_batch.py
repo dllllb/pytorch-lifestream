@@ -53,6 +53,12 @@ def test_padded_batch_example():
     torch.testing.assert_close(data.payload[data.seq_len_mask.bool()], torch.tensor([1, 2, 3, 4, 5, 6, 7, 8, 9]))
 
 
+def test_padded_batch_seq_feature_shape():
+    x = get_pb()
+    B, T = x.seq_feature_shape
+    assert B, T == (2, 4)
+
+
 def test_padded_batch_to():
     x = get_pb()
     y = x.to('cpu')

@@ -1,7 +1,10 @@
+import logging
 import torch
 
 from ptls.data_load import IterableChain
 from ptls.data_load.iterable_processing.to_torch_tensor import ToTorch
+
+logger = logging.getLogger(__name__)
 
 
 class MemoryMapDataset(torch.utils.data.Dataset):
@@ -10,6 +13,7 @@ class MemoryMapDataset(torch.utils.data.Dataset):
             i_filters = []
         post_processor_filter = IterableChain(ToTorch(), *i_filters)
         self.processed_data = [rec for rec in post_processor_filter(data)]
+        logger.info(f'Loaded {len(self.processed_data)} records')
 
     def __len__(self):
         return len(self.processed_data)

@@ -22,7 +22,7 @@ class SequenceToTarget(pl.LightningModule):
             torch.nn.Flatten(start_dim=0),
         ),
         loss=BCELoss(),
-        metric_list=torchmetrics.AUROC(num_classes=2, compute_on_step=False),
+        metric_list=torchmetrics.AUROC(num_classes=2),
 
     For multiclass problem use settings like:
         head=torch.nn.Sequential(
@@ -38,7 +38,7 @@ class SequenceToTarget(pl.LightningModule):
             torch.nn.Flatten(start_dim=0),
         ),
         loss=torch.nn.MSELoss(),
-        metric_list=torchmetrics.MeanSquaredError(compute_on_step=False),
+        metric_list=torchmetrics.MeanSquaredError(),
 
     For `seq_encoder` inference:
         Just set `seq_encoder` and `head` (if needed), keep other parameters as None.
@@ -89,16 +89,12 @@ class SequenceToTarget(pl.LightningModule):
         self.head = head
         self.loss = loss
 
-        # TODO: metric_list should support dict (names from keys), list(names from __class__.__name__)
-        #  and single value for metrics
-        if type(metric_list) is DictConfig:
-            metric_list = dict(metric_list)
-
-        if type(metric_list) is not dict:
-            metric_list = [metric_list]
+        if type(metric_list) is dict or type(metric_list) is DictConfig:
+            metric_list = [(k, v) for k, v in metric_list.items()]
         else:
-            metric_list = list(metric_list.values())
-        metric_list = [(m.__class__.__name__, m) for m in metric_list]
+            if type(metric_list) is not list:
+                metric_list = [metric_list]
+            metric_list = [(m.__class__.__name__, m) for m in metric_list]
 
         self.train_metrics = torch.nn.ModuleDict([(name, deepcopy(mc)) for name, mc in metric_list])
         self.valid_metrics = torch.nn.ModuleDict([(name, deepcopy(mc)) for name, mc in metric_list])

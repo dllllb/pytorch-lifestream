@@ -23,7 +23,7 @@ class RtdModule(ABSModule):
                        lr_scheduler_partial=None):
 
         if validation_metric is None:
-            validation_metric = torchmetrics.AUROC(num_classes=2, compute_on_step=False)
+            validation_metric = torchmetrics.AUROC(num_classes=2)
         if loss is None:
             loss = BCELoss()
 

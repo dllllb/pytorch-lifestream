@@ -3,22 +3,57 @@ import os
 import warnings
 from glob import glob
 from itertools import chain
+from typing import Union, List
 
 import numpy as np
 import torch
+from omegaconf import ListConfig
 
 from ptls.data_load import read_pyarrow_file
+from ptls.data_load import IterableChain
 
 logger = logging.getLogger(__name__)
 
 
 class ParquetFiles:
-    def __init__(self, file_path, take_ixes=None):
-        #if os.path.splitext(file_path)[1] == '.parquet':
-        file_path = os.path.join(file_path, '*.parquet')
-        self._data_files = glob(file_path)
-        if (take_ixes):
+    """Helper file which search parquet files in specified path.
+
+    Spark saves parquet files in a partitioned.
+    This means that the output name given when saving is not a file, but a directory.
+    `ParquetDataset` required file names so
+    `ParquetFiles` is an adapter to scan spark output path and find parquet files.
+
+    One single parquet file taken for example from pandas will be passed as is without directory scan.
+
+    Parameters
+    ----------
+    file_path:
+        one path or list of paths
+    take_ixes:
+        indexes for final file list selecting.
+        Be careful using `take_ixes` cause file list is unsorted
+
+    """
+    def __init__(self, file_path: Union[str, List[str], ListConfig], take_ixes=None):
+        if type(file_path) not in (list, ListConfig):
+            file_path = [file_path]
+
+        self._data_files = []
+        for path in file_path:
+            self._data_files.extend(self.scan_path(path))
+
+        if take_ixes is not None:
+            warnings.warn('Be careful using `take_ixes` with unsorted data file list')
             self._data_files = np.array(self._data_files)[take_ixes].tolist()
+
+    @staticmethod
+    def scan_path(path):
+        if os.path.isfile(path):
+            return [path]
+        if os.path.isdir(path):
+            file_path = os.path.join(path, '*.parquet')
+            return glob(file_path)
+        return []
 
     @property
     def data_files(self):
@@ -37,14 +72,34 @@ class ParquetDataset(torch.utils.data.IterableDataset):
         part2.parquet
         ...
 
+    Each file is read sequentially
+
+    Parameters
+    ----------
+    data_files:
+        ParquetFile object with list of files or just list of files
+    post_processing:
+        - deprecated, use i_filters
+    i_filters:
+        - list of `ptls.data_load.iterable_processing` filters
+    shuffle_files:
+        - shuffle data_files before reading when True.
+    cache_schema:
+        - dict schema (feature names) will be read once
+    shuffle_seed:
+        - random seed for shuffle_files
+
     """
-    def __init__(self, data_files,
+    def __init__(self, data_files: Union[ParquetFiles, List[str]],
                  post_processing=None,
-                 i_filters=None,
+                 i_filters: List = None,
                  shuffle_files=False, cache_schema=True, shuffle_seed=42):
-        self.data_files = data_files
+        if type(data_files) is ParquetFiles:
+            self.data_files = data_files.data_files
+        else:
+            self.data_files = data_files
         if i_filters is not None:
-            self.post_processing = post_processing
+            self.post_processing = IterableChain(*i_filters)
         else:
             self.post_processing = post_processing
         if post_processing is not None:

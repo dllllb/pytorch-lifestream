@@ -610,6 +610,16 @@ class augmentation_chain:
         return x
 
 
+class AugmentationChain:
+    def __init__(self, f_augmentations):
+        self.f_augmentations = f_augmentations if f_augmentations is not None else []
+
+    def __call__(self, x):
+        for f in self.f_augmentations:
+            x = f(x)
+        return x
+
+
 class IterableAugmentations(IterableProcessingDataset):
     def __init__(self, a_chain):
         super().__init__()

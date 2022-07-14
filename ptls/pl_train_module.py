@@ -2,7 +2,8 @@ import logging
 
 import hydra
 import pytorch_lightning as pl
-from omegaconf import DictConfig, OmegaConf
+import torch
+from omegaconf import DictConfig
 from pytorch_lightning.callbacks import LearningRateMonitor
 from pytorch_lightning.callbacks import ModelCheckpoint
 from pytorch_lightning.loggers import TensorBoardLogger
@@ -10,46 +11,13 @@ from pytorch_lightning.loggers import TensorBoardLogger
 logger = logging.getLogger(__name__)
 
 
-class CheckpointEveryNSteps(pl.Callback):
-    """
-    Save a checkpoint every N steps, instead of Lightning's default that checkpoints
-    based on validation loss.
-    """
-
-    def __init__(
-        self,
-        model,
-        dm,
-        conf
-    ):
-        """
-        Args:
-            save_step_frequency: how often to save model in steps
-        """
-        self.conf = conf
-        self.save_step_frequency = self.conf.get('params').get('save_step_frequency', 200)
-        self.ckpts_path = self.conf.get('params').get('ckpts_path', 'ckpts3/')
-        self.model = model
-        self.dm = dm
-        self.conf = conf
-
-    def on_batch_end(self, trainer: pl.Trainer, _):
-        """ Check if we should save a checkpoint after every train batch """
-        epoch = trainer.current_epoch
-        global_step = trainer.global_step
-        if self.save_step_frequency and global_step % self.save_step_frequency == 0:
-            trainer.save_checkpoint(self.ckpts_path + f'{global_step}')
-
-@hydra.main()
+@hydra.main(version_base='1.2', config_path=None)
 def main(conf: DictConfig):
-    OmegaConf.set_struct(conf, False)
-    orig_cwd = hydra.utils.get_original_cwd()
-
     if 'seed_everything' in conf:
         pl.seed_everything(conf.seed_everything)
 
     model = hydra.utils.instantiate(conf.pl_module)
-    dm = hydra.utils.instantiate(conf.data_module, pl_module=model)
+    dm = hydra.utils.instantiate(conf.data_module)
 
     _trainer_params = conf.trainer
     _trainer_params_additional = {}
@@ -80,8 +48,6 @@ def main(conf: DictConfig):
 
     lr_monitor = LearningRateMonitor(logging_interval='step')
     _trainer_params_callbacks.append(lr_monitor)
-    if 'ckpts_path' in conf:
-        _trainer_params_callbacks.append(CheckpointEveryNSteps(model, dm, conf))
 
     if len(_trainer_params_callbacks) > 0:
         _trainer_params_additional['callbacks'] = _trainer_params_callbacks
@@ -90,17 +56,16 @@ def main(conf: DictConfig):
 
     if 'model_path' in conf:
         if _use_best_epoch:
-            from shutil import copyfile
-            copyfile(checkpoint_callback.best_model_path, conf.model_path)
+            # from shutil import copyfile
+            # copyfile(checkpoint_callback.best_model_path, conf.model_path)
+            model.load_from_checkpoint(checkpoint_callback.best_model_path)
+            torch.save(model.seq_encoder, conf.model_path)
             logging.info(f'Best model stored in "{checkpoint_callback.best_model_path}" '
                          f'and copied to "{conf.model_path}"')
         else:
-            trainer.save_checkpoint(conf.model_path, weights_only=True)
+            torch.save(model.seq_encoder, conf.model_path)
             logger.info(f'Model weights saved to "{conf.model_path}"')
 
 
 if __name__ == '__main__':
-    logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)-7s %(funcName)-20s   : %(message)s')
-    logging.getLogger("lightning").setLevel(logging.INFO)
-
     main()

@@ -1,4 +1,5 @@
 import torch
+from ptls.data_load.feature_dict import FeatureDict
 
 from ptls.data_load.utils import collate_feature_dict
 from ptls.data_load.augmentations.random_slice import RandomSlice
@@ -40,12 +41,12 @@ class CpcDataset(torch.utils.data.Dataset):
             yield self.process(feature_arrays)
 
     def process(self, feature_arrays):
-        feature_arrays = {k: v for k, v in feature_arrays.items() if DictTransformer.is_seq_feature(k, v)}
+        feature_arrays = {k: v for k, v in feature_arrays.items() if FeatureDict.is_seq_feature(k, v)}
         return self.r_slice(feature_arrays)
 
     @staticmethod
     def collate_fn(batch):
-        return collate_feature_dict(batch)
+        return collate_feature_dict(batch), None
 
 
 class CpcIterableDataset(CpcDataset, torch.utils.data.IterableDataset):

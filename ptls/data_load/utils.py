@@ -33,11 +33,13 @@ def collate_feature_dict(batch):
     lengths = torch.LongTensor([len(rec[seq_col]) for rec in batch])
     new_x = {}
     for k, v in new_x_.items():
-        if type(v[0]) in (np.ndarray, torch.Tensor):
+        if type(v[0]) is torch.Tensor:
             if k.startswith('target'):
                 new_x[k] = torch.stack(v, dim=0)
             else:
                 new_x[k] = torch.nn.utils.rnn.pad_sequence(v, batch_first=True)
+        elif type(v[0]) is np.ndarray:
+            raise AssertionError(f'Col "{k}" should be converted to `torch.tensor`')
         else:
             v = np.array(v)
             if v.dtype.kind == 'i':

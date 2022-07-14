@@ -119,19 +119,12 @@ def metric_recall_top_K(X, y, K, metric='cosine'):
     return np.sum(res) / len(y) / K
 
 
-class BatchRecallTopK(torchmetrics.Metric):
+class BatchRecallTopK(torchmetrics.MeanMetric):
     def __init__(self, K, metric='cosine'):
-        super().__init__(compute_on_step=False)
-
-        self.add_state("recall_top_k", default=torch.tensor(0.0))
-        self.add_state("batch_count", default=torch.tensor(0))
+        super().__init__()
 
         self.k = K
         self.metric = metric
 
     def update(self, preds, target):
-        self.recall_top_k += metric_recall_top_K(preds, target, self.k, self.metric)
-        self.batch_count += 1
-
-    def compute(self):
-        return self.recall_top_k / self.batch_count.float()
+        super().update(metric_recall_top_K(preds, target, self.k, self.metric))
