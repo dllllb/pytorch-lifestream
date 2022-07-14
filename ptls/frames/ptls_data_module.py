@@ -11,11 +11,11 @@ class PtlsDataModule(pl.LightningDataModule):
                  valid_data=None,
                  valid_batch_size=None,
                  valid_num_workers=None,
-                 valid_drop_last=None,
+                 valid_drop_last=False,
                  test_data=None,
                  test_batch_size=None,
                  test_num_workers=None,
-                 test_drop_last=None,
+                 test_drop_last=False,
                  ):
 
         super().__init__()
@@ -29,12 +29,6 @@ class PtlsDataModule(pl.LightningDataModule):
             valid_batch_size = train_batch_size
         if test_batch_size is None:
             test_batch_size = valid_batch_size
-
-        if valid_drop_last is None:
-            valid_drop_last = train_drop_last
-        if test_drop_last is None:
-            test_drop_last = valid_drop_last
-
 
         def train_dataloader():
             return torch.utils.data.DataLoader(
