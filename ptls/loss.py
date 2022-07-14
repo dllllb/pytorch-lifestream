@@ -225,15 +225,19 @@ class ZILNLoss(nn.Module):
     def __init__(self):
         super().__init__()
         self.eps = 1e-6
+        self.extra_dim = 3
 
     def forward(self, pred, target):
         if pred.dim() == 1:
             raise Exception(f"{self.__class__} has incorrect input dimension")
         tsum = target if target.dim() == 1 else target.sum(dim=1)
         s2 = F.softplus(pred[:, 1]).square() + self.eps
-        loss = s2.log() + ((tsum + self.eps).log() - pred[:, 0]).square() / s2
-        if pred.shape[1] == 3:
-            loss -= 2 * F.logsigmoid(-pred[:, 2])
-        else:
-            loss -= 2 * target.mul(F.log_softmax(pred[:, 3:], dim=1)).sum(dim=1)
-        return torch.mean(loss.where(tsum > 0, -2 * F.logsigmoid(pred[:, 2])))
+        loss = 0.5 * (s2.log() + ((tsum + self.eps).log() - pred[:, 0]).square() / s2)
+        if pred.shape[1] == self.extra_dim:
+            loss -= F.logsigmoid(pred[:, 2])
+            return torch.mean(loss.where(tsum > 0, -F.logsigmoid(-pred[:, 2])))
+        elif pred.shape[1] == target.shape[1] + self.extra_dim:
+            log_prob = F.log_softmax(pred[:, 2:], dim=1)
+            loss -= target.mul(log_prob[:, 1:]).sum(dim=1)
+            return torch.mean(loss.where(tsum > 0, -log_prob[:, 0]))
+        raise Exception(f"{self.__class__} got incorrect input sizes")

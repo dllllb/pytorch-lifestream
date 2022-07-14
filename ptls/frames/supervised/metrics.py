@@ -5,6 +5,7 @@ import torch
 import torch.nn.functional as F
 import torchmetrics
 from torchmetrics.functional.classification import auroc
+from torch.special import entr
 
 from ptls.loss import cross_entropy, kl, mape_metric, mse_loss, r_squared
 
@@ -132,10 +133,8 @@ class RMSE(torchmetrics.Metric):
         self.add_state("pnum", default=torch.tensor(0), dist_reduce_fx="sum")
 
     def update(self, y1, y):
-        if y.dim() == 1:
-            delta = y1 - y if y1.dim() == 1 else y1[:, 0].exp() - y
-        else:
-            delta = y1[:, 0].exp() - y.sum(dim=1)
+        t = y if y.dim() == 1 else y.sum(dim=1)
+        delta = y1 - t if y1.dim() == 1 else y1[:, 0].exp() - t
         self.psum += torch.sum(delta.abs() if self.calc_mae else delta.square())
         self.pnum += y.shape[0]
 
@@ -172,9 +171,10 @@ class BucketAccuracy(torchmetrics.Metric):
         return torchmetrics.functional.accuracy(y1, y)
 
 
-class KLDiv(torchmetrics.Metric):
+class JSDiv(torchmetrics.Metric):
     """
-    KL divergence for distribution-like target.
+    Jensen-Shannon divergence for distribution-like target:
+        0 <= JSD(P||Q) = H(P/2 + Q/2) - H(P)/2 - H(Q)/2 <= ln(2)
     Should be elaborated via adaptor-classes like in [ptls/nn/trx_encoder/scalers.py].
     """
     is_differentiable = True
@@ -183,13 +183,21 @@ class KLDiv(torchmetrics.Metric):
 
     def __init__(self):
         super().__init__()
+        self.extra_dim = 3
         self.add_state("psum", default=torch.tensor(0.0), dist_reduce_fx="sum")
         self.add_state("pnum", default=torch.tensor(0), dist_reduce_fx="sum")
 
     def update(self, y1, y):
-        prob, ysum = F.softmax(y1[:, 3:], dim=1), y.sum(dim=1)
-        kl = torchmetrics.functional.kl_divergence(y, prob, reduction=None)
-        self.psum += torch.sum(kl.where(ysum > 0, -F.logsigmoid(y1[:, 2])))
+        if y1.shape[1] == y.shape[1] + self.extra_dim:
+            p = torch.cat(((y.sum(dim=1) == 0).float().unsqueeze(-1), y), dim=1)
+            p /= p.sum(dim=1).unsqueeze(-1)
+            q = F.softmax(y1[:, 2:], dim=1)
+        elif y1.shape[1] == y.shape[1]:
+            p = y / y.sum(dim=1).unsqueeze(-1)
+            q = F.softmax(y1, dim=1)
+        else:
+            raise Exception(f"{self.__class__} got incorrect input sizes")
+        self.psum += torch.sum(entr(0.5 * (p + q)) - 0.5 * (entr(p) + entr(q)))
         self.pnum += y.shape[0]
 
     def compute(self):

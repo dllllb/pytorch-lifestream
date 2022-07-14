@@ -7,7 +7,7 @@ import torchmetrics
 from pyhocon import ConfigFactory
 
 from ptls.frames.supervised import SequenceToTarget
-from ptls.frames.supervised.metrics import LogAccuracy, RMSE, BucketAccuracy, KLDiv
+from ptls.frames.supervised.metrics import LogAccuracy, RMSE, BucketAccuracy, JSDiv
 from ptls.loss import BCELoss, ZILNLoss
 from ptls.nn import PBLinear, RnnSeqEncoder, TransformerSeqEncoder, TrxEncoder
 from ptls_tests.test_data_load import RandomEventData
@@ -183,9 +183,18 @@ def test_accuracy_mul():
 
 
 def test_ziln_loss():
-    ziln, B = ZILNLoss(), 10
-    assert ziln(torch.randn(B, 3), torch.randn(B, 1)) >= 0
-    assert ziln(torch.randn(B, 3 + 3), torch.randn(B, 3)) >= 0
+    ziln = ZILNLoss()
+    batch = torch.rand(10, 5)
+    extra_dim = ziln.extra_dim
+    min_loss = 0.5 * torch.log(torch.tensor(ziln.eps))
+    assert ziln(torch.randn(batch.shape[0], extra_dim), batch[:, 0]) >= min_loss
+    assert ziln(torch.zeros(batch.shape[0], extra_dim), batch[:, 0]) >= min_loss
+    assert ziln(torch.randn(batch.shape[0], extra_dim), torch.zeros(batch.shape[0])) >= min_loss
+    assert ziln(torch.zeros(batch.shape[0], extra_dim), torch.zeros(batch.shape[0])) >= min_loss
+    assert ziln(torch.randn(batch.shape[0], extra_dim + batch.shape[1]), batch) >= min_loss
+    assert ziln(torch.zeros(batch.shape[0], extra_dim + batch.shape[1]), batch) >= min_loss
+    assert ziln(torch.randn(batch.shape[0], extra_dim + batch.shape[1]), torch.zeros_like(batch)) >= min_loss
+    assert ziln(torch.zeros(batch.shape[0], extra_dim + batch.shape[1]), torch.zeros_like(batch)) >= min_loss
 
 
 def test_bucket_accuracy():
@@ -203,10 +212,12 @@ def test_rmse():
     assert rmse(torch.randn(B, 3), torch.randn(B, 3)) >= 0
 
 
-def test_kldiv():
-    kl, B = KLDiv(), 10
+def test_jsdiv():
+    div, B = JSDiv(), 5
     pred = torch.randn(B, 2 * B + 3)
-    target = F.softmax(torch.randn(B, 2 * B), dim=1)
-    assert kl(pred, target) >= 0
-    assert kl(pred, torch.zeros_like(target)) >= 0
-    assert kl(pred, F.softmax(pred[:, 3:], dim=1)) == 0
+    target = torch.randint(0, 4, (B, 2 * B), dtype=torch.float32)
+    target[1] = torch.zeros(2 * B)
+    assert div(pred, target) >= 0
+    assert div(pred, torch.zeros_like(target)) >= 0
+    assert div(torch.zeros_like(pred), target) >= 0
+    assert div(torch.zeros_like(pred), torch.zeros_like(target)) >= 0
