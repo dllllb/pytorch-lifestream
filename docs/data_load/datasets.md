@@ -1,6 +1,27 @@
-# `ptls.data_load.datasets`
+# How to use `ptls.data_load.datasets` datasets
 
 Here are the datasets (`torch.utils.data.Dataset`) which assure interface to the data.
+
+For data prepared in memory use:
+
+1. `MemoryMapDataset` with `i_filters`
+2. `AugmentationDataset` with `f_augmentations` if needed
+3. endpoint map dataset from `ptls.frames`
+
+For small (map mode) parquet data use:
+
+1. `ParquetDataset` with `i_filters`
+2. `PersistDataset`
+3. `AugmentationDataset` with `f_augmentations` if needed
+4. endpoint map dataset from `ptls.frames`
+
+For large (iterable mode) parquet data use:
+
+1. `ParquetDataset` with `i_filters`
+2. `AugmentationDataset` with `f_augmentations` if needed
+3. endpoint iterable dataset from `ptls.frames`
+
+Other dataset order and combination are possible but not tested.
 
 ## Simple example
 
@@ -33,7 +54,44 @@ In this example we use simple list as dataset.
 
 Sometimes you need to make changes in the dataset. We propose a filter approach for this.
 
-## `i_filters` - iterable filters
+## map and iterable
+
+There are the types of torch datasets.
+More info about [dataset types](https://pytorch.org/docs/stable/data.html#dataset-types) to understand `map` and `iterable`.
+
+Dataloader choose a way of iteration based on type his dataset.
+In out pipeline Dataloader works with endpoint dataset from `ptls.frames`.
+So the type of endpoint dataset from `ptls.frames` choose a way of iteration.
+
+Map dataset provide better shuffle. Iterable dataset requires less memory.
+
+> **Warning** for multiprocessing dataloader
+> 
+> Each worker use the same source data.
+> 
+> Map dataloader knows dataset `len` and uses `sampler` to randomly split all indexes from `range(o, len)` between workers.
+> So each worker use his own part of data.
+> 
+> Iterable dataloader can just iterate over the source data. In default case each worker iterate the same data
+> and **output are multiplied** by worker count.
+>
+> To avoid this iterable datasets should implement a way to split a data between workers.
+
+Multiprocessing split implementation:
+
+- `ParquetDataset` implement split it and works correct
+- `i_filters` and `f_augmentations` don't contain a data and works correct
+- Iterable endpoint datasets works correct with iterable source
+- Iterable endpoint datasets **multiply data with map source**
+- `PersistDataset` iterate input during initialisation. Usually this happens out of dataloader in single main process.
+So it works correct.
+
+## `i_filters` and `f_augmentations`
+
+- `i_filters` - iterable filters
+- `f_augmentations` - augmentation functions
+
+### Filters
 
 `ptls` propose filters for dataset transformation. All of them are in `ptls.data_load.iterable_processing`.
 These filter implemented in generator-style. Call filter object to get generator with modified records.
@@ -51,8 +109,35 @@ There were 3 examples in the list, it became 2 cause SeqLenFilter drop short seq
 Many kinds of filters possible: dropping records, multiply records, records transformation.
 
 `i_filters` can be chained. Datasets provide a convenient way to do it. 
-All datasets in `ptls.data_load.datasets` support `i_filters`. 
+Many datasets in `ptls.data_load.datasets` support `i_filters`. 
 They takes `i_filters` as list of `iterable_processing` objects.
+
+### Augmentations
+
+Sometimes we have to change an items from train data. This is `augmentations`.
+They are in `ptls.data_load.augmentations`.
+
+Example:
+```python
+from ptls.data_load.augmentations import RandomSlice
+
+f_augmentation = RandomSlice(min_len=4, max_len=10)
+for rec in data_list:
+    new_rec = f_augmentation(rec)
+    print(new_rec)
+```
+
+Here `RandomSlice` augmentation take a random slice from source record.
+
+### Compare
+
+| `i_filter` | `f_augmentation` |
+| ---------- | ---------------- |
+| May change record. Result is always the same | May change record. Result is random |
+| Place it be before persist stage to run it once and save total cpu resource | Don't place it before persist stage because it kills the random |
+| Can delete items | Can not delete items |
+| Can yield new items | Can not create new items |
+| Works a generator and requires iterable processing | Works as a function can be both map or iterable |
 
 ## In memory data
 
@@ -79,8 +164,6 @@ def data_gen(n):
         }
 ```
 
-More info about [dataset types](https://pytorch.org/docs/stable/data.html#dataset-types) to understand `map` and `iterable`.
-
 `ptls.data_load.datasets.MemoryMapDataset`:
 
 - implements `map` dataset
@@ -92,6 +175,11 @@ More info about [dataset types](https://pytorch.org/docs/stable/data.html#datase
 - implements `iterable` dataset
 - just iterates over the data
 - looks like a generator
+
+> **Warning**
+> 
+> Currently `MemoryIterableDataset` don`t support initial data split between workers.
+> We don't recommend use it without modification.
 
 Both datasets support any kind of input: list or generator.
 As all datasets supports tha same format (list or generator) as input and output they can be chained.
@@ -156,6 +244,7 @@ See `demo/pyspark-parquet.ipynb` with example of data preprocessing with `pyspar
 `ptls.data_load.datasets.ParquetDataset`: 
 
 - implements `iterable` dataset
+- works correct with multiprocessing dataloader
 - looks like a generator
 - supports `i_filters`
 
@@ -170,24 +259,24 @@ Many files for one dataset allows you to:
 - control amount of data by reading more or less files
 - split data on train, valid, test
 
+## Persist dataset
+
+`ptls.data_load.datasets.PersistDataset` store items from source dataset to the memory.
+
+If you source data is iterator (like python generator or `ParquetDataset`) 
+all `i_filters` will be called each time when you access the data.
+Persist the data into memory and `i_filters` will be called once.
+Much memory may be used to store all dataset items.
+Data access is faster.
+
+Persisted iterator have `len` and can be randomly accessed by index.
+
 ## Augmentations
-
-Sometimes we have to change an items from train data. This is `augmentations`.
-It's similar to `iterable_processing` they also change a record.
-But `iterable_processing` returns the same result. 
-`augmentations` result changes every time you call it cause if internal random.
-
-Example: `ptls.data_load.iterable_processing.ISeqLenLimit` keep last N transactions. 
-`ptls.data_load.augmentations.RandomSlice` take N transactions with random start position.
-Both return N transactions. `ISeqLenLimit` returns the same transactions every time.
-`RandomSlice` returns new transactions every time.
-
-If you use `map` dataset `augmentations` should be after iter-to-map stage.
 
 Class `ptls.data_load.datasets.AugmentationDataset` is a way to apply augmentations.
 Example:
 ```python
-from ptls.data_load.datasets import AugmentationDataset, MemoryMapDataset, ParquetDataset
+from ptls.data_load.datasets import AugmentationDataset, PersistDataset, ParquetDataset
 from ptls.data_load.augmentations import AllTimeShuffle, DropoutTrx
 
 train_data = AugmentationDataset(
@@ -195,14 +284,14 @@ train_data = AugmentationDataset(
         AllTimeShuffle(),
         DropoutTrx(trx_dropout=0.01),
     ],
-    data=MemoryMapDataset(
+    data=PersistDataset(
         data=ParquetDataset(...),
     ),
 )
 ```
 
-Here we are using iterable `ParquetDataset` as the source, loading it into memory using `MemoryMapDataset`. 
-Then, each time we access the data, we apply two augmentation functions to the items stored in the `MemoryMapDataset`.
+Here we are using iterable `ParquetDataset` as the source, loading it into memory using `PersistDataset`. 
+Then, each time we access the data, we apply two augmentation functions to the items stored in the `PersistDataset`.
 
 `AugmentationDataset` also works in iterable mode. Previous example will be like this:
 ```python
@@ -222,6 +311,7 @@ See docstrings for classes:
 - `ptls.data_load.datasets.MemoryIterableDataset`
 - `ptls.data_load.datasets.ParquetFiles`
 - `ptls.data_load.datasets.ParquetDataset`
+- `ptls.data_load.datasets.PersistDataset`
 
 See docstrings for functions:
 

@@ -1,3 +1,5 @@
+import warnings
+
 import pytorch_lightning as pl
 from ptls.data_load.iterable_processing.seq_len_filter import SeqLenFilter
 from ptls.data_load.iterable_processing.feature_filter import FeatureFilter
@@ -46,6 +48,9 @@ class SeqToTargetDatamodule(pl.LightningDataModule):
                  valid_batch_size: int = 256,
                  target_col: str = 'target',
                  random_state: int = 42):
+        warnings.warn('Use `ptls.frames.PtlsDataModule` with `ptls.frames.supervised.SeqToTargetDataset` '
+                      'or `ptls.frames.supervised.SeqToTargetIterableDataset`',
+                      DeprecationWarning)
 
         super().__init__()
         self.dataset_train, self.dataset_valid = train_test_split(dataset,

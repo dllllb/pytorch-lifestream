@@ -17,6 +17,7 @@ client_2          -> (client_2_smpl_1_left, client_2_smpl_3_right), 0
 """
 import logging
 import random
+import warnings
 
 import pytorch_lightning as pl
 import torch
@@ -65,6 +66,9 @@ def collate_nsp_pairs(batch):
 
 class NspDataModuleTrain(pl.LightningDataModule):
     def __init__(self, type, setup, train, valid, pl_module):
+        warnings.warn('Use `ptls.frames.PtlsDataModule` '
+                      'with `ptls.frames.bert.NspDataset` or `ptls.frames.bert.NspIterableDataset`',
+                      DeprecationWarning)
         super().__init__()
 
         self._type = type

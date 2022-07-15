@@ -14,6 +14,7 @@ client_2          -> (client_2_smpl_1_right, client_2_smpl_1_left), 1
                      ...
 """
 import logging
+import warnings
 
 import pytorch_lightning as pl
 import torch
@@ -54,6 +55,9 @@ def collate_sop_pairs(batch):
 
 class SopDataModuleTrain(pl.LightningDataModule):
     def __init__(self, type, setup, train, valid, pl_module):
+        warnings.warn('Use `ptls.frames.PtlsDataModule` '
+                      'with `ptls.frames.bert.SopDataset` or `ptls.frames.bert.SopIterableDataset`',
+                      DeprecationWarning)
         super().__init__()
 
         self._type = type

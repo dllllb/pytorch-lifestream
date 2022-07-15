@@ -10,6 +10,7 @@ client_1          -> client_1_features, client_1_id
 client_2          -> client_2_features, client_2_id
 """
 import logging
+import warnings
 
 import numpy as np
 import pytorch_lightning as pl
@@ -40,6 +41,9 @@ def cpc_collate_fn(batch):
 
 class CpcDataModuleTrain(pl.LightningDataModule):
     def __init__(self, type, setup, train, valid, pl_module):
+        warnings.warn('Use `ptls.frames.PtlsDataModule` '
+                      'with `ptls.frames.cpc.CpcDataset` or `ptls.frames.cpc.CpcIterableDataset`',
+                      DeprecationWarning)
         super().__init__()
 
         self._type = type

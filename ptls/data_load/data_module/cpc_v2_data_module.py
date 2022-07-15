@@ -1,6 +1,7 @@
 """
 This class inherited from ColesDataModuleTrain. Just rewrited collate function
 """
+import warnings
 
 """
 Creates data loaders for contrastive learning
@@ -65,6 +66,9 @@ def collate_fn(batch):
 
 class CpcV2DataModuleTrain(ColesDataModuleTrain):
     def __init__(self, type, setup, train, valid, pl_module):
+        warnings.warn('Use `ptls.frames.PtlsDataModule` '
+                      'with `ptls.frames.cpc.CpcV2Dataset` or `ptls.frames.cpc.CpcV2IterableDataset`',
+                      DeprecationWarning)
         super().__init__(type, setup, train, valid, pl_module)
 
     def train_dataloader(self):

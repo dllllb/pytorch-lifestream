@@ -14,6 +14,7 @@ client_2          -> client_2_smpl_1, client_2_id
                      client_2_smpl_3, client_2_id
 """
 import logging
+import warnings
 
 import pytorch_lightning as pl
 import torch
@@ -46,6 +47,9 @@ def coles_collate_fn(batch):
 
 class ColesDataModuleTrain(pl.LightningDataModule):
     def __init__(self, type, setup, train, valid, pl_module):
+        warnings.warn('Use `ptls.frames.PtlsDataModule` '
+                      'with `ptls.frames.coles.ColesDataset` or `ptls.frames.coles.ColesIterableDataset`',
+                      DeprecationWarning)
         super().__init__()
 
         self._type = type

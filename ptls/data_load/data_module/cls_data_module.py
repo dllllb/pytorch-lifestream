@@ -1,5 +1,6 @@
 import json
 import logging
+import warnings
 
 import pytorch_lightning as pl
 import numpy as np
@@ -37,6 +38,9 @@ class ClsDataModuleTrain(pl.LightningDataModule):
                  fold_id,
                  test=None,
                  distribution_target_task=False):
+        warnings.warn('Use `ptls.frames.PtlsDataModule` with `ptls.frames.supervised.SeqToTargetDataset` '
+                      'or `ptls.frames.supervised.SeqToTargetIterableDataset`',
+                      DeprecationWarning)
         super().__init__()
 
         self.fold_id = fold_id

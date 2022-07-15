@@ -11,7 +11,8 @@ Here is a breaf overview of library with links to the detailed descriptions.
     Categorical encoding, datetime transformation, numerical feature preprocessing.
     - `ptls.data_load.split_tools` - convert data to `ptls-data` format. Split by users and features.
     - `ptls.data_load.datasets` - `torch.Dataset` PyTorch `Dataset` API implementaion.
-    - `ptls.data_load.iterable_processing` - generator-style filters for data transformation. 
+    - `ptls.data_load.iterable_processing` - generator-style filters for data transformation.
+    - `ptls.data_load.augmentations` - functions for data augmentation.
 
 - `ptls.frames` - tools for training encoders with popular frameworks like 
 CoLES, SimCLR, CPC, VICReg, ...
