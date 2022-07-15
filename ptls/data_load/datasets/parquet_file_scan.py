@@ -17,7 +17,7 @@ def _scan_path(path):
 
 def train_valid_split(
         data,
-        valid_rate: float = None,
+        valid_rate: Union[float, int] = None,
         is_sorted: bool =True,
         return_part: str = 'train',
         shuffle_seed: int = 42,
@@ -30,6 +30,7 @@ def train_valid_split(
         objects for split
     valid_rate:
         if set split found files into train-test
+        int means valid objects count, float means valid objects rate
     is_sorted:
         sort or not found files. Should be True when `valid_rate` split used
     return_part: one of ['train', 'valid']
@@ -43,7 +44,7 @@ def train_valid_split(
     if is_sorted:
         data = sorted(data)
 
-    if valid_rate is None or valid_rate == 0.0:
+    if valid_rate is None or valid_rate == 0.0 or valid_rate == 0:
         return data
 
     if valid_rate is not None and not is_sorted:
@@ -61,7 +62,7 @@ def train_valid_split(
 
 def parquet_file_scan(
         file_path: Union[str, List[str], ListConfig],
-        valid_rate: float = None,
+        valid_rate: Union[float, int] = None,
         is_sorted: bool =True,
         return_part: str = 'train',
         shuffle_seed: int = 42,
@@ -86,6 +87,7 @@ def parquet_file_scan(
         path for scan. Can be single file, directory or list of them.
     valid_rate:
         if set split found files into train-test
+        int means valid objects count, float means valid objects rate
     is_sorted:
         sort or not found files. Should be True when `valid_rate` split used
     return_part: one of ['train', 'valid']

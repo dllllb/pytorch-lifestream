@@ -34,11 +34,15 @@ def main(conf: DictConfig):
 
     if _trainer_params.get('checkpoints_every_n_val_epochs', False):
         every_n_val_epochs = _trainer_params.checkpoints_every_n_val_epochs
-        checkpoint_callback = ModelCheckpoint(every_n_val_epochs=every_n_val_epochs, save_top_k=-1)
-        logger.info(f'Create ModelCheckpoint callback every_n_val_epochs ="{every_n_val_epochs}"')
+        checkpoint_callback = ModelCheckpoint(every_n_epochs=every_n_val_epochs, save_top_k=-1)
+        logger.info(f'Create ModelCheckpoint callback every_n_epochs ="{every_n_val_epochs}"')
         _trainer_params_callbacks.append(checkpoint_callback)
+
         if 'checkpoint_callback' in _trainer_params:
             del _trainer_params.checkpoint_callback
+        if 'enable_checkpointing' in _trainer_params:
+            del _trainer_params.enable_checkpointing
+        del _trainer_params.checkpoints_every_n_val_epochs
 
     if 'logger_name' in conf:
         _trainer_params_additional['logger'] = TensorBoardLogger(
