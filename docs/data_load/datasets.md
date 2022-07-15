@@ -163,16 +163,66 @@ You can feed `ParquetDataset` directly fo dataloader for `iterable` way of usage
 Cou can combine `ParquetDataset` with `MemoryMapDataset` to `map` way of usage.
 
 `ParquetDataset` requires parquet file names. Usually `spark` saves many parquet files for one dataset, 
-depending on the number of partitions. You can get all file names with `ptls.data_load.datasets.ParquetFiles`.
+depending on the number of partitions.
+You can get all file names with `ptls.data_load.datasets.ParquetFiles` or `ptls.data_load.datasets.parquet_file_scan`.
 Many files for one dataset allows you to:
 
 - control amount of data by reading more or less files
 - split data on train, valid, test
 
-## Classes
+## Augmentations
+
+Sometimes we have to change an items from train data. This is `augmentations`.
+It's similar to `iterable_processing` they also change a record.
+But `iterable_processing` returns the same result. 
+`augmentations` result changes every time you call it cause if internal random.
+
+Example: `ptls.data_load.iterable_processing.ISeqLenLimit` keep last N transactions. 
+`ptls.data_load.augmentations.RandomSlice` take N transactions with random start position.
+Both return N transactions. `ISeqLenLimit` returns the same transactions every time.
+`RandomSlice` returns new transactions every time.
+
+If you use `map` dataset `augmentations` should be after iter-to-map stage.
+
+Class `ptls.data_load.datasets.AugmentationDataset` is a way to apply augmentations.
+Example:
+```python
+from ptls.data_load.datasets import AugmentationDataset, MemoryMapDataset, ParquetDataset
+from ptls.data_load.augmentations import AllTimeShuffle, DropoutTrx
+
+train_data = AugmentationDataset(
+    f_augmentations=[
+        AllTimeShuffle(),
+        DropoutTrx(trx_dropout=0.01),
+    ],
+    data=MemoryMapDataset(
+        data=ParquetDataset(...),
+    ),
+)
+```
+
+Here we are using iterable `ParquetDataset` as the source, loading it into memory using `MemoryMapDataset`. 
+Then, each time we access the data, we apply two augmentation functions to the items stored in the `MemoryMapDataset`.
+
+`AugmentationDataset` also works in iterable mode. Previous example will be like this:
+```python
+train_data = AugmentationDataset(
+    f_augmentations=[
+        AllTimeShuffle(),
+        DropoutTrx(trx_dropout=0.01),
+    ],
+    data=ParquetDataset(...),
+)
+```
+
+## Classes and functions
 See docstrings for classes:
 
 - `ptls.data_load.datasets.MemoryMapDataset`
 - `ptls.data_load.datasets.MemoryIterableDataset`
 - `ptls.data_load.datasets.ParquetFiles`
 - `ptls.data_load.datasets.ParquetDataset`
+
+See docstrings for functions:
+
+- `ptls.data_load.datasets.parquet_file_scan`
