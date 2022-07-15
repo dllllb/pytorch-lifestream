@@ -10,6 +10,7 @@ client_1          -> client_1_features, client_1_id
 client_2          -> client_2_features, client_2_id
 """
 import logging
+import warnings
 from functools import partial
 
 import pytorch_lightning as pl
@@ -55,6 +56,9 @@ def collate_rtd_batch(batch, replace_prob, skip_first=0):
 
 class RtdDataModuleTrain(pl.LightningDataModule):
     def __init__(self, type, setup, train, valid, pl_module, replace_token=False):
+        warnings.warn('Use `ptls.frames.PtlsDataModule` '
+                      'with `ptls.frames.bert.RtdDataset` or `ptls.frames.bert.RtdIterableDataset`',
+                      DeprecationWarning)
         super().__init__()
 
         self._type = type

@@ -1,4 +1,6 @@
 import logging
+import warnings
+
 import torch
 
 from ptls.data_load import IterableChain
@@ -24,6 +26,9 @@ class MemoryMapDataset(torch.utils.data.Dataset):
 
 class MemoryIterableDataset(torch.utils.data.IterableDataset):
     def __init__(self, data, i_filters=None):
+        raise NotImplementedError()
+        """Multiprocessing case aren't defined
+        """
         if i_filters is None:
             i_filters = []
         self.data = data

@@ -1,4 +1,5 @@
 import logging
+import warnings
 
 import pytorch_lightning as pl
 import numpy as np
@@ -17,6 +18,9 @@ logger = logging.getLogger(__name__)
 
 class EmbValidDataModule(pl.LightningDataModule):
     def __init__(self, type, setup, train, valid, pl_module, test=None):
+        warnings.warn('Use `ptls.frames.PtlsDataModule` with `ptls.frames.supervised.SeqToTargetDataset` '
+                      'or `ptls.frames.supervised.SeqToTargetIterableDataset`',
+                      DeprecationWarning)
         super().__init__()
 
         self._type = type

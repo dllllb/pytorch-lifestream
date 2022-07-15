@@ -2,6 +2,7 @@ import logging
 import os
 import pickle
 import random
+import warnings
 from functools import partial
 from collections import defaultdict
 from multiprocessing.pool import Pool
@@ -563,6 +564,7 @@ class IterableDatasetWrapper(torch.utils.data.IterableDataset):
     """Deprecated. Use ptls.data_load.datasets.memory_dataset.MemoryIterableDataset
     """
     def __init__(self, data):
+        warnings.warn('Multiply data in multiprocessing mode', UserWarning)
         self.data = data
 
     def __iter__(self):

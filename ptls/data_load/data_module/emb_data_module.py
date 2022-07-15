@@ -1,4 +1,5 @@
 import logging
+import warnings
 
 import torch
 
@@ -8,6 +9,7 @@ from typing import List, Dict
 from ptls.data_load import IterableChain
 from ptls.data_load.augmentations.build_augmentations import build_augmentations
 from ptls.data_load.data_module.coles_data_module import coles_collate_fn
+from ptls.data_load.datasets import MemoryMapDataset
 from ptls.data_load.iterable_processing.feature_filter import FeatureFilter
 from ptls.data_load.iterable_processing.filter_non_array import FilterNonArray
 from ptls.data_load.iterable_processing.seq_len_filter import SeqLenFilter
@@ -20,6 +22,7 @@ logger = logging.getLogger(__name__)
 
 class PostProcessDataset(torch.utils.data.Dataset):
     def __init__(self, parent, post_processor):
+        warnings.warn('Use `ptls.data_load.datasets.MemoryMapDataset`')
         super().__init__()
         self.parent = parent
         self.post_processor = post_processor
@@ -62,15 +65,18 @@ def train_data_loader(
     drop_cols: List[str] = list(),
     num_workers: int = 0,
     batch_size: int = 512):
+    warnings.warn('Use `train_dataloader()` method of `ptls.frames.PtlsDataModule` '
+                  'with `ptls.frames.coles.ColesDataset` or `ptls.frames.coles.ColesIterableDataset`',
+                  DeprecationWarning)
 
-    dataset = PostProcessDataset(
+    dataset = MemoryMapDataset(
         data,
-        post_processor=IterableChain(
+        i_filters=[
             SeqLenFilter(min_seq_len=min_seq_len),
             FilterNonArray(),
             ToTorch(),
-            FeatureFilter(drop_feature_names=drop_cols)
-        )
+            FeatureFilter(drop_feature_names=drop_cols),
+        ],
     )
 
     split_strategy_params = {
