@@ -2,15 +2,15 @@
 
 ## Library content
 
-Here is a breaf overview of library with links to the detailed descriptions.
+Here is a brief overview of library with links to the detailed descriptions.
 
 **Library modules:**
 
+- `ptls.preprocessing` - transforms data to `ptls`-compatible format with `pandas` or `pyspark`.
+Categorical encoding, datetime transformation, numerical feature preprocessing.
+
 - `ptls.data_load` - all that you need for prepare your data to training and validation.
-    - `ptls.data_load.preprocessing` - feature transformation tools.
-    Categorical encoding, datetime transformation, numerical feature preprocessing.
-    - `ptls.data_load.split_tools` - convert data to `ptls-data` format. Split by users and features.
-    - `ptls.data_load.datasets` - `torch.Dataset` PyTorch `Dataset` API implementaion.
+    - `ptls.data_load.datasets` - PyTorch `Dataset` API implementation for data access.
     - `ptls.data_load.iterable_processing` - generator-style filters for data transformation.
     - `ptls.data_load.augmentations` - functions for data augmentation.
 
@@ -35,7 +35,7 @@ CoLES, SimCLR, CPC, VICReg, ...
 1. **Prepare your data**.
     - Use `Pyspark` in local or cluster mode for big dataset and `Pandas` for small.
     - Split data into required parts (train, valid, test, ...).
-    - Use `ptls.data_preprocessing` for simple data preparation. 
+    - Use `ptls.preprocessing` for simple data preparation. 
     - Transform features to compatible format using `Pyspark` or `Pandas` functions. 
     You can also use `ptls.data_load.preprocessing` for common data transformation patterns.
     - Split sequences to `ptls-data` format with `ptls.data_load.split_tools`. Save prepared data into `Parquet` format or 

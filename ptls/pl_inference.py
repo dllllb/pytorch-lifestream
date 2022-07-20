@@ -41,7 +41,7 @@ def main(conf: DictConfig):
         pl.seed_everything(conf.seed_everything)
 
     seq_encoder = hydra.utils.instantiate(conf.inference.seq_encoder)
-    if type(seq_encoder) is not torch.nn.Module and seq_encoder.get('load_from_checkpoint', False):
+    if type(seq_encoder) is DictConfig and seq_encoder.get('load_from_checkpoint', False):
         pl_module = hydra.utils.instantiate(conf.pl_module)
         pl_module.load_state_dict(torch.load(seq_encoder['f'])['state_dict'])
         seq_encoder = pl_module.seq_encoder
