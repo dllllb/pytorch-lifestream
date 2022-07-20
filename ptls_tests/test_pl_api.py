@@ -8,7 +8,7 @@ from sklearn.model_selection import train_test_split
 
 from ptls.data_load.data_module.emb_data_module import train_data_loader
 from ptls.data_load.datasets.dataloaders import inference_data_loader
-from ptls.data_preprocessing.pandas_preprocessor import PandasDataPreprocessor
+from ptls.preprocessing.pandas_preprocessor import PandasDataPreprocessor
 from ptls.frames.coles import CoLESModule
 from ptls.nn.seq_encoder import RnnSeqEncoder
 from ptls.nn.trx_encoder import TrxEncoder

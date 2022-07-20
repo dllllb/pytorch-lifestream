@@ -9,7 +9,7 @@ from pyspark.sql.window import Window
 from itertools import chain
 from typing import List, Dict, Union
 
-from ptls.data_preprocessing.base import DataPreprocessor
+from .base import DataPreprocessor
 
 
 logger = logging.getLogger(__name__)
