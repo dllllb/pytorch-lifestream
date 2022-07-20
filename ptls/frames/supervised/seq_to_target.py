@@ -135,7 +135,7 @@ class SequenceToTarget(pl.LightningModule):
 
     def validation_epoch_end(self, outputs):
         for name, mf in self.valid_metrics.items():
-            self.log(f'val_{name}', mf.compute(), prog_bar=False)
+            self.log(f'val_{name}', mf.compute(), prog_bar=True)
 
     def test_step(self, batch, _):
         x, y = batch

@@ -46,7 +46,7 @@ CoLES, SimCLR, CPC, VICReg, ...
     Tools for batch collate can be found in the selected framework package.
 3. **Build encoder**.
     - All parts are available in `ptls.nn`.
-     - You can also use pretrained layers.
+    - You can also use pretrained layers.
 4. **Train your encoder** with selected framework and `pytorch_lightning`.
     - Provide data with one of the DataLoaders that is compatible with selected framework. 
     - Monitor the progress on tensorboard.
