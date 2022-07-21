@@ -1,181 +1,128 @@
 import logging
-from functools import reduce
-from operator import iadd
-from typing import List
+from typing import List, Union
 
 import numpy as np
 import pandas as pd
 
-from typing import List
+from .base.col_category_transformer import ColCategoryTransformer
+from .pandas.category_identity_encoder import CategoryIdentityEncoder
+from .pandas.col_identity_transformer import ColIdentityEncoder
+from .pandas.event_time import DatetimeToTimestamp
+from .pandas.frequency_encoder import FrequencyEncoder
+from .pandas.user_group_transformer import UserGroupTransformer
 
-from .base import DataPreprocessor
-from .util import pd_hist
 
 logger = logging.getLogger(__name__)
+
+from .base import DataPreprocessor, ColTransformer
 
 
 class PandasDataPreprocessor(DataPreprocessor):
     """Data preprocessor based on pandas.DataFrame
 
     During preprocessing it
-        * transform `cols_event_time` column with date and time
-        * encodes category columns `cols_category` into ints;
-        * apply logarithm transformation to `cols_log_norm' columns;
+        * transform datetime column to `event_time`
+        * encodes category columns into indexes;
         * groups flat data by `col_id`;
         * arranges data into list of dicts with features
+
+    Preprocessor don't modify original dataframe, but links to his data.
 
     Parameters
     ----------
     col_id : str
-        name of column with ids
-    cols_event_time : str,
-        name of column with time and date
-    cols_category : list[str],
-        list of category columns
-    cols_log_norm : list[str],
-        list of columns to be logarithmed
-    cols_identity : list[str],
+        name of column with ids. Used for groups
+    col_event_time : str
+        name of column with datetime
+        or `ColTransformer` implementation with datetime transformation
+    event_time_transformation: str
+        name of transformation for `col_event_time`
+        - 'dt_to_timestamp': datetime (string of datetime64) to timestamp (long) with `DatetimeToTimestamp`
+            Original column is dropped by default cause target col `event_time` is the same information
+            and we can not use as feature datetime column itself.
+        - 'none': without transformation, `col_event_time` is in correct format. Used `ColIdentityEncoder`
+            Original column is kept by default cause it can be any type and we may use it in the future
+    cols_category : list[str]
+        list of category columns. Each can me column name or `ColCategoryTransformer` implementation.
+    category_transformation: str
+        name of transformation for column names from `cols_category`
+        - 'frequency': frequency encoding with `FrequencyEncoder`
+        - 'none': no transformation with `CategoryIdentityEncoder`
+    cols_numerical : list[str]
+        list of columns to be mentioned as numerical features. No transformation with `ColIdentityEncoder`
+    cols_identity : list[str]
         list of columns to be passed as is without any transformation
-    cols_target: List[str],
-        list of columns with target
-    time_transformation: str. Default: 'default'.
-        type of transformation to be applied to time column
-    print_dataset_info : bool. Default: False.
-        If True, print dataset stats during preprocessor fitting and data transformation
+    cols_first_item: List[str]
+        Only first value will be taken for these columns
+        It can be user-level information joined to each transaction
+    return_records:
+        False: Result is a `pandas.DataFrame`.
+            You can:
+            - join any additional information like user-level features of target
+            - convert it to `ptls` format using `.to_dict(orient='records')`
+        True: Result is a list of dicts - `ptls` format
+
     """
 
     def __init__(self,
                  col_id: str,
-                 cols_event_time: str,
-                 cols_category: List[str],
-                 cols_log_norm: List[str],
-                 cols_identity: List[str] = [],
-                 cols_target: List[str] = [],
-                 time_transformation: str = 'default',
-                 print_dataset_info: bool = False,
+                 col_event_time: Union[str, ColTransformer],
+                 event_time_transformation: str = 'dt_to_timestamp',
+                 cols_category: List[Union[str, ColCategoryTransformer]] = None,
+                 category_transformation: str = 'frequency',
+                 cols_numerical: List[str] = None,
+                 cols_identity: List[str] = None,
+                 cols_first_item: List[str] = None,
+                 return_records: bool = True,
                  ):
+        if cols_category is None:
+            cols_category = []
+        if cols_numerical is None:
+            cols_numerical = []
+        if cols_identity is None:
+            cols_identity = []
+        if cols_first_item is None:
+            cols_first_item = []
 
-        super().__init__(col_id, cols_event_time, cols_category, cols_log_norm, cols_identity, cols_target)
-        
-        self.print_dataset_info = print_dataset_info
-        self.time_transformation = time_transformation
-        self.time_min = None
-
-    def fit(self, dt, **params):
-        """
-        Parameters
-        ----------
-        dt : pandas.DataFrame with flat data
-
-        Returns
-        -------
-        self : object
-            Fitted preprocessor.
-        """
-        # Reset internal state before fitting
-        self._reset()
-
-        for col in self.cols_category:
-            pd_col = dt[col].astype(str)
-            mapping = {k: i + 1 for i, k in enumerate(pd_col.value_counts().index)}
-            self.cols_category_mapping[col] = mapping
-
-            if self.print_dataset_info:
-                logger.info(f'Encoder stat for "{col}":\ncodes | trx_count\n{pd_hist(dt[col], col)}')
-
-        for col in self.cols_log_norm:
-            self.cols_log_norm_maxes[col] = (np.log1p(abs(dt[col])) * np.sign(dt[col])).max()
-
-        if self.time_transformation == 'hours_from_min':
-            self.time_min = pd.to_datetime(dt[self.cols_event_time]).min()
-
-        return self
-
-    def transform(self, df, copy=True):
-        """Perform preprocessing.
-        Parameters
-        ----------
-        df : pandas.DataFrame with flat data
-        copy : bool, default=None
-            Copy the input X or not.
-        Returns
-        -------
-        features : List of dicts grouped by col_id.
-        """
-        self.check_is_fitted()
-        df_data = df.copy() if copy else df
-
-        if self.print_dataset_info:
-            logger.info(f'Found {df_data[self.col_id].nunique()} unique ids')
-
-        # event_time mapping
-        if self.time_transformation == 'none':
-            pass
-        elif self.time_transformation == 'default':
-            df_data = self._td_default(df_data, self.cols_event_time)
-        elif self.time_transformation == 'float':
-            df_data = self._td_float(df_data, self.cols_event_time)
-        elif self.time_transformation == 'gender':
-            df_data = self._td_gender(df_data, self.cols_event_time)
-        elif self.time_transformation == 'hours_from_min':
-            df_data = self._td_hours(df_data, self.cols_event_time)
+        if type(col_event_time) is not str:
+            ct_event_time = col_event_time  # use as is
+        elif event_time_transformation == 'dt_to_timestamp':
+            ct_event_time = DatetimeToTimestamp(col_name_original=col_event_time)
+        elif event_time_transformation == 'none':
+            ct_event_time = ColIdentityEncoder(
+                col_name_original=col_event_time,
+                col_name_target='event_time',
+                is_drop_original_col=False,
+            )
         else:
-            raise NotImplementedError(f'Unknown type of data transformation: "{self.time_transformation}"')
+            raise AttributeError(f'incorrect event_time parameters combination: '
+                                 f'`ct_event_time` = "{col_event_time}" '
+                                 f'`event_time_transformation` = "{event_time_transformation}"')
 
-        for col in self.cols_category:
-            if col not in self.cols_category_mapping:
-                raise KeyError(f"column {col} isn't in fitted category columns")
-            pd_col = df_data[col].astype(str)
-            df_data[col] = pd_col.map(self.cols_category_mapping[col]) \
-                .fillna(max(self.cols_category_mapping[col].values()))
-            if self.print_dataset_info:
-                logger.info(f'Encoder stat for "{col}":\ncodes | trx_count\n{pd_hist(df_data[col], col)}')
+        cts_category = []
+        for col in cols_category:
+            if type(col) is not str:
+                cts_category.append(col)  # use as is
+            elif category_transformation == 'frequency':
+                cts_category.append(FrequencyEncoder(col_name_original=col))
+            elif category_transformation == 'none':
+                cts_category.append(CategoryIdentityEncoder(col_name_original=col))
+            else:
+                raise AttributeError(f'incorrect category parameters combination: '
+                                     f'`cols_category[i]` = "{col}" '
+                                     f'`category_transformation` = "{category_transformation}"')
 
-        for col in self.cols_log_norm:
-            df_data[col] = np.log1p(abs(df_data[col])) * np.sign(df_data[col])
-            df_data[col] /= self.cols_log_norm_maxes[col]
-            if self.print_dataset_info:
-                logger.info(f'Encoder stat for "{col}":\ncodes | trx_count\n{pd_hist(df_data[col], col)}')
+        cts_numerical = [ColIdentityEncoder(col_name_original=col) for col in cols_numerical]
+        t_user_group = UserGroupTransformer(
+            col_name_original=col_id, cols_first_item=cols_first_item, return_records=return_records)
 
-        if self.print_dataset_info:
-            df = df_data.groupby(self.col_id)['event_time'].count()
-            logger.info(f'Trx count per clients:\nlen(trx_list) | client_count\n{pd_hist(df, "trx_count")}')
-
-        # column filter
-        columns_for_filter = reduce(iadd, [
-            self.cols_category,
-            self.cols_log_norm,
-            self.cols_identity,
-            ['event_time', self.col_id],
-            self.cols_target,
-        ], [])
-        used_columns = [col for col in df_data.columns if col in columns_for_filter]
-
-        logger.info('Feature collection in progress ...')
-        features = df_data[used_columns] \
-            .assign(et_index=lambda x: x['event_time']) \
-            .set_index([self.col_id, 'et_index']).sort_index() \
-            .groupby(self.col_id).apply(lambda x: {k: v[0] if k in self.cols_target else np.array(v)
-                                                   for k, v in x.to_dict(orient='list').items()}) \
-            .rename('feature_arrays').reset_index().to_dict(orient='records')
-
-        def squeeze(rec):
-            return {self.col_id: rec[self.col_id], **rec['feature_arrays']}
-        features = [squeeze(r) for r in features]
-
-        if self.print_dataset_info:
-            feature_names = list(features[0].keys())
-            logger.info(f'Feature names: {feature_names}')
-
-        logger.info(f'Prepared features for {len(features)} clients')
-        return features
-
-    def _reset(self):
-        """Reset internal data-dependent state of the preprocessor, if necessary.
-        __init__ parameters are not touched.
-        """
-        self.time_min = None
-        super()._reset()
+        super().__init__(
+            ct_event_time=ct_event_time,
+            cts_category=cts_category,
+            cts_numerical=cts_numerical,
+            cols_identity=cols_identity,
+            t_user_group=t_user_group,
+        )
 
     @staticmethod
     def _td_default(df, cols_event_time):
