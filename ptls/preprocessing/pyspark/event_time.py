@@ -1,7 +1,8 @@
 import pyspark.sql
 from pyspark.sql import functions as F
 
-from ptls.preprocessing.pyspark.col_transformer import ColTransformerPyspark
+from ptls.preprocessing.base import ColTransformer
+from ptls.preprocessing.pyspark.col_transformer import ColTransformerPysparkMixin
 
 
 def dt_to_timestamp(col: str):
@@ -12,7 +13,7 @@ def timestamp_to_dt(col: str):
     return F.from_unixtime(col).cast('timestamp')
 
 
-class DatetimeToTimestamp(ColTransformerPyspark):
+class DatetimeToTimestamp(ColTransformerPysparkMixin, ColTransformer):
     def __init__(self,
                  col_name_original: str = 'event_time',
                  is_drop_original_col: bool = True,

@@ -1,30 +1,57 @@
+from functools import reduce
+from operator import iadd
 from typing import List
 
 from sklearn.base import BaseEstimator, TransformerMixin
 
+from .col_category_transformer import ColCategoryTransformer
 from .col_transformer import ColTransformer
 
 
 class DataPreprocessor(BaseEstimator, TransformerMixin):
     def __init__(self,
-                 col_id: str,
-                 col_event_time: ColTransformer,
-                 cols_category: List[ColTransformer],
-                 cols_numerical: List[ColTransformer],
-                 cols_identity: List[ColTransformer],
-                 cols_target: List[str],
+                 ct_event_time: ColTransformer,
+                 cts_category: List[ColCategoryTransformer],
+                 cts_numerical: List[ColTransformer],
+                 cols_identity: List[str],
+                 t_user_group: ColTransformer,
                  ):
-        self.col_id = col_id
-        self.col_event_time = col_event_time
-        self.cols_category = cols_category
-        self.cols_numerical = cols_numerical
+        self.ct_event_time = ct_event_time
+        self.cts_category = cts_category
+        self.cts_numerical = cts_numerical
         self.cols_identity = cols_identity
-        self.cols_target = cols_target
+        self.t_user_group = t_user_group
 
-    def get_category_sizes(self):
+        self._all_col_transformers = [
+            [self.ct_event_time],
+            self.cts_category,
+            self.cts_numerical,
+            [self.t_user_group],
+        ]
+        self._all_col_transformers = reduce(iadd, self._all_col_transformers, [])
+
+    def fit(self, x):
+        for i, ct in enumerate(self._all_col_transformers):
+            if i == len(self._all_col_transformers):
+                ct.fit(x)
+            else:
+                x = ct.fit_transform(x)
+        return self
+
+    def fit_transform(self, X, y=None, **fit_params):
+        for ct in self._all_col_transformers:
+            X = ct.fit_transform(X)
+        return X
+
+    def transform(self, x):
+        for ct in self._all_col_transformers:
+            x = ct.transform(x)
+        return x
+
+    def get_category_dictionary_sizes(self):
         """Gets a dict of mapping to integers lengths for categories
         """
-        return {k: len(v) for k, v in self.cols_category_mapping.items()}
+        return {ct.col_name_target: ct.dictionary_size for ct in self.cts_category}
 
     def to_yaml(self):
         raise NotImplementedError()
