@@ -9,9 +9,7 @@ from pyhocon import ConfigFactory
 
 from ptls.frames.supervised import SequenceToTarget
 from ptls.loss import BCELoss
-from ptls.nn import PBLinear
-from ptls.nn import RnnSeqEncoder, TransformerSeqEncoder
-from ptls.nn import TrxEncoder
+from ptls.nn import PBLinear, RnnSeqEncoder, TransformerSeqEncoder, TrxEncoder
 from ptls_tests.test_data_load import RandomEventData
 
 
@@ -205,4 +203,3 @@ def test_seq_to_target_metric_list_dict_config_with_metric():
     model = SequenceToTarget(metric_list=hydra.utils.instantiate(conf), seq_encoder=None)
     assert 'acc' in model.valid_metrics
     assert 'auroc' in model.valid_metrics
-

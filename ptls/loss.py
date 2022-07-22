@@ -216,24 +216,33 @@ class ZILNLoss(nn.Module):
     """
     Zero-inflated lognormal (ZILN) loss adapted for multinomial target with K categories.
     Please cite [https://arxiv.org/abs/1912.07753] and [https://github.com/google/lifetime_value].
+    Defaults to MSE loss for 1D-input and lognormal loss for 2D-input.
 
     Parameters
     ----------
-    pred: tensor of shape Bx3 or Bx(K+3) of predicted logits
-    target: tensor of shape Bx1 or BxK of target variable
+    pred: tensor of shape (B) or (B, K')
+    target: tensor of shape (B) or (B, K)
     """
     def __init__(self):
         super().__init__()
-        self.eps = 1e-6
+        self.eps = 1e-8
 
     def forward(self, pred, target):
+        t = target if target.dim() == 1 else target.sum(dim=1)
         if pred.dim() == 1:
-            raise Exception(f"{self.__class__} has incorrect input dimension")
-        tsum = target if target.dim() == 1 else target.sum(dim=1)
-        s2 = pred[:, 1].square() + self.eps
-        loss = s2.log() + (tsum.log() - pred[:, 0]).square() / s2
-        if pred.shape[1] == 3:
-            loss -= 2 * F.logsigmoid(-pred[:, 2])
+            return torch.mean((pred - t).square())
+        sigma = F.softplus(pred[:, 1])
+        loss = (sigma * t + self.eps).log() + ((t + self.eps).log() - pred[:, 0]).square() / (2 * sigma.square() + self.eps)
+        if pred.shape[1] == 2:
+            pass
+        elif pred.shape[1] == 3:
+            loss = torch.where(t > 0, loss - F.logsigmoid(pred[:, 2]), -F.logsigmoid(-pred[:, 2]))
+        elif pred.shape[1] == target.shape[1] + 1:
+            dist = torch.cat(((t == 0).float().unsqueeze(-1), target), dim=1)
+            loss = -dist.mul(F.log_softmax(pred, dim=1)).sum(dim=1)
+        elif pred.shape[1] == target.shape[1] + 3:
+            log_prob = F.log_softmax(pred[:, 2:], dim=1)
+            loss = torch.where(t > 0, loss - target.mul(log_prob[:, 1:]).sum(dim=1), -log_prob[:, 0])
         else:
-            loss -= 2 * target.mul(F.log_softmax(pred[:, 3:], dim=1)).sum(dim=1)
-        return torch.mean(loss.where(tsum > 0, -2 * F.logsigmoid(pred[:, 2])))
+            raise Exception(f"{self.__class__} got incorrect input sizes")
+        return torch.mean(loss)

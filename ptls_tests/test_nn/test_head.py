@@ -46,3 +46,16 @@ def test_regression():
     model = Head(objective='regression', input_size=8)
     y = model(x)
     assert y.size() == (10,)
+    model = Head(objective='regression', input_size=8, num_classes=3)
+    y = model(x)
+    assert y.size() == (10, 3)
+
+
+def test_softplus():
+    x = torch.randn(10, 8)
+    model = Head(objective='softplus', input_size=8)
+    y = model(x)
+    assert y.size() == (10,)
+    model = Head(objective='softplus', input_size=8, num_classes=3)
+    y = model(x)
+    assert y.size() == (10, 3)

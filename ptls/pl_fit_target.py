@@ -25,10 +25,10 @@ def fold_fit_test(conf, fold_id):
             name=conf.get('logger_name'),
         )
     trainer = pl.Trainer(**_trainer_params, **_trainer_params_additional)
-    trainer.fit(model, dm)
+    trainer.fit(model, datamodule=dm)
 
     valid_metrics = {name: float(mf.compute().item()) for name, mf in model.valid_metrics.items()}
-    trainer.test(model=model, dataloaders=dm.test_dataloader(), verbose=False)
+    trainer.test(model=model, dataloaders=dm.test_dataloader(), ckpt_path="best", verbose=False)
     test_metrics = {name: float(mf.compute().item()) for name, mf in model.test_metrics.items()}
 
     print(', '.join([f'valid_{name}: {v:.4f}' for name, v in valid_metrics.items()]))
@@ -42,7 +42,8 @@ def fold_fit_test(conf, fold_id):
         'scores_test': test_metrics,
     }
 
-@hydra.main(version_base='1.2', config_path=None)
+
+@hydra.main(version_base=None)
 def main(conf: DictConfig):
     if 'seed_everything' in conf:
         pl.seed_everything(conf.seed_everything)
@@ -51,7 +52,7 @@ def main(conf: DictConfig):
 
     results = []
     for fold_id in fold_list:
-        logger.info(f'==== Fold [{fold_id}] fit-test start ====')
+        logger.info(f'==== Fold [{fold_id}/{len(fold_list)}] fit-test start ====')
         result = fold_fit_test(conf, fold_id)
         results.append(result)
 
