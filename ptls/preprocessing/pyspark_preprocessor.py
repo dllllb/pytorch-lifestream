@@ -9,7 +9,14 @@ from pyspark.sql.window import Window
 from itertools import chain
 from typing import List, Dict, Union
 
-from .base import DataPreprocessor
+from .base import DataPreprocessor, ColTransformer
+
+from .base.col_category_transformer import ColCategoryTransformer
+from .pyspark.category_identity_encoder import CategoryIdentityEncoder
+from .pyspark.col_identity_transformer import ColIdentityEncoder
+from .pyspark.event_time import DatetimeToTimestamp
+from .pyspark.frequency_encoder import FrequencyEncoder
+from .pyspark.user_group_transformer import UserGroupTransformer
 
 
 logger = logging.getLogger(__name__)
@@ -17,6 +24,7 @@ logger = logging.getLogger(__name__)
 
 class PysparkDataPreprocessor(DataPreprocessor):
     """Data preprocessor based on pyspark.sql.DataFrame
+
     During preprocessing it
         * transform `cols_event_time` column with date and time
         * encodes category columns `cols_category` into ints;
@@ -24,6 +32,7 @@ class PysparkDataPreprocessor(DataPreprocessor):
         * (Optional) select the last `max_trx_count` transactions for each `col_id`;
         * groups flat data by `col_id`;
         * arranges data into list of dicts with features
+
     Parameters
     ----------
     col_id : str
@@ -49,206 +58,69 @@ class PysparkDataPreprocessor(DataPreprocessor):
     """
     def __init__(self,
                  col_id: str,
-                 cols_event_time: str,
-                 cols_category: List[str],
-                 cols_log_norm: List[str],
-                 cols_identity: List[str] = [],
-                 cols_target: List[str] = [],
-                 time_transformation: str = 'default',
-                 remove_long_trx: bool = False,
-                 max_trx_count: int = 5000,
+                 col_event_time: Union[str, ColTransformer],
+                 event_time_transformation: str = 'dt_to_timestamp',
+                 cols_category: List[Union[str, ColCategoryTransformer]] = None,
+                 category_transformation: str = 'frequency',
+                 cols_numerical: List[str] = None,
+                 cols_identity: List[str] = None,
+                 cols_last_item: List[str] = None,
+                 max_trx_count: int = None,
                  max_cat_num: Union[Dict[str, int], int] = 10000,
-                 print_dataset_info: bool = False):
+                 ):
 
-        super().__init__(col_id, cols_event_time, cols_category, cols_log_norm, cols_identity, cols_target)
-        self.time_transformation = time_transformation
-        self.time_min = None
-        self.remove_long_trx = remove_long_trx
-        self.max_trx_count = max_trx_count
-        if isinstance(max_cat_num, int):
-            self.max_cat_num = {k: max_cat_num for k in cols_category}
+        if cols_category is None:
+            cols_category = []
+        if cols_numerical is None:
+            cols_numerical = []
+        if cols_identity is None:
+            cols_identity = []
+        if cols_last_item is None:
+            cols_last_item = []
+
+        if type(col_event_time) is not str:
+            ct_event_time = col_event_time  # use as is
+        elif event_time_transformation == 'dt_to_timestamp':
+            ct_event_time = DatetimeToTimestamp(col_name_original=col_event_time)
+        elif event_time_transformation == 'none':
+            ct_event_time = ColIdentityEncoder(
+                col_name_original=col_event_time,
+                col_name_target='event_time',
+                is_drop_original_col=False,
+            )
         else:
-            self.max_cat_num = max_cat_num
-        self.print_dataset_info = print_dataset_info
+            raise AttributeError(f'incorrect event_time parameters combination: '
+                                 f'`ct_event_time` = "{col_event_time}" '
+                                 f'`event_time_transformation` = "{event_time_transformation}"')
 
+        cts_category = []
+        for col in cols_category:
+            if type(col) is not str:
+                cts_category.append(col)  # use as is
+            elif category_transformation == 'frequency':
+                if type(max_cat_num) is dict:
+                    mc = max_cat_num.get(col)
+                else:
+                    mc = max_cat_num
+                cts_category.append(FrequencyEncoder(col_name_original=col, max_cat_num=mc))
+            elif category_transformation == 'none':
+                cts_category.append(CategoryIdentityEncoder(col_name_original=col))
+            else:
+                raise AttributeError(f'incorrect category parameters combination: '
+                                     f'`cols_category[i]` = "{col}" '
+                                     f'`category_transformation` = "{category_transformation}"')
 
-    def fit(self, df, **params):
-        """
-        Parameters
-        ----------
-        dt : pyspark.sql.DataFrame with flat data
-        Returns
-        -------
-        self : object
-            Fitted preprocessor.
-        """
-        # Reset internal state before fitting
-        self._reset()
+        cts_numerical = [ColIdentityEncoder(col_name_original=col) for col in cols_numerical]
+        t_user_group = UserGroupTransformer(
+            col_name_original=col_id, cols_last_item=cols_last_item, max_trx_count=max_trx_count)
 
-        if self.print_dataset_info:
-            unique_clients = df.select(self.col_id).distinct().count()
-            logger.info(f'Found {unique_clients} unique clients during fit')
-
-        for col in self.cols_category:
-            self.cols_category_mapping[col] = self._create_cat_map(df, col)
-
-            if self.print_dataset_info:
-                logger.info(f'Encoder stat for "{col}":\ncodes | trx_count\n{self.pd_hist(df, col)}')
-
-        for col in self.cols_log_norm:
-            df = self._log_transform(df, col)
-            self.cols_log_norm_maxes[col] = df.select(F.max(F.col(col)).alias('max_log1p')).first()[0]
-
-            if self.print_dataset_info:
-                logger.info(f'Encoder stat for "{col}":\nlog norm values | trx_count\n{self.pd_hist(df, col)}')
-
-        if self.time_transformation == 'hours_from_min':
-            self.time_min = df.select((F.col(self.cols_event_time))\
-                                      .cast(dataType=T.TimestampType()).alias('dt'))\
-                                      .agg({'dt': 'min'}).collect()[0]['min(dt)']
-            self.time_min = (self.time_min - datetime.datetime(1970,1,1)).total_seconds()
-
-        return self
-
-
-    def transform(self, df, copy=True):
-        """Perform preprocessing.
-        Parameters
-        ----------
-        df : pyspark.sql.DataFrame with flat data
-        copy : bool, default=None
-            Copy the input X or not.
-        Returns
-        -------
-        features : pyspark.sql.DataFrame with all transactions for one `col_id` in one row.
-        """
-        self.check_is_fitted()
-        df_data = df.alias('df_data') if copy else df
-
-        if self.print_dataset_info:
-            unique_clients = df.select(self.col_id).distinct().count()
-            logger.info(f'Found {unique_clients} unique clients during transform')
-
-        # event_time mapping
-        if self.time_transformation == 'none':
-            pass
-        elif self.time_transformation == 'default':
-            df_data = self._td_default(df_data, self.cols_event_time)
-        elif self.time_transformation == 'float':
-            df_data = self._td_float(df_data, self.cols_event_time)
-        elif self.time_transformation == 'gender':
-            df_data = self._td_gender(df_data, self.cols_event_time)
-        elif self.time_transformation == 'hours_from_min':
-            df_data = self._td_hours(df_data, self.cols_event_time)
-        else:
-            raise NotImplementedError(f'Unknown type of data transformation: "{self.time_transformation}"')
-
-        for col in self.cols_category:
-            if col not in self.cols_category_mapping:
-                raise KeyError(f"column {col} isn't in fitted category columns")
-            df_data = self._map_categories(df_data, col)
-
-            if self.print_dataset_info:
-                logger.info(f'Encoder stat for "{col}":\ncodes | trx_count\n{self.pd_hist(df_data, col)}')
-
-        for col in self.cols_log_norm:
-            df_data = self._log_transform(df_data, col)
-            df_data = df_data.withColumn(col, F.col(col) / self.cols_log_norm_maxes[col])
-
-            if self.print_dataset_info:
-                logger.info(f'Encoder stat for "{col}":\nlog norm values | trx_count\n{self.pd_hist(df_data, col)}')
-
-        if self.print_dataset_info:
-            df = df_data.groupby(self.col_id).agg(F.count(F.lit(1)).alias("trx_count"))
-            logger.info(f'Trx count per clients:\nlen(trx_list) | client_count\n{self.pd_hist(df, "trx_count")}')
-
-        # columns filter
-        columns_for_filter = reduce(iadd, [
-            self.cols_category,
-            self.cols_log_norm,
-            self.cols_identity,
-            ['event_time', self.col_id],
-            self.cols_target,
-        ], [])
-        used_columns = [col for col in df_data.columns if col in columns_for_filter]
-
-        logger.info('Feature collection in progress ...')
-        features = df_data.select(used_columns)
-        if self.remove_long_trx:
-            features = self._remove_long_trx(features)
-        features = self._collect_lists(features)
-
-        features.persist()
-
-        if self.print_dataset_info:
-            feature_names = list(features.columns)
-            logger.info(f'Feature names: {feature_names}')
-            logger.info(f'Prepared features for {features.count()} clients')
-
-        return features
-
-
-    def _create_cat_map(self, df, col_name):
-        df = df.withColumn(col_name, F.coalesce(F.col(col_name).cast('string'), F.lit('#EMPTY')))
-
-        col_orig = '_orig_' + col_name
-        df = df.withColumnRenamed(col_name, col_orig)
-
-        df_encoder = df.groupby(col_orig).agg(F.count(F.lit(1)).alias('_cnt'))
-        df_encoder = df_encoder.withColumn(col_name,
-                                           F.row_number().over(Window.partitionBy().orderBy(F.col('_cnt').desc())))
-        df_encoder = df_encoder.filter(F.col(col_name) <= self.max_cat_num[col_name])
-
-        return {row[col_orig]: row[col_name] for row in df_encoder.collect()}
-
-
-    def _map_categories(self, df, col_name):
-        mapping_expr = F.create_map([F.lit(x) for x in chain(*self.cols_category_mapping[col_name].items())])
-        df_data = df.withColumn(col_name, mapping_expr[F.col(col_name)])
-        val_for_null = max(self.cols_category_mapping[col_name].values())
-        df_data = df_data.fillna(value=val_for_null, subset=[col_name])
-        return df_data
-
-
-    @staticmethod
-    def _log_transform(df, col_name):
-        df = df.withColumn(col_name, F.coalesce(F.col(col_name), F.lit(0)))
-        df = df.withColumn(col_name, F.signum(F.col(col_name)) * F.log1p(F.abs(F.col(col_name))))
-        return df
-
-
-    def _collect_lists(self, df):
-        col_list = [col for col in df.columns if col != self.col_id]
-
-        # if self.config.save_partitioned_data:
-        #     df = df.withColumn('mon_id', (F.col('event_time') / 30).cast('int'))
-        #     col_id = [col_id, 'mon_id']
-        #
-        df = df.withColumn('_rn', F.row_number().over(Window.partitionBy(self.col_id).orderBy('event_time')))
-
-        df = df.groupby(self.col_id).agg(*[
-            F.sort_array(F.collect_list(F.struct('_rn', col))).alias(col)
-            for col in col_list
-        ])
-        for col in col_list:
-            df = df.withColumn(col, F.col(f'{col}.{col}'))
-
-        # df = df.drop('_rn')
-        return df
-
-
-    def _remove_long_trx(self, df):
-        """
-        This function select the last max_trx_count transactions
-        """
-        df = df.withColumn('_cn', F.count(F.lit(1)).over(Window.partitionBy(self.col_id)))
-        df = df.withColumn('_rn', F.row_number().over(
-            Window.partitionBy(self.col_id).orderBy(F.col('event_time').desc())))
-        df = df.filter(F.col('_rn') <= self.max_trx_count)
-        df = df.drop('_cn')
-        df = df.drop('_rn')
-        return df
-
+        super().__init__(
+            ct_event_time=ct_event_time,
+            cts_category=cts_category,
+            cts_numerical=cts_numerical,
+            cols_identity=cols_identity,
+            t_user_group=t_user_group,
+        )
 
     @staticmethod
     def _td_default(df, cols_event_time):

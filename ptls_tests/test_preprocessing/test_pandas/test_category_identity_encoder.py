@@ -3,6 +3,18 @@ import pytest
 
 from ptls.preprocessing.pandas.category_identity_encoder import CategoryIdentityEncoder
 
+
+def test_fit():
+    df = pd.DataFrame({
+        'uid': [0, 0, 0, 1, 1, 1, 1],
+        'cat': [1, 2, 3, 4, 1, 2, 3],
+    })
+    t = CategoryIdentityEncoder(col_name_original='cat')
+    t.fit(df)
+    assert t.min_fit_index == 1
+    assert t.max_fit_index == 4
+
+
 def test_fit_transform():
     df = pd.DataFrame({
         'uid': [0, 0, 0, 1, 1, 1, 1],

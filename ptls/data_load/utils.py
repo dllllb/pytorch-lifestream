@@ -39,7 +39,7 @@ def collate_feature_dict(batch):
             else:
                 new_x[k] = torch.nn.utils.rnn.pad_sequence(v, batch_first=True)
         elif type(v[0]) is np.ndarray:
-            raise AssertionError(f'Col "{k}" should be converted to `torch.tensor`')
+            new_x[k] = v  # list of arrays[object]
         else:
             v = np.array(v)
             if v.dtype.kind == 'i':

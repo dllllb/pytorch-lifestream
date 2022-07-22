@@ -10,7 +10,7 @@ def test_identity():
     t = ColIdentityEncoder(
         col_name_original='cat',
     )
-    out = t.fit_transform(df.copy())
+    out = t.fit_transform(df)
     assert (df == out).all().all()
 
 
@@ -24,7 +24,7 @@ def test_new_col():
         col_name_target='cat_2',
         is_drop_original_col=False,
     )
-    out = t.fit_transform(df.copy())
+    out = t.fit_transform(df)
     assert (df['cat'] == out['cat_2']).all()
     assert (df['cat'] == out['cat']).all()
 
@@ -39,6 +39,6 @@ def test_rename():
         col_name_target='cat_2',
         is_drop_original_col=True,
     )
-    out = t.fit_transform(df.copy())
+    out = t.fit_transform(df)
     assert (df['cat'] == out['cat_2']).all()
     assert 'cat' not in out.columns
