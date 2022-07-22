@@ -4,6 +4,7 @@ from typing import List, Union
 import numpy as np
 import pandas as pd
 
+from .base import DataPreprocessor, ColTransformer
 from .base.col_category_transformer import ColCategoryTransformer
 from .pandas.category_identity_encoder import CategoryIdentityEncoder
 from .pandas.col_identity_transformer import ColIdentityEncoder
@@ -11,10 +12,7 @@ from .pandas.event_time import DatetimeToTimestamp
 from .pandas.frequency_encoder import FrequencyEncoder
 from .pandas.user_group_transformer import UserGroupTransformer
 
-
 logger = logging.getLogger(__name__)
-
-from .base import DataPreprocessor, ColTransformer
 
 
 class PandasDataPreprocessor(DataPreprocessor):
