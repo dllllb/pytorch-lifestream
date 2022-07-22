@@ -7,6 +7,8 @@ from .seq_encoder import (
 
 from .pb import PBLinear, PBL2Norm, PBLayerNorm, PBReLU
 
+from .pb_feature_extract import PBFeatureExtract
+
 from .head import Head
 
 from .normalization import L2NormEncoder

@@ -103,7 +103,7 @@ class TrxEncoder(nn.Module):
             if self.use_batch_norm_with_lens:
                 res = scaler(PaddedBatch(x.payload[value_name].float(), x.seq_lens))
             else:
-                res = scaler(x.payload[value_name].unsqueeze(-1).float())
+                res = scaler(x.payload[value_name].float())
             processed.append(res)
 
         for pos_name, pe in self.pos.items():

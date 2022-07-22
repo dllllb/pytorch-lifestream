@@ -5,7 +5,6 @@ nav:
         - 'Sequential Data':
             - 'Sequential Data Definition': 'sequential_data_definition.md'
             - 'Feature naming': 'feature_naming.md'
-        - 'Training Methods': 'methods.md'
         - 'How to guide':
             - 'Data preparation': '#'
             - 'Sequential model creation': '#'
@@ -25,6 +24,7 @@ nav:
             - 'ptls.frames':
                 - 'common usage pattern': 'frames/common_usage.md'
                 - 'coles': 'frames/coles.md'
+                - 'vicreg': 'frames/vicreg.md'
                 - 'cpc': 'frames/cpc.md'
                 - 'bert': 'frames/bert.md'
                 - 'supervised': 'frames/supervised.md'

@@ -111,17 +111,17 @@ class ClsDataModuleTrain(pl.LightningDataModule):
             self.read_external_splits()
             self.train_dataset = ParquetDataset(
                 train_data_files,
-                i_filters=IterableChain(*self.build_iterable_processing('train')),
+                post_processing=IterableChain(*self.build_iterable_processing('train')),
                 shuffle_files=True if self._type == 'iterable' else False,
             )
             self.valid_dataset = ParquetDataset(
                 train_data_files,
-                i_filters=IterableChain(*self.build_iterable_processing('valid')),
+                post_processing=IterableChain(*self.build_iterable_processing('valid')),
                 shuffle_files=False,
             )
             self.test_dataset = ParquetDataset(
                 test_data_files,
-                i_filters=IterableChain(*self.build_iterable_processing('test')),
+                post_processing=IterableChain(*self.build_iterable_processing('test')),
                 shuffle_files=False,
             )
 

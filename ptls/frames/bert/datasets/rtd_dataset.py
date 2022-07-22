@@ -57,7 +57,7 @@ class RtdDataset(torch.utils.data.Dataset):
             if FeatureDict.is_seq_feature(k, v):
                 v.flatten()[to_replace_flatten] = v.flatten()[sampled_trx_ids]
 
-        return PaddedBatch(new_x, lengths), to_replace.long().float().flatten()[mask.flatten().bool()]
+        return PaddedBatch(new_x, lengths), to_replace.long().flatten()[mask.flatten().bool()]
 
 
 class RtdIterableDataset(RtdDataset, torch.utils.data.IterableDataset):

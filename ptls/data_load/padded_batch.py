@@ -64,6 +64,10 @@ class PaddedBatch:
     def device(self):
         return self._length.device
 
+    @property
+    def seq_feature_shape(self):
+        return next(v.size() for k, v in self._payload.items() if self.is_seq_feature(k, v))
+
     def __len__(self):
         return len(self._length)
 

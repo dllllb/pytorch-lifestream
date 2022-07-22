@@ -14,7 +14,10 @@ class SeqToTargetDataset(torch.utils.data.Dataset):
 
         self.data = data
         self.target_col_name = target_col_name
-        self.target_dtype = target_dtype
+        if type(target_dtype) is str:
+            self.target_dtype = getattr(torch, target_dtype)
+        else:
+            self.target_dtype = target_dtype
 
     def __len__(self):
         return len(self.data)

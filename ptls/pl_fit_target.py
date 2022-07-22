@@ -4,21 +4,18 @@ import logging
 import hydra
 import numpy as np
 import pytorch_lightning as pl
-import torch
-from omegaconf import DictConfig, OmegaConf
+from omegaconf import DictConfig
 from pytorch_lightning.loggers import TensorBoardLogger
-
-from ptls.frames.bert import RtdModule
 
 logger = logging.getLogger(__name__)
 
 
-def fold_fit_test(conf, pl_module, fold_id):
-    if pl_module:
-        model = hydra.utils.instantiate(conf.pl_module, seq_encoder=pl_module.seq_encoder)
-    else:
-        model = hydra.utils.instantiate(conf.pl_module)
-    dm = hydra.utils.instantiate(conf.data_module, pl_module=model, fold_id=fold_id)
+def fold_fit_test(conf, fold_id):
+    conf['fold_id'] = fold_id
+
+    model = hydra.utils.instantiate(conf.pl_module)
+    model.seq_encoder.is_reduce_sequence = True
+    dm = hydra.utils.instantiate(conf.data_module)
 
     _trainer_params = conf.trainer
     _trainer_params_additional = {}
@@ -30,12 +27,8 @@ def fold_fit_test(conf, pl_module, fold_id):
     trainer = pl.Trainer(**_trainer_params, **_trainer_params_additional)
     trainer.fit(model, datamodule=dm)
 
-    if 'model_path' in conf:
-        trainer.save_checkpoint(conf.model_path, weights_only=True)
-        logger.info(f'Model weights saved to "{conf.model_path}"')
-
     valid_metrics = {name: float(mf.compute().item()) for name, mf in model.valid_metrics.items()}
-    trainer.test(dataloaders=dm.test_dataloader(), ckpt_path="best", verbose=False)
+    trainer.test(model=model, dataloaders=dm.test_dataloader(), ckpt_path="best", verbose=False)
     test_metrics = {name: float(mf.compute().item()) for name, mf in model.test_metrics.items()}
 
     print(', '.join([f'valid_{name}: {v:.4f}' for name, v in valid_metrics.items()]))
@@ -49,39 +42,18 @@ def fold_fit_test(conf, pl_module, fold_id):
         'scores_test': test_metrics,
     }
 
+
 @hydra.main(version_base=None)
 def main(conf: DictConfig):
-    OmegaConf.set_struct(conf, False)
-
     if 'seed_everything' in conf:
         pl.seed_everything(conf.seed_everything)
 
-    if conf.data_module.setup.split_by == 'embeddings_validation':
-        with open(conf.data_module.setup.fold_info, 'r') as f:
-            fold_info = json.load(f)
-        fold_list = [k for k in sorted(fold_info.keys()) if not k.startswith('_')]
-    else:
-        raise NotImplementedError(f'Only `embeddings_validation` split supported,'
-                                  f'found "{conf.data_module.setup.split_by}"')
-
-    pretrained_encoder_path = conf.get('pretrained_encoder_path', None)
-    if pretrained_encoder_path:
-        # pl_module_cls = hydra.utils.instantiate(conf.pretrained_module_cls)
-        # pl_module = pl_module_cls.load_from_checkpoint(pretrained_encoder_path)
-        pl_module = hydra.utils.instantiate(conf.pretrained_module)
-        state_dict = torch.load(pretrained_encoder_path)['state_dict']
-        if not isinstance(pl_module, RtdModule):
-            state_dict = {k: v for k, v in state_dict.items() if not k.startswith('_head')}
-        pl_module.load_state_dict(state_dict)
-        pl_module.seq_encoder.is_reduce_sequence = True
-    else:
-        pl_module = None
-    use_pretrained_path = conf.get('use_pretrained_path', None)
+    fold_list = hydra.utils.instantiate(conf.fold_list)
 
     results = []
     for fold_id in fold_list:
         logger.info(f'==== Fold [{fold_id}/{len(fold_list)}] fit-test start ====')
-        result = fold_fit_test(conf, pl_module, fold_id)
+        result = fold_fit_test(conf, fold_id)
         results.append(result)
 
     stats_file = conf.embedding_validation_results.output_path
@@ -98,7 +70,4 @@ def main(conf: DictConfig):
 
 
 if __name__ == '__main__':
-    logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)-7s %(funcName)-20s   : %(message)s')
-    logging.getLogger("lightning").setLevel(logging.INFO)
-
     main()
