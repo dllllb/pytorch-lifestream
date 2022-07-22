@@ -117,25 +117,29 @@ class R_squared(DistributionTargets):
         return r_squared(self.sign * torch.exp(y_hat - 1), y[:, None])
 
 
-class RMSE(torchmetrics.Metric):
+class UnivMeanError(torchmetrics.Metric):
     """
-    RMSE/MAE for multiple outputs with exponential scaler.
+    RMSE/MAE for multiple outputs with optional scaler.
     Should be elaborated via adaptor-classes like in [ptls/nn/trx_encoder/scalers.py].
     """
     is_differentiable = True
     higher_is_better = False
     full_state_update = False
 
-    def __init__(self, calc_mae=True):
+    def __init__(self, calc_mae=True, scaler=None):
         super().__init__()
         self.calc_mae = calc_mae
+        self.scaler = scaler
         self.add_state("psum", default=torch.tensor(0.0), dist_reduce_fx="sum")
         self.add_state("pnum", default=torch.tensor(0), dist_reduce_fx="sum")
 
     def update(self, y1, y):
         t = y if y.dim() == 1 else y.sum(dim=1)
-        delta = y1 - t if y1.dim() == 1 else y1[:, 0].exp() - t
-        self.psum += torch.sum(delta.abs() if self.calc_mae else delta.square())
+        if self.scaler is None:
+            t1 = y1 if y1.dim() == 1 else y1.sum(dim=1)
+        else:
+            t1 = self.scaler(y1) if y1.dim() == 1 else self.scaler(y1).sum(dim=1)
+        self.psum += torch.sum((t1 - t).abs() if self.calc_mae else (t1 - t).square())
         self.pnum += y.shape[0]
 
     def compute(self):
@@ -152,14 +156,18 @@ class BucketAccuracy(torchmetrics.Metric):
     higher_is_better = True
     full_state_update = False
 
-    def __init__(self, n_buckets=10, compute_on_cpu=True):
+    def __init__(self, n_buckets=10, scaler=None, compute_on_cpu=True):
         super().__init__(compute_on_cpu=compute_on_cpu)
         self.n_buckets = n_buckets
+        self.scaler = scaler
         self.add_state("y1", default=[])
         self.add_state("y", default=[])
 
     def update(self, y1, y):
-        self.y1.append(y1 if y1.dim() == 1 else y1[:, 0].exp())
+        if self.scaler is None:
+            self.y1.append(y1 if y1.dim() == 1 else y1.sum(dim=1))
+        else:
+            self.y1.append(self.scaler(y1) if y1.dim() == 1 else self.scaler(y1).sum(dim=1))
         self.y.append(y if y.dim() == 1 else y.sum(dim=1))
 
     def compute(self):
@@ -175,26 +183,28 @@ class JSDiv(torchmetrics.Metric):
     """
     Jensen-Shannon divergence for distribution-like target:
         0 <= JSD(P||Q) = H(P/2 + Q/2) - H(P)/2 - H(Q)/2 <= ln(2)
-    Should be elaborated via adaptor-classes like in [ptls/nn/trx_encoder/scalers.py].
     """
     is_differentiable = True
     higher_is_better = False
     full_state_update = False
 
-    def __init__(self):
+    def __init__(self, scaler=None):
         super().__init__()
-        self.extra_dim = 3
+        self.scaler = scaler
         self.add_state("psum", default=torch.tensor(0.0), dist_reduce_fx="sum")
         self.add_state("pnum", default=torch.tensor(0), dist_reduce_fx="sum")
 
     def update(self, y1, y):
-        if y1.shape[1] == y.shape[1] + self.extra_dim:
-            p = torch.cat(((y.sum(dim=1) == 0).float().unsqueeze(-1), y), dim=1)
-            p /= p.sum(dim=1).unsqueeze(-1)
-            q = F.softmax(y1[:, 2:], dim=1)
-        elif y1.shape[1] == y.shape[1]:
-            p = y / y.sum(dim=1).unsqueeze(-1)
+        p = torch.cat(((y.sum(dim=1) == 0).float().unsqueeze(-1), y), dim=1)
+        p /= p.sum(dim=1).unsqueeze(-1)
+        if y1.shape[1] == y.shape[1] and self.scaler is not None:
+            q = self.scaler(y1)
+            q = torch.cat(((q.sum(dim=1) == 0).float().unsqueeze(-1), q), dim=1)
+            q = q / q.sum(dim=1).unsqueeze(-1)
+        elif y1.shape[1] == y.shape[1] + 1:
             q = F.softmax(y1, dim=1)
+        elif y1.shape[1] == y.shape[1] + 3:
+            q = F.softmax(y1[:, 2:], dim=1)
         else:
             raise Exception(f"{self.__class__} got incorrect input sizes")
         self.psum += torch.sum(entr(0.5 * (p + q)) - 0.5 * (entr(p) + entr(q)))

@@ -1,7 +1,7 @@
 from typing import List
 
 import torch
-from torch.nn import Linear, BatchNorm1d, Sigmoid, Sequential, ReLU, LogSoftmax, Flatten
+from torch.nn import Linear, BatchNorm1d, Sigmoid, Sequential, ReLU, LogSoftmax, Flatten, Softplus
 from ptls.nn.normalization import L2NormEncoder
 
 
@@ -19,7 +19,7 @@ class Head(torch.nn.Module):
          hidden_layers_sizes: List[int]. Default: None.
             sizes of linear layers. If None without additional linear layers.
          objective: str. Default: None.
-            Options: 'classification', 'regression', 'multioutput' and None.
+            Options: 'classification', 'regression', 'softplus' and None.
          num_classes: int. Default: 1.
             The number of classed in classification problem. Default correspond to binary classification.
 
@@ -59,15 +59,19 @@ class Head(torch.nn.Module):
             layers.append(h)
 
         elif objective == 'regression':
-            layers.append(Sequential(Linear(input_size, 1), Flatten(0)))
-
-        elif objective == 'multioutput':
             if num_classes == 1:
-                raise AttributeError("For multioutput should be: num_classes > 1.")
-            layers.append(Linear(input_size, num_classes))
+                layers.append(Sequential(Linear(input_size, 1), Flatten(0)))
+            else:
+                layers.append(Linear(input_size, num_classes))
+
+        elif objective == 'softplus':
+            if num_classes == 1:
+                layers.append(Sequential(Linear(input_size, num_classes), Softplus(), Flatten(0)))
+            else:
+                layers.append(Sequential(Linear(input_size, num_classes), Softplus()))
 
         elif objective is not None:
-            raise AttributeError(f"Unknown objective {objective}. Supported: classification, regression and multioutput.")
+            raise AttributeError(f"Unknown objective {objective}. Supported: classification, regression and softplus.")
 
         self.model = torch.nn.Sequential(*layers)
 

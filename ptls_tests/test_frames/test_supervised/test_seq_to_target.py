@@ -2,12 +2,11 @@ from functools import partial
 
 import pytorch_lightning as pl
 import torch
-import torch.nn.functional as F
 import torchmetrics
 from pyhocon import ConfigFactory
 
 from ptls.frames.supervised import SequenceToTarget
-from ptls.frames.supervised.metrics import LogAccuracy, RMSE, BucketAccuracy, JSDiv
+from ptls.frames.supervised.metrics import LogAccuracy, UnivMeanError, BucketAccuracy, JSDiv
 from ptls.loss import BCELoss, ZILNLoss
 from ptls.nn import PBLinear, RnnSeqEncoder, TransformerSeqEncoder, TrxEncoder
 from ptls_tests.test_data_load import RandomEventData
@@ -184,17 +183,12 @@ def test_accuracy_mul():
 
 def test_ziln_loss():
     ziln = ZILNLoss()
-    batch = torch.rand(10, 5)
-    extra_dim = ziln.extra_dim
     min_loss = 0.5 * torch.log(torch.tensor(ziln.eps))
-    assert ziln(torch.randn(batch.shape[0], extra_dim), batch[:, 0]) >= min_loss
-    assert ziln(torch.zeros(batch.shape[0], extra_dim), batch[:, 0]) >= min_loss
-    assert ziln(torch.randn(batch.shape[0], extra_dim), torch.zeros(batch.shape[0])) >= min_loss
-    assert ziln(torch.zeros(batch.shape[0], extra_dim), torch.zeros(batch.shape[0])) >= min_loss
-    assert ziln(torch.randn(batch.shape[0], extra_dim + batch.shape[1]), batch) >= min_loss
-    assert ziln(torch.zeros(batch.shape[0], extra_dim + batch.shape[1]), batch) >= min_loss
-    assert ziln(torch.randn(batch.shape[0], extra_dim + batch.shape[1]), torch.zeros_like(batch)) >= min_loss
-    assert ziln(torch.zeros(batch.shape[0], extra_dim + batch.shape[1]), torch.zeros_like(batch)) >= min_loss
+    y = torch.zeros(10, 5)
+    assert ziln(torch.zeros(y.shape[0]), y) == 0
+    assert ziln(torch.zeros(y.shape[0], 2), y) >= min_loss
+    assert ziln(torch.zeros(y.shape[0], 3), y) >= min_loss
+    assert ziln(torch.zeros(y.shape[0], 3 + y.shape[1]), y) >= min_loss
 
 
 def test_bucket_accuracy():
@@ -206,18 +200,13 @@ def test_bucket_accuracy():
 
 
 def test_rmse():
-    rmse, B = RMSE(), 10
+    rmse, B = UnivMeanError(), 10
     assert rmse(torch.randn(B), torch.randn(B)) >= 0
     assert rmse(torch.randn(B, 3), torch.randn(B)) >= 0
     assert rmse(torch.randn(B, 3), torch.randn(B, 3)) >= 0
 
 
 def test_jsdiv():
-    div, B = JSDiv(), 5
-    pred = torch.randn(B, 2 * B + 3)
-    target = torch.randint(0, 4, (B, 2 * B), dtype=torch.float32)
-    target[1] = torch.zeros(2 * B)
-    assert div(pred, target) >= 0
-    assert div(pred, torch.zeros_like(target)) >= 0
-    assert div(torch.zeros_like(pred), target) >= 0
-    assert div(torch.zeros_like(pred), torch.zeros_like(target)) >= 0
+    div = JSDiv()
+    y = torch.zeros(10, 5)
+    assert div(torch.randn(y.shape[0], y.shape[1] + 3), y) >= 0
