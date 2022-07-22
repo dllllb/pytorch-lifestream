@@ -43,6 +43,8 @@ class CpcV2Module(ABSModule):
                        optimizer_partial=None,
                        lr_scheduler_partial=None):
 
+        self.save_hyperparameters('n_negatives', 'n_forward_steps')
+
         loss = CPC_Loss(n_negatives=n_negatives, n_forward_steps=n_forward_steps)
         if validation_metric is None:
             validation_metric = CpcAccuracy(loss)

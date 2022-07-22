@@ -17,7 +17,6 @@ class ToTorch(IterableProcessingDataset):
         for rec in self._src:
             features = rec[0] if type(rec) is tuple else rec
             for k, v in features.items():
-                if isinstance(v, np.ndarray):
+                if isinstance(v, np.ndarray) and v.dtype.kind in ('i', 'f'):
                     features[k] = torch.from_numpy(v)
             yield rec
-

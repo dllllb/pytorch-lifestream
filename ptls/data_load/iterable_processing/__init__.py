@@ -4,6 +4,7 @@ from .feature_filter import FeatureFilter
 from .feature_type_cast import FeatureTypeCast
 from .filter_non_array import FilterNonArray
 from .id_filter import IdFilter
+from .id_filter_df import IdFilterDf
 from .iterable_seq_len_limit import ISeqLenLimit
 from .iterable_shuffle import IterableShuffle
 from .seq_len_filter import SeqLenFilter

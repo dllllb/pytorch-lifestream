@@ -34,7 +34,7 @@ class NspDataset(ColesDataset):
                 collate_feature_dict(lefts),
                 collate_feature_dict(rights)
             ),
-            targets.float(),
+            targets.long(),
         )
 
 

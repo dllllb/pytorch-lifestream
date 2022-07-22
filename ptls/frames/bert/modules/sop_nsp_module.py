@@ -6,17 +6,17 @@ from ptls.frames.abs_module import ABSModule
 
 
 class SentencePairsHead(torch.nn.Module):
-    def __init__(self, base_model, embeds_dim, config):
+    def __init__(self, base_model, embeds_dim, hidden_size, drop_p):
         super().__init__()
         self.base_model = base_model
         # TODO: check batch_norm position
         self.head = torch.nn.Sequential(
-            torch.nn.Linear(embeds_dim * 2, config['hidden_size'], bias=True),
-            torch.nn.BatchNorm1d(config['hidden_size']),
+            torch.nn.Linear(embeds_dim * 2, hidden_size, bias=True),
+            torch.nn.BatchNorm1d(hidden_size),
             torch.nn.ReLU(),
-            torch.nn.Dropout(config['drop_p']),
+            torch.nn.Dropout(drop_p),
             # torch.nn.BatchNorm1d(config['hidden_size']),
-            torch.nn.Linear(config['hidden_size'], 1),
+            torch.nn.Linear(hidden_size, 1),
             torch.nn.Sigmoid()
         )
 
@@ -43,7 +43,7 @@ class SopNspModule(ABSModule):
 
     def __init__(self, validation_metric=None,
                        seq_encoder=None,
-                       head=None,
+                       hidden_size=None, drop_p=None,
                        loss=None,
                        optimizer_partial=None,
                        lr_scheduler_partial=None):
@@ -51,7 +51,7 @@ class SopNspModule(ABSModule):
         if loss is None:
             loss = BCELoss()
         if validation_metric is None:
-            validation_metric = torchmetrics.AUROC(num_classes=2, compute_on_step=False)
+            validation_metric = torchmetrics.AUROC(num_classes=2)
 
         super().__init__(validation_metric,
                          seq_encoder,
@@ -59,7 +59,7 @@ class SopNspModule(ABSModule):
                          optimizer_partial,
                          lr_scheduler_partial)
 
-        self._head = SentencePairsHead(self.seq_encoder, self.seq_encoder.embedding_size, head)
+        self._head = SentencePairsHead(self.seq_encoder, self.seq_encoder.embedding_size, hidden_size, drop_p)
 
     @property
     def metric_name(self):
