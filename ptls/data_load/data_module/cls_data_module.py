@@ -21,6 +21,7 @@ from ptls.data_load.iterable_processing.iterable_shuffle import IterableShuffle
 from ptls.data_load.iterable_processing.seq_len_filter import SeqLenFilter
 from ptls.data_load.iterable_processing.target_join import TargetJoin
 from ptls.data_load.datasets.parquet_dataset import ParquetFiles, ParquetDataset
+from ptls.data_load.utils import collate_target
 
 
 logger = logging.getLogger(__name__)
@@ -36,7 +37,7 @@ class ClsDataModuleTrain(pl.LightningDataModule):
                  fold_id,
                  test=None,
                  distribution_target_task=False,
-                 downstream_task=None):
+                 distribution_target_size=None):
         super().__init__()
 
         self.fold_id = fold_id
@@ -44,15 +45,15 @@ class ClsDataModuleTrain(pl.LightningDataModule):
         assert self._type in ('map', 'iterable')
 
         self.distribution_target_task = distribution_target_task
-        if downstream_task is None:
+        if distribution_target_size is None:
             self.y_function = int if not self.distribution_target_task else \
                 lambda x: np.array(ast.literal_eval(x), dtype=object)
-        elif downstream_task == "regression":
+        elif distribution_target_size == 0:
             self.y_function = np.float32
-        elif downstream_task == "distribution":
-            self.y_function = lambda x: np.array(ast.literal_eval(x), dtype=np.float32)
+        elif isinstance(distribution_target_size, int):
+            self.y_function = lambda x: collate_target(ast.literal_eval(x), distribution_target_size)
         else:
-            raise AttributeError(f"Undefined downstream task type: {downstream_task}")
+            raise AttributeError(f"Undefined distribution target size: {distribution_target_size}")
 
         self.setup_conf = setup
         self.train_conf = train
