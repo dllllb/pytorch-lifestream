@@ -38,14 +38,13 @@ class PoissonScaler(nn.Module):
     def __init__(self, kmax=33):
         super().__init__()
         self.kmax = 0.7 * kmax
-        self.arange = torch.arange(kmax)
-        self.factor = torch.special.gammaln(1 + self.arange)
+        self.arange = torch.nn.Parameter(torch.arange(kmax), requires_grad=False)
+        self.factor = torch.nn.Parameter(torch.special.gammaln(1 + self.arange), requires_grad=False)
 
     def forward(self, x):
         if self.kmax == 0:
             return torch.poisson(x)
-        res = self.arange.to(x.device) * torch.log(x).unsqueeze(-1) - \
-              self.factor.to(x.device) * torch.ones_like(x).unsqueeze(-1)
+        res = self.arange * torch.log(x).unsqueeze(-1) - self.factor * torch.ones_like(x).unsqueeze(-1)
         return res.argmax(dim=-1).float().where(x < self.kmax, torch.poisson(x))
 
 

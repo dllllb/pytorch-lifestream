@@ -18,8 +18,11 @@ class Head(torch.nn.Module):
             whether to use BatchNorm.
          hidden_layers_sizes: List[int]. Default: None.
             sizes of linear layers. If None without additional linear layers.
-         objective: str. Default: None.
-            Options: 'classification', 'regression', 'softplus' and None.
+         objective: str. Options:
+            None (default) - corresponds to linear output with relu
+            classification - linear output with sigmoid or logsoftmax (num_classes > 1)
+            regression - pure linear output
+            softplus - linear output with softplus
          num_classes: int. Default: 1.
             The number of classed in classification problem. Default correspond to binary classification.
 
