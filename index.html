@@ -78,6 +78,8 @@
                   </li>
                   <li class="toctree-l1"><a class="reference internal" href="#">ptls</a>
     <ul>
+                <li class="toctree-l2"><a class="reference internal" href="ptls_preprocessing/">ptls.preprocessing</a>
+                </li>
                 <li class="toctree-l2"><a class="reference internal" href="#">ptls.data_load</a>
     <ul>
                 <li class="toctree-l3"><a class="reference internal" href="data_load/padded_batch/">padded batch</a>
@@ -144,29 +146,28 @@
               
                 <h1 id="welcome-to-pytorch-lifestream-docs">Welcome to pytorch-lifestream docs</h1>
 <h2 id="library-content">Library content</h2>
-<p>Here is a breaf overview of library with links to the detailed description.</p>
-<p>Some sections are in the process of description.</p>
+<p>Here is a brief overview of library with links to the detailed descriptions.</p>
 <p><strong>Library modules:</strong></p>
 <ul>
 <li>
-<p><code>ptls.data_load</code> - all you need for prepare your data for neural network feeding.</p>
+<p><code>ptls.preprocessing</code> - transforms data to <code>ptls</code>-compatible format with <code>pandas</code> or <code>pyspark</code>.
+Categorical encoding, datetime transformation, numerical feature preprocessing.</p>
+</li>
+<li>
+<p><code>ptls.data_load</code> - all that you need for prepare your data to training and validation.</p>
 <ul>
-<li><code>ptls.data_load.preprocessing</code> - common patters for feature transformation.
-Categorical encoding, datetime transformation, numerical feature preprocessing.</li>
-<li><code>ptls.data_load.split_tools</code> - convert data to ptls-data-format. Split by users and features. </li>
-<li><code>ptls.data_load.datasets</code> - <code>torch.Dataset</code> interface access to the data.</li>
-<li><code>ptls.data_load.iterable_processing</code> - generator-style filters for data transformation. </li>
+<li><code>ptls.data_load.datasets</code> - PyTorch <code>Dataset</code> API implementation for data access.</li>
+<li><code>ptls.data_load.iterable_processing</code> - generator-style filters for data transformation.</li>
+<li><code>ptls.data_load.augmentations</code> - functions for data augmentation.</li>
 </ul>
 </li>
 <li>
-<p><code>ptls.frames</code> - propose tools for training your encoders with popular frameworks like 
+<p><code>ptls.frames</code> - tools for training encoders with popular frameworks like 
 CoLES, SimCLR, CPC, VICReg, ...</p>
 <ul>
-<li><code>ptls.frames.coles</code> - contrastive leaning on split sequences. 
-Samples from original sequence are near in embedding space.</li>
-<li><code>ptls.frames.cpc</code> - Contrast learning on a changing time sequence.
-Embeddings are trained to predict their future state.</li>
-<li><code>ptls.frames.bert</code> - methods are inspired by nlp with transformer models.</li>
+<li><code>ptls.frames.coles</code> - Contrastive leaning on sub-sequences.</li>
+<li><code>ptls.frames.cpc</code> - Contrastive learning for future event state prediction.</li>
+<li><code>ptls.frames.bert</code> - methods, inspired by NLP and transformer models.</li>
 <li><code>ptls.framed.supervised</code> - modules fo supervised training.</li>
 <li><code>ptls.frames.inference</code> - inference module.</li>
 </ul>
@@ -174,9 +175,9 @@ Embeddings are trained to predict their future state.</li>
 <li>
 <p><code>ptls.nn</code> - layers for model creation:</p>
 <ul>
-<li><code>ptls.nn.trx_encoder</code> - layers which makes representation for single transactions.</li>
-<li><code>ptls.nn.seq_encoder</code> - layers which works with sequences like <code>Rnn</code> of <code>Transformer</code>.</li>
-<li><code>ptls.nn.pb</code> - <code>PaddedBatch</code> compatible layers. Looks like <code>torch.nn</code> but works with ptls-data.</li>
+<li><code>ptls.nn.trx_encoder</code> - layers to produce the representation for a single transactions.</li>
+<li><code>ptls.nn.seq_encoder</code> - layers for sequence processing, like <code>RNN</code> of <code>Transformer</code>.</li>
+<li><code>ptls.nn.pb</code> - <code>PaddedBatch</code> compatible layers, similar to <code>torch.nn</code> modules, but works with <code>ptls-data</code>.</li>
 <li><code>ptls.nn.head</code> - composite layers for final embedding transformation.</li>
 <li><code>ptls.nn.seq_step.py</code> - change the sequence along the time axis.</li>
 <li><code>ptls.nn.binarization</code>, <code>ptls.nn.normalization</code> - other groups of layers.</li>
@@ -188,16 +189,16 @@ Embeddings are trained to predict their future state.</li>
 <li><strong>Prepare your data</strong>.<ul>
 <li>Use <code>Pyspark</code> in local or cluster mode for big dataset and <code>Pandas</code> for small.</li>
 <li>Split data into required parts (train, valid, test, ...).</li>
-<li>Use <code>ptls.data_preprocessing</code> for simple data preparation. </li>
+<li>Use <code>ptls.preprocessing</code> for simple data preparation. </li>
 <li>Transform features to compatible format using <code>Pyspark</code> or <code>Pandas</code> functions. 
-You can use also <code>ptls.data_load.preprocessing</code> for common data transformation patterns.</li>
-<li>Split sequences to ptls-data format with <code>ptls.data_load.split_tools</code>. Save prepared data into <code>Parquet</code> format or 
+You can also use <code>ptls.data_load.preprocessing</code> for common data transformation patterns.</li>
+<li>Split sequences to <code>ptls-data</code> format with <code>ptls.data_load.split_tools</code>. Save prepared data into <code>Parquet</code> format or 
 keep it in memory (<code>Pickle</code> also works).</li>
-<li>Use one of available <code>ptls.data_load.datasets</code> which provide data access.</li>
+<li>Use one of the available <code>ptls.data_load.datasets</code> to define input for the models.</li>
 </ul>
 </li>
 <li><strong>Choose framework for encoder train</strong>.<ul>
-<li>There are both supervised of unsupervised in <code>ptls.frames</code>. </li>
+<li>There are both supervised of unsupervised frameworks in <code>ptls.frames</code>.</li>
 <li>Keep in mind that each framework requires his own batch format.
 Tools for batch collate can be found in the selected framework package.</li>
 </ul>
@@ -208,14 +209,14 @@ Tools for batch collate can be found in the selected framework package.</li>
 </ul>
 </li>
 <li><strong>Train your encoder</strong> with selected framework and <code>pytorch_lightning</code>.<ul>
-<li>Provide data with selected framework compatible dataloader. </li>
-<li>Check the progress on tensorboard.</li>
-<li>Tune hyperparameters if you need.</li>
+<li>Provide data with one of the DataLoaders that is compatible with selected framework. </li>
+<li>Monitor the progress on tensorboard.</li>
+<li>Optionally tune hyperparameters.</li>
 </ul>
 </li>
 <li><strong>Save trained encoder</strong> for future use.<ul>
 <li>You can use it as single solution (e.g. get class label probabilities).</li>
-<li>It can be a pretrained part of other neural network.</li>
+<li>Or it can be a pretrained part of other neural network.</li>
 </ul>
 </li>
 <li><strong>Use encoder</strong> in your project.<ul>
@@ -225,12 +226,11 @@ Tools for batch collate can be found in the selected framework package.</li>
 </li>
 </ol>
 <h2 id="how-to-create-your-own-components">How to create your own components</h2>
-<p>Your task may require some specific solution. 
-You may create a new component for every library modules. 
-There are links with description:</p>
+<p>It is possible create specific component for every library modules. 
+Here are the links to the detailed description:</p>
 <ul>
-<li><code>ptls.data_load</code> - new data processing tools and datasets for new type of data. <a href="#">Link TBD</a></li>
-<li><code>ptls.frames</code> - new modules which train network for your problem. <a href="#">Link TBD</a></li>
+<li><code>ptls.data_load</code> - new data processing tools and datasets for new types of data. <a href="#">Link TBD</a></li>
+<li><code>ptls.frames</code> - new modules which train network for specific problems. <a href="#">Link TBD</a></li>
 <li>New layers for <code>ptls.nn</code>. <a href="#">Link TBD</a></li>
 </ul>
               
@@ -280,5 +280,5 @@ There are links with description:</p>
 
 <!--
 MkDocs version : 1.3.0
-Build Date UTC : 2022-07-06 06:59:53.913309+00:00
+Build Date UTC : 2022-07-25 13:43:52.018838+00:00
 -->

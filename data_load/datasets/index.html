@@ -70,6 +70,8 @@
                   </li>
                   <li class="toctree-l1 current"><a class="reference internal current" href="#">ptls</a>
     <ul class="current">
+                <li class="toctree-l2"><a class="reference internal" href="../../ptls_preprocessing/">ptls.preprocessing</a>
+                </li>
                 <li class="toctree-l2 current"><a class="reference internal current" href="#">ptls.data_load</a>
     <ul class="current">
                 <li class="toctree-l3"><a class="reference internal" href="../padded_batch/">padded batch</a>
@@ -78,13 +80,19 @@
     <ul class="current">
     <li class="toctree-l4"><a class="reference internal" href="#simple-example">Simple example</a>
     </li>
-    <li class="toctree-l4"><a class="reference internal" href="#i_filters-iterable-filters">i_filters - iterable filters</a>
+    <li class="toctree-l4"><a class="reference internal" href="#map-and-iterable">map and iterable</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#i_filters-and-f_augmentations">i_filters and f_augmentations</a>
     </li>
     <li class="toctree-l4"><a class="reference internal" href="#in-memory-data">In memory data</a>
     </li>
     <li class="toctree-l4"><a class="reference internal" href="#parquet-file-read">Parquet file read</a>
     </li>
-    <li class="toctree-l4"><a class="reference internal" href="#classes">Classes</a>
+    <li class="toctree-l4"><a class="reference internal" href="#persist-dataset">Persist dataset</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#augmentations_1">Augmentations</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#classes-and-functions">Classes and functions</a>
     </li>
     </ul>
                 </li>
@@ -149,8 +157,28 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
             <div class="section" itemprop="articleBody">
               
-                <h1 id="ptlsdata_loaddatasets"><code>ptls.data_load.datasets</code></h1>
+                <h1 id="how-to-use-ptlsdata_loaddatasets-datasets">How to use <code>ptls.data_load.datasets</code> datasets</h1>
 <p>Here are the datasets (<code>torch.utils.data.Dataset</code>) which assure interface to the data.</p>
+<p>For data prepared in memory use:</p>
+<ol>
+<li><code>MemoryMapDataset</code> with <code>i_filters</code></li>
+<li><code>AugmentationDataset</code> with <code>f_augmentations</code> if needed</li>
+<li>endpoint map dataset from <code>ptls.frames</code></li>
+</ol>
+<p>For small (map mode) parquet data use:</p>
+<ol>
+<li><code>ParquetDataset</code> with <code>i_filters</code></li>
+<li><code>PersistDataset</code></li>
+<li><code>AugmentationDataset</code> with <code>f_augmentations</code> if needed</li>
+<li>endpoint map dataset from <code>ptls.frames</code></li>
+</ol>
+<p>For large (iterable mode) parquet data use:</p>
+<ol>
+<li><code>ParquetDataset</code> with <code>i_filters</code></li>
+<li><code>AugmentationDataset</code> with <code>f_augmentations</code> if needed</li>
+<li>endpoint iterable dataset from <code>ptls.frames</code></li>
+</ol>
+<p>Other dataset order and combination are possible but not tested.</p>
 <h2 id="simple-example">Simple example</h2>
 <p>Dict features in a list is a simple example of data.
 Python's <code>list</code> have the same interface as <code>torch.Dataset</code>, so you can just provide it to dataloader.</p>
@@ -176,7 +204,37 @@ for batch in dl:
 </code></pre>
 <p>In this example we use simple list as dataset.</p>
 <p>Sometimes you need to make changes in the dataset. We propose a filter approach for this.</p>
-<h2 id="i_filters-iterable-filters"><code>i_filters</code> - iterable filters</h2>
+<h2 id="map-and-iterable">map and iterable</h2>
+<p>There are the types of torch datasets.
+More info about <a href="https://pytorch.org/docs/stable/data.html#dataset-types">dataset types</a> to understand <code>map</code> and <code>iterable</code>.</p>
+<p>Dataloader choose a way of iteration based on type his dataset.
+In out pipeline Dataloader works with endpoint dataset from <code>ptls.frames</code>.
+So the type of endpoint dataset from <code>ptls.frames</code> choose a way of iteration.</p>
+<p>Map dataset provide better shuffle. Iterable dataset requires less memory.</p>
+<blockquote>
+<p><strong>Warning</strong> for multiprocessing dataloader</p>
+<p>Each worker use the same source data.</p>
+<p>Map dataloader knows dataset <code>len</code> and uses <code>sampler</code> to randomly split all indexes from <code>range(o, len)</code> between workers.
+So each worker use his own part of data.</p>
+<p>Iterable dataloader can just iterate over the source data. In default case each worker iterate the same data
+and <strong>output are multiplied</strong> by worker count.</p>
+<p>To avoid this iterable datasets should implement a way to split a data between workers.</p>
+</blockquote>
+<p>Multiprocessing split implementation:</p>
+<ul>
+<li><code>ParquetDataset</code> implement split it and works correct</li>
+<li><code>i_filters</code> and <code>f_augmentations</code> don't contain a data and works correct</li>
+<li>Iterable endpoint datasets works correct with iterable source</li>
+<li>Iterable endpoint datasets <strong>multiply data with map source</strong></li>
+<li><code>PersistDataset</code> iterate input during initialisation. Usually this happens out of dataloader in single main process.
+So it works correct.</li>
+</ul>
+<h2 id="i_filters-and-f_augmentations"><code>i_filters</code> and <code>f_augmentations</code></h2>
+<ul>
+<li><code>i_filters</code> - iterable filters</li>
+<li><code>f_augmentations</code> - augmentation functions</li>
+</ul>
+<h3 id="filters">Filters</h3>
 <p><code>ptls</code> propose filters for dataset transformation. All of them are in <code>ptls.data_load.iterable_processing</code>.
 These filter implemented in generator-style. Call filter object to get generator with modified records.</p>
 <pre><code class="language-python">from ptls.data_load.iterable_processing import SeqLenFilter
@@ -188,8 +246,51 @@ for rec in i_filter(data_list):
 <p>There were 3 examples in the list, it became 2 cause SeqLenFilter drop short sequence.</p>
 <p>Many kinds of filters possible: dropping records, multiply records, records transformation.</p>
 <p><code>i_filters</code> can be chained. Datasets provide a convenient way to do it. 
-All datasets in <code>ptls.data_load.datasets</code> support <code>i_filters</code>. 
+Many datasets in <code>ptls.data_load.datasets</code> support <code>i_filters</code>. 
 They takes <code>i_filters</code> as list of <code>iterable_processing</code> objects.</p>
+<h3 id="augmentations">Augmentations</h3>
+<p>Sometimes we have to change an items from train data. This is <code>augmentations</code>.
+They are in <code>ptls.data_load.augmentations</code>.</p>
+<p>Example:</p>
+<pre><code class="language-python">from ptls.data_load.augmentations import RandomSlice
+
+f_augmentation = RandomSlice(min_len=4, max_len=10)
+for rec in data_list:
+    new_rec = f_augmentation(rec)
+    print(new_rec)
+</code></pre>
+<p>Here <code>RandomSlice</code> augmentation take a random slice from source record.</p>
+<h3 id="compare">Compare</h3>
+<table>
+<thead>
+<tr>
+<th><code>i_filter</code></th>
+<th><code>f_augmentation</code></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>May change record. Result is always the same</td>
+<td>May change record. Result is random</td>
+</tr>
+<tr>
+<td>Place it be before persist stage to run it once and save total cpu resource</td>
+<td>Don't place it before persist stage because it kills the random</td>
+</tr>
+<tr>
+<td>Can delete items</td>
+<td>Can not delete items</td>
+</tr>
+<tr>
+<td>Can yield new items</td>
+<td>Can not create new items</td>
+</tr>
+<tr>
+<td>Works a generator and requires iterable processing</td>
+<td>Works as a function can be both map or iterable</td>
+</tr>
+</tbody>
+</table>
 <h2 id="in-memory-data">In memory data</h2>
 <p>In memory data is common case. Data can a list or generator with feature dicts.</p>
 <pre><code class="language-python">import torch
@@ -211,7 +312,6 @@ def data_gen(n):
             'id': f'user_{i}'
         }
 </code></pre>
-<p>More info about <a href="https://pytorch.org/docs/stable/data.html#dataset-types">dataset types</a> to understand <code>map</code> and <code>iterable</code>.</p>
 <p><code>ptls.data_load.datasets.MemoryMapDataset</code>:</p>
 <ul>
 <li>implements <code>map</code> dataset</li>
@@ -224,6 +324,11 @@ def data_gen(n):
 <li>just iterates over the data</li>
 <li>looks like a generator</li>
 </ul>
+<blockquote>
+<p><strong>Warning</strong></p>
+<p>Currently <code>MemoryIterableDataset</code> don`t support initial data split between workers.
+We don't recommend use it without modification.</p>
+</blockquote>
 <p>Both datasets support any kind of input: list or generator.
 As all datasets supports tha same format (list or generator) as input and output they can be chained.
 This make sense for some cases.</p>
@@ -281,25 +386,67 @@ See <code>demo/pyspark-parquet.ipynb</code> with example of data preprocessing w
 <p><code>ptls.data_load.datasets.ParquetDataset</code>: </p>
 <ul>
 <li>implements <code>iterable</code> dataset</li>
+<li>works correct with multiprocessing dataloader</li>
 <li>looks like a generator</li>
 <li>supports <code>i_filters</code></li>
 </ul>
 <p>You can feed <code>ParquetDataset</code> directly fo dataloader for <code>iterable</code> way of usage.
 Cou can combine <code>ParquetDataset</code> with <code>MemoryMapDataset</code> to <code>map</code> way of usage.</p>
 <p><code>ParquetDataset</code> requires parquet file names. Usually <code>spark</code> saves many parquet files for one dataset, 
-depending on the number of partitions. You can get all file names with <code>ptls.data_load.datasets.ParquetFiles</code>.
+depending on the number of partitions.
+You can get all file names with <code>ptls.data_load.datasets.ParquetFiles</code> or <code>ptls.data_load.datasets.parquet_file_scan</code>.
 Many files for one dataset allows you to:</p>
 <ul>
 <li>control amount of data by reading more or less files</li>
 <li>split data on train, valid, test</li>
 </ul>
-<h2 id="classes">Classes</h2>
+<h2 id="persist-dataset">Persist dataset</h2>
+<p><code>ptls.data_load.datasets.PersistDataset</code> store items from source dataset to the memory.</p>
+<p>If you source data is iterator (like python generator or <code>ParquetDataset</code>) 
+all <code>i_filters</code> will be called each time when you access the data.
+Persist the data into memory and <code>i_filters</code> will be called once.
+Much memory may be used to store all dataset items.
+Data access is faster.</p>
+<p>Persisted iterator have <code>len</code> and can be randomly accessed by index.</p>
+<h2 id="augmentations_1">Augmentations</h2>
+<p>Class <code>ptls.data_load.datasets.AugmentationDataset</code> is a way to apply augmentations.
+Example:</p>
+<pre><code class="language-python">from ptls.data_load.datasets import AugmentationDataset, PersistDataset, ParquetDataset
+from ptls.data_load.augmentations import AllTimeShuffle, DropoutTrx
+
+train_data = AugmentationDataset(
+    f_augmentations=[
+        AllTimeShuffle(),
+        DropoutTrx(trx_dropout=0.01),
+    ],
+    data=PersistDataset(
+        data=ParquetDataset(...),
+    ),
+)
+</code></pre>
+<p>Here we are using iterable <code>ParquetDataset</code> as the source, loading it into memory using <code>PersistDataset</code>. 
+Then, each time we access the data, we apply two augmentation functions to the items stored in the <code>PersistDataset</code>.</p>
+<p><code>AugmentationDataset</code> also works in iterable mode. Previous example will be like this:</p>
+<pre><code class="language-python">train_data = AugmentationDataset(
+    f_augmentations=[
+        AllTimeShuffle(),
+        DropoutTrx(trx_dropout=0.01),
+    ],
+    data=ParquetDataset(...),
+)
+</code></pre>
+<h2 id="classes-and-functions">Classes and functions</h2>
 <p>See docstrings for classes:</p>
 <ul>
 <li><code>ptls.data_load.datasets.MemoryMapDataset</code></li>
 <li><code>ptls.data_load.datasets.MemoryIterableDataset</code></li>
 <li><code>ptls.data_load.datasets.ParquetFiles</code></li>
 <li><code>ptls.data_load.datasets.ParquetDataset</code></li>
+<li><code>ptls.data_load.datasets.PersistDataset</code></li>
+</ul>
+<p>See docstrings for functions:</p>
+<ul>
+<li><code>ptls.data_load.datasets.parquet_file_scan</code></li>
 </ul>
               
             </div>
