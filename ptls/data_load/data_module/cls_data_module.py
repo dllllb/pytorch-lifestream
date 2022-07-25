@@ -4,7 +4,7 @@ import logging
 import pytorch_lightning as pl
 import numpy as np
 import ast
-from embeddings_validation.file_reader import TargetFile, ID_TYPE_MAPPING
+from embeddings_validation.file_reader import TargetFile
 from torch.utils.data import DataLoader
 from tqdm.auto import tqdm
 from sklearn.model_selection import train_test_split
@@ -14,7 +14,6 @@ import glob
 from ptls.data_load import padded_collate, padded_collate_distribution_target, IterableChain, IterableAugmentations
 from ptls.data_load.augmentations.build_augmentations import build_augmentations
 from ptls.data_load.data_module.map_augmentation_dataset import MapAugmentationDataset
-from ptls.data_load.iterable_processing.category_size_clip import CategorySizeClip
 from ptls.data_load.iterable_processing.feature_filter import FeatureFilter
 from ptls.data_load.iterable_processing.feature_type_cast import FeatureTypeCast
 from ptls.data_load.iterable_processing.id_filter import IdFilter
@@ -22,6 +21,7 @@ from ptls.data_load.iterable_processing.iterable_shuffle import IterableShuffle
 from ptls.data_load.iterable_processing.seq_len_filter import SeqLenFilter
 from ptls.data_load.iterable_processing.target_join import TargetJoin
 from ptls.data_load.datasets.parquet_dataset import ParquetFiles, ParquetDataset
+from ptls.data_load.utils import collate_target
 
 
 logger = logging.getLogger(__name__)
@@ -36,7 +36,8 @@ class ClsDataModuleTrain(pl.LightningDataModule):
                  pl_module,
                  fold_id,
                  test=None,
-                 distribution_target_task=False):
+                 distribution_target_task=False,
+                 distribution_target_size=None):
         super().__init__()
 
         self.fold_id = fold_id
@@ -44,8 +45,16 @@ class ClsDataModuleTrain(pl.LightningDataModule):
         assert self._type in ('map', 'iterable')
 
         self.distribution_target_task = distribution_target_task
-        self.y_function = int if not self.distribution_target_task else lambda x: \
-                                                    np.array(ast.literal_eval(x), dtype=object)
+        if distribution_target_size is None:
+            self.y_function = int if not self.distribution_target_task else \
+                lambda x: np.array(ast.literal_eval(x), dtype=object)
+        elif distribution_target_size == 0:
+            self.y_function = np.float32
+        elif isinstance(distribution_target_size, int):
+            self.y_function = lambda x: collate_target(ast.literal_eval(x), distribution_target_size)
+        else:
+            raise AttributeError(f"Undefined distribution target size: {distribution_target_size}")
+
         self.setup_conf = setup
         self.train_conf = train
         self.valid_conf = valid
@@ -120,6 +129,9 @@ class ClsDataModuleTrain(pl.LightningDataModule):
         else:
             raise AttributeError(f'Unknown split strategy: {self.setup_conf.split_by}')
 
+    def setup_iterable_parts(self):
+        raise NotImplementedError()
+
     def read_external_splits(self):
         if self.setup_conf.split_by == 'embeddings_validation':
             with open(self.setup_conf.fold_info, 'r') as f:
@@ -165,7 +177,6 @@ class ClsDataModuleTrain(pl.LightningDataModule):
 
         yield FeatureFilter(keep_feature_names=self.category_names,
                             drop_feature_names=self.setup_conf.get('drop_feature_names', None))
-        yield CategorySizeClip(self.category_max_size)
 
         if self._type == 'iterable':
             # all processing in single chain

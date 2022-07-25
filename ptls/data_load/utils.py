@@ -50,3 +50,15 @@ def collate_feature_dict(batch):
                 new_x[k] = v
 
     return PaddedBatch(new_x, lengths)
+
+
+def collate_target(x, num=1):
+    vec = np.array(x, dtype=np.float32)
+    if num == 1:
+        return vec.sum()
+    elif abs(num) >= len(vec):
+        return vec
+    elif num < 0:
+        return vec[:abs(num)]
+    else:
+        return np.hstack((vec[:num-1], vec[num-1:].sum()))[:len(vec)]
