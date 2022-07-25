@@ -1,7 +1,7 @@
 import pandas as pd
 from pathlib import Path
 
-from ptls.data_preprocessing.pandas_preprocessor import PandasDataPreprocessor
+from ptls.preprocessing import PandasDataPreprocessor
 
 
 def test_pandas_data_preprocessor():
@@ -14,11 +14,11 @@ def test_pandas_data_preprocessor():
     })
     pp = PandasDataPreprocessor(
         col_id='id',
-        cols_event_time='event_time',
+        col_event_time='event_time',
+        event_time_transformation='none',
         cols_category=['cat'],
-        cols_log_norm=['amnt'],
+        cols_numerical=['amnt'],
         cols_identity=['labels'],
-        time_transformation='none',
     )
     features = pp.fit_transform(data)
     features = pp.transform(data)
@@ -31,14 +31,13 @@ def test_csv():
 
     preprocessor = PandasDataPreprocessor(
         col_id='client_id',
-        cols_event_time='trans_date',
-        time_transformation='float',
+        col_event_time='trans_date',
+        event_time_transformation='none',
         cols_category=["trans_date", "small_group"],
-        cols_log_norm=["amount_rur"],
-        cols_identity=[],
-        print_dataset_info=False,
+        cols_numerical=["amount_rur"],
+        return_records=False,
     )
 
-    dataset = preprocessor.fit_transform(source_data)
+    dataset = preprocessor.fit_transform(source_data).to_dict(orient='records')
     assert len(dataset) == 100
     assert len(dataset[0].keys()) == 5

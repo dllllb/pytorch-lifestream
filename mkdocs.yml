@@ -13,6 +13,7 @@ nav:
             - 'Inference': '#'
 
         - 'ptls':
+            - 'ptls.preprocessing': 'ptls_preprocessing.md'
             - 'ptls.data_load':
                 - 'padded batch': 'data_load/padded_batch.md'
                 - 'datasets': 'data_load/datasets.md'

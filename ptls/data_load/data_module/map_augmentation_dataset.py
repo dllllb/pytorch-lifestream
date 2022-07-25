@@ -1,8 +1,11 @@
+import warnings
+
 from torch.utils.data import Dataset
 
 
 class MapAugmentationDataset(Dataset):
     def __init__(self, base_dataset, a_chain=None):
+        warnings.warn('Use `ptls.data_load.datasets.AugmentationDataset`', DeprecationWarning)
         self.base_dataset = base_dataset
         self.a_chain = a_chain
 
