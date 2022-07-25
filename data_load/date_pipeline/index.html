@@ -145,22 +145,30 @@
               
                 <h1 id="data-pipeline">Data pipeline</h1>
 <p>All process support <code>map</code> and <code>iterable</code> data.</p>
-<p>There are steps in pipeline:
-1. Data preparation:
-   - Split folds here
-   - Save to parquet file or keep in memory
-   - Data format is a dict with feature arrays or scalars
-2. Data interface - provide access to any prepared data
-   - Data format is a dict with feature arrays or scalars
-   - Data can be taken with <code>__get_item__</code> of <code>__iter__</code> methods
-   - Input arrays are any type, output are <code>torch.Tensor</code>
-   - Tuple samples aren't supported at this stage
-   - Parquet file reading are here
-   - Augmentations are here
-3. Data endpoints - provide a dataloader
-   - Target for supervised task extracted here from dict
-   - Target for unsupervised task defined here
-   - No augmentation here. Should be implemented as part of endpoints if required</p>
+<p>There are steps in pipeline:</p>
+<ol>
+<li>Data preparation:<ul>
+<li>Split folds here</li>
+<li>Save to parquet file or keep in memory</li>
+<li>Data format is a dict with feature arrays or scalars</li>
+</ul>
+</li>
+<li>Data interface - provide access to any prepared data<ul>
+<li>Data format is a dict with feature arrays or scalars</li>
+<li>Data can be taken with <code>__get_item__</code> of <code>__iter__</code> methods</li>
+<li>Input arrays are any type, output are <code>torch.Tensor</code></li>
+<li>Tuple samples aren't supported at this stage</li>
+<li>Parquet file reading are here</li>
+<li>Augmentations are here</li>
+</ul>
+</li>
+<li>Data endpoints - provide a dataloader<ul>
+<li>Target for supervised task extracted here from dict</li>
+<li>Target for unsupervised task defined here</li>
+<li>No augmentation here. Should be implemented as part of endpoints if required</li>
+</ul>
+</li>
+</ol>
               
             </div>
           </div><footer>
