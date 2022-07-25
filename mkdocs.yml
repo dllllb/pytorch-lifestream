@@ -15,6 +15,7 @@ nav:
         - 'ptls':
             - 'ptls.preprocessing': 'ptls_preprocessing.md'
             - 'ptls.data_load':
+                - 'dataset pipeline': 'data_load/date_pipeline.md'
                 - 'padded batch': 'data_load/padded_batch.md'
                 - 'datasets': 'data_load/datasets.md'
             - 'ptls.nn':
