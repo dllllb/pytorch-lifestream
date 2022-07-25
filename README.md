@@ -47,6 +47,7 @@ pytest
 - Self-supervided embeddings in CatBoost [notebook](demo/coles-catboost.ipynb)
 - Self-supervided training and fine-tuning [notebook](demo/coles-finetune.ipynb)
 - Self-supervised TrxEncoder only training with Masked Language Model task and fine-tuning [notebook](demo/mlm-emb.ipynb)
+- Pandas data preprocessing options [notebook](demo/preprocessing-demo.ipynb)
 - PySpark and Parquet for data preprocessing [notebook](demo/pyspark-parquet.ipynb)
 - Fast inference on large dataset [notebook](demo/extended_inference.ipynb)
 
