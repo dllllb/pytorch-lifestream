@@ -95,7 +95,7 @@ Usually `collate_fn` pad and pack sequences into 2d tensors with shape `(B, T)`,
 Each feature packed separately.
 
 Output is `PaddedBatch` type which collect together packed sequences and lengths.
-`PaddedBatch` compatible with all `putorch-lifestream` modules.
+`PaddedBatch` compatible with all `pytorch-lifestream` modules.
 
 Input and output example:
 ```python
