@@ -48,8 +48,7 @@ class CPC_Loss(nn.Module):
 
         step_losses = []
         for positive_pred_i, neg_pred_i in zip(positive_preds, neg_preds):
-            step_loss = -F.log_softmax(torch.cat([positive_pred_i.unsqueeze(-1), neg_pred_i], dim=-1), dim=-1)[:, :,
-                         0].mean()
+            step_loss = -F.log_softmax(torch.cat([positive_pred_i.unsqueeze(-1), neg_pred_i], dim=-1), dim=-1)[:, :, 0].mean()
             step_losses.append(step_loss)
 
         loss = torch.stack(step_losses).mean()
