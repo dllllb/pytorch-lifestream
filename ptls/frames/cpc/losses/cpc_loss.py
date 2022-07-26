@@ -37,7 +37,6 @@ class CPC_Loss(nn.Module):
             positive_preds.append(positive_pred_i)
 
             neg_pred_i = ce_i.matmul(neg_samples.transpose(-2, -1))
-            neg_pred_i = neg_pred_i
             neg_preds.append(neg_pred_i)
 
         return positive_preds, neg_preds
