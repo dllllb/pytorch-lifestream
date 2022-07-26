@@ -1,29 +1,19 @@
-import json
+import ast, glob, json, random, warnings
 import logging
-import warnings
 
 import pytorch_lightning as pl
 import numpy as np
-import ast
 from embeddings_validation.file_reader import TargetFile
 from torch.utils.data import DataLoader
 from tqdm.auto import tqdm
 from sklearn.model_selection import train_test_split
-import random
-import glob
 
 from ptls.data_load import padded_collate, padded_collate_distribution_target, IterableChain, IterableAugmentations
 from ptls.data_load.augmentations.build_augmentations import build_augmentations
 from ptls.data_load.data_module.map_augmentation_dataset import MapAugmentationDataset
-from ptls.data_load.iterable_processing.feature_filter import FeatureFilter
-from ptls.data_load.iterable_processing.feature_type_cast import FeatureTypeCast
-from ptls.data_load.iterable_processing.id_filter import IdFilter
-from ptls.data_load.iterable_processing.iterable_shuffle import IterableShuffle
-from ptls.data_load.iterable_processing.seq_len_filter import SeqLenFilter
-from ptls.data_load.iterable_processing.target_join import TargetJoin
+from ptls.data_load.iterable_processing import FeatureFilter, FeatureTypeCast, IdFilter, IterableShuffle, SeqLenFilter, TargetJoin, TargetExtractor
 from ptls.data_load.datasets.parquet_dataset import ParquetFiles, ParquetDataset
 from ptls.data_load.utils import collate_target
-
 
 logger = logging.getLogger(__name__)
 
@@ -78,22 +68,25 @@ class ClsDataModuleTrain(pl.LightningDataModule):
         self.train_dataset = None
         self.valid_dataset = None
         self.test_dataset = None
+        self.predict_dataset = None
         self._train_targets = None
         self._valid_targets = None
         self._test_targets = None
 
         self._fold_info = None
+        self.data_is_prepared = False
 
     def prepare_data(self):
-        if 'dataset_files' in self.setup_conf:
-            self.setup_iterable_files()
-        elif 'dataset_parts' in self.setup_conf:
-            self.setup_iterable_parts()
-        else:
-            raise AttributeError(f'Missing dataset definition. One of `dataset_parts` or `dataset_files` expected')
-
-        if self._type == 'map':
-            self.setup_map()
+        if not self.data_is_prepared:
+            if 'dataset_files' in self.setup_conf:
+                self.setup_iterable_files()
+            elif 'dataset_parts' in self.setup_conf:
+                self.setup_iterable_parts()
+            else:
+                raise AttributeError(f'Missing dataset definition. One of `dataset_parts` or `dataset_files` expected')
+            if self._type == 'map':
+                self.setup_map()
+            self.data_is_prepared = True
 
     def setup_iterable_files(self):
         if self.setup_conf.get('split_by', None) == 'embeddings_validation':
@@ -130,6 +123,11 @@ class ClsDataModuleTrain(pl.LightningDataModule):
                 post_processing=IterableChain(*self.build_iterable_processing('test')),
                 shuffle_files=False,
             )
+            self.predict_dataset = ParquetDataset(
+                test_data_files,
+                post_processing=IterableChain(*self.build_iterable_processing('predict')),
+                shuffle_files=False,
+            )
 
         else:
             raise AttributeError(f'Unknown split strategy: {self.setup_conf.split_by}')
@@ -163,7 +161,7 @@ class ClsDataModuleTrain(pl.LightningDataModule):
                 yield IdFilter(id_col=self.col_id, relevant_ids=self._train_targets.df[self.col_id].values.tolist())
             elif part == 'valid':
                 yield IdFilter(id_col=self.col_id, relevant_ids=self._valid_targets.df[self.col_id].values.tolist())
-            elif part == 'test':
+            elif part in ('test', 'predict'):
                 yield IdFilter(id_col=self.col_id, relevant_ids=self._test_targets.df[self.col_id].values.tolist())
             else:
                 raise AttributeError(f'Unknown part: {part}')
@@ -177,6 +175,8 @@ class ClsDataModuleTrain(pl.LightningDataModule):
             yield TargetJoin(self.col_id, self._valid_targets.df.set_index(self.col_id)[self.col_target].to_dict(), self.y_function)
         elif part == 'test':
             yield TargetJoin(self.col_id, self._test_targets.df.set_index(self.col_id)[self.col_target].to_dict(), self.y_function)
+        elif part == 'predict':
+            yield TargetExtractor(self.col_id, drop_from_features=False)
         else:
             raise AttributeError(f'Unknown part: {part}')
 
@@ -187,7 +187,6 @@ class ClsDataModuleTrain(pl.LightningDataModule):
             # all processing in single chain
             if part == 'train':
                 yield IterableShuffle(self.train_conf.buffer_size)
-
             yield IterableAugmentations(self.build_augmentations(part))
 
     def build_augmentations(self, part):
@@ -195,7 +194,7 @@ class ClsDataModuleTrain(pl.LightningDataModule):
             return build_augmentations(self.train_conf.augmentations)
         elif part == 'valid':
             return build_augmentations(self.valid_conf.augmentations)
-        elif part == 'test':
+        elif part in ('test', 'predict'):
             return build_augmentations(self.test_conf.augmentations)
 
     def train_dataloader(self):
@@ -215,6 +214,8 @@ class ClsDataModuleTrain(pl.LightningDataModule):
         logger.info(f'Loaded {len(self.valid_dataset)} for valid')
         self.test_dataset = list(tqdm(iter(self.test_dataset)))
         logger.info(f'Loaded {len(self.test_dataset)} for test')
+        self.predict_dataset = list(tqdm(iter(self.predict_dataset)))
+        logger.info(f'Loaded {len(self.predict_dataset)} for predict')
 
         self.train_dataset = MapAugmentationDataset(
             base_dataset=self.train_dataset,
@@ -227,6 +228,10 @@ class ClsDataModuleTrain(pl.LightningDataModule):
         self.test_dataset = MapAugmentationDataset(
             base_dataset=self.test_dataset,
             a_chain=self.build_augmentations('test'),
+        )
+        self.predict_dataset = MapAugmentationDataset(
+            base_dataset=self.predict_dataset,
+            a_chain=self.build_augmentations('predict'),
         )
 
     def val_dataloader(self):
@@ -241,6 +246,14 @@ class ClsDataModuleTrain(pl.LightningDataModule):
         return DataLoader(
             dataset=self.test_dataset,
             collate_fn=padded_collate_distribution_target if self.distribution_target_task else padded_collate,
+            num_workers=self.test_conf.num_workers,
+            batch_size=self.test_conf.batch_size,
+        )
+
+    def predict_dataloader(self):
+        return DataLoader(
+            dataset=self.predict_dataset,
+            collate_fn=padded_collate,
             num_workers=self.test_conf.num_workers,
             batch_size=self.test_conf.batch_size,
         )

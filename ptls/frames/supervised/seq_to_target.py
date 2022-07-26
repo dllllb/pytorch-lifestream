@@ -1,6 +1,7 @@
 import logging
 from copy import deepcopy
 
+import pandas as pd
 import pytorch_lightning as pl
 import torch
 import torchmetrics
@@ -151,6 +152,20 @@ class SequenceToTarget(pl.LightningModule):
             value = mf.compute().item()
             self.log(f'test_{name}', value, prog_bar=False)
 
+    def predict_step(self, batch, batch_idx, dataloader_idx=0):
+        if isinstance(batch, PaddedBatch):
+            return self(batch)
+        x, seq_id = batch
+        pred = self.seq_encoder(x)
+        x = x.drop_seq_features()
+        x["seq_id"] = seq_id
+        if self.head is not None:
+            pred = self.head(pred)
+            x["out"] = pred
+        else:
+            x["emb"] = pred
+        return self.to_pandas(x)
+
     def configure_optimizers(self):
         if self.hparams.pretrained_lr is not None:
             if self.hparams.pretrained_lr == 'freeze':
@@ -170,3 +185,26 @@ class SequenceToTarget(pl.LightningModule):
         optimizer = self.optimizer_partial(parameters)
         scheduler = self.lr_scheduler_partial(optimizer)
         return [optimizer], [scheduler]
+
+    @staticmethod
+    def to_pandas(x):
+        expand_cols = []
+        scalar_features = {}
+
+        for k, v in x.items():
+            if type(v) is torch.Tensor:
+                v = v.cpu().numpy()
+
+            if len(v.shape) == 1:
+                scalar_features[k] = v
+            elif len(v.shape) == 2:
+                expand_cols.append(k)
+            else:
+                scalar_features[k] = None
+
+        dataframes = [pd.DataFrame(scalar_features)]
+        for col in expand_cols:
+            v = x[col].cpu().numpy()
+            dataframes.append(pd.DataFrame(v, columns=[f'{col}_{i:04d}' for i in range(v.shape[1])]))
+
+        return pd.concat(dataframes, axis=1)
