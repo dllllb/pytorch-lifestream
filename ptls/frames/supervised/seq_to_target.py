@@ -134,6 +134,7 @@ class SequenceToTarget(pl.LightningModule):
     def validation_step(self, batch, _):
         x, y = batch
         y_h = self(x)
+        self.log('val_loss', self.loss(y_h, y))
         for name, mf in self.valid_metrics.items():
             mf(y_h, y)
 

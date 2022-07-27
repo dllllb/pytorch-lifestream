@@ -3,6 +3,7 @@ import logging
 
 import pytorch_lightning as pl
 import numpy as np
+import pandas as pd
 from embeddings_validation.file_reader import TargetFile
 from torch.utils.data import DataLoader
 from tqdm.auto import tqdm
@@ -69,9 +70,11 @@ class ClsDataModuleTrain(pl.LightningDataModule):
         self.valid_dataset = None
         self.test_dataset = None
         self.predict_dataset = None
+
         self._train_targets = None
         self._valid_targets = None
         self._test_targets = None
+        self._predict_targets = None
 
         self._fold_info = None
         self.data_is_prepared = False
@@ -124,7 +127,7 @@ class ClsDataModuleTrain(pl.LightningDataModule):
                 shuffle_files=False,
             )
             self.predict_dataset = ParquetDataset(
-                test_data_files,
+                train_data_files + test_data_files,
                 post_processing=IterableChain(*self.build_iterable_processing('predict')),
                 shuffle_files=False,
             )
@@ -141,16 +144,17 @@ class ClsDataModuleTrain(pl.LightningDataModule):
                 self._fold_info = json.load(f)
 
         current_fold = self._fold_info[self.fold_id]
-        self._train_targets = TargetFile.load(current_fold['train']['path'])
-        self._valid_targets = TargetFile.load(current_fold['valid']['path'])
-        self._test_targets = TargetFile.load(current_fold['test']['path'])
+        self._train_targets = TargetFile.load(current_fold['train']['path']).df
+        self._valid_targets = TargetFile.load(current_fold['valid']['path']).df
+        self._test_targets = TargetFile.load(current_fold['test']['path']).df
+        self._predict_targets = pd.concat((self._valid_targets, self._test_targets))
 
         labeled_amount = self.train_conf.get('labeled_amount', None)
         if labeled_amount is not None:
             _len_orig = len(self._train_targets)
             if type(labeled_amount) is float:
                 labeled_amount = int(_len_orig * labeled_amount)
-            self._train_targets.df = self._train_targets.df.iloc[:labeled_amount]
+            self._train_targets = self._train_targets.iloc[:labeled_amount]
             logger.info(f'Reduced train amount from {_len_orig} to {len(self._train_targets)}')
 
     def build_iterable_processing(self, part):
@@ -158,11 +162,13 @@ class ClsDataModuleTrain(pl.LightningDataModule):
 
         if 'dataset_files' in self.setup_conf and self.setup_conf.split_by == 'embeddings_validation':
             if part == 'train':
-                yield IdFilter(id_col=self.col_id, relevant_ids=self._train_targets.df[self.col_id].values.tolist())
+                yield IdFilter(id_col=self.col_id, relevant_ids=self._train_targets[self.col_id].values.tolist())
             elif part == 'valid':
-                yield IdFilter(id_col=self.col_id, relevant_ids=self._valid_targets.df[self.col_id].values.tolist())
-            elif part in ('test', 'predict'):
-                yield IdFilter(id_col=self.col_id, relevant_ids=self._test_targets.df[self.col_id].values.tolist())
+                yield IdFilter(id_col=self.col_id, relevant_ids=self._valid_targets[self.col_id].values.tolist())
+            elif part == 'test':
+                yield IdFilter(id_col=self.col_id, relevant_ids=self._test_targets[self.col_id].values.tolist())
+            elif part == 'predict':
+                yield IdFilter(id_col=self.col_id, relevant_ids=self._predict_targets[self.col_id].values.tolist())
             else:
                 raise AttributeError(f'Unknown part: {part}')
 
@@ -170,11 +176,11 @@ class ClsDataModuleTrain(pl.LightningDataModule):
             yield SeqLenFilter(min_seq_len=self.train_conf.min_seq_len)
 
         if part == 'train':
-            yield TargetJoin(self.col_id, self._train_targets.df.set_index(self.col_id)[self.col_target].to_dict(), self.y_function)
+            yield TargetJoin(self.col_id, self._train_targets.set_index(self.col_id)[self.col_target].to_dict(), self.y_function)
         elif part == 'valid':
-            yield TargetJoin(self.col_id, self._valid_targets.df.set_index(self.col_id)[self.col_target].to_dict(), self.y_function)
+            yield TargetJoin(self.col_id, self._valid_targets.set_index(self.col_id)[self.col_target].to_dict(), self.y_function)
         elif part == 'test':
-            yield TargetJoin(self.col_id, self._test_targets.df.set_index(self.col_id)[self.col_target].to_dict(), self.y_function)
+            yield TargetJoin(self.col_id, self._test_targets.set_index(self.col_id)[self.col_target].to_dict(), self.y_function)
         elif part == 'predict':
             yield TargetExtractor(self.col_id, drop_from_features=False)
         else:
