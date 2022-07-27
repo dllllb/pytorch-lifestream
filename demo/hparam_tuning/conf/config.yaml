@@ -1,0 +1,7 @@
+preprocessing:
+  salt: '42'
+  fold_count: 5
+  data_path: data/
+  folds_path: data/folds/
+
+fold_id: 0
