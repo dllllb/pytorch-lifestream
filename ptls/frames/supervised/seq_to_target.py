@@ -130,6 +130,8 @@ class SequenceToTarget(pl.LightningModule):
     def training_epoch_end(self, outputs):
         for name, mf in self.train_metrics.items():
             self.log(f'train_{name}', mf.compute(), prog_bar=False)
+        for name, mf in self.train_metrics.items():
+            mf.reset()
 
     def validation_step(self, batch, _):
         x, y = batch
@@ -141,6 +143,8 @@ class SequenceToTarget(pl.LightningModule):
     def validation_epoch_end(self, outputs):
         for name, mf in self.valid_metrics.items():
             self.log(f'val_{name}', mf.compute(), prog_bar=True)
+        for name, mf in self.valid_metrics.items():
+            mf.reset()
 
     def test_step(self, batch, _):
         x, y = batch
@@ -152,6 +156,8 @@ class SequenceToTarget(pl.LightningModule):
         for name, mf in self.test_metrics.items():
             value = mf.compute().item()
             self.log(f'test_{name}', value, prog_bar=False)
+        for name, mf in self.test_metrics.items():
+            mf.reset()
 
     def predict_step(self, batch, batch_idx, dataloader_idx=0):
         if isinstance(batch, PaddedBatch):
