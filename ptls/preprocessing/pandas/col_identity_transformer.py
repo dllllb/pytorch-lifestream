@@ -19,6 +19,7 @@ class ColIdentityEncoder(ColTransformerPandasMixin, ColTransformer):
 
     """
     def transform(self, x):
-        x = x.assign(**{self.col_name_target: lambda x: x[self.col_name_original]})
+        x = self.attach_column(x, x[self.col_name_original].rename(self.col_name_target))
+
         x = super().transform(x)
         return x

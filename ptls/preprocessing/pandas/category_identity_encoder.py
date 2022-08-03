@@ -77,7 +77,7 @@ class CategoryIdentityEncoder(ColTransformerPandasMixin, ColCategoryTransformer)
 
     def transform(self, x: pd.DataFrame):
         pd_col = self.get_column(x)
-        x = x.assign(**{self.col_name_target: pd_col})
+        x = self.attach_column(x, pd_col.rename(self.col_name_target))
 
         min_index, max_index = pd_col.agg([min, max])
         if min_index < self.min_fit_index:

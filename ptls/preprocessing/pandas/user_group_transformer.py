@@ -51,7 +51,7 @@ class UserGroupTransformer(ColTransformerPandasMixin, ColTransformer):
                           for k, v in df.to_dict(orient='series').items()})
 
     def transform(self, x: pd.DataFrame):
-        x = x.assign(et_index=lambda x: x['event_time']).set_index([self.col_name_original, 'et_index'])
+        x = self.attach_column(x, x['event_time'].rename('et_index')).set_index([self.col_name_original, 'et_index'])
         x = x.sort_index().groupby(self.col_name_original)
         x = x.apply(self.df_to_feature_arrays).reset_index()
 

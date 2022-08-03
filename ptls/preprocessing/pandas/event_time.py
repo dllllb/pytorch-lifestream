@@ -36,6 +36,6 @@ class DatetimeToTimestamp(ColTransformerPandasMixin, ColTransformer):
         )
 
     def transform(self, x: pd.DataFrame):
-        x = x.assign(**{self.col_name_target: lambda x: dt_to_timestamp(x[self.col_name_original])})
+        x = self.attach_column(x, dt_to_timestamp(x[self.col_name_original]).rename(self.col_name_target))
         x = super().transform(x)
         return x
