@@ -75,6 +75,7 @@ class ABSModule(pl.LightningModule):
 
     def validation_epoch_end(self, outputs):
         self.log(self.metric_name, self._validation_metric.compute(), prog_bar=True)
+        self._validation_metric.reset()
 
     def configure_optimizers(self):
         optimizer = self._optimizer_partial(self.parameters())
