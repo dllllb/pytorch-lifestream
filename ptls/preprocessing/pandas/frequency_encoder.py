@@ -63,6 +63,6 @@ class FrequencyEncoder(ColTransformerPandasMixin, ColCategoryTransformer):
 
     def transform(self, x: pd.DataFrame):
         pd_col = x[self.col_name_original].astype(str)
-        x = x.assign(**{self.col_name_target: pd_col.map(self.mapping).fillna(self.other_values_code)})
+        x = self.attach_column(x, pd_col.map(self.mapping).fillna(self.other_values_code).rename(self.col_name_target))
         x = super().transform(x)
         return x
