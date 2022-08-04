@@ -101,7 +101,6 @@ class R_squared(DistributionTargets):
 class UnivMeanError(torchmetrics.Metric):
     """
     RMSE/MAE for multiple outputs with optional scaler.
-    Should be elaborated via adaptor-classes like in [ptls/nn/trx_encoder/scalers.py].
     """
     is_differentiable = True
     higher_is_better = False
@@ -131,7 +130,6 @@ class UnivMeanError(torchmetrics.Metric):
 class BucketAccuracy(torchmetrics.Metric):
     """
     Multiclass Accuracy for bucketized regression variable.
-    Should be elaborated via adaptor-classes like in [ptls/nn/trx_encoder/scalers.py].
     """
     is_differentiable = False
     higher_is_better = True
@@ -152,11 +150,12 @@ class BucketAccuracy(torchmetrics.Metric):
         self.y.append(y if y.dim() == 1 else y.sum(dim=1))
 
     def compute(self):
-        y1, y = torch.cat(self.y1).float(), torch.cat(self.y).float()
-        q = torch.linspace(0, 1, self.n_buckets + 1, dtype=y.dtype, device=y.device)[1:]
-        buckets = torch.quantile(y, q, interpolation="nearest")
-        y1 = torch.bucketize(y1, buckets, out_int32=True)
-        y = torch.bucketize(y, buckets, out_int32=True)
+        y1, y = torch.cat(self.y1).float().cpu(), torch.cat(self.y).float().cpu()
+        q = torch.linspace(0, 1, self.n_buckets + 1).float().cpu()[1:]
+        b1 = torch.quantile(y1, q, interpolation="nearest")
+        b = torch.quantile(y, q, interpolation="nearest")
+        y1 = torch.bucketize(y1, b1, out_int32=True)
+        y = torch.bucketize(y, b, out_int32=True)
         return torchmetrics.functional.accuracy(y1, y)
 
 
@@ -193,3 +192,31 @@ class JSDiv(torchmetrics.Metric):
 
     def compute(self):
         return self.psum / self.pnum
+
+
+class RankAUC(torchmetrics.Metric):
+    """
+    Universal definition for AUC-ROC as ranking metric.
+    """
+    is_differentiable = False
+    higher_is_better = True
+    full_state_update = False
+
+    def __init__(self, scaler=None, compute_on_cpu=True):
+        super().__init__(compute_on_cpu=compute_on_cpu)
+        self.scaler = scaler
+        self.add_state("a", default=[])
+        self.add_state("y", default=[])
+
+    def update(self, a, y):
+        if self.scaler is None:
+            self.a.append(a if a.dim() == 1 else a.sum(dim=1))
+        else:
+            self.a.append(self.scaler(a) if a.dim() == 1 else self.scaler(a).sum(dim=1))
+        self.y.append(y if y.dim() == 1 else y.sum(dim=1))
+
+    def compute(self):
+        a, y = torch.cat(self.a).float().cpu(), torch.cat(self.y).float().cpu()
+        ra = torch.heaviside(a.unsqueeze(0) - a.unsqueeze(1), torch.tensor([0.5]))
+        ry = torch.heaviside(y.unsqueeze(0) - y.unsqueeze(1), torch.tensor([0.0]))
+        return (ry * ra).sum() / ry.sum()

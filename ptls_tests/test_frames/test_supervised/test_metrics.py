@@ -1,5 +1,5 @@
 import torch
-from ptls.frames.supervised.metrics import BucketAccuracy, JSDiv, UnivMeanError, LogAccuracy
+from ptls.frames.supervised.metrics import BucketAccuracy, JSDiv, UnivMeanError, LogAccuracy, RankAUC
 from ptls.loss import ZILNLoss
 
 
@@ -54,3 +54,10 @@ def test_ziln_loss():
     assert loss(torch.zeros(y.shape[0], 2), y) >= min_loss
     assert loss(torch.zeros(y.shape[0], 3), y) >= min_loss
     assert loss(torch.zeros(y.shape[0], 3 + y.shape[1]), y) >= min_loss
+
+
+def test_rank_auc():
+    m = RankAUC()
+    assert m(torch.tensor([0.1, 0.5, 0.7, 0.9]), torch.arange(4).float()) == 1
+    assert m(torch.tensor([0.9, 0.7, 0.5, 0.1]), torch.arange(4).float()) == 0
+    assert m(torch.randn(10), torch.randn(10)) >= 0
