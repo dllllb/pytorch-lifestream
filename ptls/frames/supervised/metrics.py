@@ -4,7 +4,6 @@ import numpy as np
 import torch
 import torch.nn.functional as F
 import torchmetrics
-from torchmetrics.functional.classification import auroc
 from torch.special import entr
 
 from ptls.loss import cross_entropy, kl, mape_metric, mse_loss, r_squared
@@ -202,8 +201,9 @@ class RankAUC(torchmetrics.Metric):
     higher_is_better = True
     full_state_update = False
 
-    def __init__(self, scaler=None, compute_on_cpu=True):
+    def __init__(self, scaler=None, compute_on_cpu=True, max_size=22222):
         super().__init__(compute_on_cpu=compute_on_cpu)
+        self.max_size = max_size
         self.scaler = scaler
         self.add_state("a", default=[])
         self.add_state("y", default=[])
@@ -217,6 +217,9 @@ class RankAUC(torchmetrics.Metric):
 
     def compute(self):
         a, y = torch.cat(self.a).float().cpu(), torch.cat(self.y).float().cpu()
+        if a.shape[0] > self.max_size:
+            sample_idx = torch.randperm(a.shape[0])[:self.max_size]
+            a, y = a[sample_idx], y[sample_idx]
         ra = torch.heaviside(a.unsqueeze(0) - a.unsqueeze(1), torch.tensor([0.5]))
         ry = torch.heaviside(y.unsqueeze(0) - y.unsqueeze(1), torch.tensor([0.0]))
         return (ry * ra).sum() / ry.sum()
