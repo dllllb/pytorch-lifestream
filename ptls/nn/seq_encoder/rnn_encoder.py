@@ -101,7 +101,7 @@ class RnnEncoder(AbsSeqEncoder):
 
         # prepare initial state
         if self.trainable_starter == 'static':
-            starter_h = self.starter_h.expand(-1, shape[0], -1).contiguous()
+            starter_h = torch.tanh(self.starter_h.expand(-1, shape[0], -1).contiguous())
             if h_0 is None:
                 h_0 = starter_h
             elif h_0 is not None and not self.training:
