@@ -18,6 +18,7 @@ def _pb_shell(cls):
     return PBShell
 
 
+PBDropout = _pb_shell(torch.nn.Dropout)
 PBLinear = _pb_shell(torch.nn.Linear)
 PBLayerNorm = _pb_shell(torch.nn.LayerNorm)
 PBReLU = _pb_shell(torch.nn.ReLU)
