@@ -5,7 +5,7 @@ from .seq_encoder import (
     RnnSeqEncoder, TransformerSeqEncoder, LongformerSeqEncoder, AggFeatureSeqEncoder
 )
 
-from .pb import PBLinear, PBL2Norm, PBLayerNorm, PBReLU
+from .pb import PBDropout, PBLinear, PBL2Norm, PBLayerNorm, PBReLU
 
 from .pb_feature_extract import PBFeatureExtract
 
