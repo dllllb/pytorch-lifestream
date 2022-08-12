@@ -78,6 +78,7 @@ class ClsDataModuleTrain(pl.LightningDataModule):
 
         self._fold_info = None
         self.data_is_prepared = False
+        self.do_test = "test_data_path" in setup.dataset_files
 
     def prepare_data(self):
         if not self.data_is_prepared:
@@ -108,7 +109,7 @@ class ClsDataModuleTrain(pl.LightningDataModule):
                     test_data_files = ParquetFiles(self.setup_conf.dataset_files.test_data_path, test_ixes).data_files
             else:
                 train_data_files = ParquetFiles(self.setup_conf.dataset_files.train_data_path).data_files
-                test_data_files = ParquetFiles(self.setup_conf.dataset_files.test_data_path).data_files
+                test_data_files = ParquetFiles(self.setup_conf.dataset_files.test_data_path).data_files if self.do_test else []
 
             self.read_external_splits()
             self.train_dataset = ParquetDataset(
@@ -121,11 +122,12 @@ class ClsDataModuleTrain(pl.LightningDataModule):
                 post_processing=IterableChain(*self.build_iterable_processing('valid')),
                 shuffle_files=False,
             )
-            self.test_dataset = ParquetDataset(
-                test_data_files,
-                post_processing=IterableChain(*self.build_iterable_processing('test')),
-                shuffle_files=False,
-            )
+            if self.do_test:
+                self.test_dataset = ParquetDataset(
+                    test_data_files,
+                    post_processing=IterableChain(*self.build_iterable_processing('test')),
+                    shuffle_files=False,
+                )
             self.predict_dataset = ParquetDataset(
                 train_data_files + test_data_files,
                 post_processing=IterableChain(*self.build_iterable_processing('predict')),
@@ -146,8 +148,11 @@ class ClsDataModuleTrain(pl.LightningDataModule):
         current_fold = self._fold_info[self.fold_id]
         self._train_targets = TargetFile.load(current_fold['train']['path']).df
         self._valid_targets = TargetFile.load(current_fold['valid']['path']).df
-        self._test_targets = TargetFile.load(current_fold['test']['path']).df
-        self._predict_targets = pd.concat((self._valid_targets, self._test_targets))
+        if self.do_test:
+            self._test_targets = TargetFile.load(current_fold['test']['path']).df
+            self._predict_targets = pd.concat((self._valid_targets, self._test_targets))
+        else:
+            self._predict_targets = self._valid_targets
 
         labeled_amount = self.train_conf.get('labeled_amount', None)
         if labeled_amount is not None:
@@ -214,31 +219,34 @@ class ClsDataModuleTrain(pl.LightningDataModule):
         )
 
     def setup_map(self):
-        self.train_dataset = list(tqdm(iter(self.train_dataset)))
-        logger.info(f'Loaded {len(self.train_dataset)} for train')
-        self.valid_dataset = list(tqdm(iter(self.valid_dataset)))
-        logger.info(f'Loaded {len(self.valid_dataset)} for valid')
-        self.test_dataset = list(tqdm(iter(self.test_dataset)))
-        logger.info(f'Loaded {len(self.test_dataset)} for test')
-        self.predict_dataset = list(tqdm(iter(self.predict_dataset)))
-        logger.info(f'Loaded {len(self.predict_dataset)} for predict')
-
-        self.train_dataset = MapAugmentationDataset(
-            base_dataset=self.train_dataset,
-            a_chain=self.build_augmentations('train'),
-        )
-        self.valid_dataset = MapAugmentationDataset(
-            base_dataset=self.valid_dataset,
-            a_chain=self.build_augmentations('valid'),
-        )
-        self.test_dataset = MapAugmentationDataset(
-            base_dataset=self.test_dataset,
-            a_chain=self.build_augmentations('test'),
-        )
-        self.predict_dataset = MapAugmentationDataset(
-            base_dataset=self.predict_dataset,
-            a_chain=self.build_augmentations('predict'),
-        )
+        if self.train_dataset is not None:
+            self.train_dataset = list(tqdm(iter(self.train_dataset)))
+            logger.info(f'Loaded {len(self.train_dataset)} for train')
+            self.train_dataset = MapAugmentationDataset(
+                base_dataset=self.train_dataset,
+                a_chain=self.build_augmentations('train'),
+            )
+        if self.valid_dataset is not None:
+            self.valid_dataset = list(tqdm(iter(self.valid_dataset)))
+            logger.info(f'Loaded {len(self.valid_dataset)} for valid')
+            self.valid_dataset = MapAugmentationDataset(
+                base_dataset=self.valid_dataset,
+                a_chain=self.build_augmentations('valid'),
+            )
+        if self.test_dataset is not None:
+            self.test_dataset = list(tqdm(iter(self.test_dataset)))
+            logger.info(f'Loaded {len(self.test_dataset)} for test')
+            self.test_dataset = MapAugmentationDataset(
+                base_dataset=self.test_dataset,
+                a_chain=self.build_augmentations('test'),
+            )
+        if self.predict_dataset is not None:
+            self.predict_dataset = list(tqdm(iter(self.predict_dataset)))
+            logger.info(f'Loaded {len(self.predict_dataset)} for predict')
+            self.predict_dataset = MapAugmentationDataset(
+                base_dataset=self.predict_dataset,
+                a_chain=self.build_augmentations('predict'),
+            )
 
     def val_dataloader(self):
         return DataLoader(
