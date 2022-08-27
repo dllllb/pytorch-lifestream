@@ -43,7 +43,7 @@ pytest
 ## Demo notebooks
 
 - Supervised model training [notebook](demo/supervised-sequence-to-target.ipynb)
-- Self-supervided training and embeddings for downstream task [notebook](demo/coles-emb.ipynb)
+- Self-supervided training and embeddings for downstream task [notebook](demo/coles-emb.ipynb) [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/dllllb/pytorch-lifestream/blob/master/demo/coles-emb.ipynb)
 - Self-supervided embeddings in CatBoost [notebook](demo/coles-catboost.ipynb)
 - Self-supervided training and fine-tuning [notebook](demo/coles-finetune.ipynb)
 - Self-supervised TrxEncoder only training with Masked Language Model task and fine-tuning [notebook](demo/mlm-emb.ipynb)
