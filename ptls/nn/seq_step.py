@@ -1,4 +1,3 @@
-import numpy as np
 import torch
 from torch import nn as nn
 
@@ -21,6 +20,15 @@ class TimeStepShuffle(nn.Module):
 class LastStepEncoder(nn.Module):
     def forward(self, x: PaddedBatch):
         h = x.payload[range(len(x.payload)), [l - 1 for l in x.seq_lens]]
+        return h
+
+
+class LastMaxAvgEncoder(nn.Module):
+    def forward(self, x: PaddedBatch):
+        rnn_max_pool = x.payload.max(dim=1)[0]
+        rnn_avg_pool = x.payload.sum(dim=1) / x.seq_lens.unsqueeze(-1)
+        h = x.payload[range(len(x.payload)), [l - 1 for l in x.seq_lens]]
+        h = torch.cat((h, rnn_max_pool, rnn_avg_pool), dim=-1)
         return h
 
 

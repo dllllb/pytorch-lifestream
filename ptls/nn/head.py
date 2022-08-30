@@ -1,7 +1,7 @@
 from typing import List
 
 import torch
-from torch.nn import Linear, BatchNorm1d, Sigmoid, Sequential, ReLU, LogSoftmax, Flatten, Softplus
+from torch.nn import Linear, BatchNorm1d, Sigmoid, Sequential, ReLU, LogSoftmax, Flatten, Softplus, Dropout
 from ptls.nn.normalization import L2NormEncoder
 
 
@@ -32,6 +32,7 @@ class Head(torch.nn.Module):
                  use_norm_encoder: bool = False,
                  use_batch_norm: bool = False,
                  hidden_layers_sizes: List[int] = None,
+                 drop_probs: List[float] = None,
                  objective: str = None,
                  num_classes: int = 1):
         super().__init__()
@@ -45,13 +46,18 @@ class Head(torch.nn.Module):
         if use_batch_norm:
             layers.append(BatchNorm1d(input_size))
 
+        if drop_probs: assert len(drop_probs) == len(hidden_layers_sizes),\
+            'dimensions of `drop_probs` and `hidden_layers_sizes` should be equal'
+
         if hidden_layers_sizes is not None:
             layers_size = [input_size] + list(hidden_layers_sizes)
-            for size_in, size_out in zip(layers_size[:-1], layers_size[1:]):
+            for ix, (size_in, size_out) in enumerate(zip(layers_size[:-1], layers_size[1:])):
                 layers.append(Linear(size_in, size_out))
-                layers.append(ReLU())
                 if use_batch_norm:
                     layers.append(BatchNorm1d(size_out))
+                layers.append(ReLU())
+                if drop_probs:
+                    layers.append(Dropout(drop_probs[ix]))
                 input_size = size_out
 
         if objective == 'classification':
