@@ -60,6 +60,8 @@ class TrxEncoder(nn.Module):
                  use_batch_norm_with_lens=False,
                  clip_replace_value=None,
                  positions=None,
+                 emb_dropout=0,
+                 spatial_dropout=False
                  ):
         super().__init__()
         self.scalers = nn.ModuleDict()
@@ -86,6 +88,8 @@ class TrxEncoder(nn.Module):
                 padding_idx=0,
                 max_norm=1 if norm_embeddings else None,
                 noise_scale=embeddings_noise,
+                dropout=emb_dropout,
+                spatial_dropout=spatial_dropout
             )
 
         self.pos = nn.ModuleDict()

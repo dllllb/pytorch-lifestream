@@ -2,7 +2,7 @@ import torch
 from torch import nn as nn
 
 from ptls.nn.seq_encoder.abs_seq_encoder import AbsSeqEncoder
-from ptls.nn.seq_step import LastStepEncoder
+from ptls.nn.seq_step import LastStepEncoder, LastMaxAvgEncoder
 from ptls.data_load.padded_batch import PaddedBatch
 
 
@@ -49,14 +49,15 @@ class RnnEncoder(AbsSeqEncoder):
                  bidir=False,
                  trainable_starter='static',
                  is_reduce_sequence=False,  # previous default behavior RnnEncoder
+                 reducer='last_step'
                  ):
         super().__init__(is_reduce_sequence=is_reduce_sequence)
 
         self.hidden_size = hidden_size
         self.rnn_type = type
         self.bidirectional = bidir
-        if self.bidirectional:
-            raise AttributeError('bidirectional RNN is not supported yet')
+        # if self.bidirectional:
+        #     raise AttributeError('bidirectional RNN is not supported yet')
         self.trainable_starter = trainable_starter
 
         # initialize RNN
@@ -84,7 +85,10 @@ class RnnEncoder(AbsSeqEncoder):
             num_dir = 2 if self.bidirectional else 1
             self.starter_h = nn.Parameter(torch.randn(num_dir, 1, self.hidden_size))
 
-        self.reducer = LastStepEncoder()
+        if reducer == 'last_step':
+            self.reducer = LastStepEncoder()
+        elif reducer == 'last_max_avg':
+            self.reducer = LastMaxAvgEncoder()
 
     def forward(self, x: PaddedBatch, h_0: torch.Tensor = None):
         """
