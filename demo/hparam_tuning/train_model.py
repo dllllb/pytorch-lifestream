@@ -82,6 +82,8 @@ def flat_conf(conf):
         elif isinstance(element, ListConfig):
             for i, v in enumerate(element):
                 yield f'{parent_name}.{i}', v
+        else:
+            yield parent_name, element
 
     return dict(_explore())
 
@@ -156,8 +158,8 @@ def model_run(conf, fold_id):
     pl_module = get_pl_module(conf)
     trainer = pl.Trainer(
         gpus=1,
-        limit_train_batches=50,
-        max_epochs=3,  # 10
+        limit_train_batches=conf.trainer.limit_train_batches,
+        max_epochs=conf.trainer.max_epochs,
         enable_checkpointing=False,
         logger=pl.loggers.TensorBoardLogger(
             save_dir=to_absolute_path(conf.tb_save_dir),
@@ -176,13 +178,13 @@ def model_run(conf, fold_id):
     return final_test_metric
 
 
-def get_fold_list(conf, mode):
-    if mode == 'valid':
+def get_fold_list(conf):
+    if conf.mode == 'valid':
         fold_list = [i for i in range(conf.preprocessing.fold_count_valid)]
-    elif mode == 'test':
+    elif conf.mode == 'test':
         fold_list = [i + conf.preprocessing.fold_count_valid for i in range(conf.preprocessing.fold_count_test)]
     else:
-        raise AttributeError(f'Mode can be `valid` or `test`. Found: {mode}')
+        raise AttributeError(f'Mode can be `valid` or `test`. Found: {conf.mode}')
     return fold_list
 
 
@@ -202,28 +204,26 @@ def log_resuts(conf, fold_list, results, float_precision='{:.4f}'):
 
     tb_logger = pl.loggers.TensorBoardLogger(
         save_dir=to_absolute_path(conf.tb_save_dir),
-        name='valid_mean',
+        name=f'{conf.mode}_mean',
         version=None,
         prefix='',
         default_hp_metric=False,
     )
     tb_logger.log_hyperparams(
         params=flat_conf(conf),
-        metrics={f'{conf.mode}_auroc_mean': mean},
+        metrics={f'auroc_mean': mean},
     )
     logger.info(f'Results are logged to tensorboard as {tb_logger.name}/{tb_logger.version}')
 
 
 @hydra.main(version_base=None, config_path="conf", config_name="config")
 def main(conf):
-    mode = conf.mode
-
-    fold_list = get_fold_list(conf, mode)
+    fold_list = get_fold_list(conf)
 
     results = []
     for fold_id in fold_list:
         result_on_fold = model_run(conf, fold_id)
-        logger.info(f'{mode}, fold={fold_id}, metric={result_on_fold:.6f}')
+        logger.info(f'{conf.mode}, fold={fold_id}, metric={result_on_fold:.6f}')
         results.append(result_on_fold)
     results_mean = np.mean(results)
 
