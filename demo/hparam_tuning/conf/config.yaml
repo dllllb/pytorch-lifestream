@@ -1,7 +1,19 @@
+hydra:
+  job:
+    chdir: true
+
 preprocessing:
   salt: '42'
-  fold_count: 5
+  fold_count_valid: 3
+  fold_count_test: 5
   data_path: data/
   folds_path: data/folds/
 
-fold_id: 0
+experiment_name: model_1
+tb_save_dir: lightning_logs/${experiment_name}/
+
+mode: valid  # by default
+
+pl_module:
+  hidden_size: 64
+  lr: 0.001

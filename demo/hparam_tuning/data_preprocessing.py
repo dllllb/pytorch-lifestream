@@ -110,13 +110,14 @@ def main(conf):
     conf_pp = conf.preprocessing
 
     df_target = get_df_target(conf_pp.data_path)
-    df_target = split_target(df_target, salt=conf_pp.salt, fold_count=conf_pp.fold_count)
+    fold_count = conf_pp.fold_count_valid + conf_pp.fold_count_test
+    df_target = split_target(df_target, salt=conf_pp.salt, fold_count=fold_count)
 
     df_trx = get_df_trx(conf_pp.data_path)
 
     df_target.persist()
 
-    for fold_id in range(conf_pp.fold_count):
+    for fold_id in range(fold_count):
         split_fold(fold_id, df_target, df_trx, conf_pp)
     logger.info('Done')
 
