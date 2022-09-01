@@ -1,8 +1,5 @@
 # Hyperparameter tuning demo with hydra+optuna+tensorboard
 
-## Intro
-
-
 ## Fast run
 
 Run the following commands:

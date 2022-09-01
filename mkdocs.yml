@@ -6,11 +6,12 @@ nav:
             - 'Sequential Data Definition': 'sequential_data_definition.md'
             - 'Feature naming': 'feature_naming.md'
         - 'How to guide':
-            - 'Data preparation': '#'
-            - 'Sequential model creation': '#'
-            - 'Frameworks usage': '#'
-            - 'Encoder training': '#'
-            - 'Inference': '#'
+            - 'Hyperparameters tuning': 'tuning.md'
+            - 'Data preparation (coming soon)': '#'
+            - 'Sequential model creation (coming soon)': '#'
+            - 'Frameworks usage (coming soon)': '#'
+            - 'Encoder training (coming soon)': '#'
+            - 'Inference (coming soon)': '#'
 
         - 'ptls':
             - 'ptls.preprocessing': 'ptls_preprocessing.md'
