@@ -51,6 +51,7 @@ import pytorch_lightning as pl
 import torch
 from hydra.utils import to_absolute_path
 from omegaconf import DictConfig, ListConfig
+from sklearn.model_selection import train_test_split
 from torchmetrics import Accuracy, AUROC
 
 from data_preprocessing import get_file_name_train, get_file_name_test
@@ -91,10 +92,20 @@ def flat_conf(conf):
 def get_data_module(conf, fold_id):
     folds_path = Path(conf.preprocessing.folds_path)
     train_files = parquet_file_scan(to_absolute_path(folds_path / get_file_name_train(fold_id)))
-    # train_files, valid_files = train_test_split(train_files, test_size=0.1)
+
+    train_files, valid_files = train_test_split(train_files, test_size=conf.validation_rate)
     train_data = PersistDataset(
         ParquetDataset(
             train_files,
+            i_filters=[
+                iterable_processing.TargetEmptyFilter(target_col='target_gender'),
+                iterable_processing.ISeqLenLimit(max_seq_len=2000),
+            ],
+        )
+    )
+    valid_data = PersistDataset(
+        ParquetDataset(
+            valid_files,
             i_filters=[
                 iterable_processing.TargetEmptyFilter(target_col='target_gender'),
                 iterable_processing.ISeqLenLimit(max_seq_len=2000),
@@ -111,6 +122,7 @@ def get_data_module(conf, fold_id):
     )
     data_module = PtlsDataModule(
         train_data=SeqToTargetDataset(train_data, target_col_name='target_gender', target_dtype='int'),
+        valid_data=SeqToTargetDataset(valid_data, target_col_name='target_gender', target_dtype='int'),
         test_data=SeqToTargetDataset(test_data, target_col_name='target_gender', target_dtype='int'),
         train_batch_size=32,
         valid_batch_size=256,
@@ -122,6 +134,30 @@ def get_data_module(conf, fold_id):
 
 
 def get_pl_module(conf):
+    head_layers = []
+    if conf.pl_module.batch_norm1:
+        head_layers.append(torch.nn.BatchNorm1d(conf.pl_module.hidden_size1))
+    if conf.pl_module.relu1:
+        head_layers.append(torch.nn.ReLU())
+    if conf.pl_module.dropout1 > 0:
+        head_layers.append(torch.nn.Dropout(conf.pl_module.dropout1))
+    if conf.pl_module.num_layers == 1:
+        head_layers.append(torch.nn.Linear(conf.pl_module.hidden_size1, 1))
+    elif conf.pl_module.num_layers == 2:
+        head_layers.append(torch.nn.Linear(conf.pl_module.hidden_size1, conf.pl_module.hidden_size2))
+        if conf.pl_module.batch_norm2:
+            head_layers.append(torch.nn.BatchNorm1d(conf.pl_module.hidden_size2))
+        if conf.pl_module.relu2:
+            head_layers.append(torch.nn.ReLU())
+        if conf.pl_module.dropout2 > 0:
+            head_layers.append(torch.nn.Dropout(conf.pl_module.dropout2))
+        head_layers.append(torch.nn.Linear(conf.pl_module.hidden_size2, 1))
+
+    head_layers.extend([
+        torch.nn.Sigmoid(),
+        torch.nn.Flatten(0),
+    ])
+
     pl_module = SequenceToTarget(
         seq_encoder=RnnSeqEncoder(
             trx_encoder=TrxEncoder(
@@ -131,21 +167,15 @@ def get_pl_module(conf):
                 },
                 numeric_values={'amount': 'log'},
             ),
-            hidden_size=conf.pl_module.hidden_size,
+            hidden_size=conf.pl_module.hidden_size1,
         ),
-        head=torch.nn.Sequential(
-            torch.nn.BatchNorm1d(conf.pl_module.hidden_size),
-            torch.nn.Linear(conf.pl_module.hidden_size, 1),
-            torch.nn.Sigmoid(),
-            torch.nn.Flatten(0),
-        ),
+        head=torch.nn.Sequential(*head_layers),
         loss=BCELoss(),
         metric_list={
-            'acc': Accuracy(),
             'auroc': AUROC(),
         },
         optimizer_partial=partial(torch.optim.Adam, lr=conf.pl_module.lr),
-        lr_scheduler_partial=partial(torch.optim.lr_scheduler.StepLR, step_size=1, gamma=0.9),
+        lr_scheduler_partial=partial(torch.optim.lr_scheduler.StepLR, step_size=1, gamma=conf.pl_module.lr_gamma),
     )
     return pl_module
 
@@ -216,7 +246,7 @@ def log_resuts(conf, fold_list, results, float_precision='{:.4f}'):
     logger.info(f'Results are logged to tensorboard as {tb_logger.name}/{tb_logger.version}')
 
 
-@hydra.main(version_base=None, config_path="conf", config_name="config")
+@hydra.main(version_base=None, config_path="conf")
 def main(conf):
     fold_list = get_fold_list(conf)
 
