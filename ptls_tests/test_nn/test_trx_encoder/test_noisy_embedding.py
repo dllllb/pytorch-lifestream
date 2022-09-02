@@ -23,11 +23,11 @@ def test_spatial_dropout():
     out = embedding(x)
     nonzero = torch.count_nonzero(out, dim=1)
     assert torch.all((nonzero == 8000) + (nonzero == 0)).item()
-    assert 0.27 - (1 - torch.count_nonzero(out) / 4000 / 8000 / 4) < 0.01
+    assert torch.abs(0.27 - (1 - torch.count_nonzero(out) / 4000 / 8000 / 4)) < 0.01
 
 
 def test_dropout():
     embedding = NoisyEmbedding(16, 4, 0, noise_scale=0.0, dropout=0.35, spatial_dropout=False)
     x = torch.ones(400, 800, dtype=torch.long)
     out = embedding(x)
-    assert 0.35 - (1 - torch.count_nonzero(out) / 400 / 800 / 4) < 0.001
+    assert torch.abs(0.35 - (1 - torch.count_nonzero(out) / 400 / 800 / 4)) < 0.001
