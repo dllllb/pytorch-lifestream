@@ -33,7 +33,7 @@ class TrxEncoder(nn.Module):
         emb_dropout (float):
             Probability of an element of embedding to be zeroed
         spatial_dropout (bool):
-            Whether to dropout full dimension of embedding in batch or not
+            Whether to dropout full dimension of embedding in the whole sequence
 
         norm_embeddings: keep default value for this parameter
         use_batch_norm_with_lens: keep default value for this parameter
