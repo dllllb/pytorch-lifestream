@@ -1,4 +1,5 @@
 import torch
+import warnings
 from torch import nn as nn
 
 from ptls.nn.seq_encoder.abs_seq_encoder import AbsSeqEncoder
@@ -56,8 +57,9 @@ class RnnEncoder(AbsSeqEncoder):
         self.hidden_size = hidden_size
         self.rnn_type = type
         self.bidirectional = bidir
-        # if self.bidirectional:
-        #     raise AttributeError('bidirectional RNN is not supported yet')
+        if self.bidirectional:
+            warnings.warn("Backward direction in bidir RNN takes into account paddings at the end of sequences!")
+        
         self.trainable_starter = trainable_starter
 
         # initialize RNN
