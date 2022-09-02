@@ -21,7 +21,9 @@ class RnnEncoder(AbsSeqEncoder):
             'gru' or 'lstm'
             Type of rnn network
         bidir:
-            Not implemented. Use default value for this parameter
+            Bidirectional RNN
+        dropout:
+            RNN dropout
         trainable_starter:
             'static' - use random learnable vector for rnn starter
             other values - use None as starter
@@ -48,6 +50,7 @@ class RnnEncoder(AbsSeqEncoder):
                  hidden_size=None,
                  type='gru',
                  bidir=False,
+                 dropout=0,
                  trainable_starter='static',
                  is_reduce_sequence=False,  # previous default behavior RnnEncoder
                  reducer='last_step'
@@ -69,14 +72,16 @@ class RnnEncoder(AbsSeqEncoder):
                 self.hidden_size,
                 num_layers=1,
                 batch_first=True,
-                bidirectional=self.bidirectional)
+                bidirectional=self.bidirectional,
+                dropout=dropout)
         elif self.rnn_type == 'gru':
             self.rnn = nn.GRU(
                 input_size,
                 self.hidden_size,
                 num_layers=1,
                 batch_first=True,
-                bidirectional=self.bidirectional)
+                bidirectional=self.bidirectional,
+                dropout=dropout)
         else:
             raise Exception(f'wrong rnn type "{self.rnn_type}"')
 
