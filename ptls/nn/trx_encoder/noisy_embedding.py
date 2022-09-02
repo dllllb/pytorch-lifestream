@@ -10,7 +10,7 @@ class NoisyEmbedding(nn.Embedding):
         noise_scale (float): when > 0 applies additive noise to embeddings.
             When = 0, forward is equivalent to usual embeddings.
         dropout (float): probability of embedding axis to be dropped. 0 means no dropout at all.
-        spatial_dropout (bool): whether to dropout full dimension of embedding in batch or not.
+        spatial_dropout (bool): whether to dropout full dimension of embedding in the whole sequence.
 
     For other parameters defenition look at nn.Embedding help
     """
