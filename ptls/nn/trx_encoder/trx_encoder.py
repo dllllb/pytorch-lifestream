@@ -30,6 +30,10 @@ class TrxEncoder(nn.Module):
             These features will be scaled with selected scaler and batch norm applyed.
         embeddings_noise (float):
             Noise level for embedding. `0` meens without noise
+        emb_dropout (float):
+            Probability of an element of embedding to be zeroed
+        spatial_dropout (bool):
+            Whether to dropout full dimension of embedding in batch or not
 
         norm_embeddings: keep default value for this parameter
         use_batch_norm_with_lens: keep default value for this parameter
