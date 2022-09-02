@@ -2,7 +2,7 @@ import torch
 from torch import nn as nn
 
 from ptls.nn.seq_encoder.abs_seq_encoder import AbsSeqEncoder
-from ptls.nn.seq_step import LastStepEncoder, LastMaxAvgEncoder
+from ptls.nn.seq_step import LastStepEncoder, LastMaxAvgEncoder, FirstStepEncoder, SkipStepEncoder
 from ptls.data_load.padded_batch import PaddedBatch
 
 
@@ -87,6 +87,10 @@ class RnnEncoder(AbsSeqEncoder):
 
         if reducer == 'last_step':
             self.reducer = LastStepEncoder()
+        elif reducer == 'first_step':
+            self.reducer = FirstStepEncoder()
+        elif reducer == 'skip_step':
+            self.reducer = SkipStepEncoder()
         elif reducer == 'last_max_avg':
             self.reducer = LastMaxAvgEncoder()
 
