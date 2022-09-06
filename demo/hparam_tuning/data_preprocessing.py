@@ -103,14 +103,14 @@ def get_file_name_test(fold_id):
     return file_name_test
 
 
-@hydra.main(version_base=None, config_path="conf", config_name="config")
+@hydra.main(version_base=None, config_path="conf", config_name="data_preprocessing")
 def main(conf):
     logger.info('Start')
 
-    conf_pp = conf.preprocessing
+    conf_pp = conf.data_preprocessing
 
     df_target = get_df_target(conf_pp.data_path)
-    fold_count = conf_pp.fold_count_valid + conf_pp.fold_count_test
+    fold_count = conf_pp.fold_count
     df_target = split_target(df_target, salt=conf_pp.salt, fold_count=fold_count)
 
     df_trx = get_df_trx(conf_pp.data_path)

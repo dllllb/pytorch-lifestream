@@ -48,11 +48,12 @@ from pathlib import Path
 import hydra
 import numpy as np
 import pytorch_lightning as pl
+import scipy.stats
 import torch
 from hydra.utils import to_absolute_path
-from omegaconf import DictConfig, ListConfig
+from omegaconf import DictConfig, ListConfig, OmegaConf
 from sklearn.model_selection import train_test_split
-from torchmetrics import Accuracy, AUROC
+from torchmetrics import AUROC
 
 from data_preprocessing import get_file_name_train, get_file_name_test
 from ptls.data_load import iterable_processing
@@ -72,6 +73,7 @@ def flat_conf(conf):
             for k, v in _explore_recursive(param_name, element):
                 yield k, v
         yield 'hydra.cwd', Path.cwd()
+        yield 'hydra.reuse_cmd', f'--config-dir={Path.cwd()} +conf_override@=config'
 
     def _explore_recursive(parent_name, element):
         if isinstance(element, DictConfig):
@@ -90,7 +92,7 @@ def flat_conf(conf):
 
 
 def get_data_module(conf, fold_id):
-    folds_path = Path(conf.preprocessing.folds_path)
+    folds_path = Path(conf.data_preprocessing.folds_path)
     train_files = parquet_file_scan(to_absolute_path(folds_path / get_file_name_train(fold_id)))
 
     train_files, valid_files = train_test_split(train_files, test_size=conf.validation_rate)
@@ -141,17 +143,7 @@ def get_pl_module(conf):
         head_layers.append(torch.nn.ReLU())
     if conf.pl_module.dropout1 > 0:
         head_layers.append(torch.nn.Dropout(conf.pl_module.dropout1))
-    if conf.pl_module.num_layers == 1:
-        head_layers.append(torch.nn.Linear(conf.pl_module.hidden_size1, 1))
-    elif conf.pl_module.num_layers == 2:
-        head_layers.append(torch.nn.Linear(conf.pl_module.hidden_size1, conf.pl_module.hidden_size2))
-        if conf.pl_module.batch_norm2:
-            head_layers.append(torch.nn.BatchNorm1d(conf.pl_module.hidden_size2))
-        if conf.pl_module.relu2:
-            head_layers.append(torch.nn.ReLU())
-        if conf.pl_module.dropout2 > 0:
-            head_layers.append(torch.nn.Dropout(conf.pl_module.dropout2))
-        head_layers.append(torch.nn.Linear(conf.pl_module.hidden_size2, 1))
+    head_layers.append(torch.nn.Linear(conf.pl_module.hidden_size1, 1))
 
     head_layers.extend([
         torch.nn.Sigmoid(),
@@ -200,27 +192,38 @@ def model_run(conf, fold_id):
     )
     trainer.fit(pl_module, data_module)
     logger.info(f'logged_metrics={trainer.logged_metrics}')
+    train_auroc_t = trainer.logged_metrics['train_auroc'].item()
+    train_auroc_v = trainer.logged_metrics['val_auroc'].item()
     test_metrics = trainer.test(pl_module, data_module, verbose=False)
     logger.info(f'logged_metrics={trainer.logged_metrics}')
     logger.info(f'test_metrics={test_metrics}')
     final_test_metric = test_metrics[0]['test_auroc']
 
+    if conf.mode == 'valid':
+        trainer.logger.log_hyperparams(
+            params=flat_conf(conf),
+            metrics={
+                f'hp/auroc': final_test_metric,
+                f'hp/auroc_t': train_auroc_t,
+                f'hp/auroc_v': train_auroc_v,
+            },
+        )
+
+    logger.info(f'[{conf.mode}] on fold[{fold_id}] finished with {final_test_metric:.4f}')
     return final_test_metric
 
 
-def get_fold_list(conf):
-    if conf.mode == 'valid':
-        fold_list = [i for i in range(conf.preprocessing.fold_count_valid)]
-    elif conf.mode == 'test':
-        fold_list = [i + conf.preprocessing.fold_count_valid for i in range(conf.preprocessing.fold_count_test)]
-    else:
-        raise AttributeError(f'Mode can be `valid` or `test`. Found: {conf.mode}')
-    return fold_list
-
-
 def log_resuts(conf, fold_list, results, float_precision='{:.4f}'):
-    mean = np.mean(results)
-    std = np.std(results)
+    def t_interval(x, p=0.95):
+        eps = 1e-9
+        n = len(x)
+        s = x.std(ddof=1)
+
+        return scipy.stats.t.interval(p, n - 1, loc=x.mean(), scale=(s + eps) / (n ** 0.5))
+
+    mean = results.mean()
+    std = results.std()
+    t_int = t_interval(results)
 
     results_str = ', '.join([float_precision.format(r) for r in results])
     logger.info(', '.join([
@@ -228,7 +231,8 @@ def log_resuts(conf, fold_list, results, float_precision='{:.4f}'):
         f'folds={fold_list}',
         f'mean={float_precision.format(mean)}',
         f'std={float_precision.format(std)}',
-        f'interval_pm=[{float_precision.format(mean - std)}, {float_precision.format(mean + std)}]',
+        f'mean_pm_std=[{float_precision.format(mean - std)}, {float_precision.format(mean + std)}]',
+        f'confidence95=[{float_precision.format(t_int[0])}, {float_precision.format(t_int[1])}]',
         f'values=[{results_str}]',
     ]))
 
@@ -241,25 +245,44 @@ def log_resuts(conf, fold_list, results, float_precision='{:.4f}'):
     )
     tb_logger.log_hyperparams(
         params=flat_conf(conf),
-        metrics={f'auroc_mean': mean},
+        metrics={f'{conf.mode}_auroc_mean': mean},
     )
     logger.info(f'Results are logged to tensorboard as {tb_logger.name}/{tb_logger.version}')
+    logger.info(f'Output logged to "{Path.cwd()}"')
+
+
+def main_valid(conf):
+    valid_fold = 0
+    result_fold = model_run(conf, valid_fold)
+    logger.info('Validation done')
+    return result_fold
+
+
+def main_test(conf):
+    test_folds = [i for i in range(1, conf.data_preprocessing.n_folds)]
+    results = []
+    for fold_id in test_folds:
+        result_fold = model_run(conf, fold_id)
+        results.append(result_fold)
+    results = np.array(results)
+
+    log_resuts(conf, test_folds, results)
+
+    return results.mean()
 
 
 @hydra.main(version_base=None, config_path="conf")
 def main(conf):
-    fold_list = get_fold_list(conf)
+    # save config for future overrides
+    conf_override_path = Path.cwd() / 'conf_override'
+    conf_override_path.mkdir()
+    OmegaConf.save(config=conf, f=conf_override_path / 'config.yaml')
 
-    results = []
-    for fold_id in fold_list:
-        result_on_fold = model_run(conf, fold_id)
-        logger.info(f'{conf.mode}, fold={fold_id}, metric={result_on_fold:.6f}')
-        results.append(result_on_fold)
-    results_mean = np.mean(results)
-
-    log_resuts(conf, fold_list, results)
-
-    return results_mean
+    if conf.mode == 'valid':
+         return main_valid(conf)
+    if conf.mode == 'test':
+         return main_test(conf)
+    raise AttributeError(f'`conf.mode should be valid or test. Found: {conf.mode}')
 
 
 if __name__ == '__main__':

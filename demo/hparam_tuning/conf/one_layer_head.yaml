@@ -1,6 +1,8 @@
 defaults:
+  - data_preprocessing: default
   - override hydra/sweeper: optuna
   - override hydra/sweeper/sampler: tpe
+  - _self_
 
 hydra:
   job:
@@ -24,17 +26,10 @@ hydra:
       pl_module.lr: tag(log, interval(0.0001, 0.03))
       pl_module.lr_gamma: interval(0.4, 1.0)
 
-preprocessing:
-  salt: '42'
-  fold_count_valid: 3
-  fold_count_test: 5
-  data_path: data/
-  folds_path: data/folds/
-
-experiment_name: one_layer
+experiment_name: one_layer_head
 tb_save_dir: lightning_logs/${experiment_name}/
 
-mode: valid  # by default
+mode: ???
 
 pl_module:
   num_layers: 1
@@ -48,5 +43,5 @@ pl_module:
 validation_rate: 0.1
 
 trainer:
-  limit_train_batches: null
-  max_epochs: 10
+  limit_train_batches: 100
+  max_epochs: 5

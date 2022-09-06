@@ -3,7 +3,7 @@
 We propose a demo for hyperparameters tuning with `hydra`, `optuna` and `tensorboard`.
 This is console application located in `demo/hparam_tuning`.
 
-## Intro
+# Intro
 
 After we build a network architecture we should tune hyperparameters.
 Automated tuning have a benefits:
@@ -19,79 +19,132 @@ You should decide which parameters should be tuned and define a search space.
 
 Usually initial setup of automated hparam tuning requires a time. We hope our demo will make it easier for you.
 
-## Used tools
+# Used tools
 
 We use `hydra` framework to manage app configuration, parameters and results.
 `hydra` multirun mode can run the same application with multiple different configurations.
-`optuna` plugin for hydra implements smart choice of next hparam set, better than random search.
+`optuna` plugin for hydra implements smart choice of next hparam set.
 Results are stored in hydra output folder.
 
 We log a results to tensorboard to show it as charts.
 
-## Parts of demo
+# Guide fo reproduce
 
 `demo/hparam_tuning/` should be working directory for this demo.
 
-### Data
+## 1. Data preprocessing
 
-This demo is with small dataset. This means than model quality on different subsets may have a big variance.
-This may be a cause of choice a configuration which randomly shows improvements.
-We use mean qualify on 3 folds to measure model result when we check different hparams.
-This is validation set with 3 folds.
-Next we chose a hparams which the best on validation set.
-Next we test this hparams on 5 test folds.
+Aims of preprocessing:
 
-We have `3 + 5 = 8` folds in total.
+- split the data into folds
+- use `ptls.preprocessing.fit_transform` to convert data to `ptls` compatible format.
 
-You can choose another folds count but you should keep valid and test parts.
-It's better to have more than 1 folds to measure quality variance.
+### Data split
 
-We split a data into `8` folds with crossvalidation.
-Next we make preprocessing for them save train and test parts for each fold.
-All of this made with `bin/data-preprocessing.sh` script.
+In this demo we use 6 dataset splits. One for tuning, 5 for testing.
+We use cross-validation stratified fold splits.
+This means that we use `5/6` samples for training and `1/6` samples for testing.
 
-### Train script and config
+You can use a different setting, but there should be multiple parts to estimate the variance when testing.
+Also, the validation part should be separated from the test part.
 
-`train_model.py` is a main script of demo. 
-`conf/one_layer.yaml` and `conf/two_layers.yaml` are configs.
+### Data preprocessing
 
-### `train_model.get_fold_list`
+After data split we make `ptls.preprocessing` for each part. In this demo we do it with `spark`.
 
-Returns a list of folds number depending on `conf.mode`:
+We save separately the preprocessed data for each fold. This multiply required storage space, 
+but it's easy to maintenance.
 
-- `[0, 1, 2]` for valid
-- `[3, 4, 5, 6, 7]` for test
+We include unlabeled data to train part.
+You can use both data labeled and unlabeled for unsupervised training.
+You can filter unlabeled data with `iterable_processing.TargetEmptyFilter` for supervised training.
 
-### `train_model.main`
+After preprocessing data stored in `parquet` format.
 
-- Run model train and estimate for each fold
-- Log the results
-- Returns `results_mean` for `optuna` plugin
+### Scripts
 
-### `train_model.model_run`
+- `sh bin/data-preprocessing.sh` spark-submit command for run
+- `data_preprocessing.py` main program
+- `conf/data_preprocessing.yaml` config for data preprocessing
 
-Train and estimate a model on one fold.
+## 2. Model tuning script
 
-Datamodule and LightningModule are created based on conf with `get_data_module` and `get_pl_module`.
+Python program with model train, evaluate, logging and fold_id selection based on valid of test mode.
 
-The model with train framework should be here. Pretrain (if required) also should be here.
+Some hparams should be configured via config file.
 
-### Result logging
+Run it in `test` mode first.
+
+- you can make sure everything works correctly
+- you get mean quality for default hparams
+- you get std and confidence interval for model quality
+
+### Scripts
+
+- `tuning.py` tuning script
+- `conf/simple_config.yaml` default config
+- `python tuning.py --config-name=simple_config mode=test` command for run
+
+## 3. Tuning
+
+Extends your config with multirun `hydra` settings, `optuna` settings and params search space.
+
+We prepare a separate config for tuning run.
+
+`main` in tuning script saves config in `{hydra.cwd}/conf_override/config.yaml` for future reuse during testing
+
+
+### Scripts
+
+- `tuning.py` the same tuning script
+- `conf/one_layer_head.yaml` config with tuning params
+- `python tuning.py --multirun --config-name=one_layer_head mode=valid` command for run
+
+## 4. Test the best hparams (option 1)
+
+- Check tensorboard `hparams` tab
+- Choose the best run
+- Check `run name` and `hydra.reuse_cmd` hparam.
+- Run test with best config: `python tuning.py ---config-name=one_layer_head {hydra.reuse_cmd} mode=test`
+with `{hydra.reuse_cmd}` resolve.
+
+`{hydra.reuse_cmd}` looks like path to best config and adding overrieds to whole config: `+conf_override@=config`
+
+This option overrides the main config `one_layer_head` by one which was used during best run. 
+This option keeps `hydra` settings which are in `one_layer_head`.
+
+## 4. Test the best hparams (option 2)
+
+- Check tensorboard `hparams` tab
+- Choose the best run
+- Check `run name` and `hydra.cwd` hparam.
+- Run test with best config: `python tuning.py --config-path={hydra.cwd}/.hydra --config-name=config mode=test`
+with `{hydra.cwd}` resolve.
+
+This option use `config.yaml` from `hydra` log of best run.
+This option loose `hydra` settings which are in `one_layer_head` cause hydra don't log his settings in `config.yaml`.
+
+# Result logging
 
 Results on each fold stored to:
 
-- tensorboard with logger selected in `train_model.model_run.trainer` with calling `log` method in your LightningModule
+- tensorboard with logger selected in `tuning.model_run.trainer` with calling `log` method in your LightningModule
 - hydra output folder (see `conf.hydra.sweep.dir`)
 
-Mean results stores to:
+Mean results on test stores to:
 
 - tensorboard with separate logger with name `{conf.mode}_mean`
 Only hparams and final metrics are saved.
 - hydra output folder
 
-Log in hydra output folder have a tensorboard run version.
+hparams with final metrics stores to:
+
+- tb logger selected in `tuning.model_run.trainer` during validation
+- logger with name `{conf.mode}_mean` during test
+
+Log file in hydra output folder have a tensorboard run version.
 And tensorboard run have `hydra.cwd` which are hydra output folder in `hparams`
 
 For better reading `hparams` are saved as flat list without hierarchy.
-Full config are stored in `{hydra.cwd}/.hydra/config.yaml`
-
+Full job config are stored in `{hydra.cwd}/.hydra/config.yaml`
+Copy of full job config are stored in `{hydra.cwd}/conf_override/config.yaml`
