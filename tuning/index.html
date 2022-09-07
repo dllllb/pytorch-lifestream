@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="shortcut icon" href="../img/favicon.ico" />
+    <title>Hyperparameters tuning - PyTorch-LifeStream</title>
+    <link rel="stylesheet" href="../css/theme.css" />
+    <link rel="stylesheet" href="../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Hyperparameters tuning";
+        var mkdocs_page_input_path = "tuning.md";
+        var mkdocs_page_url = null;
+      </script>
+    
+    <script src="../js/jquery-3.6.0.min.js" defer></script>
+    <!--[if lt IE 9]>
+      <script src="../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/highlight.min.js"></script>
+      <script>hljs.initHighlightingOnLoad();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href=".." class="icon icon-home"> PyTorch-LifeStream
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="..">Welcome</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">User Guide</span></p>
+              <ul class="current">
+                  <li class="toctree-l1"><a class="reference internal" href="#">Sequential Data</a>
+    <ul>
+                <li class="toctree-l2"><a class="reference internal" href="../sequential_data_definition/">Sequential Data Definition</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../feature_naming/">Feature naming</a>
+                </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1 current"><a class="reference internal current" href="#">How to guide</a>
+    <ul class="current">
+                <li class="toctree-l2 current"><a class="reference internal current" href="./">Hyperparameters tuning</a>
+    <ul class="current">
+    </ul>
+                </li>
+                <li class="toctree-l2"><a class="" href="#">Data preparation (coming soon)</a>
+                </li>
+                <li class="toctree-l2"><a class="" href="#">Sequential model creation (coming soon)</a>
+                </li>
+                <li class="toctree-l2"><a class="" href="#">Frameworks usage (coming soon)</a>
+                </li>
+                <li class="toctree-l2"><a class="" href="#">Encoder training (coming soon)</a>
+                </li>
+                <li class="toctree-l2"><a class="" href="#">Inference (coming soon)</a>
+                </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="#">ptls</a>
+    <ul>
+                <li class="toctree-l2"><a class="reference internal" href="../ptls_preprocessing/">ptls.preprocessing</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="#">ptls.data_load</a>
+    <ul>
+                <li class="toctree-l3"><a class="reference internal" href="../data_load/date_pipeline/">dataset pipeline</a>
+                </li>
+                <li class="toctree-l3"><a class="reference internal" href="../data_load/padded_batch/">padded batch</a>
+                </li>
+                <li class="toctree-l3"><a class="reference internal" href="../data_load/datasets/">datasets</a>
+                </li>
+    </ul>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="#">ptls.nn</a>
+    <ul>
+                <li class="toctree-l3"><a class="reference internal" href="../nn/trx_encoder/">trx_encoder</a>
+                </li>
+                <li class="toctree-l3"><a class="reference internal" href="../nn/seq_encoder/">seq_encoder</a>
+                </li>
+                <li class="toctree-l3"><a class="reference internal" href="../nn/head/">head</a>
+                </li>
+                <li class="toctree-l3"><a class="reference internal" href="../nn/pb/">pb</a>
+                </li>
+    </ul>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="#">ptls.frames</a>
+    <ul>
+                <li class="toctree-l3"><a class="reference internal" href="../frames/common_usage/">common usage pattern</a>
+                </li>
+                <li class="toctree-l3"><a class="reference internal" href="../frames/coles/">coles</a>
+                </li>
+                <li class="toctree-l3"><a class="reference internal" href="../frames/vicreg/">vicreg</a>
+                </li>
+                <li class="toctree-l3"><a class="reference internal" href="../frames/cpc/">cpc</a>
+                </li>
+                <li class="toctree-l3"><a class="reference internal" href="../frames/bert/">bert</a>
+                </li>
+                <li class="toctree-l3"><a class="reference internal" href="../frames/supervised/">supervised</a>
+                </li>
+                <li class="toctree-l3"><a class="reference internal" href="../frames/inference/">inference</a>
+                </li>
+    </ul>
+                </li>
+    </ul>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="..">PyTorch-LifeStream</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href=".." class="icon icon-home" alt="Docs"></a> &raquo;</li>
+          <li>User Guide &raquo;</li>
+          <li>How to guide &raquo;</li><li>Hyperparameters tuning</li>
+    <li class="wy-breadcrumbs-aside">
+    </li>
+  </ul>
+  <hr/>
+</div>
+
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="hyperparameters-tuning">Hyperparameters tuning</h1>
+<p>We propose a demo for hyperparameters tuning with <code>hydra</code>, <code>optuna</code> and <code>tensorboard</code>.
+This is console application located in <code>demo/hparam_tuning</code>.</p>
+<h1 id="intro">Intro</h1>
+<p>After we build a network architecture we should tune hyperparameters.
+Automated tuning have a benefits:</p>
+<ul>
+<li>Automated iterations over hparam set is faster than manual choice</li>
+<li>Automated iterations requires less operational costs</li>
+<li>All results logged and can be inspected together</li>
+<li>Iteration count limit allow measure quality improvement with fixed resources.</li>
+<li>hparam optimisation tools implement effective strategy of parameter choice</li>
+</ul>
+<p>Keep in mind that is just a tool for hparam iteration.
+You should decide which parameters should be tuned and define a search space.</p>
+<p>Usually initial setup of automated hparam tuning requires a time. We hope our demo will make it easier for you.</p>
+<h1 id="used-tools">Used tools</h1>
+<p>We use <code>hydra</code> framework to manage app configuration, parameters and results.
+<code>hydra</code> multirun mode can run the same application with multiple different configurations.
+<code>optuna</code> plugin for hydra implements smart choice of next hparam set.
+Results are stored in hydra output folder.</p>
+<p>We log a results to tensorboard to show it as charts.</p>
+<h1 id="guide-to-reproduce">Guide to reproduce</h1>
+<p><code>demo/hparam_tuning/</code> should be working directory for this demo.</p>
+<h2 id="1-data-preprocessing">1. Data preprocessing</h2>
+<p>Aims of preprocessing:</p>
+<ul>
+<li>split the data into folds</li>
+<li>use <code>ptls.preprocessing.fit_transform</code> to convert data to <code>ptls</code> compatible format.</li>
+</ul>
+<h3 id="data-split">Data split</h3>
+<p>In this demo we use 6 datasplits: 1 for tuning and 5 for evaluation.
+We use cross-validation stratified fold splits.
+This means that we use <code>5/6</code> samples for training and <code>1/6</code> samples for testing.</p>
+<p>You can use a different setting, but there should be multiple parts to estimate the variance when testing.
+Also, the validation part should be separated from the test part.</p>
+<h3 id="data-preprocessing">Data preprocessing</h3>
+<p>After data split we make <code>ptls.preprocessing</code> for each part. In this demo we do it with <code>spark</code>.</p>
+<p>We save separately the preprocessed data for each fold. This multiply required storage space, 
+but it's easy to maintenance.</p>
+<p>We include unlabeled data to train part.
+You can use both data labeled and unlabeled for unsupervised training.
+You can filter unlabeled data with <code>iterable_processing.TargetEmptyFilter</code> for supervised training.</p>
+<p>After preprocessing data stored in <code>parquet</code> format.</p>
+<h3 id="scripts">Scripts</h3>
+<ul>
+<li><code>sh bin/data-preprocessing.sh</code> spark-submit command for run</li>
+<li><code>data_preprocessing.py</code> main program</li>
+<li><code>conf/data_preprocessing.yaml</code> config for data preprocessing</li>
+</ul>
+<h2 id="2-model-tuning-script">2. Model tuning script</h2>
+<p>Python program with model train, evaluate, logging and fold_id selection based on valid of test mode.</p>
+<p>Some hparams should be configured via config file.</p>
+<p>Run it in <code>test</code> mode first.</p>
+<ul>
+<li>you can make sure everything works correctly</li>
+<li>you get mean quality for default hparams</li>
+<li>you get std and confidence interval for model quality</li>
+</ul>
+<h3 id="scripts_1">Scripts</h3>
+<ul>
+<li><code>tuning.py</code> tuning script</li>
+<li><code>conf/simple_config.yaml</code> default config</li>
+<li><code>python tuning.py --config-name=simple_config mode=test</code> command for run</li>
+</ul>
+<h2 id="3-tuning">3. Tuning</h2>
+<p>Extends your config with multirun <code>hydra</code> settings, <code>optuna</code> settings and params search space.</p>
+<p>We prepare a separate config for tuning run.</p>
+<p><code>main</code> in tuning script saves config in <code>{hydra.cwd}/conf_override/config.yaml</code> for future reuse during testing</p>
+<h3 id="scripts_2">Scripts</h3>
+<ul>
+<li><code>tuning.py</code> the same tuning script</li>
+<li><code>conf/one_layer_head.yaml</code> config with tuning params</li>
+<li><code>python tuning.py --multirun --config-name=one_layer_head mode=valid</code> command for run</li>
+</ul>
+<h2 id="4-test-the-best-hparams-option-1">4. Test the best hparams (option 1)</h2>
+<ul>
+<li>Check tensorboard <code>hparams</code> tab</li>
+<li>Choose the best run</li>
+<li>Check <code>run name</code> and <code>hydra.reuse_cmd</code> hparam.</li>
+<li>Run test with best config: <code>python tuning.py ---config-name=one_layer_head {hydra.reuse_cmd} mode=test</code>
+with <code>{hydra.reuse_cmd}</code> resolve.</li>
+</ul>
+<p><code>{hydra.reuse_cmd}</code> looks like path to best config and adding overrieds to whole config: <code>+conf_override@=config</code></p>
+<p>This option overrides the main config <code>one_layer_head</code> by one which was used during best run. 
+This option keeps <code>hydra</code> settings which are in <code>one_layer_head</code>.</p>
+<h2 id="4-test-the-best-hparams-option-2">4. Test the best hparams (option 2)</h2>
+<ul>
+<li>Check tensorboard <code>hparams</code> tab</li>
+<li>Choose the best run</li>
+<li>Check <code>run name</code> and <code>hydra.cwd</code> hparam.</li>
+<li>Run test with best config: <code>python tuning.py --config-path={hydra.cwd}/.hydra --config-name=config mode=test</code>
+with <code>{hydra.cwd}</code> resolve.</li>
+</ul>
+<p>This option use <code>config.yaml</code> from <code>hydra</code> log of best run.
+This option loose <code>hydra</code> settings which are in <code>one_layer_head</code> cause hydra don't log his settings in <code>config.yaml</code>.</p>
+<h1 id="result-logging">Result logging</h1>
+<p>Results on each fold stored to:</p>
+<ul>
+<li>tensorboard with logger selected in <code>tuning.model_run.trainer</code> with calling <code>log</code> method in your LightningModule</li>
+<li>hydra output folder (see <code>conf.hydra.sweep.dir</code>)</li>
+</ul>
+<p>Mean results on test stores to:</p>
+<ul>
+<li>tensorboard with separate logger with name <code>{conf.mode}_mean</code>
+Only hparams and final metrics are saved.</li>
+<li>hydra output folder</li>
+</ul>
+<p>hparams with final metrics stores to:</p>
+<ul>
+<li>tb logger selected in <code>tuning.model_run.trainer</code> during validation</li>
+<li>logger with name <code>{conf.mode}_mean</code> during test</li>
+</ul>
+<p>Log file in hydra output folder have a tensorboard run version.
+And tensorboard run have <code>hydra.cwd</code> which are hydra output folder in <code>hparams</code></p>
+<p>For better reading <code>hparams</code> are saved as flat list without hierarchy.
+Full job config are stored in <code>{hydra.cwd}/.hydra/config.yaml</code>
+Copy of full job config are stored in <code>{hydra.cwd}/conf_override/config.yaml</code></p>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../feature_naming/" class="btn btn-neutral float-left" title="Feature naming"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../ptls_preprocessing/" class="btn btn-neutral float-right" title="ptls.preprocessing">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+      <span><a href="../feature_naming/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../ptls_preprocessing/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script>var base_url = '..';</script>
+    <script src="../js/theme_extra.js" defer></script>
+    <script src="../js/theme.js" defer></script>
+      <script src="../search/main.js" defer></script>
+    <script defer>
+        window.onload = function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        };
+    </script>
+
+</body>
+</html>
