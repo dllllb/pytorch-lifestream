@@ -50,6 +50,7 @@ class RnnEncoder(AbsSeqEncoder):
                  hidden_size=None,
                  type='gru',
                  bidir=False,
+                 num_layers=1,
                  dropout=0,
                  trainable_starter='static',
                  is_reduce_sequence=False,  # previous default behavior RnnEncoder
@@ -70,7 +71,7 @@ class RnnEncoder(AbsSeqEncoder):
             self.rnn = nn.LSTM(
                 input_size,
                 self.hidden_size,
-                num_layers=1,
+                num_layers=num_layers,
                 batch_first=True,
                 bidirectional=self.bidirectional,
                 dropout=dropout)
@@ -78,7 +79,7 @@ class RnnEncoder(AbsSeqEncoder):
             self.rnn = nn.GRU(
                 input_size,
                 self.hidden_size,
-                num_layers=1,
+                num_layers=num_layers,
                 batch_first=True,
                 bidirectional=self.bidirectional,
                 dropout=dropout)
