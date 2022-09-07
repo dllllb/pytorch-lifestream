@@ -1,8 +1,9 @@
 import torch
+import warnings
 from torch import nn as nn
 
 from ptls.nn.seq_encoder.abs_seq_encoder import AbsSeqEncoder
-from ptls.nn.seq_step import LastStepEncoder
+from ptls.nn.seq_step import LastStepEncoder, LastMaxAvgEncoder, FirstStepEncoder
 from ptls.data_load.padded_batch import PaddedBatch
 
 
@@ -20,7 +21,9 @@ class RnnEncoder(AbsSeqEncoder):
             'gru' or 'lstm'
             Type of rnn network
         bidir:
-            Not implemented. Use default value for this parameter
+            Bidirectional RNN
+        dropout:
+            RNN dropout
         trainable_starter:
             'static' - use random learnable vector for rnn starter
             other values - use None as starter
@@ -47,8 +50,11 @@ class RnnEncoder(AbsSeqEncoder):
                  hidden_size=None,
                  type='gru',
                  bidir=False,
+                 num_layers=1,
+                 dropout=0,
                  trainable_starter='static',
                  is_reduce_sequence=False,  # previous default behavior RnnEncoder
+                 reducer='last_step'
                  ):
         super().__init__(is_reduce_sequence=is_reduce_sequence)
 
@@ -56,7 +62,8 @@ class RnnEncoder(AbsSeqEncoder):
         self.rnn_type = type
         self.bidirectional = bidir
         if self.bidirectional:
-            raise AttributeError('bidirectional RNN is not supported yet')
+            warnings.warn("Backward direction in bidir RNN takes into account paddings at the end of sequences!")
+        
         self.trainable_starter = trainable_starter
 
         # initialize RNN
@@ -64,16 +71,18 @@ class RnnEncoder(AbsSeqEncoder):
             self.rnn = nn.LSTM(
                 input_size,
                 self.hidden_size,
-                num_layers=1,
+                num_layers=num_layers,
                 batch_first=True,
-                bidirectional=self.bidirectional)
+                bidirectional=self.bidirectional,
+                dropout=dropout)
         elif self.rnn_type == 'gru':
             self.rnn = nn.GRU(
                 input_size,
                 self.hidden_size,
-                num_layers=1,
+                num_layers=num_layers,
                 batch_first=True,
-                bidirectional=self.bidirectional)
+                bidirectional=self.bidirectional,
+                dropout=dropout)
         else:
             raise Exception(f'wrong rnn type "{self.rnn_type}"')
 
@@ -84,7 +93,12 @@ class RnnEncoder(AbsSeqEncoder):
             num_dir = 2 if self.bidirectional else 1
             self.starter_h = nn.Parameter(torch.randn(num_dir, 1, self.hidden_size))
 
-        self.reducer = LastStepEncoder()
+        if reducer == 'last_step':
+            self.reducer = LastStepEncoder()
+        elif reducer == 'first_step':
+            self.reducer = FirstStepEncoder()
+        elif reducer == 'last_max_avg':
+            self.reducer = LastMaxAvgEncoder()
 
     def forward(self, x: PaddedBatch, h_0: torch.Tensor = None):
         """
