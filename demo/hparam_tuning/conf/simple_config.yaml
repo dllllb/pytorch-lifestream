@@ -1,0 +1,29 @@
+defaults:
+  - data_preprocessing: default
+  - _self_
+
+hydra:
+  job:
+    chdir: true
+  run:
+    dir: outputs/${experiment_name}/${now:%Y-%m-%d}/${now:%H-%M-%S}
+
+experiment_name: simple_config
+tb_save_dir: lightning_logs/${experiment_name}/
+
+mode: ???
+
+pl_module:
+  num_layers: 1
+  dropout1: 0
+  batch_norm1: true
+  relu1: false
+  hidden_size1: 64
+  lr: 0.001
+  lr_gamma: 0.9
+
+validation_rate: 0.1
+
+trainer:
+  limit_train_batches: 100
+  max_epochs: 5
