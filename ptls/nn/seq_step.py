@@ -19,10 +19,11 @@ class TimeStepShuffle(nn.Module):
 
 class LastStepEncoder(nn.Module):
     """
-    Class is used by ptls.nn.RnnSeqEncoder for reducing RNN output with shape (L, H), where
+    Class is used by ptls.nn.RnnSeqEncoder for reducing RNN output with shape (B, L, H), where
+        B - batch size
         L - sequence length
         H - hidden RNN size
-    to embedding with shape (H,). The last hidden state is used for embedding.
+    to embeddings tensor with shape (B, H). The last hidden state is used for embedding.
     
     Example of usage: seq_encoder = RnnSeqEncoder(..., reducer='last_step')
     """
@@ -33,29 +34,31 @@ class LastStepEncoder(nn.Module):
 
 class FirstStepEncoder(nn.Module):
     """
-    Class is used by ptls.nn.RnnSeqEncoder class for reducing RNN output with shape (L, H)
-    to embedding with shape (H,). The first hidden state is used for embedding.
+    Class is used by ptls.nn.RnnSeqEncoder class for reducing RNN output with shape (B, L, H)
+    to embeddings tensor with shape (B, H). The first hidden state is used for embedding.
     
     where:
+        B - batch size
         L - sequence length
         H - hidden RNN size
     
     Example of usage: seq_encoder = RnnSeqEncoder(..., reducer='first_step')
     """
     def forward(self, x: PaddedBatch):
-        h = x.payload[:, 0, :]  # [B, T, H] -> [B, H]
+        h = x.payload[:, 0, :]  # [B, L, H] -> [B, H]
         return h
     
 
 class LastMaxAvgEncoder(nn.Module):
     """
-    Class is used by ptls.nn.RnnSeqEncoder class for reducing RNN output with shape (L, H)
-    to embedding with shape (3 * H,). Embedding is created by concatenating:
+    Class is used by ptls.nn.RnnSeqEncoder class for reducing RNN output with shape (B, L, H)
+    to embeddings tensor with shape (B, 3 * H). Embeddings are created by concatenating:
         - last hidden state from RNN output,
         - max pool over all hidden states of RNN output,
         - average pool over all hidden states of RNN output.
         
     where:
+        B - batch size
         L - sequence length
         H - hidden RNN size
         
