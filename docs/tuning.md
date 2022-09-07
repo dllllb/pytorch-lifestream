@@ -41,7 +41,7 @@ Aims of preprocessing:
 
 ### Data split
 
-In this demo we use 6 dataset splits. One for tuning, 5 for testing.
+In this demo we use 6 datasplits: 1 for tuning and 5 for evaluation.
 We use cross-validation stratified fold splits.
 This means that we use `5/6` samples for training and `1/6` samples for testing.
 
