@@ -28,7 +28,7 @@ Results are stored in hydra output folder.
 
 We log a results to tensorboard to show it as charts.
 
-# Guide fo reproduce
+# Guide to reproduce
 
 `demo/hparam_tuning/` should be working directory for this demo.
 

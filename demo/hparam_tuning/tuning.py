@@ -2,39 +2,19 @@
 Inspired by:
 https://medium.com/optuna/easy-hyperparameter-management-with-hydra-mlflow-and-optuna-783730700e7d
 
-
-# Data
-Consider labeled and unlabeled data.
-Labeled data splits into N folds, where `N = N_valid + N_test`.
-`N_valid` - is count of folds used to measure a quality during hparam optimisation.
-`N_test` - is count of folds used to measure a final quality
-Unlabeled data used (if needed) in each fold split.
-
-# Main algorithm
->>> def estimate_model(hparams, folds):
->>>     metric = []
->>>     for ds_train, ds_valid in folds:
->>>         model = Model(hparams)
->>>         model.fit(ds_train)
->>>         metric_on_fold = model.test(ds_valid)
->>>         metric.append(metric_on_fold)
->>>     return metric.mean()
-
-Hydra multirun with optuna framework choose a next hparams and run `estimate_model` on validation folds.
-
 # Supported features with hydra
-- Model pretrain. Should be a part of `estimate_model` function.
-- LGBM downstream model supported. Should be a part of `estimate_model` function.
+- Model pretrain. Should be a part of `model_run` function.
+- LGBM downstream model supported. Should be a part of `model_run` function.
 - Tensorboard full logging:
     - Each fold logged as usual
-    - Mean metrics logged with hparams and hydra.cwd to link tb metrics and hydra outputs.
+    - Mean metrics logged with hparams, hydra.cwd and hydra.reuse_cmd to link tb metrics and hydra outputs.
     - Hydra outputs logs a tb versions to link runs, configs and results.
-- Multiprocess parallel run. With hydra launcher customisation.
+- Multiprocess parallel run. With hydra launcher customization.
 
 # Features not supported by hydra
 - Each pretrain epoch yield a model tor finetuning.
     Workaround: Returns finetuned results from best epoch.
-- Fast hparam selection with early epoch estimation and break low quality configurations.
+- Fast hparam selection with early epoch estimation and break low quality configurations (hyperband).
     Workaround: Early stop for worst configurations.
     Track previous results from tb and break a runs that a worse than previous.
 
