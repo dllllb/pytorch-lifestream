@@ -1,4 +1,5 @@
 from .trx_encoder import TrxEncoder
+from .trx_encoder import TabFormerFeatureEncoder
 
 from .seq_encoder import (
     RnnEncoder,  TransformerEncoder, LongformerEncoder,

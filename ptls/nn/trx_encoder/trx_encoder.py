@@ -58,7 +58,7 @@ class TrxEncoder(nn.Module):
     """
     def __init__(self,
                  embeddings=None,
-                 numeric_values=None,
+                 numeric_values={},
                  embeddings_noise: float = 0,
                  norm_embeddings=None,
                  use_batch_norm_with_lens=False,
