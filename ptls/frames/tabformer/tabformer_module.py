@@ -52,14 +52,14 @@ class TabformerPretrainModule(pl.LightningModule):
     def __init__(self,
                  trx_encoder: torch.nn.Module,
                  feature_encoder: torch.nn.Module,
+                 seq_encoder: AbsSeqEncoder,
                  total_steps: int,
-                 seq_encoder: AbsSeqEncoder = None,
                  hidden_size: int = None,
                  loss_temperature: float = 20.0,
                  max_lr: float = 0.001,
                  weight_decay: float = 0.0,
                  pct_start: float = 0.1,
-                 norm_predict: bool = True,
+                 norm_predict: bool = False,
                  replace_proba: float = 0.1,
                  neg_count: int = 1,
                  log_logits: bool = False,
@@ -81,14 +81,8 @@ class TabformerPretrainModule(pl.LightningModule):
 
         warnings.warn("With Tabformer model set `in` value in `embeddings`parameter of `trx_encoder` equal to actual number of unique feature values + 1")
 
-        if seq_encoder:
-            self.seq_encoder = seq_encoder
-            self.seq_encoder.is_reduce_sequence = False
-        else:
-            bert_config = BertConfig(hidden_size=self.feature_emb_dim * self.num_f,
-                                     num_attention_heads=self.num_f,
-                                     pad_token_id=0)
-            self.seq_encoder = BertModel(bert_config, add_pooling_layer=False)
+        self.seq_encoder = seq_encoder
+        self.seq_encoder.is_reduce_sequence = False
 
         if self.hparams.norm_predict:
             self.fn_norm_predict = PBL2Norm()
@@ -125,12 +119,7 @@ class TabformerPretrainModule(pl.LightningModule):
         return [optim], [scheduler]
 
     def forward(self, z: PaddedBatch):
-        outputs = self.seq_encoder(
-            inputs_embeds=z.payload,
-        )
-
-        print(self.hparams.norm_predict)
-        7777777/0
+        out = self.seq_encoder(z)
         if self.hparams.norm_predict:
             out = self.fn_norm_predict(out)
         return out
@@ -171,6 +160,8 @@ class TabformerPretrainModule(pl.LightningModule):
 
     def loss_tabformer(self, x: PaddedBatch, is_train_step):
         out = self.forward(x)
+        print(out.payload.shape)
+        888/0
 
         target = x.payload[mask].unsqueeze(1)  # N, 1, H
         predict = out[mask].unsqueeze(1)  # N, 1, H
