@@ -48,9 +48,10 @@ class PaddedBatch:
         >>> torch.testing.assert_close(data.payload[data.seq_len_mask.bool()], torch.tensor([1, 2, 3, 4, 5, 6, 7, 8, 9]))
 
     """
-    def __init__(self, payload: Dict[str, torch.Tensor], length: torch.LongTensor):
+    def __init__(self, payload: Dict[str, torch.Tensor], length: torch.LongTensor, target: torch.Tensor = None):
         self._payload = payload
         self._length = length
+        self._target = target
 
     @property
     def payload(self):
@@ -59,6 +60,10 @@ class PaddedBatch:
     @property
     def seq_lens(self):
         return self._length
+
+    @property
+    def target(self):
+        return self._target
 
     @property
     def device(self):

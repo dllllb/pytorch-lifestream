@@ -160,8 +160,6 @@ class TabformerPretrainModule(pl.LightningModule):
 
     def loss_tabformer(self, x: PaddedBatch, is_train_step):
         out = self.forward(x)
-        print(out.payload.shape)
-        888/0
 
         target = x.payload[mask].unsqueeze(1)  # N, 1, H
         predict = out[mask].unsqueeze(1)  # N, 1, H
@@ -186,7 +184,7 @@ class TabformerPretrainModule(pl.LightningModule):
         payload = self.feature_encoder(payload)
 
         z_trx._payload = payload
-        z_trx.tabf_labels = tabf_labels
+        z_trx._target = tabf_labels
 
         loss_tabformer = self.loss_tabformer(z_trx, is_train_step=True)
         self.train_tabformer_loss(loss_tabformer)
@@ -204,7 +202,7 @@ class TabformerPretrainModule(pl.LightningModule):
         payload = self.feature_encoder(payload)
 
         z_trx._payload = payload
-        z_trx.tabf_labels = tabf_labels
+        z_trx._target = tabf_labels
 
 
         loss_tabformer = self.loss_tabformer(z_trx, is_train_step=False)
