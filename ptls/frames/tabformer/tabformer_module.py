@@ -1,5 +1,6 @@
 import pytorch_lightning as pl
 import torch
+from torch import nn
 import warnings
 from torchmetrics import MeanMetric
 from typing import Tuple, Dict
@@ -76,8 +77,13 @@ class TabformerPretrainModule(pl.LightningModule):
         noisy_embeds = list(self.trx_encoder.embeddings.values())
         assert noisy_embeds, '`embeddings` parameter for `trx_encoder` should contain at least 1 feature!'
         self.feature_emb_dim = noisy_embeds[0].embedding_dim
-        self.num_f = len(self.trx_encoder.embeddings) + 1
-        assert all(n_emb.embedding_dim == self.feature_emb_dim for n_emb in noisy_embeds), 'Out dimensions for all features in `embeddings` parameter of `trx_encoder` should be equal for Tabformer model!'
+        self.num_f = len(self.trx_encoder.embeddings)
+
+        self.head = nn.ModuleList()
+        in_head_dim = self.feature_emb_dim * self.num_f
+        for n_emb in noisy_embeds:
+            self.head += [nn.Linear(in_head_dim, n_emb.num_embeddings)]
+            assert all(n_emb.embedding_dim == self.feature_emb_dim for n_emb in noisy_embeds), 'Out dimensions for all features in `embeddings` parameter of `trx_encoder` should be equal for Tabformer model!'
 
         warnings.warn("With Tabformer model set `in` value in `embeddings`parameter of `trx_encoder` equal to actual number of unique feature values + 1")
 
@@ -91,13 +97,18 @@ class TabformerPretrainModule(pl.LightningModule):
             hidden_size = trx_encoder.output_size
 
         self.token_mask = torch.nn.Parameter(torch.randn(1, 1, self.feature_emb_dim), requires_grad=True)
-        self.token_sep = torch.nn.Parameter(torch.randn(1, 1, self.feature_emb_dim), requires_grad=True)
 
-        self.loss_fn = QuerySoftmaxLoss(temperature=loss_temperature, reduce=False)
+        self.loss = nn.CrossEntropyLoss()
 
         self.train_tabformer_loss = MeanMetric()
         self.valid_tabformer_loss = MeanMetric()
         self.mask_prob = mask_prob
+
+        self.lin_proj = nn.Sequential(nn.Linear(self.feature_emb_dim, self.feature_emb_dim * self.num_f),
+
+                                      nn.GELU(),
+                                      nn.LayerNorm(self.feature_emb_dim * self.num_f, eps=1e-12)
+                                      )
 
     def configure_optimizers(self):
         optim = torch.optim.Adam(self.parameters(),
@@ -160,18 +171,22 @@ class TabformerPretrainModule(pl.LightningModule):
 
     def loss_tabformer(self, x: PaddedBatch, is_train_step):
         out = self.forward(x)
+        sequence_output = out.payload
+        masked_lm_labels = out.target.view(-1, self.num_f).permute(1, 0)
 
-        target = x.payload[mask].unsqueeze(1)  # N, 1, H
-        predict = out[mask].unsqueeze(1)  # N, 1, H
-        neg_ix = self.get_neg_ix(mask)
-        negative = out[neg_ix[0], neg_ix[1]]  # N, nneg, H
-        loss = self.loss_fn(target, predict, negative)
+        expected_sz = (-1, self.num_f, self.feature_emb_dim)
+        sequence_output = sequence_output.reshape(expected_sz).permute(1, 0, 2)
+        sequence_output = self.lin_proj(sequence_output)
 
-        if is_train_step and self.hparams.log_logits:
-            with torch.no_grad():
-                logits = self.loss_fn.get_logits(target, predict, negative)
-            self.logger.experiment.add_histogram('tabformer/logits',
-                                                 logits.flatten().detach(), self.global_step)
+        seq_out_feature = torch.chunk(sequence_output, self.num_f, dim=0)
+        labels_feature = torch.chunk(masked_lm_labels, self.num_f, dim=0)
+
+        loss = 0
+        for f_ix in range(self.num_f):
+            seq_out_f, labels_f = seq_out_feature[f_ix].squeeze(0), labels_feature[f_ix].squeeze(0)
+            out_f = self.head[f_ix](seq_out_f)
+            loss_f = self.loss(out_f, labels_f)
+            loss += loss_f
         return loss
 
     def training_step(self, batch, batch_idx):
@@ -203,7 +218,6 @@ class TabformerPretrainModule(pl.LightningModule):
 
         z_trx._payload = payload
         z_trx._target = tabf_labels
-
 
         loss_tabformer = self.loss_tabformer(z_trx, is_train_step=False)
         self.valid_tabformer_loss(loss_tabformer)
