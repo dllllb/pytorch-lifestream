@@ -59,4 +59,4 @@ Library description [index](docs/index.md)
 
 ## Experiments on public datasets
 
-`pytorch-lifestream` usage experiments on several public event datasets are available in the separate [repo](https://github.com/dllllb/pytorch-lifestream-experiments)
+`pytorch-lifestream` usage experiments on several public event datasets are available in the separate [repo](https://github.com/dllllb/ptls-experiments)
