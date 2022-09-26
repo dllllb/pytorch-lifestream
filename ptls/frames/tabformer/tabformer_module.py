@@ -4,9 +4,7 @@ from torch import nn
 import warnings
 from torchmetrics import MeanMetric
 from typing import Tuple, Dict
-from transformers import BertModel, BertConfig
 
-from ptls.frames.bert.losses.query_soft_max import QuerySoftmaxLoss
 from ptls.nn.seq_encoder.abs_seq_encoder import AbsSeqEncoder
 from ptls.nn import PBL2Norm
 from ptls.data_load.padded_batch import PaddedBatch
