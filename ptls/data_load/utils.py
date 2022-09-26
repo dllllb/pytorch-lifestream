@@ -48,7 +48,6 @@ def collate_feature_dict(batch):
                 new_x[k] = torch.from_numpy(v).float()
             else:
                 new_x[k] = v
-
     return PaddedBatch(new_x, lengths)
 
 

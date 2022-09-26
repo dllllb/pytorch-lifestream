@@ -68,6 +68,7 @@ class TrxEncoder(nn.Module):
                  spatial_dropout=False
                  ):
         super().__init__()
+        if numeric_values is None: numeric_values = {}
         self.scalers = nn.ModuleDict()
 
         self.use_batch_norm_with_lens = use_batch_norm_with_lens
