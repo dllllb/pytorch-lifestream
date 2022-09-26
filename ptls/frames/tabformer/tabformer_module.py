@@ -16,22 +16,21 @@ class TabformerPretrainModule(pl.LightningModule):
     """Tabformer Model (MLM) from [Tabular Transformers for Modeling Multivariate Time Series](https://arxiv.org/abs/2011.01843)
 
     Original sequence are encoded by `TrxEncoder`.
-    Randomly sampled trx representations are replaced by MASK embedding.
-    Transformer `seq_encoder` reconstruct masked embeddings.
-    The loss function tends to make closer trx embedding and his predict.
-    Negative samples are used to avoid trivial solution.
+    Randomly sampled features are replaced by MASK token.
+    Transformer `seq_encoder` reconstruct masked tokens.
+    The loss function is a classification loss.
 
     Parameters
     ----------
     trx_encoder:
         Module for transform dict with feature sequences to sequence of transaction representations
+    feature_encoder:
+        Module that apply transformer layers to output of trx_encoder on feature dimension, (B, T, H_in) -> (B, T, H_out)
     seq_encoder:
         Module for sequence processing. Generally this is transformer based encoder. Rnn is also possible
         Should works without sequence reduce
     hidden_size:
         Size of trx_encoder output.
-    loss_temperature:
-         temperature parameter of `QuerySoftmaxLoss`
     total_steps:
         total_steps expected in OneCycle lr scheduler
     max_lr:
@@ -42,12 +41,8 @@ class TabformerPretrainModule(pl.LightningModule):
         % of total_steps when lr increase
     norm_predict:
         use l2 norm for transformer output or not
-    replace_proba:
-        probability of masking transaction embedding
-    neg_count:
-        negative count for `QuerySoftmaxLoss`
-    log_logits:
-        if true than logits histogram will be logged. May be useful for `loss_temperature` tuning
+    mask_prob:
+        probability of masking randomly selected feature
     """
 
     def __init__(self,
@@ -56,19 +51,15 @@ class TabformerPretrainModule(pl.LightningModule):
                  seq_encoder: AbsSeqEncoder,
                  total_steps: int,
                  hidden_size: int = None,
-                 loss_temperature: float = 20.0,
                  max_lr: float = 0.001,
                  weight_decay: float = 0.0,
                  pct_start: float = 0.1,
                  norm_predict: bool = False,
-                 replace_proba: float = 0.1,
-                 neg_count: int = 1,
-                 log_logits: bool = False,
-                 mask_prob=0.15
+                 mask_prob: float = 0.15
                  ):
 
         super().__init__()
-        self.save_hyperparameters(ignore=['trx_encoder', 'seq_encoder'])
+        self.save_hyperparameters(ignore=['trx_encoder', 'seq_encoder', 'feature_encoder'])
 
         self.trx_encoder = trx_encoder
         self.feature_encoder = feature_encoder
@@ -169,10 +160,10 @@ class TabformerPretrainModule(pl.LightningModule):
     
             return labels.permute(1, 2, 0), masked_indices.permute(1, 2, 0), indices_replaced.permute(1, 2, 0)
 
-    def loss_tabformer(self, x: PaddedBatch, is_train_step):
+    def loss_tabformer(self, x: PaddedBatch, target, is_train_step):
         out = self.forward(x)
         sequence_output = out.payload
-        masked_lm_labels = out.target.view(-1, self.num_f).permute(1, 0)
+        masked_lm_labels = target.view(-1, self.num_f).permute(1, 0)
 
         expected_sz = (-1, self.num_f, self.feature_emb_dim)
         sequence_output = sequence_output.reshape(expected_sz).permute(1, 0, 2)
@@ -199,11 +190,9 @@ class TabformerPretrainModule(pl.LightningModule):
         payload = self.feature_encoder(payload)
 
         z_trx._payload = payload
-        z_trx._target = tabf_labels
 
-        loss_tabformer = self.loss_tabformer(z_trx, is_train_step=True)
+        loss_tabformer = self.loss_tabformer(z_trx, tabf_labels, is_train_step=True)
         self.train_tabformer_loss(loss_tabformer)
-        loss_tabformer = loss_tabformer.mean()
         self.log(f'tabformer/loss', loss_tabformer)
         return loss_tabformer
 
@@ -217,9 +206,8 @@ class TabformerPretrainModule(pl.LightningModule):
         payload = self.feature_encoder(payload)
 
         z_trx._payload = payload
-        z_trx._target = tabf_labels
 
-        loss_tabformer = self.loss_tabformer(z_trx, is_train_step=False)
+        loss_tabformer = self.loss_tabformer(z_trx, tabf_labels, is_train_step=False)
         self.valid_tabformer_loss(loss_tabformer)
 
     def training_epoch_end(self, _):

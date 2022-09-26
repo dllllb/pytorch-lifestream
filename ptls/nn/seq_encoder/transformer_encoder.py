@@ -187,7 +187,7 @@ class TransformerEncoder(AbsSeqEncoder):
         if self.is_reduce_sequence:
             return out[:, 0, :]
 
-        return PaddedBatch(out[:, 1:, :], x.seq_lens, target=x.target)
+        return PaddedBatch(out[:, 1:, :], x.seq_lens)
 
     @property
     def embedding_size(self):
