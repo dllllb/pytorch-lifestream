@@ -2,6 +2,7 @@ import numpy as np
 import torch
 from collections import defaultdict
 from functools import reduce
+from typing import Tuple
 
 from ptls.data_load.feature_dict import FeatureDict
 from ptls.data_load.padded_batch import PaddedBatch
@@ -48,7 +49,6 @@ def collate_feature_dict(batch):
                 new_x[k] = torch.from_numpy(v).float()
             else:
                 new_x[k] = v
-
     return PaddedBatch(new_x, lengths)
 
 
