@@ -161,10 +161,10 @@ class TabformerPretrainModule(pl.LightningModule):
     def loss_tabformer(self, x: PaddedBatch, target, is_train_step):
         out = self.forward(x)
         sequence_output = out.payload
-        masked_lm_labels = target.view(-1, self.num_f).permute(1, 0)
+        masked_lm_labels = target.view(-1, self.num_f).permute(1, 0)  # (B, T, NUM_F) -> (NUM_F, B*T)
 
         expected_sz = (-1, self.num_f, self.feature_emb_dim)
-        sequence_output = sequence_output.reshape(expected_sz).permute(1, 0, 2)
+        sequence_output = sequence_output.reshape(expected_sz).permute(1, 0, 2)  # (B, T, NUM_F*H) -> (NUM_F, B*T, H)
         sequence_output = self.lin_proj(sequence_output)
 
         seq_out_feature = torch.chunk(sequence_output, self.num_f, dim=0)
