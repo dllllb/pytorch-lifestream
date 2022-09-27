@@ -7,3 +7,4 @@ from .vicreg_loss import VicregLoss
 from .triplet_loss import TripletLoss
 
 from .histogram_loss import HistogramLoss
+from .centroid_loss import CentroidLoss, CentroidSoftmaxLoss
