@@ -11,6 +11,20 @@ from ptls.frames.coles.split_strategy import AbsSplit
 
 
 class ColesSupervisedDataset(FeatureDict, torch.utils.data.Dataset):
+    """Dataset for ptls.frames.coles.ColesSupervisedModule
+
+    Parameters
+    ----------
+    data:
+        source data with feature dicts
+    splitter:
+        object from from `ptls.frames.coles.split_strategy`.
+        Used to split original sequence into subsequences which are samples from one client.
+    cols_classes:
+        column names with class labels for auxiliary supervised loss calculation
+    col_time:
+        column name with event_time
+    """
     def __init__(self,
                  data,
                  splitter: AbsSplit,

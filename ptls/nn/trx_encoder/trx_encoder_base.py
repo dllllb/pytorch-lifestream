@@ -62,6 +62,9 @@ class TrxEncoderBase(nn.Module):
                     continue
                 if emb_props['in'] == 0 or emb_props['out'] == 0:
                     continue
+                if emb_props['in'] < 3:
+                    raise AttributeError(f'At least 3 should be in `embeddings.{col_name}.in`. '
+                                         f'0-padding and at least two different embedding indexes')
                 self.embeddings[col_name] = torch.nn.Embedding(
                     num_embeddings=emb_props['in'],
                     embedding_dim=emb_props['out'],

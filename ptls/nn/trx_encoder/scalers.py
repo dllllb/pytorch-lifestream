@@ -75,11 +75,7 @@ def scaler_by_name(name):
         'year': YearScaler,
     }.get(name, None)
 
-    if name.startswith('vector_'):
-        return NumToVector(int(name[7:]))
-    elif name.startswith('log_vector_'):
-        return LogNumToVector(int(name[11:]))
-    elif scaler is None:
+    if scaler is None:
         raise Exception(f'unknown scaler name: {name}')
     else:
         return scaler()

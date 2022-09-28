@@ -12,6 +12,9 @@ class CentroidLoss(nn.Module):
     class_num
         set the number of classes if you know limit (e.g. 2 for binary classifications)
         set None for metric learning task with unknown class number
+    centroid_margin
+        l2 distance between the class centers, closer than which the loss will be calculated.
+        Class centers tend to be further than `centroid_margin`.
     """
 
     def __init__(self, class_num, centroid_margin=1.4):
@@ -53,9 +56,11 @@ class CentroidSoftmaxLoss(nn.Module):
     class_num
         set the number of classes if you know limit (e.g. 2 for binary classifications)
         set None for metric learning task with unknown class number
+    temperature:
+        temperature for softmax logits for scaling l2 distance on unit sphere
     """
 
-    def __init__(self, class_num, temperature=20.0):
+    def __init__(self, class_num, temperature=10.0):
         super().__init__()
         self.class_num = class_num
         if self.class_num is not None:

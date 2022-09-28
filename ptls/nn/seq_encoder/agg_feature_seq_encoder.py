@@ -38,6 +38,10 @@ class AggFeatureSeqEncoder(torch.nn.Module):
             Use of not mean by values
         is_used_std (bool):
             Use of not std by values
+        is_used_min (bool):
+            Use of not min by values
+        is_used_max (bool):
+            Use of not max by values
         use_topk_cnt (int):
             Define the K for topk features calculation. 0 if not used
         distribution_target_task (bool):

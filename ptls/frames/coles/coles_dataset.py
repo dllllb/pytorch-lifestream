@@ -9,6 +9,19 @@ from ptls.frames.coles.split_strategy import AbsSplit
 
 
 class ColesDataset(FeatureDict, torch.utils.data.Dataset):
+    """Dataset for ptls.frames.coles.CoLESModule
+
+    Parameters
+    ----------
+    data:
+        source data with feature dicts
+    splitter:
+        object from from `ptls.frames.coles.split_strategy`.
+        Used to split original sequence into subsequences which are samples from one client.
+    col_time:
+        column name with event_time
+    """
+
     def __init__(self,
                  data,
                  splitter: AbsSplit,

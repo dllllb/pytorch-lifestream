@@ -61,7 +61,6 @@ class TrxEncoder(TrxEncoderBase):
             'assert' - raise an error of invalid index appear.
 
         norm_embeddings: keep default value for this parameter
-        use_batch_norm_with_lens: keep default value for this parametez
         clip_replace_value: Not useed. keep default value for this parameter
         positions: Not used. Keep default value for this parameter
 
