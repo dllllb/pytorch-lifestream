@@ -53,6 +53,7 @@ class ColesSupervisedModule(ABSModule):
                  head=None,
                  loss=None,
                  l_loss=None,
+                 contrastive_loss_w=1.0,
                  supervised_loss_w=0.1,
                  validation_metric=None,
                  optimizer_partial=None,
@@ -75,6 +76,7 @@ class ColesSupervisedModule(ABSModule):
 
         self._head = head
         self.l_loss = l_loss
+        self.contrastive_loss_w = contrastive_loss_w
         self.supervised_loss_w = supervised_loss_w
 
     @property
@@ -111,7 +113,8 @@ class ColesSupervisedModule(ABSModule):
 
         self.log('loss', loss)
         self.log('seq_len', x.seq_lens.float().mean(), prog_bar=True)
-        return loss + self.supervised_loss_w * l_loss
+        return self.contrastive_loss_w * loss + self.supervised_loss_w * l_loss
+        # return self.supervised_loss_w * l_loss
 
     def validation_step(self, batch, _):
         y_h, y, l = self.shared_step(*batch)

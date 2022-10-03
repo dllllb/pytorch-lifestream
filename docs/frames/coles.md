@@ -84,8 +84,6 @@ Losses without memory calculates class center for batch.
 - Don't use losses with memory as CoLES loss, cause Coles labels valid only in batch.
 CoLES labels is arange over batch, so e.g. 0-label correspond different clients in different batches.
 
-Currently, all losses in `ptls.frames.coles.losses` don't use memory.
-
 
 ## Head selection
 Use `ptls.nn.Head`.
