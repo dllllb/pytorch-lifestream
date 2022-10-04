@@ -9,7 +9,8 @@ from ptls.nn.seq_encoder.containers import SeqEncoderContainer
 
 
 class ColesSupervisedModule(ABSModule):
-    """Contrastive Learning for Event Sequences ([CoLES](https://arxiv.org/abs/2002.08232))
+    """Contrastive Learning for Event Sequences ([CoLES](https://arxiv.org/abs/2002.08232)) (unsupervised)
+    with auxiliary loss based on class labels from dataset (supervised, works for labeled data)
 
     Subsequences are sampled from original sequence.
     Samples from the same sequence are `positive` examples
@@ -96,7 +97,10 @@ class ColesSupervisedModule(ABSModule):
     def training_step(self, batch, _):
         x = batch[0]
         y_h, y, labels = self.shared_step(*batch)
-        loss = self._loss(y_h, y)
+
+        loss = self._loss(y_h, y)  # unsupervised loss
+
+        # supervised losses
         l_loss = 0.0
         for label_ix in range(labels.size(1)):
             l = labels[:, label_ix]
