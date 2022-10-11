@@ -1,4 +1,5 @@
 import torch
+import warnings
 from torch import nn as nn
 
 
@@ -105,7 +106,7 @@ class CentroidSoftmaxMemoryLoss(nn.Module):
         rate of history keep for running average
     """
 
-    def __init__(self, class_num, temperature=10.0, alpha=0.99):
+    def __init__(self, class_num, hidden_size, temperature=10.0, alpha=0.99):
         super().__init__()
         assert class_num is not None
         self.class_num = class_num
@@ -113,6 +114,9 @@ class CentroidSoftmaxMemoryLoss(nn.Module):
         self.eps = 1e-6
         self.temperature = temperature
         self.alpha = alpha
+
+        self.register_buffer('class_centers', torch.zeros(class_num, hidden_size, dtype=torch.float))
+        self.is_empty_class_centers = True
 
     def forward(self, embeddings, target):
         l_targets_eye = self.l_targets_eye
@@ -122,10 +126,11 @@ class CentroidSoftmaxMemoryLoss(nn.Module):
         class_centers = class_centers.sum(dim=0).div(l_targets_ohe.sum(dim=0).unsqueeze(1) + self.eps)  # class, H
 
         class_centers = class_centers.detach()
-        if hasattr(self, 'class_centers'):
+        if not self.is_empty_class_centers:
             self.class_centers = self.class_centers * self.alpha + class_centers * (1 - self.alpha)
         else:
-            self.register_buffer('class_centers', class_centers)
+            self.class_centers = class_centers
+            self.is_empty_class_centers = False
 
         distances = embeddings.unsqueeze(1) - self.class_centers.unsqueeze(0)  # B, class, H
         l2_loss = distances.pow(2).sum(dim=2)  # B, class
