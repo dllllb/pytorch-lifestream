@@ -1,5 +1,6 @@
 from collections import OrderedDict
 
+import numpy as np
 import torch
 
 from ptls.data_load.padded_batch import PaddedBatch
@@ -37,6 +38,10 @@ class AggFeatureSeqEncoder(torch.nn.Module):
             Use of not mean by values
         is_used_std (bool):
             Use of not std by values
+        is_used_min (bool):
+            Use of not min by values
+        is_used_max (bool):
+            Use of not max by values
         use_topk_cnt (int):
             Define the K for topk features calculation. 0 if not used
         distribution_target_task (bool):
@@ -55,6 +60,8 @@ class AggFeatureSeqEncoder(torch.nn.Module):
                  is_used_count=True,
                  is_used_mean=True,
                  is_used_std=True,
+                 is_used_min=False,
+                 is_used_max=False,
                  use_topk_cnt=0,
                  distribution_target_task=False,
                  logify_sum_mean_seqlens=False,
@@ -81,6 +88,8 @@ class AggFeatureSeqEncoder(torch.nn.Module):
         self.is_used_count = is_used_count
         self.is_used_mean = is_used_mean
         self.is_used_std = is_used_std
+        self.is_used_min = is_used_min
+        self.is_used_max = is_used_max
         self.use_topk_cnt = use_topk_cnt
 
     def forward(self, x: PaddedBatch):
@@ -179,6 +188,14 @@ class AggFeatureSeqEncoder(torch.nn.Module):
                     e_std = a.div(torch.clamp(e_cnt - 1, min=0) + 1e-9).pow(0.5)
                     processed.append(e_std)
 
+                if self.is_used_min:
+                    min_ = m_sum.masked_fill(~x.seq_len_mask.bool().unsqueeze(2), np.float32('inf')).min(dim=1).values
+                    processed.append(min_)
+
+                if self.is_used_max:
+                    max_ = m_sum.masked_fill(~x.seq_len_mask.bool().unsqueeze(2), np.float32('-inf')).max(dim=1).values
+                    processed.append(max_)
+
         # n_unique and top_k
         for col_embed, options_embed in self.embeddings.items():
             ohe = getattr(self, f'ohe_{col_embed}')
@@ -213,7 +230,8 @@ class AggFeatureSeqEncoder(torch.nn.Module):
 
         out_size = 1
 
-        n_features = sum([int(v) for v in [self.is_used_count, self.is_used_mean, self.is_used_std]])
+        n_features = sum([int(v) for v in [
+            self.is_used_count, self.is_used_mean, self.is_used_std, self.is_used_min, self.is_used_max]])
         out_size += len(numeric_values) * (3 + n_features * sum(e_sizes)) + len(embeddings)
         out_size += len(e_sizes) * self.use_topk_cnt
         return out_size

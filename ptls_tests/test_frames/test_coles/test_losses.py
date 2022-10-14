@@ -1,7 +1,10 @@
 import torch
 
 from ptls.frames.coles.losses.complex_loss import ComplexLoss
-from ptls.frames.coles.losses import MarginLoss, HistogramLoss, TripletLoss, BinomialDevianceLoss, ContrastiveLoss
+from ptls.frames.coles.losses import (
+    MarginLoss, HistogramLoss, TripletLoss, BinomialDevianceLoss, ContrastiveLoss,
+    CentroidLoss, CentroidSoftmaxLoss,
+)
 from ptls.frames.coles.sampling_strategies import AllPositivePairSelector, AllTripletSelector
 
 
@@ -108,3 +111,33 @@ def test_complex_loss():
     loss = loss_fn((x_aug, x_ml), y)
     print(loss)
     assert 1 == 1
+
+
+def test_centroid_loss():
+    x, y = get_data()
+    loss_fn = CentroidLoss(class_num=None)
+
+    loss = loss_fn(x, y)
+    assert loss > 0
+
+
+def test_centroid_loss_class_num():
+    x = torch.tensor([
+        [0, 0],  # 1, 1
+        [2, 2],  # 1, 1
+        [-1, 0],  # 0, -1
+        [1, -2],  # 0, -1
+    ])
+    y = torch.tensor([0, 0, 1, 1])
+    loss_fn = CentroidLoss(class_num=2)
+
+    loss = loss_fn(x, y)
+    assert loss == 2
+
+
+def test_centroid_softmax_loss():
+    x, y = get_data()
+    loss_fn = CentroidSoftmaxLoss(class_num=None, temperature=1.0)
+
+    loss = loss_fn(x, y)
+    assert loss > 0

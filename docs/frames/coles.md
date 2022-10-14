@@ -41,15 +41,49 @@ coles_module = CoLESModule(
 )
 ```
 
+## ColesSupervisedModule
+
+This is `ptls.frames.coles.CoLESModule` with auxiliary loss based on dataset labels.
+This can be used to organize user embedding space according to known classes.
+Embeddings for similar sequences still close (CoLES loss).
+Embeddings with same class label are close too (auxiliary loss).
+
+Notes:
+
+- there can be many types of class labels, this can be targets from supervised task.
+Labels for each class are provided by `ColesSupervisedDataset`.
+- class labels can be missed. Auxiliary loss are calculated only for labeled data.
+CoLES loss are calculated for all data.
+- auxiliary loss is `l_loss` attribute of `ColesSupervisedModule` constructor.
+
+
 ## ColesDataset and split strategies
-Use `ptls.frames.coles.ColesDataset` or `ptls.frames.coles.ColesIterableDataset`. 
-They are parametrised with `splitter` from `ptls.frames.coles.split_strategy`
+Use `ptls.frames.coles.ColesDataset` or `ptls.frames.coles.ColesIterableDataset` with `CoLESModule`. 
+They are parametrised with `splitter` from `ptls.frames.coles.split_strategy`.
+According to [CoLES paper](https://dl.acm.org/doi/10.1145/3514221.3526129) we recommend to use 
+`ptls.frames.coles.split_strategy.SampleSlices` splitter.
+
+## ColesSupervisedDataset and split strategies
+Use `ptls.frames.coles.ColesDataset` or `ptls.frames.coles.ColesIterableDataset` with `ColesSupervisedModule`. 
+It's parametrised by `splitter` as `ColesDataset`.
+
+`ColesSupervisedDataset` requires a list of columns where target labels are stored (`cols_classes` attribute).
+It used to provide these labels to dataloader.
 
 ## Coles losses and sampling strategies
 Use classes from:
 
 - `ptls.frames.coles.losses`
 - `ptls.frames.coles.sampling_strategies`
+
+Usage recommendations:
+
+- Auxiliary class labels don't change because they are client related. This means that you can use losses with memory
+to learn class centers in embedding space for `l_loss` in `ColesSupervisedModule`.
+Losses without memory calculates class center for batch.
+- Don't use losses with memory as CoLES loss, cause Coles labels valid only in batch.
+CoLES labels is arange over batch, so e.g. 0-label correspond different clients in different batches.
+
 
 ## Head selection
 Use `ptls.nn.Head`.
