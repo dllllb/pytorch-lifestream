@@ -62,6 +62,7 @@ class LongformerEncoder(AbsSeqEncoder):
                  use_positional_encoding=True,
                  use_start_random_shift=True,
                  is_reduce_sequence=False,
+                 add_cls_output=False,
                  ):
         super().__init__(is_reduce_sequence=is_reduce_sequence)
 
@@ -84,6 +85,7 @@ class LongformerEncoder(AbsSeqEncoder):
             ),
             add_pooling_layer=False,
         )
+        self.add_cls_output=add_cls_output
 
     def forward(self, x: PaddedBatch):
         B, T, H = x.payload.size()
@@ -124,8 +126,11 @@ class LongformerEncoder(AbsSeqEncoder):
 
         if self.is_reduce_sequence:
             return out[:, 0, :]
-
-        return PaddedBatch(out[:, 1:, :], x.seq_lens)
+        else:
+            if self.add_cls_output:
+                return PaddedBatch(out[:, 1:, :], x.seq_lens), out[:, 0, :]
+            else:
+                return PaddedBatch(out[:, 1:, :], x.seq_lens)
 
     @property
     def embedding_size(self):
