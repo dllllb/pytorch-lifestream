@@ -4,7 +4,7 @@ import random
 
 from ptls.data_load.utils import collate_feature_dict
 from ptls.data_load.feature_dict import FeatureDict
-
+from ptls.data_load import nsp_collate_fn
 
 class MlmIndexedDataset(torch.utils.data.Dataset):
     """
@@ -68,3 +68,11 @@ class MlmIndexedDataset(torch.utils.data.Dataset):
     @staticmethod
     def collate_fn(batch):
         return collate_feature_dict(batch)
+
+class MLMNSPIndexedDataset(MlmIndexedDataset):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+    @staticmethod
+    def collate_fn(batch):
+        return nsp_collate_fn(batch)

@@ -3,7 +3,7 @@ import torch
 from ptls.data_load.utils import collate_feature_dict
 from ptls.data_load.feature_dict import FeatureDict
 from ptls.data_load.augmentations.random_slice import RandomSlice
-
+from ptls.data_load import nsp_collate_fn
 
 class MlmDataset(torch.utils.data.Dataset):
     """
@@ -51,3 +51,11 @@ class MlmDataset(torch.utils.data.Dataset):
 
 class MlmIterableDataset(MlmDataset, torch.utils.data.IterableDataset):
     pass
+
+class MLMNSPDataset(MlmDataset):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+    @staticmethod
+    def collate_fn(batch):
+        return nsp_collate_fn(batch)
