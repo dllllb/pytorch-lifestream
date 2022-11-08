@@ -60,6 +60,7 @@ class LongformerEncoder(AbsSeqEncoder):
                  intermediate_size: int = 128,
                  num_hidden_layers: int = 1,
                  attention_window: int = 16,
+                 hidden_act='gelu',
                  max_position_embeddings=5000,
                  use_positional_encoding=True,
                  use_start_random_shift=True,
@@ -74,13 +75,13 @@ class LongformerEncoder(AbsSeqEncoder):
         self.use_start_random_shift = use_start_random_shift
 
         self.token_cls = torch.nn.Parameter(torch.randn(1, 1, input_size), requires_grad=True)
-
         self.transf = LongformerModel(
             config=LongformerConfig(
                 hidden_size=input_size,
                 num_attention_heads=num_attention_heads,
                 intermediate_size=intermediate_size,
                 num_hidden_layers=num_hidden_layers,
+                hidden_act=hidden_act,
                 vocab_size=4,
                 max_position_embeddings=max_position_embeddings,
                 attention_window=attention_window,

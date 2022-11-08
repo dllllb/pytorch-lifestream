@@ -1,6 +1,7 @@
 import numpy as np
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 import pytorch_lightning as pl
 
 
@@ -292,3 +293,32 @@ class DummyHead(torch.nn.Module):
                 'pos_sum': x[2],
                 'pos_distribution': x[3]}
 
+
+class GEGLU(torch.nn.Module):
+    """
+    References:
+        Shazeer et al., "GLU Variants Improve Transformer," 2020.
+        https://arxiv.org/abs/2002.05202
+
+    Parameters
+    ----------
+    inputs
+        Inputs to process [B, 2H]
+    
+    Returns
+    -------
+    outputs
+        The outputs following the GEGLU activation [B, H]
+
+    """
+    
+    def __init__(self):
+        super().__init__()
+        
+    def geglu(self, x: torch.Tensor) -> torch.Tensor:
+        assert x.shape[-1] % 2 == 0
+        a, b = x.chunk(2, dim=-1)
+        return a * F.gelu(b)
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        return self.geglu(x)
