@@ -497,6 +497,13 @@ def padded_collate_wo_target(batch):
     new_x = {k: torch.nn.utils.rnn.pad_sequence(v, batch_first=True) for k, v in new_x_.items()}
     return PaddedBatch(new_x, lengths)
 
+def sequence_pair_augmentation(item):
+    length = len(next(iter(item.values())))
+    l_length = random.randint(length // 4, 3 * length // 4)
+    left = {k: v[:l_length] for k, v in item.items()}
+    right = {k: v[l_length:] for k, v in item.items()}
+    return left, right    
+    
 def nsp_collate_fn(batch):
     #
     lefts, rights = [], []
