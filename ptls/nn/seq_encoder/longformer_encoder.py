@@ -40,7 +40,9 @@ class LongformerEncoder(AbsSeqEncoder):
         is_reduce_sequence (bool):
             False - returns PaddedBatch with all transactions embeddings
             True - returns one embedding for sequence based on CLS token
-
+        add_cls_output (bool):
+            False - returns PaddedBatch with all transactions embeddings
+            True - returns tuple (PaddedBatch with all transactions embeddings, one embedding for sequence based on CLS token)
     Example:
     >>> model = LongformerEncoder(input_size=32)
     >>> x = PaddedBatch(torch.randn(10, 128, 32), torch.randint(20, 128, (10,)))

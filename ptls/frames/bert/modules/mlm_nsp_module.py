@@ -1,7 +1,7 @@
 import pytorch_lightning as pl
 import torch
 from torchmetrics import MeanMetric
-
+from torch.nn import BCELoss
 from ptls.frames.bert.losses.query_soft_max import QuerySoftmaxLoss
 from ptls.nn.seq_encoder.abs_seq_encoder import AbsSeqEncoder
 from ptls.nn import PBL2Norm
@@ -54,8 +54,14 @@ class MLMNSPModule(pl.LightningModule):
         use l2 norm for transformer output or not
     replace_proba:
         probability of masking transaction embedding
+    replace_last_count:
+        force replacing last n tokens of sequence
     neg_count:
         negative count for `QuerySoftmaxLoss`
+    weight_mlm:
+        weight of mlm loss in final loss
+    weight_nsp:
+        weight of nsp loss in final loss
     log_logits:
         if true than logits histogram will be logged. May be useful for `loss_temperature` tuning
     """
@@ -75,6 +81,7 @@ class MLMNSPModule(pl.LightningModule):
                  neg_count: int = 1,
                  weight_mlm: float = 0.5,
                  weight_nsp: float = 0.5,
+                 log_logits: bool = False,
                  ):
 
         super().__init__()
@@ -169,13 +176,12 @@ class MLMNSPModule(pl.LightningModule):
     def loss(self, x: PaddedBatch, y, is_train_step):
         mask = self.get_mask(x.seq_len_mask, x.seq_lens)
         masked_x = self.mask_x(x.payload, x.seq_len_mask, mask)
+        out, cls_out = self.forward(PaddedBatch(masked_x, x.seq_lens))
 
-        out, cls_out = self.forward(PaddedBatch(masked_x, x.seq_lens)).payload
-        
         # MLM Part
         out = out.payload[y==1, :] # y==1 => select only true sequence pairs for MLM
         mask = mask[y==1, :]
-        target = x.payload[mask].unsqueeze(1)  # N, 1, H
+        target = x.payload[y==1, :][mask].unsqueeze(1)  # N, 1, H
         predict = out[mask].unsqueeze(1)  # N, 1, H
         neg_ix = self.get_neg_ix(mask)
         negative = out[neg_ix[0], neg_ix[1]]  # N, nneg, H
@@ -195,14 +201,14 @@ class MLMNSPModule(pl.LightningModule):
         x_trx, y = batch
         
         z_trx = self.trx_encoder(x_trx)  # PB: B, T, H
-        loss_mlm, loss_nsp = self.loss_mlm_nsp(z_trx, y, is_train_step=True)
+        loss_mlm, loss_nsp = self.loss(z_trx, y, is_train_step=True)
         self.train_mlm_loss(loss_mlm)
         self.train_nsp_loss(loss_nsp)
         loss_mlm = loss_mlm.mean()
         loss_nsp = loss_nsp.mean()
         self.log(f'mlm/loss', loss_mlm)
         self.log(f'nsp/loss', loss_nsp)
-        loss = self.weight_nsp*loss_nsp + self.weight_mlm*loss_mlm
+        loss = self.hparams.weight_nsp*loss_nsp + self.hparams.weight_mlm*loss_mlm
         return loss
 
     def validation_step(self, batch, batch_idx):
