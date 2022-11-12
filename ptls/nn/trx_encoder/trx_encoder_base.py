@@ -26,7 +26,7 @@ class TrxEncoderBase(nn.Module):
         Values must be a string with scaler_name.
         Possible values are: 'identity', 'sigmoid', 'log', 'year'.
         These features will be scaled with selected scaler.
-        Values can be `ptls.nn.trx_encoder.scalers.BaseScaler` implementatoin
+        Values can be `ptls.nn.trx_encoder.scalers.BaseScaler` implementation
 
         One field can have many scalers. In this case key become alias and col name should be in scaler.
         Example:
@@ -145,7 +145,7 @@ class TrxEncoderBase(nn.Module):
         """Returns set of used feature names
         """
         return set([field_name for field_name in self.embeddings.keys()] +
-                   [value_name for value_name in self.scalers.keys()]
+                   [value_name for value_name in self.numeric_values.keys()]
                    )
 
     @property

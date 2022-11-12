@@ -27,8 +27,6 @@ class TabformerPretrainModule(pl.LightningModule):
     seq_encoder:
         Module for sequence processing. Generally this is transformer based encoder. Rnn is also possible
         Should works without sequence reduce
-    hidden_size:
-        Size of trx_encoder output.
     total_steps:
         total_steps expected in OneCycle lr scheduler
     max_lr:
@@ -48,7 +46,6 @@ class TabformerPretrainModule(pl.LightningModule):
                  feature_encoder: torch.nn.Module,
                  seq_encoder: AbsSeqEncoder,
                  total_steps: int,
-                 hidden_size: int = None,
                  max_lr: float = 0.001,
                  weight_decay: float = 0.0,
                  pct_start: float = 0.1,
@@ -62,7 +59,7 @@ class TabformerPretrainModule(pl.LightningModule):
         self.trx_encoder = trx_encoder
         self.feature_encoder = feature_encoder
 
-        assert not self.trx_encoder.scalers, '`numeric_values` parameter of `trx_encoder` should be == {}. Discretize all numerical features into categorical to use Tabformer model!'
+        assert not self.trx_encoder.numeric_values, '`numeric_values` parameter of `trx_encoder` should be == {}. Discretize all numerical features into categorical to use Tabformer model!'
         noisy_embeds = list(self.trx_encoder.embeddings.values())
         assert noisy_embeds, '`embeddings` parameter for `trx_encoder` should contain at least 1 feature!'
         self.feature_emb_dim = noisy_embeds[0].embedding_dim
@@ -71,7 +68,7 @@ class TabformerPretrainModule(pl.LightningModule):
         self.head = nn.ModuleList()
         in_head_dim = self.feature_emb_dim * self.num_f
         for n_emb in noisy_embeds:
-            self.head += [nn.Linear(in_head_dim, n_emb.num_embeddings)]
+            self.head += [nn.Linear(in_head_dim, n_emb.num_embeddings+1)]
             assert all(n_emb.embedding_dim == self.feature_emb_dim for n_emb in noisy_embeds), 'Out dimensions for all features in `embeddings` parameter of `trx_encoder` should be equal for Tabformer model!'
 
         warnings.warn("With Tabformer model set `in` value in `embeddings`parameter of `trx_encoder` equal to actual number of unique feature values + 1")
@@ -82,9 +79,6 @@ class TabformerPretrainModule(pl.LightningModule):
         if self.hparams.norm_predict:
             self.fn_norm_predict = PBL2Norm()
 
-        if hidden_size is None:
-            hidden_size = trx_encoder.output_size
-
         self.token_mask = torch.nn.Parameter(torch.randn(1, 1, self.feature_emb_dim), requires_grad=True)
 
         self.loss = nn.CrossEntropyLoss()
@@ -94,7 +88,6 @@ class TabformerPretrainModule(pl.LightningModule):
         self.mask_prob = mask_prob
 
         self.lin_proj = nn.Sequential(nn.Linear(self.feature_emb_dim, self.feature_emb_dim * self.num_f),
-
                                       nn.GELU(),
                                       nn.LayerNorm(self.feature_emb_dim * self.num_f, eps=1e-12)
                                       )
@@ -181,7 +174,7 @@ class TabformerPretrainModule(pl.LightningModule):
     def training_step(self, batch, batch_idx):
         tabf_labels, MASK_token_mask, RANDOM_token_mask, random_words = self.get_masks_and_labels(batch)
         z_trx = self.trx_encoder(batch)  # PB: B, T, H
-
+        
         payload = z_trx.payload.view(z_trx.payload.shape[:-1] + (-1, self.feature_emb_dim))
         payload[MASK_token_mask] = self.token_mask
         payload[RANDOM_token_mask] = random_words[RANDOM_token_mask]
