@@ -8,3 +8,6 @@ from .all_triplets_selector import AllTripletSelector
 from .hard_triplet_selector import HardTripletSelector
 from .random_negative_triplet_selector import RandomNegativeTripletSelector
 from .semi_hard_triplet_selector import SemiHardTripletSelector
+
+# Masker
+from .matrix_masker import MatrixMasker

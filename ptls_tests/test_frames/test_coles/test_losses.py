@@ -3,9 +3,9 @@ import torch
 from ptls.frames.coles.losses.complex_loss import ComplexLoss
 from ptls.frames.coles.losses import (
     MarginLoss, HistogramLoss, TripletLoss, BinomialDevianceLoss, ContrastiveLoss,
-    CentroidLoss, CentroidSoftmaxLoss,
+    CentroidLoss, CentroidSoftmaxLoss, SoftmaxLoss
 )
-from ptls.frames.coles.sampling_strategies import AllPositivePairSelector, AllTripletSelector
+from ptls.frames.coles.sampling_strategies import AllPositivePairSelector, AllTripletSelector, MatrixMasker
 
 
 def get_data():
@@ -141,3 +141,20 @@ def test_centroid_softmax_loss():
 
     loss = loss_fn(x, y)
     assert loss > 0
+
+
+def test_softmax_loss():
+    x = torch.tensor([
+        [1.0, 3.0],
+        [2.5, 2.2],
+        [-1.0, 0.75],
+        [1.25, -2.0],
+    ])
+    y = torch.tensor([0, 0, 1, 1])
+
+    loss_fn = SoftmaxLoss(masker=MatrixMasker(split_count=2), temperature=1.0)
+    loss = loss_fn(x, y)
+
+    true_value = 1.79
+    assert abs(true_value - loss) < 1e-3
+    assert type(loss) is torch.Tensor
