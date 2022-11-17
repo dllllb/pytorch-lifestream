@@ -88,9 +88,9 @@ class MLMNSPModule(pl.LightningModule):
         self.save_hyperparameters(ignore=['trx_encoder', 'seq_encoder'])
 
         self.trx_encoder = trx_encoder
-        self.seq_encoder = seq_encoder
-        self.seq_encoder.is_reduce_sequence = False
-        self.seq_encoder.add_cls_output = True
+        self._seq_encoder = seq_encoder
+        self._seq_encoder.is_reduce_sequence = False
+        self._seq_encoder.add_cls_output = True
 
         self.nsp_head = SequencePredictionHead(embeds_dim=hidden_size)
         if self.hparams.norm_predict:
@@ -156,7 +156,7 @@ class MLMNSPModule(pl.LightningModule):
         return torch.where(mask.bool().unsqueeze(2).expand_as(x), replace_to, x)
 
     def forward(self, z: PaddedBatch):
-        out, cls_out = self.seq_encoder(z)
+        out, cls_out = self._seq_encoder(z)
         if self.hparams.norm_predict:
             out = self.fn_norm_predict(out)
         return out, cls_out
@@ -225,3 +225,22 @@ class MLMNSPModule(pl.LightningModule):
     def validation_epoch_end(self, _):
         self.log(f'mlm/valid_mlm_loss', self.valid_mlm_loss, prog_bar=True)
         self.log(f'nsp/valid_nsp_loss', self.valid_nsp_loss, prog_bar=False)
+   
+    @property
+    def seq_encoder(self, is_reduce_sequence):
+        return MLMNSPInferenceModule(pretrained_model=self, is_reduce_sequence=is_reduce_sequence)
+
+
+class MLMNSPInferenceModule(torch.nn.Module):
+    def __init__(self, pretrained_model, is_reduce_sequence=True):
+        super().__init__()
+        self.model = pretrained_model
+        self.model._seq_encoder.is_reduce_sequence = is_reduce_sequence
+        self.model._seq_encoder.add_cls_output = False 
+
+    def forward(self, batch):
+        z_trx = self.model.trx_encoder(batch)
+        out = self.model._seq_encoder(z_trx)
+        if self.model.hparams.norm_predict:
+            out = self.model.fn_norm_predict(out)
+        return out

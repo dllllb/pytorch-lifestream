@@ -65,8 +65,8 @@ class MLMPretrainModule(pl.LightningModule):
         self.save_hyperparameters(ignore=['trx_encoder', 'seq_encoder'])
 
         self.trx_encoder = trx_encoder
-        self.seq_encoder = seq_encoder
-        self.seq_encoder.is_reduce_sequence = False
+        self._seq_encoder = seq_encoder
+        self._seq_encoder.is_reduce_sequence = False
 
         if self.hparams.norm_predict:
             self.fn_norm_predict = PBL2Norm()
@@ -122,7 +122,7 @@ class MLMPretrainModule(pl.LightningModule):
         return torch.where(mask.bool().unsqueeze(2).expand_as(x), replace_to, x)
 
     def forward(self, z: PaddedBatch):
-        out = self.seq_encoder(z)
+        out = self._seq_encoder(z)
         if self.hparams.norm_predict:
             out = self.fn_norm_predict(out)
         return out

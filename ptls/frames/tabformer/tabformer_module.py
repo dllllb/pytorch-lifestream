@@ -73,8 +73,8 @@ class TabformerPretrainModule(pl.LightningModule):
 
         warnings.warn("With Tabformer model set `in` value in `embeddings`parameter of `trx_encoder` equal to actual number of unique feature values + 1")
 
-        self.seq_encoder = seq_encoder
-        self.seq_encoder.is_reduce_sequence = False
+        self._seq_encoder = seq_encoder
+        self._seq_encoder.is_reduce_sequence = False
 
         if self.hparams.norm_predict:
             self.fn_norm_predict = PBL2Norm()
@@ -112,7 +112,7 @@ class TabformerPretrainModule(pl.LightningModule):
         return [optim], [scheduler]
 
     def forward(self, z: PaddedBatch):
-        out = self.seq_encoder(z)
+        out = self._seq_encoder(z)
         if self.hparams.norm_predict:
             out = self.fn_norm_predict(out)
         return out
@@ -209,3 +209,21 @@ class TabformerPretrainModule(pl.LightningModule):
         self.log(f'tabformer/valid_tabformer_loss', self.valid_tabformer_loss, prog_bar=True)
         # self.valid_tabformer_loss reset not required here
 
+    @property
+    def seq_encoder(self, is_reduce_sequence):
+        return TabformerInferenceModule(pretrained_model=self, is_reduce_sequence=is_reduce_sequence)
+
+
+class TabformerInferenceModule(torch.nn.Module):
+    def __init__(self, pretrained_model, is_reduce_sequence):
+        super().__init__()
+        self.model = pretrained_model
+        self.model._seq_encoder.is_reduce_sequence = is_reduce_sequence
+        self.model._seq_encoder.add_cls_output = False 
+        
+    def forward(self, batch):
+        z_trx = self.model.trx_encoder(batch)
+        payload = z_trx.payload.view(z_trx.payload.shape[:-1] + (-1, self.model.feature_emb_dim))
+        z_trx._payload = self.model.feature_encoder(payload)
+        out = self.model.forward(z_trx)
+        return out
