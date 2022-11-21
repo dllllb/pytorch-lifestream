@@ -152,7 +152,7 @@ def test_softmax_loss():
     ])
     y = torch.tensor([0, 0, 1, 1])
 
-    loss_fn = SoftmaxLoss(masker=MatrixMasker(split_count=2), temperature=1.0)
+    loss_fn = SoftmaxLoss(masker=MatrixMasker(), temperature=1.0)
     loss = loss_fn(x, y)
 
     true_value = 1.79
