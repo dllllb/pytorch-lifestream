@@ -4,6 +4,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 import pytorch_lightning as pl
 
+from ptls.data_load.padded_batch import PaddedBatch
 
 class DropoutEncoder(nn.Module):
     def __init__(self, p):
@@ -322,3 +323,27 @@ class GEGLU(torch.nn.Module):
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         return self.geglu(x)
+
+
+class StatPooling(torch.nn.Module):
+    def __init__(self):
+        super().__init__()
+
+    def forward(self, pb: PaddedBatch):
+        payload = pb.payload # B x T x H
+        mask = pb.seq_len_mask.bool()
+        #masked max
+        inf = torch.zeros_like(mask, device=mask.device).float()
+        inf[~mask] = -torch.inf
+        pb_max = torch.max(payload + inf.unsqueeze(-1), dim=1)[0].squeeze()
+        #masked min
+        pb_min = torch.min(payload - inf.unsqueeze(-1), dim=1)[0].squeeze()
+        #masked mean
+        pb_mean = payload.sum(dim=1) / mask.float().sum(dim=1, keepdim=True)
+        #masked std
+        pb_std = payload - pb_mean.unsqueeze(1).expand_as(payload)
+        pb_std = pb_std * mask.unsqueeze(-1)
+        pb_std = torch.sqrt(torch.mean(torch.pow(pb_std,2), dim=1))
+
+        out = torch.cat([pb_max, pb_min, pb_mean, pb_std], dim=1)
+        return out

@@ -1,11 +1,14 @@
 import pytorch_lightning as pl
 import torch
-from torchmetrics import MeanMetric
 from torch.nn import BCELoss
-from ptls.frames.bert.losses.query_soft_max import QuerySoftmaxLoss
-from ptls.nn.seq_encoder.abs_seq_encoder import AbsSeqEncoder
-from ptls.nn import PBL2Norm
+from torchmetrics import MeanMetric
+
+from ptls.custom_layers import StatPooling
 from ptls.data_load.padded_batch import PaddedBatch
+from ptls.frames.bert.losses.query_soft_max import QuerySoftmaxLoss
+from ptls.nn import PBL2Norm
+from ptls.nn.seq_encoder.abs_seq_encoder import AbsSeqEncoder
+
 
 class SequencePredictionHead(torch.nn.Module):   
     def __init__(self, embeds_dim, hidden_size=64, drop_p=0.1):
@@ -64,6 +67,9 @@ class MLMNSPModule(pl.LightningModule):
         weight of nsp loss in final loss
     log_logits:
         if true than logits histogram will be logged. May be useful for `loss_temperature` tuning
+    inference_pooling_strategy:
+        'out' - `seq_encoder` forward (`is_reduce_requence=True`) (B, H)
+        'stat' - min, max, mean, std statistics pooled from `trx_encoder` layer + 'out' from `seq_encoder` (B, H) -> (B, 5H)
     """
 
     def __init__(self,
@@ -82,6 +88,7 @@ class MLMNSPModule(pl.LightningModule):
                  weight_mlm: float = 0.5,
                  weight_nsp: float = 0.5,
                  log_logits: bool = False,
+                 inference_pooling_strategy: str = 'out'
                  ):
 
         super().__init__()
@@ -227,20 +234,24 @@ class MLMNSPModule(pl.LightningModule):
         self.log(f'nsp/valid_nsp_loss', self.valid_nsp_loss, prog_bar=False)
    
     @property
-    def seq_encoder(self, is_reduce_sequence):
-        return MLMNSPInferenceModule(pretrained_model=self, is_reduce_sequence=is_reduce_sequence)
+    def seq_encoder(self):
+        return MLMNSPInferenceModule(pretrained_model=self)
 
 
 class MLMNSPInferenceModule(torch.nn.Module):
-    def __init__(self, pretrained_model, is_reduce_sequence=True):
+    def __init__(self, pretrained_model):
         super().__init__()
         self.model = pretrained_model
-        self.model._seq_encoder.is_reduce_sequence = is_reduce_sequence
+        self.model._seq_encoder.is_reduce_sequence = True
         self.model._seq_encoder.add_cls_output = False 
-
+        if self.model.hparams.inference_pooling_strategy=='stat':
+            stat_pooler = StatPooling()
     def forward(self, batch):
         z_trx = self.model.trx_encoder(batch)
         out = self.model._seq_encoder(z_trx)
+        if self.model.hparams.inference_pooling_strategy=='stat':
+            stats = stat_pooler(z_trx)
+            out = torch.cat([stats, out], dim=1)  # out: B, 5H
         if self.model.hparams.norm_predict:
-            out = self.model.fn_norm_predict(out)
+            out = out / (out.pow(2).sum(dim=-1, keepdim=True) + 1e-9).pow(0.5)
         return out
