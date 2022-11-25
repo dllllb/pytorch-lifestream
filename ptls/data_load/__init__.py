@@ -16,7 +16,7 @@ from torch.utils.data.dataloader import DataLoader
 from ptls.data_load.augmentations.all_time_shuffle import AllTimeShuffle
 from ptls.data_load.iterable_processing_dataset import IterableProcessingDataset
 from ptls.data_load.padded_batch import PaddedBatch
-
+from ptls.data_load.augmentations.sequence_pair_augmentation import sequence_pair_augmentation
 
 logger = logging.getLogger(__name__)
 
@@ -496,13 +496,6 @@ def padded_collate_wo_target(batch):
     lengths = torch.IntTensor([len(e) for e in next(iter(new_x_.values()))])
     new_x = {k: torch.nn.utils.rnn.pad_sequence(v, batch_first=True) for k, v in new_x_.items()}
     return PaddedBatch(new_x, lengths)
-
-def sequence_pair_augmentation(item, max_lenght=np.inf):
-    length = len(next(iter(item.values())))
-    l_length = random.randint(length // 4, min(3 * length // 4, max_lenght // 2))
-    left = {k: v[:l_length] for k, v in item.items()}
-    right = {k: v[l_length:] for k, v in item.items()}
-    return left, right    
     
 def nsp_collate_fn(batch):
     max_lenght = max([len(next(iter(rec.values()))) for rec in batch])
