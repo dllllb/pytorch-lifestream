@@ -18,5 +18,5 @@ class SoftmaxPairwiseLoss(nn.Module):
         similarities = F.cosine_similarity(pair_matrix[:, :, 0, :], pair_matrix[:, :, 1, :], dim=-1, eps=self.eps)
         similarities /= self.temperature
         log_matrix = (-1)*F.log_softmax(similarities)
-        loss = log_matrix/(2*len(embeddings))
+        loss = log_matrix/(len(similarities))
         return loss[:, :2].sum()
