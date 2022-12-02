@@ -158,3 +158,22 @@ def test_softmax_loss():
     true_value = 1.79
     assert abs(true_value - loss) < 1e-3
     assert type(loss) is torch.Tensor
+
+
+def test_softmax_pairwise_loss():
+    x = torch.tensor([
+        [1.0, 3.0],
+        [2.0, 2.0],
+        [-1.0, 1.0],
+        [3.0, -2.0],
+        [4.0, 0.0],
+        [-2.0, 5.0],
+    ])
+    y = torch.tensor([0, 0, 0, 1, 1, 1])
+
+    loss_fn = SoftmaxPairwiseLoss(pair_selector=PairwiseMatrixSelector(1.0, 1.0), temperature=1.0)
+    loss = loss_fn(x, y)
+
+    true_value = 1.518
+    assert abs(true_value - loss) < 1e-3
+    assert type(loss) is torch.Tensor
