@@ -3,9 +3,9 @@ import torch
 from ptls.frames.coles.losses.complex_loss import ComplexLoss
 from ptls.frames.coles.losses import (
     MarginLoss, HistogramLoss, TripletLoss, BinomialDevianceLoss, ContrastiveLoss,
-    CentroidLoss, CentroidSoftmaxLoss, SoftmaxLoss
+    CentroidLoss, CentroidSoftmaxLoss, SoftmaxLoss, SoftmaxPairwiseLoss
 )
-from ptls.frames.coles.sampling_strategies import AllPositivePairSelector, AllTripletSelector, MatrixMasker
+from ptls.frames.coles.sampling_strategies import AllPositivePairSelector, AllTripletSelector, MatrixMasker, PairwiseMatrixSelector
 
 
 def get_data():
