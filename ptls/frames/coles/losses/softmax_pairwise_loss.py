@@ -19,4 +19,4 @@ class SoftmaxPairwiseLoss(nn.Module):
         similarities /= self.temperature
         log_matrix = (-1)*F.log_softmax(similarities)
         loss = log_matrix/(len(similarities))
-        return loss[:, :2].sum()
+        return loss[:, :1].sum()
