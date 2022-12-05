@@ -226,7 +226,7 @@ class TabformerInferenceModule(torch.nn.Module):
         self.model._seq_encoder.is_reduce_sequence = True
         self.model._seq_encoder.add_cls_output = False 
         if self.model.hparams.inference_pooling_strategy=='stat':
-            stat_pooler = StatPooling()
+            self.stat_pooler = StatPooling()
 
     def forward(self, batch: PaddedBatch):
         z_trx = self.model.trx_encoder(batch)
@@ -236,7 +236,7 @@ class TabformerInferenceModule(torch.nn.Module):
         out = self.model._seq_encoder(encoded_trx)
 
         if self.model.hparams.inference_pooling_strategy=='stat':
-            stats = stat_pooler(z_trx)
+            stats = self.stat_pooler(z_trx)
             out = torch.cat([stats, out], dim=1)  # out: B, 5H
         if self.model.hparams.norm_predict:
             out = out / (out.pow(2).sum(dim=-1, keepdim=True) + 1e-9).pow(0.5)
