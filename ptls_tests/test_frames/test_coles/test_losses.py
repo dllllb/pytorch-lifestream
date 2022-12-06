@@ -171,7 +171,7 @@ def test_softmax_pairwise_loss():
     ])
     y = torch.tensor([0, 0, 0, 1, 1, 1])
 
-    loss_fn = SoftmaxPairwiseLoss(pair_selector=PairwiseMatrixSelector(1.0, 1.0), temperature=1.0)
+    loss_fn = SoftmaxPairwiseLoss(pair_selector=PairwiseMatrixSelector(), temperature=1.0)
     loss = loss_fn(x, y)
 
     true_value = 1.518
