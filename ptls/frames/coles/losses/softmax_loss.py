@@ -9,9 +9,11 @@ class SoftmaxLoss(nn.Module):
     Softmax loss.
     """
 
-    def __init__(self, masker=MatrixMasker(), eps=1e-6, temperature=0.05):
+    def __init__(self, masker=None, eps=1e-6, temperature=0.05):
         super(SoftmaxLoss, self).__init__()
         self.masker = masker
+        if masker is None:
+            self.masker = MatrixMasker()
         self.eps = eps
         self.temperature = temperature
 

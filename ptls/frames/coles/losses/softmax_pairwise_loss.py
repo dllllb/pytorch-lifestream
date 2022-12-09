@@ -8,9 +8,11 @@ class SoftmaxPairwiseLoss(nn.Module):
     Softmax Pairwise loss.
     """
 
-    def __init__(self, pair_selector=PairwiseMatrixSelector(), temperature=0.05, eps=1e-6):
+    def __init__(self, pair_selector=None, temperature=0.05, eps=1e-6):
         super(SoftmaxPairwiseLoss, self).__init__()
         self.pair_selector = pair_selector
+        if pair_selector is None:
+            self.pair_selector = PairwiseMatrixSelector()
         self.temperature = temperature
         self.eps = eps
 
