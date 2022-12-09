@@ -31,7 +31,7 @@ def test_matrix_masker():
         [0, 0, 0, 0, 0, 0, 0, 1, 1],
         [0, 0, 0, 0, 0, 0, 1, 0, 1],
         [0, 0, 0, 0, 0, 0, 1, 1, 0]]
-    )
+    ).float()
 
     masker = MatrixMasker()
     masked_matrix = masker.get_masked_matrix(x, y)
