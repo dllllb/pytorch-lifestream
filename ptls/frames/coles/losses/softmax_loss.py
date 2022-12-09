@@ -1,6 +1,7 @@
 import torch
 from torch import nn as nn
 from torch.nn import functional as F
+from ptls.frames.coles.sampling_strategies import MatrixMasker
 
 
 class SoftmaxLoss(nn.Module):
@@ -8,7 +9,7 @@ class SoftmaxLoss(nn.Module):
     Softmax loss.
     """
 
-    def __init__(self, masker, eps=1e-6, temperature=1):
+    def __init__(self, masker=MatrixMasker(), eps=1e-6, temperature=0.05):
         super(SoftmaxLoss, self).__init__()
         self.masker = masker
         self.eps = eps

@@ -3,7 +3,8 @@ import torch
 
 class PairwiseMatrixSelector:
     """
-    TODO
+    Returns matrix with one positive pair on first index and all negative pairs 
+    for every possible pair. 
     """
     def get_pair_matrix(self, embeddings, labels):
         n = labels.size(0)

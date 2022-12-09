@@ -1,5 +1,6 @@
 from torch import nn as nn
 from torch.nn import functional as F
+from ptls.frames.coles.sampling_strategies import PairwiseMatrixSelector
 
 
 class SoftmaxPairwiseLoss(nn.Module):
@@ -7,7 +8,7 @@ class SoftmaxPairwiseLoss(nn.Module):
     Softmax Pairwise loss.
     """
 
-    def __init__(self, pair_selector, temperature=0.05, eps=1e-6):
+    def __init__(self, pair_selector=PairwiseMatrixSelector(), temperature=0.05, eps=1e-6):
         super(SoftmaxPairwiseLoss, self).__init__()
         self.pair_selector = pair_selector
         self.temperature = temperature
