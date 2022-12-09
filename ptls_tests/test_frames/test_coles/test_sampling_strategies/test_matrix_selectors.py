@@ -36,7 +36,7 @@ def test_matrix_masker():
     masker = MatrixMasker()
     masked_matrix = masker.get_masked_matrix(x, y)
 
-    assert masked_matrix == true_matrix
+    assert torch.equal(masked_matrix, true_matrix)
     assert type(masked_matrix) is torch.Tensor
 
 
@@ -60,5 +60,5 @@ def test_pairwise_matrix_selector():
     pair_selector = PairwiseMatrixSelector()
     pair_matrix = pair_selector.get_pair_matrix(x, y)
 
-    assert pair_matrix == true_pair_matrix
+    assert torch.equal(pair_matrix, true_pair_matrix)
     assert type(pair_matrix) is torch.Tensor
