@@ -16,7 +16,6 @@ from torch.utils.data.dataloader import DataLoader
 from ptls.data_load.augmentations.all_time_shuffle import AllTimeShuffle
 from ptls.data_load.iterable_processing_dataset import IterableProcessingDataset
 from ptls.data_load.padded_batch import PaddedBatch
-from ptls.data_load.augmentations.sequence_pair_augmentation import sequence_pair_augmentation
 
 logger = logging.getLogger(__name__)
 
@@ -497,30 +496,6 @@ def padded_collate_wo_target(batch):
     new_x = {k: torch.nn.utils.rnn.pad_sequence(v, batch_first=True) for k, v in new_x_.items()}
     return PaddedBatch(new_x, lengths)
     
-def nsp_collate_fn(batch):
-    max_lenght = max([len(next(iter(rec.values()))) for rec in batch])
-
-    lefts, rights = [], []
-    for rec in batch:
-        left, right = sequence_pair_augmentation(rec, max_lenght=max_lenght)
-        lefts.append(left)
-        rights.append(right)
-    
-    #
-    lefts = lefts * 2
-    rights_ = rights[:]
-    random.shuffle(rights_)
-    rights += rights_
-
-    targets = torch.cat([
-        torch.ones(len(batch), dtype=torch.int64),
-        torch.zeros(len(batch), dtype=torch.int64),
-    ])
-    
-    concated = [{k: torch.cat([l[k], r[k]]) for k in l.keys()} for l, r in zip(lefts, rights)]
-    
-    augmented_batch =  padded_collate_wo_target(concated)
-    return augmented_batch, targets.float()
 
 class ZeroDownSampler(Sampler):
     def __init__(self, targets):

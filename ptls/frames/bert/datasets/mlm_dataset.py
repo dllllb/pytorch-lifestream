@@ -3,7 +3,8 @@ import torch
 from ptls.data_load.utils import collate_feature_dict
 from ptls.data_load.feature_dict import FeatureDict
 from ptls.data_load.augmentations.random_slice import RandomSlice
-from ptls.data_load import nsp_collate_fn
+from ptls.data_load.augmentations.sequence_pair_augmentation import sequence_pair_augmentation
+
 
 class MlmDataset(torch.utils.data.Dataset):
     """
@@ -58,4 +59,26 @@ class MLMNSPDataset(MlmDataset):
 
     @staticmethod
     def collate_fn(batch):
-        return nsp_collate_fn(batch)
+        max_lenght = max([len(next(iter(rec.values()))) for rec in batch])
+
+        lefts, rights = [], []
+        for rec in batch:
+            left, right = sequence_pair_augmentation(rec, max_lenght=max_lenght)
+            lefts.append(left)
+            rights.append(right)
+        
+        #
+        lefts = lefts * 2
+        rights_ = rights[:]
+        random.shuffle(rights_)
+        rights += rights_
+
+        targets = torch.cat([
+            torch.ones(len(batch), dtype=torch.int64),
+            torch.zeros(len(batch), dtype=torch.int64),
+        ])
+        
+        concated = [{k: torch.cat([l[k], r[k]]) for k in l.keys()} for l, r in zip(lefts, rights)]
+        
+        augmented_batch =  padded_collate_wo_target(concated)
+        return augmented_batch, targets.float()
