@@ -19,50 +19,51 @@ class PtlsDataModule(pl.LightningDataModule):
                  ):
 
         super().__init__()
+        self.save_hyperparameters()
+        
+        if self.hparams.valid_num_workers is None:
+            self.hparams.valid_num_workers = self.hparams.train_num_workers
+        if self.hparams.test_num_workers is None:
+            self.hparams.test_num_workers = self.hparams.valid_num_workers
 
-        if valid_num_workers is None:
-            valid_num_workers = train_num_workers
-        if test_num_workers is None:
-            test_num_workers = valid_num_workers
-
-        if valid_batch_size is None:
-            valid_batch_size = train_batch_size
-        if test_batch_size is None:
-            test_batch_size = valid_batch_size
-
-        def train_dataloader():
-            return torch.utils.data.DataLoader(
-                dataset=train_data,
-                collate_fn=train_data.collate_fn,
-                shuffle=not isinstance(train_data, torch.utils.data.IterableDataset),
-                num_workers=train_num_workers,
-                batch_size=train_batch_size,
-                drop_last=train_drop_last,
-            )
-
-        def val_dataloader():
-            return torch.utils.data.DataLoader(
-                dataset=valid_data,
-                collate_fn=valid_data.collate_fn,
-                shuffle=False,
-                num_workers=valid_num_workers,
-                batch_size=valid_batch_size,
-                drop_last=valid_drop_last,
-            )
-
-        def test_dataloader():
-            return torch.utils.data.DataLoader(
-                dataset=test_data,
-                collate_fn=test_data.collate_fn,
-                shuffle=False,
-                num_workers=test_num_workers,
-                batch_size=test_batch_size,
-                drop_last=test_drop_last,
-            )
+        if self.hparams.valid_batch_size is None:
+            self.hparams.valid_batch_size = self.hparams.train_batch_size
+        if self.hparams.test_batch_size is None:
+            self.hparams.test_batch_size = self.hparams.valid_batch_size
 
         if train_data is not None:
-            self.train_dataloader = train_dataloader
+            self.train_dataloader = self.train_dl
         if valid_data is not None:
-            self.val_dataloader = val_dataloader
+            self.val_dataloader = self.val_dl
         if test_data is not None:
-            self.test_dataloader = test_dataloader
+            self.test_dataloader = self.test_dl
+            
+    def train_dl(self):
+        return torch.utils.data.DataLoader(
+            dataset=self.hparams.train_data,
+            collate_fn=self.hparams.train_data.collate_fn,
+            shuffle=not isinstance(self.hparams.train_data, torch.utils.data.IterableDataset),
+            num_workers=self.hparams.train_num_workers,
+            batch_size=self.hparams.train_batch_size,
+            drop_last=self.hparams.train_drop_last,
+        )
+
+    def val_dl(self):
+        return torch.utils.data.DataLoader(
+            dataset=self.hparams.valid_data,
+            collate_fn=self.hparams.valid_data.collate_fn,
+            shuffle=False,
+            num_workers=self.hparams.valid_num_workers,
+            batch_size=self.hparams.valid_batch_size,
+            drop_last=self.hparams.valid_drop_last,
+        )
+
+    def test_dl(self):
+        return torch.utils.data.DataLoader(
+            dataset=self.hparams.test_data,
+            collate_fn=self.hparams.test_data.collate_fn,
+            shuffle=False,
+            num_workers=self.hparams.test_num_workers,
+            batch_size=self.hparams.test_batch_size,
+            drop_last=self.hparams.test_drop_last,
+        )
