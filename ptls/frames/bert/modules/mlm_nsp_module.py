@@ -1,14 +1,31 @@
 import pytorch_lightning as pl
 import torch
+from torch.nn import BCELoss
 from torchmetrics import MeanMetric
 
-from ptls.frames.bert.losses.query_soft_max import QuerySoftmaxLoss
-from ptls.nn.seq_encoder.abs_seq_encoder import AbsSeqEncoder
-from ptls.nn import PBL2Norm
+from ptls.custom_layers import StatPooling
 from ptls.data_load.padded_batch import PaddedBatch
+from ptls.frames.bert.losses.query_soft_max import QuerySoftmaxLoss
+from ptls.nn import PBL2Norm
+from ptls.nn.seq_encoder.abs_seq_encoder import AbsSeqEncoder
 
 
-class MLMPretrainModule(pl.LightningModule):
+class SequencePredictionHead(torch.nn.Module):   
+    def __init__(self, embeds_dim, hidden_size=64, drop_p=0.1):
+        
+        super().__init__()
+        self.head = torch.nn.Sequential(
+            torch.nn.Linear(embeds_dim, hidden_size, bias=True),
+            torch.nn.BatchNorm1d(hidden_size),
+            torch.nn.ReLU(),
+            torch.nn.Dropout(drop_p),
+            torch.nn.Linear(hidden_size, 1),
+            torch.nn.Sigmoid())
+    def forward(self, x):
+        x = self.head(x).squeeze(-1)
+        return x
+
+class MLMNSPModule(pl.LightningModule):
     """Masked Language Model (MLM) from [ROBERTA](https://arxiv.org/abs/1907.11692)
 
     Original sequence are encoded by `TrxEncoder`.
@@ -40,10 +57,19 @@ class MLMPretrainModule(pl.LightningModule):
         use l2 norm for transformer output or not
     replace_proba:
         probability of masking transaction embedding
+    replace_last_count:
+        force replacing last n tokens of sequence
     neg_count:
         negative count for `QuerySoftmaxLoss`
+    weight_mlm:
+        weight of mlm loss in final loss
+    weight_nsp:
+        weight of nsp loss in final loss
     log_logits:
         if true than logits histogram will be logged. May be useful for `loss_temperature` tuning
+    inference_pooling_strategy:
+        'out' - `seq_encoder` forward (`is_reduce_requence=True`) (B, H)
+        'stat' - min, max, mean, std statistics pooled from `trx_encoder` layer + 'out' from `seq_encoder` (B, H) -> (B, 5H)
     """
 
     def __init__(self,
@@ -56,9 +82,13 @@ class MLMPretrainModule(pl.LightningModule):
                  weight_decay: float = 0.0,
                  pct_start: float = 0.1,
                  norm_predict: bool = True,
-                 replace_proba: float = 0.1,
+                 replace_proba: float = 0.15,
+                 replace_last_count: int = 4, 
                  neg_count: int = 1,
+                 weight_mlm: float = 0.5,
+                 weight_nsp: float = 0.5,
                  log_logits: bool = False,
+                 inference_pooling_strategy: str = 'out'
                  ):
 
         super().__init__()
@@ -67,7 +97,9 @@ class MLMPretrainModule(pl.LightningModule):
         self.trx_encoder = trx_encoder
         self._seq_encoder = seq_encoder
         self._seq_encoder.is_reduce_sequence = False
+        self._seq_encoder.add_cls_output = True
 
+        self.nsp_head = SequencePredictionHead(embeds_dim=hidden_size)
         if self.hparams.norm_predict:
             self.fn_norm_predict = PBL2Norm()
 
@@ -76,10 +108,14 @@ class MLMPretrainModule(pl.LightningModule):
 
         self.token_mask = torch.nn.Parameter(torch.randn(1, 1, hidden_size), requires_grad=True)
 
-        self.loss_fn = QuerySoftmaxLoss(temperature=loss_temperature, reduce=False)
+        self.loss_mlm = QuerySoftmaxLoss(temperature=loss_temperature, reduce=False)
+        self.loss_nsp = BCELoss(reduce=False)
 
         self.train_mlm_loss = MeanMetric()
         self.valid_mlm_loss = MeanMetric()
+
+        self.train_nsp_loss = MeanMetric()
+        self.valid_nsp_loss = MeanMetric()
 
     def configure_optimizers(self):
         optim = torch.optim.Adam(self.parameters(),
@@ -100,8 +136,13 @@ class MLMPretrainModule(pl.LightningModule):
         scheduler = {'scheduler': scheduler, 'interval': 'step'}
         return [optim], [scheduler]
 
-    def get_mask(self, attention_mask):
-        return torch.bernoulli(attention_mask.float() * self.hparams.replace_proba).bool()
+    def get_mask(self, attention_mask, seq_lens):
+        last_steps = torch.arange(attention_mask.size(1), device=attention_mask.device).expand(attention_mask.size())
+        last_steps = (last_steps < seq_lens[:, None]) & (last_steps > seq_lens[:, None]-self.hparams.replace_last_count-1)
+        
+        mask = torch.bernoulli(attention_mask.float() * self.hparams.replace_proba).bool()
+        mask = torch.logical_or(mask, last_steps)
+        return mask
 
     def mask_x(self, x, attention_mask, mask):
         shuffled_tokens = x[attention_mask.bool()]
@@ -122,10 +163,10 @@ class MLMPretrainModule(pl.LightningModule):
         return torch.where(mask.bool().unsqueeze(2).expand_as(x), replace_to, x)
 
     def forward(self, z: PaddedBatch):
-        out = self._seq_encoder(z)
+        out, cls_out = self._seq_encoder(z)
         if self.hparams.norm_predict:
             out = self.fn_norm_predict(out)
-        return out
+        return out, cls_out
 
     def get_neg_ix(self, mask):
         """Sample from predicts, where `mask == True`, without self element.
@@ -139,44 +180,78 @@ class MLMPretrainModule(pl.LightningModule):
         t_ix = torch.arange(mask.size(1), device=mask.device).view(1, -1).expand_as(mask)[mask][neg_ix]
         return b_ix, t_ix
 
-    def loss_mlm(self, x: PaddedBatch, is_train_step):
-        mask = self.get_mask(x.seq_len_mask)
+    def loss(self, x: PaddedBatch, y, is_train_step):
+        mask = self.get_mask(x.seq_len_mask, x.seq_lens)
         masked_x = self.mask_x(x.payload, x.seq_len_mask, mask)
+        out, cls_out = self.forward(PaddedBatch(masked_x, x.seq_lens))
 
-        out = self.forward(PaddedBatch(masked_x, x.seq_lens)).payload
-
-        target = x.payload[mask].unsqueeze(1)  # N, 1, H
+        # MLM Part
+        out = out.payload[y==1, :] # y==1 => select only true sequence pairs for MLM
+        mask = mask[y==1, :]
+        target = x.payload[y==1, :][mask].unsqueeze(1)  # N, 1, H
         predict = out[mask].unsqueeze(1)  # N, 1, H
         neg_ix = self.get_neg_ix(mask)
         negative = out[neg_ix[0], neg_ix[1]]  # N, nneg, H
-        loss = self.loss_fn(target, predict, negative)
-
+        loss_mlm = self.loss_mlm(target, predict, negative)
         if is_train_step and self.hparams.log_logits:
             with torch.no_grad():
-                logits = self.loss_fn.get_logits(target, predict, negative)
+                logits = self.mlm_loss.get_logits(target, predict, negative)
             self.logger.experiment.add_histogram('mlm/logits',
                                                  logits.flatten().detach(), self.global_step)
-        return loss
+        # NSP Part
+        nsp_preds = self.nsp_head.forward(cls_out)
+        loss_nsp = self.loss_nsp(nsp_preds, y)
+
+        return loss_mlm, loss_nsp
 
     def training_step(self, batch, batch_idx):
-        x_trx = batch
+        x_trx, y = batch
+        
         z_trx = self.trx_encoder(x_trx)  # PB: B, T, H
-        loss_mlm = self.loss_mlm(z_trx, is_train_step=True)
+        loss_mlm, loss_nsp = self.loss(z_trx, y, is_train_step=True)
         self.train_mlm_loss(loss_mlm)
+        self.train_nsp_loss(loss_nsp)
         loss_mlm = loss_mlm.mean()
+        loss_nsp = loss_nsp.mean()
         self.log(f'mlm/loss', loss_mlm)
-        return loss_mlm
+        self.log(f'nsp/loss', loss_nsp)
+        loss = self.hparams.weight_nsp*loss_nsp + self.hparams.weight_mlm*loss_mlm
+        return loss
 
     def validation_step(self, batch, batch_idx):
-        x_trx = batch
+        x_trx, y = batch
         z_trx = self.trx_encoder(x_trx)  # PB: B, T, H
-        loss_mlm = self.loss_mlm(z_trx, is_train_step=False)
+        loss_mlm, loss_nsp = self.loss(z_trx, y, is_train_step=False)
+        self.valid_nsp_loss(loss_nsp)
         self.valid_mlm_loss(loss_mlm)
 
     def training_epoch_end(self, _):
         self.log(f'mlm/train_mlm_loss', self.train_mlm_loss, prog_bar=False)
-        # self.train_mlm_loss reset not required here
+        self.log(f'nsp/train_nsp_loss', self.train_nsp_loss, prog_bar=False)
 
     def validation_epoch_end(self, _):
         self.log(f'mlm/valid_mlm_loss', self.valid_mlm_loss, prog_bar=True)
-        # self.valid_mlm_loss reset not required here
+        self.log(f'nsp/valid_nsp_loss', self.valid_nsp_loss, prog_bar=False)
+   
+    @property
+    def seq_encoder(self):
+        return MLMNSPInferenceModule(pretrained_model=self)
+
+
+class MLMNSPInferenceModule(torch.nn.Module):
+    def __init__(self, pretrained_model):
+        super().__init__()
+        self.model = pretrained_model
+        self.model._seq_encoder.is_reduce_sequence = True
+        self.model._seq_encoder.add_cls_output = False 
+        if self.model.hparams.inference_pooling_strategy=='stat':
+            self.stat_pooler = StatPooling()
+    def forward(self, batch):
+        z_trx = self.model.trx_encoder(batch)
+        out = self.model._seq_encoder(z_trx)
+        if self.model.hparams.inference_pooling_strategy=='stat':
+            stats = self.stat_pooler(z_trx)
+            out = torch.cat([stats, out], dim=1)  # out: B, 5H
+        if self.model.hparams.norm_predict:
+            out = out / (out.pow(2).sum(dim=-1, keepdim=True) + 1e-9).pow(0.5)
+        return out

@@ -40,7 +40,9 @@ class LongformerEncoder(AbsSeqEncoder):
         is_reduce_sequence (bool):
             False - returns PaddedBatch with all transactions embeddings
             True - returns one embedding for sequence based on CLS token
-
+        add_cls_output (bool):
+            False - returns PaddedBatch with all transactions embeddings
+            True - returns tuple (PaddedBatch with all transactions embeddings, one embedding for sequence based on CLS token)
     Example:
     >>> model = LongformerEncoder(input_size=32)
     >>> x = PaddedBatch(torch.randn(10, 128, 32), torch.randint(20, 128, (10,)))
@@ -58,10 +60,12 @@ class LongformerEncoder(AbsSeqEncoder):
                  intermediate_size: int = 128,
                  num_hidden_layers: int = 1,
                  attention_window: int = 16,
+                 hidden_act='gelu',
                  max_position_embeddings=5000,
                  use_positional_encoding=True,
                  use_start_random_shift=True,
                  is_reduce_sequence=False,
+                 add_cls_output=False,
                  ):
         super().__init__(is_reduce_sequence=is_reduce_sequence)
 
@@ -71,19 +75,20 @@ class LongformerEncoder(AbsSeqEncoder):
         self.use_start_random_shift = use_start_random_shift
 
         self.token_cls = torch.nn.Parameter(torch.randn(1, 1, input_size), requires_grad=True)
-
         self.transf = LongformerModel(
             config=LongformerConfig(
                 hidden_size=input_size,
                 num_attention_heads=num_attention_heads,
                 intermediate_size=intermediate_size,
                 num_hidden_layers=num_hidden_layers,
+                hidden_act=hidden_act,
                 vocab_size=4,
                 max_position_embeddings=max_position_embeddings,
                 attention_window=attention_window,
             ),
             add_pooling_layer=False,
         )
+        self.add_cls_output=add_cls_output
 
     def forward(self, x: PaddedBatch):
         B, T, H = x.payload.size()
@@ -124,8 +129,11 @@ class LongformerEncoder(AbsSeqEncoder):
 
         if self.is_reduce_sequence:
             return out[:, 0, :]
-
-        return PaddedBatch(out[:, 1:, :], x.seq_lens)
+        else:
+            if self.add_cls_output:
+                return PaddedBatch(out[:, 1:, :], x.seq_lens), out[:, 0, :]
+            else:
+                return PaddedBatch(out[:, 1:, :], x.seq_lens)
 
     @property
     def embedding_size(self):

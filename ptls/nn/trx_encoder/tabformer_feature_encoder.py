@@ -1,7 +1,6 @@
 import torch
 import torch.nn as nn
 
-
 class TabFormerFeatureEncoder(nn.Module):
     """TabFormerFeatureEncoder: encodes input batch of shape (B, T, F, E),
            where:
@@ -31,7 +30,7 @@ class TabFormerFeatureEncoder(nn.Module):
         super().__init__()
 
         out_hidden = out_hidden if out_hidden else emb_dim * n_cols
-        encoder_layer = nn.TransformerEncoderLayer(d_model=emb_dim, nhead=n_heads, dim_feedforward=transf_feedforward_dim, batch_first=True)
+        encoder_layer = nn.TransformerEncoderLayer(d_model=emb_dim, nhead=n_heads, dim_feedforward=transf_feedforward_dim, batch_first=True, activation='gelu')
         self.transformer_encoder = nn.TransformerEncoder(encoder_layer, num_layers=n_layers)
         self.lin_proj = nn.Linear(emb_dim * n_cols, out_hidden)
 

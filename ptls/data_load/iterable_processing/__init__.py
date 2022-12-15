@@ -1,5 +1,6 @@
 from .category_size_clip import CategorySizeClip
 from .feature_rename import FeatureRename
+from .feature_bin_scaler import FeatureBinScaler
 from .feature_filter import FeatureFilter
 from .feature_type_cast import FeatureTypeCast
 from .filter_non_array import FilterNonArray

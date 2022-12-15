@@ -8,6 +8,7 @@ from typing import Tuple, Dict
 from ptls.nn.seq_encoder.abs_seq_encoder import AbsSeqEncoder
 from ptls.nn import PBL2Norm
 from ptls.data_load.padded_batch import PaddedBatch
+from ptls.custom_layers import StatPooling
 
 
 class TabformerPretrainModule(pl.LightningModule):
@@ -27,8 +28,6 @@ class TabformerPretrainModule(pl.LightningModule):
     seq_encoder:
         Module for sequence processing. Generally this is transformer based encoder. Rnn is also possible
         Should works without sequence reduce
-    hidden_size:
-        Size of trx_encoder output.
     total_steps:
         total_steps expected in OneCycle lr scheduler
     max_lr:
@@ -41,6 +40,9 @@ class TabformerPretrainModule(pl.LightningModule):
         use l2 norm for transformer output or not
     mask_prob:
         probability of masking randomly selected feature
+    inference_pooling_strategy:
+        'out' - `seq_encoder` forward (`is_reduce_requence=True`) (B, H)
+        'stat' - min, max, mean, std statistics pooled from `trx_encoder` layer + 'out' from `seq_encoder` (B, H) -> (B, 5H)
     """
 
     def __init__(self,
@@ -48,12 +50,12 @@ class TabformerPretrainModule(pl.LightningModule):
                  feature_encoder: torch.nn.Module,
                  seq_encoder: AbsSeqEncoder,
                  total_steps: int,
-                 hidden_size: int = None,
                  max_lr: float = 0.001,
                  weight_decay: float = 0.0,
                  pct_start: float = 0.1,
                  norm_predict: bool = False,
-                 mask_prob: float = 0.15
+                 mask_prob: float = 0.15,
+                 inference_pooling_strategy: str = 'out'
                  ):
 
         super().__init__()
@@ -62,7 +64,7 @@ class TabformerPretrainModule(pl.LightningModule):
         self.trx_encoder = trx_encoder
         self.feature_encoder = feature_encoder
 
-        assert not self.trx_encoder.scalers, '`numeric_values` parameter of `trx_encoder` should be == {}. Discretize all numerical features into categorical to use Tabformer model!'
+        assert not self.trx_encoder.numeric_values, '`numeric_values` parameter of `trx_encoder` should be == {}. Discretize all numerical features into categorical to use Tabformer model!'
         noisy_embeds = list(self.trx_encoder.embeddings.values())
         assert noisy_embeds, '`embeddings` parameter for `trx_encoder` should contain at least 1 feature!'
         self.feature_emb_dim = noisy_embeds[0].embedding_dim
@@ -71,19 +73,16 @@ class TabformerPretrainModule(pl.LightningModule):
         self.head = nn.ModuleList()
         in_head_dim = self.feature_emb_dim * self.num_f
         for n_emb in noisy_embeds:
-            self.head += [nn.Linear(in_head_dim, n_emb.num_embeddings)]
+            self.head += [nn.Linear(in_head_dim, n_emb.num_embeddings+1)]
             assert all(n_emb.embedding_dim == self.feature_emb_dim for n_emb in noisy_embeds), 'Out dimensions for all features in `embeddings` parameter of `trx_encoder` should be equal for Tabformer model!'
 
         warnings.warn("With Tabformer model set `in` value in `embeddings`parameter of `trx_encoder` equal to actual number of unique feature values + 1")
 
-        self.seq_encoder = seq_encoder
-        self.seq_encoder.is_reduce_sequence = False
+        self._seq_encoder = seq_encoder
+        self._seq_encoder.is_reduce_sequence = False
 
         if self.hparams.norm_predict:
             self.fn_norm_predict = PBL2Norm()
-
-        if hidden_size is None:
-            hidden_size = trx_encoder.output_size
 
         self.token_mask = torch.nn.Parameter(torch.randn(1, 1, self.feature_emb_dim), requires_grad=True)
 
@@ -94,7 +93,6 @@ class TabformerPretrainModule(pl.LightningModule):
         self.mask_prob = mask_prob
 
         self.lin_proj = nn.Sequential(nn.Linear(self.feature_emb_dim, self.feature_emb_dim * self.num_f),
-
                                       nn.GELU(),
                                       nn.LayerNorm(self.feature_emb_dim * self.num_f, eps=1e-12)
                                       )
@@ -119,7 +117,7 @@ class TabformerPretrainModule(pl.LightningModule):
         return [optim], [scheduler]
 
     def forward(self, z: PaddedBatch):
-        out = self.seq_encoder(z)
+        out = self._seq_encoder(z)
         if self.hparams.norm_predict:
             out = self.fn_norm_predict(out)
         return out
@@ -181,7 +179,7 @@ class TabformerPretrainModule(pl.LightningModule):
     def training_step(self, batch, batch_idx):
         tabf_labels, MASK_token_mask, RANDOM_token_mask, random_words = self.get_masks_and_labels(batch)
         z_trx = self.trx_encoder(batch)  # PB: B, T, H
-
+        
         payload = z_trx.payload.view(z_trx.payload.shape[:-1] + (-1, self.feature_emb_dim))
         payload[MASK_token_mask] = self.token_mask
         payload[RANDOM_token_mask] = random_words[RANDOM_token_mask]
@@ -216,3 +214,30 @@ class TabformerPretrainModule(pl.LightningModule):
         self.log(f'tabformer/valid_tabformer_loss', self.valid_tabformer_loss, prog_bar=True)
         # self.valid_tabformer_loss reset not required here
 
+    @property
+    def seq_encoder(self):
+        return TabformerInferenceModule(pretrained_model=self)
+
+
+class TabformerInferenceModule(torch.nn.Module):
+    def __init__(self, pretrained_model):
+        super().__init__()
+        self.model = pretrained_model
+        self.model._seq_encoder.is_reduce_sequence = True
+        self.model._seq_encoder.add_cls_output = False 
+        if self.model.hparams.inference_pooling_strategy=='stat':
+            self.stat_pooler = StatPooling()
+
+    def forward(self, batch: PaddedBatch):
+        z_trx = self.model.trx_encoder(batch)
+        payload = z_trx.payload.view(z_trx.payload.shape[:-1] + (-1, self.model.feature_emb_dim))
+        payload = self.model.feature_encoder(payload)
+        encoded_trx = PaddedBatch(payload=payload, length=z_trx.seq_lens)
+        out = self.model._seq_encoder(encoded_trx)
+
+        if self.model.hparams.inference_pooling_strategy=='stat':
+            stats = self.stat_pooler(z_trx)
+            out = torch.cat([stats, out], dim=1)  # out: B, 5H
+        if self.model.hparams.norm_predict:
+            out = out / (out.pow(2).sum(dim=-1, keepdim=True) + 1e-9).pow(0.5)
+        return out

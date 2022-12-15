@@ -17,7 +17,6 @@ from ptls.data_load.augmentations.all_time_shuffle import AllTimeShuffle
 from ptls.data_load.iterable_processing_dataset import IterableProcessingDataset
 from ptls.data_load.padded_batch import PaddedBatch
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -496,7 +495,7 @@ def padded_collate_wo_target(batch):
     lengths = torch.IntTensor([len(e) for e in next(iter(new_x_.values()))])
     new_x = {k: torch.nn.utils.rnn.pad_sequence(v, batch_first=True) for k, v in new_x_.items()}
     return PaddedBatch(new_x, lengths)
-
+    
 
 class ZeroDownSampler(Sampler):
     def __init__(self, targets):
