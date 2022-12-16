@@ -30,4 +30,4 @@ def test_dropout():
     embedding = NoisyEmbedding(16, 4, 0, noise_scale=0.0, dropout=0.35, spatial_dropout=False)
     x = torch.ones(400, 800, dtype=torch.long)
     out = embedding(x)
-    assert torch.abs(0.35 - (1 - torch.count_nonzero(out) / 400 / 800 / 4)) < 0.001
+    assert torch.abs(0.35 - (1 - torch.count_nonzero(out) / 400 / 800 / 4)) < 0.01
