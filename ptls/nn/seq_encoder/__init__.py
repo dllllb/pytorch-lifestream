@@ -1,6 +1,7 @@
 from .rnn_encoder import RnnEncoder
 from .transformer_encoder import TransformerEncoder
 from .longformer_encoder import LongformerEncoder
+from .gpt_encoder import GptEncoder
 
 from .containers import RnnSeqEncoder, TransformerSeqEncoder, LongformerSeqEncoder
 from .agg_feature_seq_encoder import AggFeatureSeqEncoder
