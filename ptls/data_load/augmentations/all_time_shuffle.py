@@ -3,7 +3,10 @@ from ptls.data_load.feature_dict import FeatureDict
 
 
 class AllTimeShuffle(FeatureDict):
-    """Shuffle all transactions in event sequence
+    """
+    Shuffle all transactions in event sequence.
+    This class is used as 'f_augmentation' argument for 
+    ptls.data_load.datasets.augmentation_dataset.AugmentationDataset (AugmentationIterableDataset).
     """
     def __init__(self, event_time_name='event_time'):
         self.event_time_name = event_time_name
