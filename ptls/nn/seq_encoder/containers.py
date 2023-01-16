@@ -3,7 +3,7 @@ import torch
 from ptls.nn.seq_encoder.rnn_encoder import RnnEncoder
 from ptls.nn.seq_encoder.transformer_encoder import TransformerEncoder
 from ptls.nn.seq_encoder.longformer_encoder import LongformerEncoder
-
+from ptls.nn.seq_encoder.custom_encoder import Encoder
 
 class SeqEncoderContainer(torch.nn.Module):
     """Base container class for Sequence encoder.
@@ -190,3 +190,39 @@ class LongformerSeqEncoder(SeqEncoderContainer):
             seq_encoder_params=seq_encoder_params,
             is_reduce_sequence=is_reduce_sequence,
         )
+
+class CustomSeqEncoder(SeqEncoderContainer):
+    """SeqEncoderContainer with Custom builded transformer encoder
+
+    Parameters
+        trx_encoder:
+            TrxEncoder object
+        input_size:
+            input_size parameter for Custom Encoder
+            If None: input_size = trx_encoder.output_size
+            Set input_size explicit or use None if your trx_encoder object has output_size attribute
+        **seq_encoder_params:
+            params for for Custom Encoder initialisation
+        is_reduce_sequence (bool):
+            False - returns PaddedBatch with all transactions embeddings after aggregation step
+            True - returns Tensor with all transactions embeddings after aggregation step
+
+    """
+    def __init__(self,
+                 trx_encoder=None,
+                 input_size=None,
+                 is_reduce_sequence=True,
+                 **seq_encoder_params,
+                 ):
+        super().__init__(
+            trx_encoder=trx_encoder,
+            seq_encoder_cls=Encoder,
+            input_size=input_size,
+            seq_encoder_params=seq_encoder_params,
+            is_reduce_sequence=is_reduce_sequence,
+        )
+
+    def forward(self, x):
+        z_trx = self.trx_encoder(x)
+        out = self.seq_encoder(z_trx)
+        return out
