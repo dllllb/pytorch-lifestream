@@ -6,6 +6,10 @@ from ptls.data_load.feature_dict import FeatureDict
 
 
 class RandomSlice(FeatureDict):
+    """
+    This class is used as 'f_augmentation' argument for 
+    ptls.data_load.datasets.augmentation_dataset.AugmentationDataset (AugmentationIterableDataset).
+    """
     def __init__(self, min_len, max_len, rate_for_min=1.0):
         super().__init__()
 

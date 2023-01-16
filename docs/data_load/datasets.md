@@ -18,7 +18,7 @@ For small (map mode) parquet data use:
 For large (iterable mode) parquet data use:
 
 1. `ParquetDataset` with `i_filters`
-2. `AugmentationDataset` with `f_augmentations` if needed
+2. `AugmentationIterableDataset` with `f_augmentations` if needed
 3. endpoint iterable dataset from `ptls.frames`
 
 Other dataset order and combination are possible but not tested.
@@ -293,9 +293,9 @@ train_data = AugmentationDataset(
 Here we are using iterable `ParquetDataset` as the source, loading it into memory using `PersistDataset`. 
 Then, each time we access the data, we apply two augmentation functions to the items stored in the `PersistDataset`.
 
-`AugmentationDataset` also works in iterable mode. Previous example will be like this:
+`AugmentationIterableDataset` works in iterable mode. In this case example will be like this:
 ```python
-train_data = AugmentationDataset(
+train_data = AugmentationIterableDataset(
     f_augmentations=[
         AllTimeShuffle(),
         DropoutTrx(trx_dropout=0.01),

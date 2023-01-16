@@ -3,6 +3,10 @@ from ptls.data_load.feature_dict import FeatureDict
 
 
 class DropoutTrx(FeatureDict):
+    """
+    This class is used as 'f_augmentation' argument for 
+    ptls.data_load.datasets.augmentation_dataset.AugmentationDataset (AugmentationIterableDataset).
+    """
     def __init__(self, trx_dropout):
         self.trx_dropout = trx_dropout
 
