@@ -35,7 +35,7 @@ class GptPretrainModule(pl.LightningModule):
                  head_hidden_size: int = 64,
                  total_steps: int = 64000,
                  seed_seq_len: int = 16,
-                 max_lr: float = 0.001,
+                 max_lr: float = 0.00005,
                  weight_decay: float = 0.0,
                  pct_start: float = 0.1,
                  norm_predict: bool = False,
@@ -87,8 +87,11 @@ class GptPretrainModule(pl.LightningModule):
         labels = batch.payload
 
         loss_gpt = self.loss_gpt(out, labels, is_train_step=True)
+        if self.trainer.use_dp or self.trainer.use_ddp2:
+            loss_gpt = loss_gpt.unsqueeze(0)
+
         self.train_gpt_loss(loss_gpt)
-        self.log(f'gpt/loss', loss_gpt)
+        self.log(f'gpt/loss', loss_gpt, sync_dist=True)
         return loss_gpt
 
     def validation_step(self, batch, batch_idx):
@@ -96,14 +99,17 @@ class GptPretrainModule(pl.LightningModule):
         labels = batch.payload
 
         loss_gpt = self.loss_gpt(out, labels, is_train_step=False)
+        if self.trainer.use_dp or self.trainer.use_ddp2:
+            loss_gpt = loss_gpt.unsqueeze(0)
+
         self.valid_gpt_loss(loss_gpt)
 
     def training_epoch_end(self, _):
-        self.log(f'gpt/train_gpt_loss', self.train_gpt_loss, prog_bar=False)
+        self.log(f'gpt/train_gpt_loss', self.train_gpt_loss, prog_bar=False, sync_dist=True, rank_zero_only=True)
         # self.train_gpt_loss reset not required here
 
     def validation_epoch_end(self, _):
-        self.log(f'gpt/valid_gpt_loss', self.valid_gpt_loss, prog_bar=True)
+        self.log(f'gpt/valid_gpt_loss', self.valid_gpt_loss, prog_bar=True, sync_dist=True, rank_zero_only=True)
         # self.valid_gpt_loss reset not required here
 
     def configure_optimizers(self):
