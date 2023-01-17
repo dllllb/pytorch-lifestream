@@ -4,10 +4,44 @@ from transformers import GPT2Config, GPT2Model
 
 from ptls.data_load.padded_batch import PaddedBatch
 from ptls.nn.seq_encoder.abs_seq_encoder import AbsSeqEncoder
-
+from ptls.nn.seq_step import LastStepEncoder
 
 class GptEncoder(AbsSeqEncoder):
-    
+    """Used huggingface implementation of GPT decoder
+    Based on `transformers.GPT2Model`
+
+    Parameters
+    ----------
+        n_embd:
+            input embedding size.
+            Equals intermediate and output layer size cause transformer don't change vector dimentions
+        n_head:
+            The number of heads in the multiheadattention models
+        n_inner:
+            The dimension of the feedforward network model
+        n_layer:
+            The number of sub-decoder-layers in the decoder
+        activation_function:
+            Activation function is used.
+        n_positions:
+            The possible maximum sequence length for positional encoding
+        resid_pdrop:
+            Dropout probability of residual connections of decoder layers.
+        embd_pdrop:
+            Dropout probability of embeddings.
+        attn_pdrop:
+            Dropout probability of attention matrix.
+        use_positional_encoding (bool):
+            Use or not positional encoding
+        use_start_random_shift (bool):
+            True - starting pos of positional encoding randomly shifted when training
+            This allow to train transformer with all range of positional encoding values
+            False - starting pos is not shifted.
+        is_reduce_sequence (bool):
+            False - returns PaddedBatch with all transactions embeddings
+            True - returns last embedding of sequence 
+    """
+
     def __init__(self,
                  n_embd=768,
                  n_layer=12,
@@ -28,8 +62,9 @@ class GptEncoder(AbsSeqEncoder):
         self.n_positions = n_positions
         self.use_positional_encoding = use_positional_encoding
         self.use_start_random_shift = use_start_random_shift
-
-        self.token_cls = torch.nn.Parameter(torch.randn(1, 1, n_embd), requires_grad=True)
+        
+        if is_reduce_sequence:
+            self.last_step = LastStepEncoder()
         
         self.transf = GPT2Model(
             config=GPT2Config(
@@ -45,7 +80,7 @@ class GptEncoder(AbsSeqEncoder):
                 vocab_size=4,
             ),
         )
-
+        
     def forward(self, x: PaddedBatch):
         B, T, H = x.payload.size()
         device = x.device
@@ -69,12 +104,11 @@ class GptEncoder(AbsSeqEncoder):
             position_ids=position_ids,
         ).last_hidden_state
 
-        return out
+        out = PaddedBatch(out, x.seq_lens)
 
-        # if self.is_reduce_sequence:
-        #     return out[:, -1, :]
-        # else:
-        #     return PaddedBatch(out, x.seq_lens)
+        if self.is_reduce_sequence:
+            return self.last_step(out)
+        return out
 
     @property
     def embedding_size(self):

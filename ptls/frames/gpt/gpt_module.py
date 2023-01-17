@@ -9,17 +9,14 @@ from ptls.nn.seq_encoder.abs_seq_encoder import AbsSeqEncoder
 from ptls.nn import PBL2Norm
 from ptls.data_load.padded_batch import PaddedBatch
 from ptls.custom_layers import StatPooling, GEGLU
-
+from ptls.nn.seq_step import LastStepEncoder
 
 class Head(nn.Module):   
     def __init__(self, input_size, n_classes, hidden_size=64, drop_p=0.1):
-        
         super().__init__()
         self.head = nn.Sequential(
             nn.Linear(input_size, hidden_size, bias=True),
-            # nn.BatchNorm1d(hidden_size*2),
-            # GEGLU(),
-            # nn.GELU(),
+            nn.GELU(),
             nn.Dropout(drop_p),
             nn.Linear(hidden_size, n_classes)
         )
@@ -28,6 +25,39 @@ class Head(nn.Module):
         return x
 
 class GptPretrainModule(pl.LightningModule):
+    """GPT2 Language model
+
+    Original sequence are encoded by `TrxEncoder`.
+    Model `seq_encoder` predicts embedding of next transaction.
+    Heads are used to predict each feature class of future transaction.
+
+    Parameters
+    ----------
+    trx_encoder:
+        Module for transform dict with feature sequences to sequence of transaction representations
+    seq_encoder:
+        Module for sequence processing. Generally this is transformer based encoder. Rnn is also possible
+        Should works without sequence reduce
+    head_hidden_size:
+        Hidden size of heads for feature prediction
+    seed_seq_len:
+         Size of starting sequence without loss 
+    total_steps:
+        total_steps expected in OneCycle lr scheduler
+    max_lr:
+        max_lr of OneCycle lr scheduler
+    weight_decay:
+        weight_decay of Adam optimizer
+    pct_start:
+        % of total_steps when lr increase
+    norm_predict:
+        use l2 norm for transformer output or not
+    inference_pooling_strategy:
+        'out' - `seq_encoder` forward (`is_reduce_requence=True`) (B, H)
+        'out_stat' - min, max, mean, std statistics pooled from `seq_encoder` layer (B, H) -> (B, 4H)
+        'trx_stat' - min, max, mean, std statistics pooled from `trx_encoder` layer (B, H) -> (B, 4H)
+        'trx_stat_out' - min, max, mean, std statistics pooled from `trx_encoder` layer + 'out' from `seq_encoder` (B, H) -> (B, 5H)
+    """
 
     def __init__(self,
                  trx_encoder: torch.nn.Module,
@@ -39,6 +69,7 @@ class GptPretrainModule(pl.LightningModule):
                  weight_decay: float = 0.0,
                  pct_start: float = 0.1,
                  norm_predict: bool = False,
+                 inference_pooling_strategy: str = 'out_stat'
                  ):
 
         super().__init__()
@@ -53,7 +84,7 @@ class GptPretrainModule(pl.LightningModule):
 
         self.head = nn.ModuleDict()
         for col_name, noisy_emb in self.trx_encoder.embeddings.items():
-            self.head[col_name] = Head(input_size=self._seq_encoder.n_embd, hidden_size=head_hidden_size, n_classes=noisy_emb.num_embeddings)
+            self.head[col_name] = Head(input_size=self._seq_encoder.embedding_size, hidden_size=head_hidden_size, n_classes=noisy_emb.num_embeddings)
 
         if self.hparams.norm_predict:
             self.fn_norm_predict = PBL2Norm()
@@ -70,7 +101,7 @@ class GptPretrainModule(pl.LightningModule):
             out = self.fn_norm_predict(out)
         return out
 
-    def loss_gpt(self, predictions: PaddedBatch, labels, is_train_step):
+    def loss_gpt(self, predictions, labels, is_train_step):
         loss = 0
         for col_name, head in self.head.items():
             y_pred = head(predictions[:, self.hparams.seed_seq_len:-1, :])
@@ -84,24 +115,20 @@ class GptPretrainModule(pl.LightningModule):
 
     def training_step(self, batch, batch_idx):
         out = self.forward(batch)  # PB: B, T, H
+        out = out.payload if isinstance(out, PaddedBatch) else out
         labels = batch.payload
 
         loss_gpt = self.loss_gpt(out, labels, is_train_step=True)
-        if self.trainer.use_dp or self.trainer.use_ddp2:
-            loss_gpt = loss_gpt.unsqueeze(0)
-
         self.train_gpt_loss(loss_gpt)
         self.log(f'gpt/loss', loss_gpt, sync_dist=True)
         return loss_gpt
 
     def validation_step(self, batch, batch_idx):
         out = self.forward(batch)  # PB: B, T, H
+        out = out.payload if isinstance(out, PaddedBatch) else out
         labels = batch.payload
 
         loss_gpt = self.loss_gpt(out, labels, is_train_step=False)
-        if self.trainer.use_dp or self.trainer.use_ddp2:
-            loss_gpt = loss_gpt.unsqueeze(0)
-
         self.valid_gpt_loss(loss_gpt)
 
     def training_epoch_end(self, _):
@@ -130,3 +157,36 @@ class GptPretrainModule(pl.LightningModule):
         )
         scheduler = {'scheduler': scheduler, 'interval': 'step'}
         return [optim], [scheduler]
+    
+    @property
+    def seq_encoder(self):
+        return GPTInferenceModule(pretrained_model=self)
+
+class GPTInferenceModule(torch.nn.Module):
+    def __init__(self, pretrained_model):
+        super().__init__()
+        self.model = pretrained_model
+        self.model.is_reduce_sequence = False
+
+        self.stat_pooler = StatPooling()
+        self.last_step = LastStepEncoder()
+
+    def forward(self, batch):
+        z_trx = self.model.trx_encoder(batch)
+        out = self.model._seq_encoder(z_trx)
+        out = out if isinstance(out, PaddedBatch) else PaddedBatch(out, batch.seq_lens)
+        if self.model.hparams.inference_pooling_strategy=='trx_stat_out':
+            stats = self.stat_pooler(z_trx)
+            out = self.last_step(out)
+            out = torch.cat([stats, out], dim=1)
+        elif self.model.hparams.inference_pooling_strategy=='trx_stat':
+            out = self.stat_pooler(z_trx)
+        elif self.model.hparams.inference_pooling_strategy=='out_stat':
+            out = self.stat_pooler(out)
+        elif self.model.hparams.inference_pooling_strategy=='out':
+            out = self.last_step(out)
+        else:
+            raise
+        if self.model.hparams.norm_predict:
+            out = out / (out.pow(2).sum(dim=-1, keepdim=True) + 1e-9).pow(0.5)
+        return out
