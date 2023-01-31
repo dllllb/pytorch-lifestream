@@ -50,6 +50,7 @@ pytest
 - Pandas data preprocessing options [notebook](demo/preprocessing-demo.ipynb)
 - PySpark and Parquet for data preprocessing [notebook](demo/pyspark-parquet.ipynb)
 - Fast inference on large dataset [notebook](demo/extended_inference.ipynb)
+- Supervised multilabel classification [notebook](demo/multilabel-classification.ipynb)
 
 ## Docs
 
