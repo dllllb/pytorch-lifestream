@@ -69,6 +69,7 @@ class PandasDataPreprocessor(DataPreprocessor):
                  cols_category: List[Union[str, ColCategoryTransformer]] = None,
                  category_transformation: str = 'frequency',
                  cols_numerical: List[str] = None,
+                 cols_text: List[str] = None,
                  cols_identity: List[str] = None,
                  cols_first_item: List[str] = None,
                  return_records: bool = True,
@@ -81,6 +82,8 @@ class PandasDataPreprocessor(DataPreprocessor):
             cols_identity = []
         if cols_first_item is None:
             cols_first_item = []
+        if cols_text is None:
+            cols_text = []
 
         if type(col_event_time) is not str:
             ct_event_time = col_event_time  # use as is
@@ -112,7 +115,11 @@ class PandasDataPreprocessor(DataPreprocessor):
 
         cts_numerical = [ColIdentityEncoder(col_name_original=col) for col in cols_numerical]
         t_user_group = UserGroupTransformer(
-            col_name_original=col_id, cols_first_item=cols_first_item, return_records=return_records)
+            col_name_original=col_id, 
+            cols_first_item=cols_first_item, 
+            cols_text=cols_text, 
+            return_records=return_records
+        )
 
         super().__init__(
             ct_event_time=ct_event_time,

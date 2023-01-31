@@ -26,6 +26,7 @@ class UserGroupTransformer(ColTransformerPandasMixin, ColTransformer):
     def __init__(self,
                  col_name_original: str,
                  cols_first_item: List[str] = None,
+                 cols_text: List[str] = None,
                  return_records: bool = False,
                  ):
         super().__init__(
@@ -34,6 +35,7 @@ class UserGroupTransformer(ColTransformerPandasMixin, ColTransformer):
             is_drop_original_col=False,
         )
         self.cols_first_item = cols_first_item if cols_first_item is not None else []
+        self.cols_text = cols_text if cols_text is not None else []
         self.return_records = return_records
 
     def fit(self, x):
@@ -44,10 +46,18 @@ class UserGroupTransformer(ColTransformerPandasMixin, ColTransformer):
         if 'event_time' not in x.columns:
             raise AttributeError(f'"event_time" not in source dataframe. '
                                  f'Found {x.columns}')
-        return self
-
+        return self        
+    
     def df_to_feature_arrays(self, df):
-        return pd.Series({k: torch.from_numpy(v.values) if k not in self.cols_first_item else v.iloc[0]
+        def decide(k, v):
+            if k in self.cols_text:
+                return v.values
+            elif k in self.cols_first_item:
+                return v.iloc[0]
+            else:
+                return torch.from_numpy(v.values)
+
+        return pd.Series({k: decide(k, v)
                           for k, v in df.to_dict(orient='series').items()})
 
     def transform(self, x: pd.DataFrame):
