@@ -1,8 +1,9 @@
-from typing import Union
-from typing import Dict
+from typing import Union, Dict, Tuple
 
 import torch
 from torch import nn as nn
+from torch.nn import functional as F
+from functools import partial
 
 from ptls.data_load.padded_batch import PaddedBatch
 from ptls.nn.trx_encoder.scalers import scaler_by_name, BaseScaler
@@ -46,6 +47,7 @@ class TrxEncoderBase(nn.Module):
     def __init__(self,
                  embeddings: Dict[str, Union[Dict, torch.nn.Embedding]] = None,
                  numeric_values: Dict[str, Union[str, BaseScaler]] = None,
+                 text_embeddings: Dict[str, Tuple[torch.nn.Module, partial]] = None, # partial for partial tokenizer call initialization
                  out_of_index: str = 'clip',
                  ):
         super().__init__()
@@ -54,6 +56,8 @@ class TrxEncoderBase(nn.Module):
             embeddings = {}
         if numeric_values is None:
             numeric_values = {}
+        if text_embeddings is None:
+            text_embeddings = {}
 
         self.embeddings = torch.nn.ModuleDict()
         for col_name, emb_props in embeddings.items():
@@ -87,6 +91,9 @@ class TrxEncoderBase(nn.Module):
                 self.numeric_values[col_name] = scaler_name
             else:
                 raise AttributeError(f'Wrong type of numeric_values, found {type(scaler_name)} for "{col_name}"')
+
+        self.text_embeddings = torch.nn.ModuleDict({k: v[0] for k, v in text_embeddings.items()}) # TODO (add initialization from model name)
+        self.text_tokenizers = {k: v[1] for k, v in text_embeddings.items()}
 
     def get_category_indexes(self, x: PaddedBatch, col_name: str):
         """Returns category feature values clipped to dictionary size.
@@ -127,6 +134,18 @@ class TrxEncoderBase(nn.Module):
             v = x.payload[scaler.col_name].unsqueeze(2).float()
         return scaler(v)
 
+    def get_text_embeddings(self, x: PaddedBatch, col_name: str):
+        embedder = self.text_embeddings[col_name]
+        tokenizer = self.text_tokenizers[col_name]
+        embeddings = torch.nn.utils.rnn.pad_sequence([
+            embedder(
+                **{k: v.to(embedder.device)
+                for k, v in tokenizer(transactions_text.tolist()).items()}
+            )
+            for transactions_text in x.payload[col_name]], batch_first=True
+        )
+        return embeddings
+
     @property
     def numerical_size(self):
         return sum(n.output_size for n in self.numeric_values.values())
@@ -136,8 +155,12 @@ class TrxEncoderBase(nn.Module):
         return sum(e.embedding_dim for e in self.embeddings.values())
 
     @property
+    def text_embedding_size(self):
+        return sum(e.embedding_dim for e in self.text_embeddings.values())
+
+    @property
     def output_size(self):
-        s = self.numerical_size + self.embedding_size
+        s = self.numerical_size + self.embedding_size + self.text_embedding_size
         return s
 
     @property
@@ -145,7 +168,8 @@ class TrxEncoderBase(nn.Module):
         """Returns set of used feature names
         """
         return set([field_name for field_name in self.embeddings.keys()] +
-                   [value_name for value_name in self.numeric_values.keys()]
+                   [value_name for value_name in self.numeric_values.keys()] +
+                   [text_field_name for text_field_name in self.text_embeddings.keys()]
                    )
 
     @property

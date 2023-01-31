@@ -83,6 +83,7 @@ class TrxEncoder(TrxEncoderBase):
     def __init__(self,
                  embeddings=None,
                  numeric_values=None,
+                 text_embeddings=None,
                  embeddings_noise: float = 0,
                  norm_embeddings=None,
                  use_batch_norm=True,
@@ -106,6 +107,8 @@ class TrxEncoder(TrxEncoderBase):
             embeddings = {}
         if numeric_values is None:
             numeric_values = {}
+        if text_embeddings is None:
+            text_embeddings = {}
 
         noisy_embeddings = {}
         for emb_name, emb_props in embeddings.items():
@@ -126,6 +129,7 @@ class TrxEncoder(TrxEncoderBase):
         super().__init__(
             embeddings=noisy_embeddings,
             numeric_values=numeric_values,
+            text_embeddings=text_embeddings,
             out_of_index=out_of_index,
         )
 
@@ -159,6 +163,9 @@ class TrxEncoder(TrxEncoderBase):
 
         for field_name in self.numeric_values.keys():
             processed_numerical.append(self.get_numeric_scaled(x, field_name))
+        
+        for field_name in self.text_embeddings.keys():
+            processed_embeddings.append(self.get_text_embeddings(x, field_name))
 
         if len(processed_numerical):
             processed_numerical = torch.cat(processed_numerical, dim=2)
