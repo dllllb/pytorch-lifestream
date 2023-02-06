@@ -29,6 +29,29 @@ def get_pb():
         length=torch.IntTensor([2, 4])
     )
 
+def get_pb_with_text_event_time():
+    return PaddedBatch(
+        payload={
+            'bin': torch.IntTensor([0, 1]),
+            'target_bin': torch.IntTensor([2, 3]),
+            'pp': torch.FloatTensor([0.1, 0.2]),
+            'user_id': np.array(['a', 'b']),
+            'lists': np.array([[5, 6], [7, 8]]),
+            'mcc': torch.tensor([
+                [1, 2, 0, 0],
+                [3, 4, 5, 6],
+            ]),
+            'event_time': np.array([
+                ['0 10:00:05', '0 11:00:00', '2 11:12:10', '2 12:00:00'],
+                ['1 10:00:05', '3 11:00:00', '4 11:12:10', '4 12:00:00'],
+            ]),
+            'target_array': torch.tensor([
+                [1, 2, 2, 5],
+                [1, 2, 3, 4],
+            ]),
+        },
+        length=torch.IntTensor([2, 4])
+    )
 
 def test_padded_batch_example():
     data = PaddedBatch(
@@ -121,6 +144,20 @@ def test_padded_batch_is_seq_feature():
         ('target_array', False),
     ]:
         assert is_seq == PaddedBatch.is_seq_feature(col, x.payload[col]), col
+
+    x_text = get_pb_with_text_event_time()
+
+    for col, is_seq in [
+        ('bin', False),
+        ('target_bin', False),
+        ('pp', False),
+        ('user_id', False),
+        ('lists', False),
+        ('mcc', True),
+        ('event_time', True),
+        ('target_array', False),
+    ]:
+        assert is_seq == PaddedBatch.is_seq_feature(col, x_text.payload[col]), col
 
 
 def test_padded_batch_drop_seq_features():
