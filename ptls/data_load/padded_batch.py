@@ -115,11 +115,10 @@ class PaddedBatch:
             return True
         if k.startswith('target'):
             return False
-        if type(x) in (np.ndarray, torch.Tensor):
-            if type(x) is np.ndarray:
+        if type(x) is np.ndarray:
                 return False
-            if len(x.shape) == 1:
-                return False
+        if type(x) is torch.Tensor and len(x.shape) == 1:
+            return False
         return True 
 
     def drop_seq_features(self):
