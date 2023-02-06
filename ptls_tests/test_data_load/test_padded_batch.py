@@ -146,7 +146,6 @@ def test_padded_batch_is_seq_feature():
         assert is_seq == PaddedBatch.is_seq_feature(col, x.payload[col]), col
 
     x_text = get_pb_with_text_event_time()
-
     for col, is_seq in [
         ('bin', False),
         ('target_bin', False),
