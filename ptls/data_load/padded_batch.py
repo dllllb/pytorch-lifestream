@@ -111,13 +111,16 @@ class PaddedBatch:
         -------
 
         """
-        if not FeatureDict.is_seq_feature(k, x):
-            return False  # target fields
-        if type(x) is np.ndarray:
+        if k == 'event_time':
+            return True
+        if k.startswith('target'):
             return False
-        if len(x.shape) == 1:
-            return False
-        return True
+        if type(x) in (np.ndarray, torch.Tensor):
+            if type(x) is np.ndarray:
+                return False
+            if len(x.shape) == 1:
+                return False
+        return True 
 
     def drop_seq_features(self):
         """Returns new dict without sequential features
