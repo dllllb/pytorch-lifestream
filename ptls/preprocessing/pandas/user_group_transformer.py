@@ -26,7 +26,7 @@ class UserGroupTransformer(ColTransformerPandasMixin, ColTransformer):
     def __init__(self,
                  col_name_original: str,
                  cols_first_item: List[str] = None,
-                 cols_text: List[str] = None,
+                 cols_custom: List[str] = None,
                  return_records: bool = False,
                  ):
         super().__init__(
@@ -35,7 +35,7 @@ class UserGroupTransformer(ColTransformerPandasMixin, ColTransformer):
             is_drop_original_col=False,
         )
         self.cols_first_item = cols_first_item if cols_first_item is not None else []
-        self.cols_text = cols_text if cols_text is not None else []
+        self.cols_custom = cols_custom if cols_custom is not None else []
         self.return_records = return_records
 
     def fit(self, x):
@@ -50,10 +50,12 @@ class UserGroupTransformer(ColTransformerPandasMixin, ColTransformer):
     
     def df_to_feature_arrays(self, df):
         def decide(k, v):
-            if k in self.cols_text:
+            if k in self.cols_custom:
                 return v.values
             elif k in self.cols_first_item:
                 return v.iloc[0]
+            elif isinstance(v.iloc[0], torch.Tensor):
+                return torch.vstack(tuple(v))
             else:
                 return torch.from_numpy(v.values)
 

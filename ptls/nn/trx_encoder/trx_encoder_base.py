@@ -47,7 +47,8 @@ class TrxEncoderBase(nn.Module):
     def __init__(self,
                  embeddings: Dict[str, Union[Dict, torch.nn.Embedding]] = None,
                  numeric_values: Dict[str, Union[str, BaseScaler]] = None,
-                 text_embeddings: Dict[str, Tuple[torch.nn.Module, partial]] = None, # partial for partial tokenizer call initialization
+                 custom_embeddings: Dict[str, torch.nn.Module] = None,
+                 identity_embeddings: Dict[str, int] = None,
                  out_of_index: str = 'clip',
                  ):
         super().__init__()
@@ -56,8 +57,10 @@ class TrxEncoderBase(nn.Module):
             embeddings = {}
         if numeric_values is None:
             numeric_values = {}
-        if text_embeddings is None:
-            text_embeddings = {}
+        if custom_embeddings is None:
+            custom_embeddings = {}
+        if identity_embeddings is None:
+            identity_embeddings = {}
 
         self.embeddings = torch.nn.ModuleDict()
         for col_name, emb_props in embeddings.items():
@@ -92,8 +95,8 @@ class TrxEncoderBase(nn.Module):
             else:
                 raise AttributeError(f'Wrong type of numeric_values, found {type(scaler_name)} for "{col_name}"')
 
-        self.text_embeddings = torch.nn.ModuleDict({k: v[0] for k, v in text_embeddings.items()}) # TODO (add initialization from model name)
-        self.text_tokenizers = {k: v[1] for k, v in text_embeddings.items()}
+        self.custom_embeddings = torch.nn.ModuleDict(custom_embeddings)
+        self.identity_embeddings = identity_embeddings
 
     def get_category_indexes(self, x: PaddedBatch, col_name: str):
         """Returns category feature values clipped to dictionary size.
@@ -134,17 +137,16 @@ class TrxEncoderBase(nn.Module):
             v = x.payload[scaler.col_name].unsqueeze(2).float()
         return scaler(v)
 
-    def get_text_embeddings(self, x: PaddedBatch, col_name: str):
-        embedder = self.text_embeddings[col_name]
-        tokenizer = self.text_tokenizers[col_name]
+    def get_custom_embeddings(self, x: PaddedBatch, col_name: str):
+        embedder = self.custom_embeddings[col_name]
         embeddings = torch.nn.utils.rnn.pad_sequence([
-            embedder(
-                **{k: v.to(embedder.device)
-                for k, v in tokenizer(transactions_text.tolist()).items()}
-            )
+            embedder(transactions_text)
             for transactions_text in x.payload[col_name]], batch_first=True
         )
         return embeddings
+    
+    def get_identity_embeddings(self, x: PaddedBatch, col_name: str):
+        return x.payload[col_name]
 
     @property
     def numerical_size(self):
@@ -155,21 +157,28 @@ class TrxEncoderBase(nn.Module):
         return sum(e.embedding_dim for e in self.embeddings.values())
 
     @property
-    def text_embedding_size(self):
-        return sum(e.embedding_dim for e in self.text_embeddings.values())
+    def custom_embedding_size(self):
+        return sum(e.embedding_dim for e in self.custom_embeddings.values())
+
+    @property
+    def identity_embeddings_size(self):
+        return sum(self.identity_embeddings.values())
 
     @property
     def output_size(self):
-        s = self.numerical_size + self.embedding_size + self.text_embedding_size
-        return s
+        return self.numerical_size \
+            + self.embedding_size \
+            + self.custom_embedding_size \
+            + self.identity_embeddings_size
 
     @property
     def category_names(self):
         """Returns set of used feature names
         """
-        return set([field_name for field_name in self.embeddings.keys()] +
-                   [value_name for value_name in self.numeric_values.keys()] +
-                   [text_field_name for text_field_name in self.text_embeddings.keys()]
+        return set(list(self.embeddings.keys()) +
+                   list(self.numeric_values.keys()) +
+                   list(self.custom_embeddings.keys()) +
+                   list(self.identity_embeddings.keys())
                    )
 
     @property
