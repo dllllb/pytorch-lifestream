@@ -10,4 +10,3 @@ from .histogram_loss import HistogramLoss
 from .centroid_loss import CentroidLoss, CentroidSoftmaxLoss, CentroidSoftmaxMemoryLoss
 
 from .softmax_loss import SoftmaxLoss
-from .softmax_pairwise_loss import SoftmaxPairwiseLoss
