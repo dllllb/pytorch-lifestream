@@ -7,7 +7,7 @@ with open("README.md", "r") as fh:
     
 setuptools.setup(
     name='pytorch-lifestream',
-    version='0.5.1',
+    version='0.5.2',
     author='',
     author_email='',
     description='Lifestream data analysis with PyTorch',
