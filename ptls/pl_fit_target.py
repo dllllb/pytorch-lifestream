@@ -27,9 +27,9 @@ def fold_fit_test(conf, fold_id):
     trainer = pl.Trainer(**_trainer_params, **_trainer_params_additional)
     trainer.fit(model, datamodule=dm)
 
-    valid_metrics = {name: float(mf.compute().item()) for name, mf in model.valid_metrics.items()}
+    valid_metrics = model.valid_metrics_cache
     trainer.test(model=model, dataloaders=dm.test_dataloader(), ckpt_path="best", verbose=False)
-    test_metrics = {name: float(mf.compute().item()) for name, mf in model.test_metrics.items()}
+    test_metrics =  model.test_metrics_cache
 
     print(', '.join([f'valid_{name}: {v:.4f}' for name, v in valid_metrics.items()]))
     print(', '.join([f' test_{name}: {v:.4f}' for name, v in test_metrics.items()]))
