@@ -104,9 +104,6 @@ class SequenceToTarget(pl.LightningModule):
         self.optimizer_partial = optimizer_partial
         self.lr_scheduler_partial = lr_scheduler_partial
 
-        self.valid_metrics_cache = {}
-        self.test_metrics_cache = {}
-
     def forward(self, x):
         x = self.seq_encoder(x)
         if self.head is not None:
@@ -145,9 +142,7 @@ class SequenceToTarget(pl.LightningModule):
 
     def validation_epoch_end(self, outputs):
         for name, mf in self.valid_metrics.items():
-            value = mf.compute().item()
-            self.log(f'val_{name}', value, prog_bar=True)
-            self.valid_metrics_cache[name] = value
+            self.log(f'val_{name}', mf.compute(), prog_bar=True)
         for name, mf in self.valid_metrics.items():
             mf.reset()
 
@@ -161,7 +156,6 @@ class SequenceToTarget(pl.LightningModule):
         for name, mf in self.test_metrics.items():
             value = mf.compute().item()
             self.log(f'test_{name}', value, prog_bar=False)
-            self.test_metrics_cache[name] = value
         for name, mf in self.test_metrics.items():
             mf.reset()
 
