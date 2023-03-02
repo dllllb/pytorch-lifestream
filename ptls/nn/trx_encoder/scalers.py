@@ -1,19 +1,15 @@
 import torch
-from torch import nn
+
+from .encoders import BaseEncoder
 
 
-class BaseScaler(nn.Module):
-    def __init__(self, col_name=None):
-        super().__init__()
-        self.col_name = col_name
-
-    @property
-    def output_size(self):
-        raise NotImplementedError()
-
+class BaseScaler(BaseEncoder):
+    def forward(self, x: torch.Tensor):
+        return x.unsqueeze(2).float()
 
 class IdentityScaler(BaseScaler):
     def forward(self, x):
+        x = super().forward(x)
         return x
 
     @property
@@ -23,6 +19,7 @@ class IdentityScaler(BaseScaler):
 
 class LogScaler(BaseScaler):
     def forward(self, x):
+        x = super().forward(x)
         return x.abs().log1p() * x.sign()
 
     @property
@@ -32,6 +29,7 @@ class LogScaler(BaseScaler):
 
 class YearScaler(BaseScaler):
     def forward(self, x):
+        x = super().forward(x)
         return x/365
 
     @property
@@ -46,6 +44,7 @@ class NumToVector(BaseScaler):
         self.b = torch.nn.Parameter(torch.randn(1, 1, embeddings_size), requires_grad=True)
 
     def forward(self, x):
+        x = super().forward(x)
         return x * self.w + self.b
 
     @property
@@ -60,6 +59,7 @@ class LogNumToVector(BaseScaler):
         self.b = torch.nn.Parameter(torch.randn(1, 1, embeddings_size), requires_grad=True)
 
     def forward(self, x):
+        x = super().forward(x)
         return x.abs().log1p() * x.sign() * self.w + self.b
 
     @property
@@ -92,6 +92,7 @@ class PoissonScaler(BaseScaler):
         self.factor = torch.nn.Parameter(torch.special.gammaln(1 + self.arange), requires_grad=False)
 
     def forward(self, x):
+        x = super().forward(x)
         if self.kmax == 0:
             return torch.poisson(x)
         res = self.arange * torch.log(x).unsqueeze(-1) - self.factor * torch.ones_like(x).unsqueeze(-1)
@@ -108,6 +109,7 @@ class ExpScaler(BaseScaler):
         self.column = column
 
     def forward(self, x):
+        x = super().forward(x)
         if self.column is not None:
             return torch.exp(x if x.dim() == 1 else x[:, self.column].unsqueeze(-1))
         else:

@@ -1,13 +1,12 @@
+import warnings
 from typing import Union, Dict, Tuple
 
 import torch
 from torch import nn as nn
-from torch.nn import functional as F
-from functools import partial
 
 from ptls.data_load.padded_batch import PaddedBatch
-from ptls.nn.trx_encoder.scalers import scaler_by_name, BaseScaler
-
+from ptls.nn.trx_encoder.scalers import BaseScaler, scaler_by_name
+from ptls.nn.trx_encoder.encoders import BaseEncoder
 
 class TrxEncoderBase(nn.Module):
     """Base class for TrxEncoders.
@@ -46,21 +45,16 @@ class TrxEncoderBase(nn.Module):
     """
     def __init__(self,
                  embeddings: Dict[str, Union[Dict, torch.nn.Embedding]] = None,
-                 numeric_values: Dict[str, Union[str, BaseScaler]] = None,
-                 custom_embeddings: Dict[str, torch.nn.Module] = None,
-                 identity_embeddings: Dict[str, int] = None,
+                 numeric_values: Dict[str, Union[str, BaseEncoder]] = None,
+                 custom_embeddings: Dict[str, BaseEncoder] = None,
                  out_of_index: str = 'clip',
                  ):
         super().__init__()
 
         if embeddings is None:
             embeddings = {}
-        if numeric_values is None:
-            numeric_values = {}
         if custom_embeddings is None:
             custom_embeddings = {}
-        if identity_embeddings is None:
-            identity_embeddings = {}
 
         self.embeddings = torch.nn.ModuleDict()
         for col_name, emb_props in embeddings.items():
@@ -84,19 +78,18 @@ class TrxEncoderBase(nn.Module):
         self.out_of_index = out_of_index
         assert out_of_index in ('clip', 'assert')
 
-        self.numeric_values = torch.nn.ModuleDict()
-        for col_name, scaler_name in numeric_values.items():
-            if type(scaler_name) is str:
-                if scaler_name == 'none':
-                    continue
-                self.numeric_values[col_name] = scaler_by_name(scaler_name)
-            elif isinstance(scaler_name, BaseScaler):
-                self.numeric_values[col_name] = scaler_name
-            else:
-                raise AttributeError(f'Wrong type of numeric_values, found {type(scaler_name)} for "{col_name}"')
-
         self.custom_embeddings = torch.nn.ModuleDict(custom_embeddings)
-        self.identity_embeddings = identity_embeddings
+
+        if numeric_values is not None:
+            for col_name, scaler in numeric_values.items():
+                if type(scaler) is str:
+                    if scaler == 'none':
+                        continue
+                    self.custom_embeddings[col_name] = scaler_by_name(scaler)
+                elif isinstance(scaler, BaseEncoder):
+                    self.custom_embeddings[col_name] = scaler
+                else:
+                    raise AttributeError(f'Wrong type of numeric_values, found {type(scaler)} for "{col_name}"')
 
     def get_category_indexes(self, x: PaddedBatch, col_name: str):
         """Returns category feature values clipped to dictionary size.
@@ -122,35 +115,24 @@ class TrxEncoderBase(nn.Module):
         indexes = self.get_category_indexes(x, col_name)
         return self.embeddings[col_name](indexes)
 
-    def get_numeric_scaled(self, x: PaddedBatch, col_name):
-        """Returns numerical feature values transformed with selected scaler.
-
+    def get_custom_embeddings(self, x: PaddedBatch, col_name: str):
+        """Returns embeddings given by custom embedder
+        
         Parameters
         ----------
         x: PaddedBatch with feature dict. Each value is `(B, T)` size
         col_name: required feature name
         """
-        scaler = self.numeric_values[col_name]
-        if scaler.col_name is None:
-            v = x.payload[col_name].unsqueeze(2).float()
-        else:
-            v = x.payload[scaler.col_name].unsqueeze(2).float()
-        return scaler(v)
-
-    def get_custom_embeddings(self, x: PaddedBatch, col_name: str):
         embedder = self.custom_embeddings[col_name]
+        col_name = col_name if embedder.col_name is None else embedder.col_name
+        if isinstance(embedder, BaseScaler):
+            return embedder(x.payload[col_name])
+        
         embeddings = torch.nn.utils.rnn.pad_sequence([
-            embedder(transactions_text)
-            for transactions_text in x.payload[col_name]], batch_first=True
+            embedder(trx_value)
+            for trx_value in x.payload[col_name]], batch_first=True
         )
         return embeddings
-    
-    def get_identity_embeddings(self, x: PaddedBatch, col_name: str):
-        return x.payload[col_name]
-
-    @property
-    def numerical_size(self):
-        return sum(n.output_size for n in self.numeric_values.values())
 
     @property
     def embedding_size(self):
@@ -158,18 +140,11 @@ class TrxEncoderBase(nn.Module):
 
     @property
     def custom_embedding_size(self):
-        return sum(e.embedding_dim for e in self.custom_embeddings.values())
-
-    @property
-    def identity_embeddings_size(self):
-        return sum(self.identity_embeddings.values())
+        return sum(e.output_size for e in self.custom_embeddings.values())
 
     @property
     def output_size(self):
-        return self.numerical_size \
-            + self.embedding_size \
-            + self.custom_embedding_size \
-            + self.identity_embeddings_size
+        return self.embedding_size + self.custom_embedding_size
 
     @property
     def category_names(self):
