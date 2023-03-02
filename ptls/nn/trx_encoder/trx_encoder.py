@@ -86,7 +86,6 @@ class TrxEncoder(TrxEncoderBase):
                  embeddings=None,
                  numeric_values=None,
                  custom_embeddings=None,
-                 identity_embeddings=None,
                  embeddings_noise: float = 0,
                  norm_embeddings=None,
                  use_batch_norm=True,
@@ -108,12 +107,8 @@ class TrxEncoder(TrxEncoderBase):
 
         if embeddings is None:
             embeddings = {}
-        if numeric_values is None:
-            numeric_values = {}
         if custom_embeddings is None:
             custom_embeddings = {}
-        if identity_embeddings is None:
-            identity_embeddings = {}
 
         noisy_embeddings = {}
         for emb_name, emb_props in embeddings.items():
@@ -135,18 +130,18 @@ class TrxEncoder(TrxEncoderBase):
             embeddings=noisy_embeddings,
             numeric_values=numeric_values,
             custom_embeddings=custom_embeddings,
-            identity_embeddings=identity_embeddings,
             out_of_index=out_of_index,
         )
 
-        numerical_size = self.numerical_size
-        if use_batch_norm and numerical_size > 0:
+        custom_embedding_size = self.custom_embedding_size
+        if use_batch_norm and custom_embedding_size > 0:
+            # :TODO: Should we use Batch norm with not-numerical custom embeddings?
             if use_batch_norm_with_lens:
-                self.numerical_batch_norm = RBatchNormWithLens(numerical_size)
+                self.custom_embedding_batch_norm = RBatchNormWithLens(custom_embedding_size)
             else:
-                self.numerical_batch_norm = RBatchNorm(numerical_size)
+                self.custom_embedding_batch_norm = RBatchNorm(custom_embedding_size)
         else:
-            self.numerical_batch_norm = None
+            self.custom_embedding_batch_norm = None
 
         if linear_projection_size > 0:
             self.linear_projection_head = torch.nn.Linear(super().output_size, linear_projection_size)
@@ -162,27 +157,21 @@ class TrxEncoder(TrxEncoderBase):
 
     def forward(self, x: PaddedBatch):
         processed_embeddings = []
-        processed_numerical = []
+        processed_custom_embeddings = []
 
         for field_name in self.embeddings.keys():
             processed_embeddings.append(self.get_category_embeddings(x, field_name))
-
-        for field_name in self.numeric_values.keys():
-            processed_numerical.append(self.get_numeric_scaled(x, field_name))
         
         for field_name in self.custom_embeddings.keys():
-            processed_embeddings.append(self.get_custom_embeddings(x, field_name))
+            processed_custom_embeddings.append(self.get_custom_embeddings(x, field_name))
 
-        for field_name in self.identity_embeddings.keys():
-            processed_embeddings.append(self.get_identity_embeddings(x, field_name))
-
-        if len(processed_numerical):
-            processed_numerical = torch.cat(processed_numerical, dim=2)
-            if self.numerical_batch_norm is not None:
-                processed_numerical = PaddedBatch(processed_numerical, x.seq_lens)
-                processed_numerical = self.numerical_batch_norm(processed_numerical)
-                processed_numerical = processed_numerical.payload
-            processed_embeddings.append(processed_numerical)
+        if len(processed_custom_embeddings):
+            processed_custom_embeddings = torch.cat(processed_custom_embeddings, dim=2)
+            if self.custom_embedding_batch_norm is not None:
+                processed_custom_embeddings = PaddedBatch(processed_custom_embeddings, x.seq_lens)
+                processed_custom_embeddings = self.custom_embedding_batch_norm(processed_custom_embeddings)
+                processed_custom_embeddings = processed_custom_embeddings.payload
+            processed_embeddings.append(processed_custom_embeddings)
 
         out = torch.cat(processed_embeddings, dim=2)
 
