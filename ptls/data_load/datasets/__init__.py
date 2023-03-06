@@ -1,4 +1,4 @@
-from .augmentation_dataset import AugmentationDataset
+from .augmentation_dataset import AugmentationDataset, AugmentationIterableDataset
 from .persist_dataset import PersistDataset
 from .memory_dataset import MemoryMapDataset, MemoryIterableDataset
 from .parquet_dataset import ParquetFiles, ParquetDataset
