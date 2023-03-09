@@ -99,10 +99,6 @@ class XTransformerEncoder(nn.Module):
         return_hiddens = return_mems | return_attn
 
         # absolute positional embedding
-
-        if seq_len > self.max_seq_len:
-            x = x[:,:self.max_seq_len,:]
-
         external_pos_emb = exists(pos) and pos.dtype != torch.long
         pos_emb = self.pos_emb(x, pos = pos) if not external_pos_emb else pos
         x = self.input_linear(x) + pos_emb 
