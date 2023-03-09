@@ -5,7 +5,7 @@ from .trx_encoder import (
 from .seq_encoder import (
     RnnEncoder,  TransformerEncoder, LongformerEncoder,
     RnnSeqEncoder, TransformerSeqEncoder, LongformerSeqEncoder, AggFeatureSeqEncoder,
-    GptEncoder
+    GptEncoder, XTransformerEncoder, XTransformerSeqEncoder
 )
 
 from .pb import PBDropout, PBLinear, PBL2Norm, PBLayerNorm, PBReLU
