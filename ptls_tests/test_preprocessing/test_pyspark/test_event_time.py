@@ -5,6 +5,7 @@ from ptls.preprocessing.pyspark.event_time import dt_to_timestamp, timestamp_to_
 
 def test_dt_to_timestamp():
     spark = SparkSession.builder.getOrCreate()
+    spark.conf.set("spark.sql.session.timeZone", "UTC")
     df = spark.createDataFrame(data=[
         {'dt': '1970-01-01 00:00:00'},
         {'dt': '2012-01-01 12:01:16'},
@@ -13,12 +14,14 @@ def test_dt_to_timestamp():
 
     df = df.withColumn('ts', dt_to_timestamp('dt'))
     ts = [rec.ts for rec in df.select('ts').collect()]
+    spark.conf.unset("spark.sql.session.timeZone")
     assert ts == [0, 1325419276, 1640822400]
 
 
 
 def test_timestamp_to_dt():
     spark = SparkSession.builder.getOrCreate()
+    spark.conf.set("spark.sql.session.timeZone", "UTC")
     df = spark.createDataFrame(data=[
         {'dt': '1970-01-01 00:00:00'},
         {'dt': '2012-01-01 12:01:16'},
@@ -28,6 +31,7 @@ def test_timestamp_to_dt():
     df = df.withColumn('ts', dt_to_timestamp('dt'))
     df = df.withColumn('dt2', timestamp_to_dt('ts'))
     df = df.toPandas()
+    spark.conf.unset("spark.sql.session.timeZone")
     assert (df['dt'] == df['dt2']).all()
     assert df['dt'].dtype == 'object'
     assert df['ts'].dtype == 'int64'
@@ -38,6 +42,7 @@ def test_timestamp_to_dt():
 def test_datetime_to_timestamp():
     t = DatetimeToTimestamp(col_name_original='dt')
     spark = SparkSession.builder.getOrCreate()
+    spark.conf.set("spark.sql.session.timeZone", "UTC")
     df = spark.createDataFrame(data=[
         {'dt': '1970-01-01 00:00:00', 'rn': 1},
         {'dt': '2012-01-01 12:01:16', 'rn': 2},
@@ -45,6 +50,7 @@ def test_datetime_to_timestamp():
     ])
     df = t.fit_transform(df)
     et = [rec.event_time for rec in df.select('event_time').collect()]
+    spark.conf.unset("spark.sql.session.timeZone")
     assert et[0] == 0
     assert et[1] == 1325419276
     assert et[2] == 1640822400
