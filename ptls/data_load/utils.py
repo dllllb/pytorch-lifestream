@@ -6,6 +6,8 @@ from functools import reduce
 from ptls.data_load.feature_dict import FeatureDict
 from ptls.data_load.padded_batch import PaddedBatch
 
+from transformers.tokenization_utils_base import BatchEncoding
+
 
 def collate_feature_dict(batch):
     """Collate feature with arrays to padded batch
