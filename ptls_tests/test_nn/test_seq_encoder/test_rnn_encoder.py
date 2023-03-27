@@ -22,6 +22,50 @@ def test_example():
 
     out = model(x)
     assert out.payload.shape == (4, 8, 6)
+    
+    
+def test_bidir():
+    model = RnnEncoder(
+        input_size=5,
+        hidden_size=6,
+        bidir=True,
+        is_reduce_sequence=False,
+    )
+
+    x = get_data()
+
+    out = model(x)
+    assert out.payload.shape == (4, 8, 12)
+    
+    
+def test_bidir_multilayer():
+    model = RnnEncoder(
+        input_size=5,
+        hidden_size=6,
+        bidir=True,
+        num_layers=2,
+        is_reduce_sequence=False,
+    )
+
+    x = get_data()
+
+    out = model(x)
+    assert out.payload.shape == (4, 8, 12)
+    
+    
+def test_gru_multilayer():
+    model = RnnEncoder(
+        input_size=5,
+        hidden_size=6,
+        num_layers=3,
+        type='gru',
+        is_reduce_sequence=False,
+    )
+
+    x = get_data()
+
+    out = model(x)
+    assert out.payload.shape == (4, 8, 6)
 
 
 def test_last_step():

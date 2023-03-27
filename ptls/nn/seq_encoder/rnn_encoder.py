@@ -61,6 +61,7 @@ class RnnEncoder(AbsSeqEncoder):
         self.hidden_size = hidden_size
         self.rnn_type = type
         self.bidirectional = bidir
+        self.num_layers = num_layers
         if self.bidirectional:
             warnings.warn("Backward direction in bidir RNN takes into account paddings at the end of sequences!")
         
@@ -91,7 +92,7 @@ class RnnEncoder(AbsSeqEncoder):
         # initialize starter position if needed
         if self.trainable_starter == 'static':
             num_dir = 2 if self.bidirectional else 1
-            self.starter_h = nn.Parameter(torch.randn(num_dir, 1, self.hidden_size))
+            self.starter_h = nn.Parameter(torch.randn(self.num_layers * num_dir, 1, self.hidden_size))
 
         if reducer == 'last_step':
             self.reducer = LastStepEncoder()
@@ -115,7 +116,8 @@ class RnnEncoder(AbsSeqEncoder):
 
         # prepare initial state
         if self.trainable_starter == 'static':
-            starter_h = torch.tanh(self.starter_h.expand(-1, shape[0], -1).contiguous())
+            num_dir = 2 if self.bidirectional else 1
+            starter_h = torch.tanh(self.starter_h.expand(self.num_layers * num_dir, shape[0], -1).contiguous())
             if h_0 is None:
                 h_0 = starter_h
             elif h_0 is not None and not self.training:
