@@ -135,6 +135,11 @@ class TrxEncoderBase(nn.Module):
         return embeddings
 
     @property
+    def numerical_size(self):
+        # :TODO: this property is only for backward compability
+        return self.custom_embedding_size
+
+    @property
     def embedding_size(self):
         return sum(e.embedding_dim for e in self.embeddings.values())
 

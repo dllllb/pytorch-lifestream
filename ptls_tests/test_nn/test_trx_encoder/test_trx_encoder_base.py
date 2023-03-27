@@ -48,7 +48,7 @@ def test_get_category_embeddings():
     torch.testing.assert_close(out[0, 3], out[0, 5])
 
 
-def test_get_numeric_scaled():
+def test_numeric_scaler():
     m = TrxEncoderBase(
         numeric_values={'amount': 'log'},
     )
@@ -57,11 +57,11 @@ def test_get_numeric_scaled():
         },
         torch.tensor([6]),
     )
-    out = m.get_numeric_scaled(x, 'amount')
+    out = m.get_custom_embeddings(x, 'amount')
     torch.testing.assert_close(out.expm1(), torch.arange(6).float().view(1, 6, 1))
 
 
-def test_get_numeric_scaled_with_alias():
+def test_numeric_scaler_with_alias():
     m = TrxEncoderBase(
         numeric_values={'amount_x': IdentityScaler(col_name='amount')},
     )
@@ -70,7 +70,7 @@ def test_get_numeric_scaled_with_alias():
         },
         torch.tensor([6]),
     )
-    out = m.get_numeric_scaled(x, 'amount_x')
+    out = m.get_custom_embeddings(x, 'amount_x')
     torch.testing.assert_close(out, torch.arange(6).float().view(1, 6, 1))
 
 
