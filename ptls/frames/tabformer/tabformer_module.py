@@ -64,7 +64,7 @@ class TabformerPretrainModule(pl.LightningModule):
         self.trx_encoder = trx_encoder
         self.feature_encoder = feature_encoder
 
-        assert not self.trx_encoder.numeric_values, '`numeric_values` parameter of `trx_encoder` should be == {}. Discretize all numerical features into categorical to use Tabformer model!'
+        assert not self.trx_encoder.custom_embeddings, '`custom_embeddings` parameter of `trx_encoder` should be == {}. Discretize all numerical features into categorical to use Tabformer model!'
         noisy_embeds = list(self.trx_encoder.embeddings.values())
         assert noisy_embeds, '`embeddings` parameter for `trx_encoder` should contain at least 1 feature!'
         self.feature_emb_dim = noisy_embeds[0].embedding_dim
