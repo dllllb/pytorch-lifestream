@@ -135,7 +135,7 @@ class TabformerPretrainModule(pl.LightningModule):
         probability_matrix = torch.full(pad_tokens_mask.shape, self.mask_prob).to(batch.device)
         probability_matrix.masked_fill_(pad_tokens_mask, value=0.0)
 
-        return tuple(*self.tabformer_mask(feature_tensors, probability_matrix), random_words)
+        return self.tabformer_mask(feature_tensors, probability_matrix) + (random_words,)
 
     def tabformer_mask(self, inputs: torch.Tensor, probability_matrix: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
             """
