@@ -1,8 +1,7 @@
+import warnings
 from typing import Dict
 
 import torch as torch
-import warnings
-
 from ptls.nn.trx_encoder.trx_encoder import TrxEncoder
 
 

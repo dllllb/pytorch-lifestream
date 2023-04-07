@@ -1,12 +1,11 @@
-import warnings
-from typing import Union, Dict, Tuple
+from typing import Dict, Union
 
 import torch
+from ptls.data_load.padded_batch import PaddedBatch
+from ptls.nn.trx_encoder.encoders import BaseEncoder
+from ptls.nn.trx_encoder.scalers import BaseScaler, scaler_by_name
 from torch import nn as nn
 
-from ptls.data_load.padded_batch import PaddedBatch
-from ptls.nn.trx_encoder.scalers import BaseScaler, scaler_by_name
-from ptls.nn.trx_encoder.encoders import BaseEncoder
 
 class TrxEncoderBase(nn.Module):
     """Base class for TrxEncoders.

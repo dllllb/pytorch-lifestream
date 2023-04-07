@@ -1,8 +1,6 @@
-from concurrent.futures import process
-from dataclasses import field
-import torch
 import warnings
 
+import torch
 from ptls.data_load.padded_batch import PaddedBatch
 from ptls.nn.trx_encoder.batch_norm import RBatchNorm, RBatchNormWithLens
 from ptls.nn.trx_encoder.noisy_embedding import NoisyEmbedding
