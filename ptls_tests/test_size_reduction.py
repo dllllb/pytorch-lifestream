@@ -54,13 +54,14 @@ def test_pca_reduction():
     out = np.array([[-0.3, -0.1,  0.1,  0.3, -0.3, -0.1,  0.1,  0.3]]).T
 
     reduced_array, pca_list = pca_reduction(array, sub_dim=4, n_components=1, num_workers=0)
-    assert np.allclose(reduced_array, out, rtol=1e-07)
+    # on macOS reduced_array is -out
+    assert np.allclose(reduced_array, out, rtol=1e-07) or np.allclose(reduced_array, -out, rtol=1e-07)
 
     reduced_array = pca_reduction(array, sub_dim=4, pca_list=pca_list, num_workers=0)
-    assert np.allclose(reduced_array, out, rtol=1e-07)
+    assert np.allclose(reduced_array, out, rtol=1e-07) or np.allclose(reduced_array, -out, rtol=1e-07)
 
     reduced_array, pca_list = pca_reduction(array, sub_dim=4, n_components=1, num_workers=8)
-    assert np.allclose(reduced_array, out, rtol=1e-07)
+    assert np.allclose(reduced_array, out, rtol=1e-07) or np.allclose(reduced_array, -out, rtol=1e-07)
 
     reduced_array = pca_reduction(array, sub_dim=4, pca_list=pca_list, num_workers=8)
-    assert np.allclose(reduced_array, out, rtol=1e-07)
+    assert np.allclose(reduced_array, out, rtol=1e-07) or np.allclose(reduced_array, -out, rtol=1e-07)
