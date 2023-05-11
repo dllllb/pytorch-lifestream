@@ -1,28 +1,20 @@
 import torch
-from torch import nn
+
+from .encoders import BaseEncoder
 
 
-class BaseScaler(nn.Module):
-    def __init__(self, col_name=None):
-        super().__init__()
-        self.col_name = col_name
-
-    @property
-    def output_size(self):
-        raise NotImplementedError()
-
-
-class IdentityScaler(BaseScaler):
+class IdentityScaler(BaseEncoder):
     def forward(self, x):
-        return x
+        return x.unsqueeze(2).float()
 
     @property
     def output_size(self):
         return 1
 
 
-class LogScaler(BaseScaler):
+class LogScaler(IdentityScaler):
     def forward(self, x):
+        x = super().forward(x)
         return x.abs().log1p() * x.sign()
 
     @property
@@ -30,8 +22,9 @@ class LogScaler(BaseScaler):
         return 1
 
 
-class YearScaler(BaseScaler):
+class YearScaler(IdentityScaler):
     def forward(self, x):
+        x = super().forward(x)
         return x/365
 
     @property
@@ -39,13 +32,14 @@ class YearScaler(BaseScaler):
         return 1
 
 
-class NumToVector(BaseScaler):
+class NumToVector(IdentityScaler):
     def __init__(self, embeddings_size):
         super().__init__()
         self.w = torch.nn.Parameter(torch.randn(1, 1, embeddings_size), requires_grad=True)
         self.b = torch.nn.Parameter(torch.randn(1, 1, embeddings_size), requires_grad=True)
 
     def forward(self, x):
+        x = super().forward(x)
         return x * self.w + self.b
 
     @property
@@ -53,13 +47,14 @@ class NumToVector(BaseScaler):
         return self.w.size(2)
 
 
-class LogNumToVector(BaseScaler):
+class LogNumToVector(IdentityScaler):
     def __init__(self, embeddings_size):
         super().__init__()
         self.w = torch.nn.Parameter(torch.randn(1, 1, embeddings_size), requires_grad=True)
         self.b = torch.nn.Parameter(torch.randn(1, 1, embeddings_size), requires_grad=True)
 
     def forward(self, x):
+        x = super().forward(x)
         return x.abs().log1p() * x.sign() * self.w + self.b
 
     @property
@@ -81,7 +76,7 @@ def scaler_by_name(name):
         return scaler()
 
 
-class PoissonScaler(BaseScaler):
+class PoissonScaler(IdentityScaler):
     """
     Explicit estimator for poissonian target with standard pytorch sampler extrapolation.
     """
@@ -92,6 +87,7 @@ class PoissonScaler(BaseScaler):
         self.factor = torch.nn.Parameter(torch.special.gammaln(1 + self.arange), requires_grad=False)
 
     def forward(self, x):
+        x = super().forward(x)
         if self.kmax == 0:
             return torch.poisson(x)
         res = self.arange * torch.log(x).unsqueeze(-1) - self.factor * torch.ones_like(x).unsqueeze(-1)
@@ -102,12 +98,13 @@ class PoissonScaler(BaseScaler):
         return 1
 
 
-class ExpScaler(BaseScaler):
+class ExpScaler(IdentityScaler):
     def __init__(self, column=0):
         super().__init__()
         self.column = column
 
     def forward(self, x):
+        x = super().forward(x)
         if self.column is not None:
             return torch.exp(x if x.dim() == 1 else x[:, self.column].unsqueeze(-1))
         else:

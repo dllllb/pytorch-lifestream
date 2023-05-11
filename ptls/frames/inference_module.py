@@ -34,7 +34,7 @@ class InferenceModule(pl.LightningModule):
             if type(v) is torch.Tensor:
                 v = v.cpu().numpy()
 
-            if len(v.shape) == 1:
+            if type(v) is list or len(v.shape) == 1:
                 scalar_features[k] = v
             elif len(v.shape) == 2:
                 expand_cols.append(k)
