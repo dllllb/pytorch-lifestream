@@ -38,6 +38,6 @@ class IterableShuffle(IterableProcessingDataset):
             for ix in ix_for_choice:
                 yield buffer[ix]
 
-            mask_selected = np.zeros(len(buffer), dtype=np.bool)
+            mask_selected = np.zeros(len(buffer), dtype=bool)
             mask_selected[ix_for_choice] = True
             buffer = buffer[~mask_selected]

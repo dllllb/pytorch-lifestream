@@ -554,3 +554,15 @@ class IterableChain:
             seq = f(seq)
         # logger.debug(f'Returned {seq}')
         return seq
+
+
+class PostProcessDataset(torch.utils.data.IterableDataset):
+    def __init__(self, dataset, post_processing=None):
+        self.base = dataset
+        self.post_processing = post_processing
+
+    def __iter__(self):
+        if self.post_processing is not None:
+            return self.post_processing(iter(self.base))
+        else:
+            return iter(self.base)

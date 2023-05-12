@@ -6,7 +6,6 @@ import pytorch_lightning as pl
 import torch
 from sklearn.model_selection import train_test_split
 
-from ptls.data_load.data_module.emb_data_module import train_data_loader
 from ptls.data_load.datasets import MemoryMapDataset
 from ptls.data_load.datasets.dataloaders import inference_data_loader
 from ptls.data_load.iterable_processing import ISeqLenLimit, SeqLenFilter

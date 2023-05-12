@@ -22,8 +22,6 @@ setuptools.setup(
     python_requires='>=3.7',
     install_requires=[
         'pytorch-lightning==1.6.*',
-        'pyarrow>=7.0',
-        'transformers==4.*',
-        'hydra-core>=1.1.2'
+        'torch==1.12.*',
     ],
 )

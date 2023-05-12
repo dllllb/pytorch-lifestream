@@ -192,9 +192,9 @@ class DistributionTargetsLoss(nn.Module):
         self.mults = [mult1, mult2, mult3, mult4]
 
     def forward(self, pred, true):
-        log_sum_truth_neg = np.log(np.abs(true['neg_sum'].astype(np.float)) + 1)[:, None] if isinstance(true['neg_sum'], np.ndarray) else 0
+        log_sum_truth_neg = np.log(np.abs(true['neg_sum'].astype(float)) + 1)[:, None] if isinstance(true['neg_sum'], np.ndarray) else 0
         distribution_truth_neg = np.array(true['neg_distribution'].tolist()) if isinstance(true['neg_sum'], np.ndarray) else 0
-        log_sum_truth_pos = np.log(np.abs(true['pos_sum'].astype(np.float)) + 1)[:, None]
+        log_sum_truth_pos = np.log(np.abs(true['pos_sum'].astype(float)) + 1)[:, None]
         distribution_truth_pos = np.array(true['pos_distribution'].tolist())
 
         log_sum_hat_neg, distribution_hat_neg = pred['neg_sum'], pred['neg_distribution']

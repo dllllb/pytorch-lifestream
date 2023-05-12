@@ -1,7 +1,7 @@
 from ptls.frames.abs_module import ABSModule
-from ptls.frames.coles.losses.contrastive_loss import ContrastiveLoss
+from ptls.frames.coles.losses import ContrastiveLoss
 from ptls.frames.coles.metric import BatchRecallTopK
-from ptls.frames.coles.sampling_strategies.hard_negative_pair_selector import HardNegativePairSelector
+from ptls.frames.coles.sampling_strategies import HardNegativePairSelector
 from ptls.nn.head import Head
 from ptls.nn.seq_encoder.containers import SeqEncoderContainer
 
