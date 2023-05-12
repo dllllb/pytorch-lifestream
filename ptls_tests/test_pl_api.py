@@ -14,6 +14,9 @@ from ptls.preprocessing.pandas_preprocessor import PandasDataPreprocessor
 from ptls.frames.coles import CoLESModule, ColesDataset
 from ptls.nn.seq_encoder import RnnSeqEncoder
 from ptls.nn.trx_encoder import TrxEncoder
+from ptls.data_load import padded_collate_wo_target
+from ptls.data_load import PostProcessDataset, IterableChain
+from ptls.data_load.iterable_processing import FilterNonArray, ISeqLenLimit
 
 
 def test_train_inference():
@@ -68,5 +71,18 @@ def test_train_inference():
     trainer.fit(model, train_dl)
 
     test_dl = inference_data_loader(test, num_workers=0, batch_size=4)
+
+    filtered_ds = PostProcessDataset(test, post_processing=IterableChain(
+        FilterNonArray(),
+        ISeqLenLimit(max_seq_len=1000),
+    ))
+
+    test_dl = torch.utils.data.DataLoader(
+        dataset=filtered_ds,
+        collate_fn=padded_collate_wo_target,
+        shuffle=False,
+        num_workers=0,
+        batch_size=4,
+    )
 
     trainer.predict(model, test_dl)
