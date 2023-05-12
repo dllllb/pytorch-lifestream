@@ -3,7 +3,7 @@ from typing import Dict, Union
 import torch
 from ptls.data_load.padded_batch import PaddedBatch
 from ptls.nn.trx_encoder.encoders import BaseEncoder
-from ptls.nn.trx_encoder.scalers import BaseScaler, scaler_by_name
+from ptls.nn.trx_encoder.scalers import IdentityScaler, scaler_by_name
 from torch import nn as nn
 
 
@@ -25,7 +25,7 @@ class TrxEncoderBase(nn.Module):
         Values must be a string with scaler_name.
         Possible values are: 'identity', 'sigmoid', 'log', 'year'.
         These features will be scaled with selected scaler.
-        Values can be `ptls.nn.trx_encoder.scalers.BaseScaler` implementation
+        Values can be `ptls.nn.trx_encoder.scalers.IdentityScaler` implementation
 
         One field can have many scalers. In this case key become alias and col name should be in scaler.
         Example:
@@ -124,7 +124,7 @@ class TrxEncoderBase(nn.Module):
         """
         embedder = self.custom_embeddings[col_name]
         col_name = col_name if embedder.col_name is None else embedder.col_name
-        if isinstance(embedder, BaseScaler):
+        if isinstance(embedder, IdentityScaler):
             return embedder(x.payload[col_name])
         
         embeddings = torch.nn.utils.rnn.pad_sequence([
