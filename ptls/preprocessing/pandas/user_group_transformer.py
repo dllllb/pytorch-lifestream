@@ -44,10 +44,20 @@ class UserGroupTransformer(ColTransformerPandasMixin, ColTransformer):
         if 'event_time' not in x.columns:
             raise AttributeError(f'"event_time" not in source dataframe. '
                                  f'Found {x.columns}')
-        return self
-
+        return self        
+    
     def df_to_feature_arrays(self, df):
-        return pd.Series({k: torch.from_numpy(v.values) if k not in self.cols_first_item else v.iloc[0]
+        def decide(k, v):
+            if k in self.cols_first_item:
+                return v.iloc[0]
+            elif isinstance(v.iloc[0], torch.Tensor):
+                return torch.vstack(tuple(v))
+            elif v.dtype == 'object':
+                return v.values
+            else:
+                return torch.from_numpy(v.values)
+
+        return pd.Series({k: decide(k, v)
                           for k, v in df.to_dict(orient='series').items()})
 
     def transform(self, x: pd.DataFrame):

@@ -82,6 +82,7 @@ class PandasDataPreprocessor(DataPreprocessor):
         if cols_first_item is None:
             cols_first_item = []
 
+
         if type(col_event_time) is not str:
             ct_event_time = col_event_time  # use as is
         elif event_time_transformation == 'dt_to_timestamp':
@@ -112,7 +113,10 @@ class PandasDataPreprocessor(DataPreprocessor):
 
         cts_numerical = [ColIdentityEncoder(col_name_original=col) for col in cols_numerical]
         t_user_group = UserGroupTransformer(
-            col_name_original=col_id, cols_first_item=cols_first_item, return_records=return_records)
+            col_name_original=col_id, 
+            cols_first_item=cols_first_item, 
+            return_records=return_records
+        )
 
         super().__init__(
             ct_event_time=ct_event_time,
