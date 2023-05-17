@@ -14,7 +14,6 @@ from ptls.data_load.datasets.dataloaders import inference_data_loader
 from ptls.frames.coles.sampling_strategies import HardNegativePairSelector
 from ptls.frames.coles.losses import ContrastiveLoss
 from ptls.data_load import padded_collate_wo_target
-from ptls.data_load import PostProcessDataset, IterableChain
 from ptls.data_load.iterable_processing import FilterNonArray, ISeqLenLimit
 
 
@@ -84,16 +83,15 @@ def test_train_inference():
         data_read_func = test_data,
         col_id = 'client_id',
         col_event_time = 'trans_date',
-        col_event_fields = ['amount_rur', 'small_group']
+        col_event_fields = ['amount_rur', 'small_group'],
+        i_filters=[
+            FilterNonArray(),
+            ISeqLenLimit(max_seq_len=100),
+        ]
     )
 
-    filtered_ds = PostProcessDataset(test_ds, post_processing=IterableChain(
-        FilterNonArray(),
-        ISeqLenLimit(max_seq_len=100),
-    ))
-
     test_dl = torch.utils.data.DataLoader(
-        dataset=filtered_ds,
+        dataset=test_ds,
         collate_fn=padded_collate_wo_target,
         shuffle=False,
         num_workers=0,

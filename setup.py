@@ -25,5 +25,6 @@ setuptools.setup(
         'torch==1.12.*',
         'numpy==1.23.*',
         'torchmetrics==0.9.*',
+        'omegaconf',
     ],
 )

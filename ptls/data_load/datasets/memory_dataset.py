@@ -1,5 +1,5 @@
 import logging
-import warnings
+from typing import Iterable, List
 
 import torch
 
@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 
 
 class MemoryMapDataset(torch.utils.data.Dataset):
-    def __init__(self, data, i_filters=None):
+    def __init__(self, data, i_filters: List[Iterable] = None):
         if i_filters is None:
             self.processed_data = [rec for rec in data]
         else:
