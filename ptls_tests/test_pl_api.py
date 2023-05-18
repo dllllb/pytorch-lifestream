@@ -6,7 +6,6 @@ import pytorch_lightning as pl
 import torch
 from sklearn.model_selection import train_test_split
 
-from ptls.data_load.data_module.emb_data_module import train_data_loader
 from ptls.data_load.datasets import MemoryMapDataset
 from ptls.data_load.datasets.dataloaders import inference_data_loader
 from ptls.data_load.iterable_processing import ISeqLenLimit, SeqLenFilter
@@ -15,6 +14,8 @@ from ptls.preprocessing.pandas_preprocessor import PandasDataPreprocessor
 from ptls.frames.coles import CoLESModule, ColesDataset
 from ptls.nn.seq_encoder import RnnSeqEncoder
 from ptls.nn.trx_encoder import TrxEncoder
+from ptls.data_load import padded_collate_wo_target
+from ptls.data_load.iterable_processing import FilterNonArray, ISeqLenLimit
 
 
 def test_train_inference():
@@ -69,5 +70,18 @@ def test_train_inference():
     trainer.fit(model, train_dl)
 
     test_dl = inference_data_loader(test, num_workers=0, batch_size=4)
+
+    filtered_ds = MemoryMapDataset(test, [
+        FilterNonArray(),
+        ISeqLenLimit(max_seq_len=1000),
+    ])
+
+    test_dl = torch.utils.data.DataLoader(
+        dataset=filtered_ds,
+        collate_fn=padded_collate_wo_target,
+        shuffle=False,
+        num_workers=0,
+        batch_size=4,
+    )
 
     trainer.predict(model, test_dl)

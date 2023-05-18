@@ -21,6 +21,8 @@ For large (iterable mode) parquet data use:
 2. `AugmentationIterableDataset` with `f_augmentations` if needed
 3. endpoint iterable dataset from `ptls.frames`
 
+`DuckDbDataset` with `i_filters` can be used for large (iterable mode) volume data. It does not require preprocessing step for record grouping. Any input format supported by DuckDB can be used.
+
 Other dataset order and combination are possible but not tested.
 
 ## Simple example
@@ -79,12 +81,11 @@ Map dataset provide better shuffle. Iterable dataset requires less memory.
 
 Multiprocessing split implementation:
 
-- `ParquetDataset` implement split it and works correct
-- `i_filters` and `f_augmentations` don't contain a data and works correct
-- Iterable endpoint datasets works correct with iterable source
+- `ParquetDataset` implements split logic, hence, it works correctly in worker processes
+- `i_filters` and `f_augmentations` don't contain data, hence, it works correctly in worker processes
+- Iterable endpoint datasets works correctly with iterable source
 - Iterable endpoint datasets **multiply data with map source**
-- `PersistDataset` iterate input during initialisation. Usually this happens out of dataloader in single main process.
-So it works correct.
+- `PersistDataset` iterate input during initialisation. Usually this happens out of dataloader in single main process, hence, it works correctly in worker processes.
 
 ## `i_filters` and `f_augmentations`
 
