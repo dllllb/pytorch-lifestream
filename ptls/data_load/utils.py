@@ -48,6 +48,8 @@ def collate_feature_dict(batch):
                 new_x[k] = torch.from_numpy(v).long()
             elif v.dtype.kind == 'f':
                 new_x[k] = torch.from_numpy(v).float()
+            elif v.dtype.kind == 'b':
+                new_x[k] = torch.from_numpy(v).bool()
             else:
                 new_x[k] = v
     return PaddedBatch(new_x, lengths)

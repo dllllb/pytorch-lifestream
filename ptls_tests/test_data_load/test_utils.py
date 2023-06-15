@@ -16,6 +16,7 @@ def test_collate_feature_dict():
             'mcc': torch.tensor([1, 2, 3, 4, 5]),
             'event_time': torch.tensor([0.1, 0.2, 0.3, 0.4, 0.5]),
             'target_array': torch.tensor([0.1, 0.2, 0.3]),
+            'target_bool_array': torch.tensor([True, False, True]),
         },
         {
             'bin': 4,
@@ -26,6 +27,7 @@ def test_collate_feature_dict():
             'mcc': torch.tensor([1, 2]),
             'event_time': torch.tensor([0.3, 0.4]),
             'target_array': torch.tensor([0.2, 0.1, 0.3]),
+            'target_bool_array': torch.tensor([False, False, True]),
         },
         {
             'bin': 5,
@@ -36,6 +38,7 @@ def test_collate_feature_dict():
             'mcc': torch.tensor([1, 3, 4, 5]),
             'event_time': torch.tensor([0.2, 0.3, 0.4, 0.5]),
             'target_array': torch.tensor([0.5, 0.2, 0.3]),
+            'target_bool_array': torch.tensor([True, False, False])
         },
     ]
     pb = collate_feature_dict(batch)
@@ -64,6 +67,12 @@ def test_collate_feature_dict():
         [0.5, 0.2, 0.3],
     ])
     torch.testing.assert_close(pb.payload['target_array'], target_array_expected)
+    target_bool_array_expected = torch.BoolTensor([
+        [True, False, True],
+        [False, False, True],
+        [True, False, False]
+    ])
+    torch.testing.assert_close(pb.payload['target_bool_array'], target_bool_array_expected)
 
 
 def test_collate_feature_dict_inconsistent_new():
