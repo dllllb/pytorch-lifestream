@@ -129,7 +129,7 @@ class SequenceToTarget(pl.LightningModule):
 
     def training_epoch_end(self, outputs):
         for name, mf in self.train_metrics.items():
-            self.log(f'train_{name}', mf.compute(), prog_bar=False)
+            self.log(f'train/train_{name}', mf.compute(), prog_bar=False)
         for name, mf in self.train_metrics.items():
             mf.reset()
 
@@ -142,7 +142,7 @@ class SequenceToTarget(pl.LightningModule):
 
     def validation_epoch_end(self, outputs):
         for name, mf in self.valid_metrics.items():
-            self.log(f'val_{name}', mf.compute(), prog_bar=True)
+            self.log(f'valid/val_{name}', mf.compute(), prog_bar=True)
         for name, mf in self.valid_metrics.items():
             mf.reset()
 
@@ -155,7 +155,7 @@ class SequenceToTarget(pl.LightningModule):
     def test_epoch_end(self, outputs):
         for name, mf in self.test_metrics.items():
             value = mf.compute().item()
-            self.log(f'test_{name}', value, prog_bar=False)
+            self.log(f'test/test_{name}', value, prog_bar=False)
         for name, mf in self.test_metrics.items():
             mf.reset()
 
