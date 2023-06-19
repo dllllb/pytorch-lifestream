@@ -1,3 +1,8 @@
+Install x-transformers for using XTransformerEncoder
+```bash
+$ pip install x-transformers
+```
+
 `pytorch-lifestream` a library built upon [PyTorch](https://pytorch.org/) for building embeddings on discrete event sequences using self-supervision. It can process terabyte-size volumes of raw events like game history events, clickstream data, purchase history or card transactions.
 
 It supports various methods of self-supervised training, adapted for event sequences:
