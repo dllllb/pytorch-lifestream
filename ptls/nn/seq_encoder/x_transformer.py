@@ -13,8 +13,8 @@ class XTransformerEncoder(nn.Module):
         self,
         *,
         input_size,
-        max_seq_len,
-        attn_layers,
+        max_seq_len = None,
+        attn_layers = None,
         emb_dim = None,
         max_mem_len = 0.,
         shift_mem_down = 0,
@@ -28,6 +28,7 @@ class XTransformerEncoder(nn.Module):
         l2norm_embed = False,
         emb_frac_gradient = 1., # GLM-130B and Cogview successfully used this, set at 0.1
         is_reduce_sequence = True,
+        return_last = False
     ):
         super().__init__()
         assert isinstance(attn_layers, AttentionLayers), 'attention layers must be one of Encoder or Decoder'
@@ -62,6 +63,8 @@ class XTransformerEncoder(nn.Module):
         self.init_()
 
         self.to_logits = nn.Identity() # not used
+
+        self.return_last = return_last
 
         # memory tokens (like [cls]) from Memory Transformers paper
         num_memory_tokens = default(num_memory_tokens, 0)
@@ -172,6 +175,9 @@ class XTransformerEncoder(nn.Module):
         if return_attn:
             attn_maps = list(map(lambda t: t.post_softmax_attn, intermediates.attn_intermediates))
             return out, attn_maps
+
+        if self.return_last:
+            return x[:,-1,:]
 
         return mem[:,0,:]
 
