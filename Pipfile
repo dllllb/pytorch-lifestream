@@ -21,6 +21,7 @@ tensorboard = ">=2.1.0"
 pyarrow = ">=1"
 pyhocon = "*"
 hydra-optuna-sweeper = '>=1.2.0'
+x-transformers = "*"
 
 [packages]
 pytorch-lifestream = {editable = true, path = "."}
