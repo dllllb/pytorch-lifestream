@@ -56,3 +56,17 @@ def test_seq_to_target_dataset_type_array():
     x, y = next(iter(dl))
     assert y.size() == (10, 2, 8)
     assert y.dtype == torch.float32
+    
+def test_seq_to_target_dataset_type_bool():
+    dataset = SeqToTargetDataset([{
+        'mcc_code': torch.randint(1, 10, (seq_len,)),
+        'amount': torch.randn(seq_len),
+        'event_time': torch.arange(seq_len),  # shows order between transactions
+        'target': target,
+    } for seq_len, target in zip(
+        torch.randint(100, 200, (4,)),
+        [True, False, False, True],
+    )], target_col_name='target', target_dtype=torch.bool)
+    dl = torch.utils.data.DataLoader(dataset, batch_size=10, collate_fn=dataset.collate_fn)
+    x, y = next(iter(dl))
+    torch.testing.assert_close(y, torch.Tensor([True, False, False, True]).bool())
