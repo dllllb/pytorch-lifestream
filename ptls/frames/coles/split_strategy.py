@@ -163,6 +163,78 @@ class SampleUniformBySplitCount(AbsSplit):
     def split(self, dates):
         date_range = np.arange(dates.shape[0])
         return np.array_split(date_range, self.split_count)
+
+class SplitByNextNearestTime(AbsSplit):
+    """
+    Split into subsequences so that each next one is close in time to the previous one.
+    """
+    def __init__(self, split_count, cnt_min, cnt_max, margin=0):
+        self.split_count = split_count
+        self.cnt_min = cnt_min
+        self.cnt_max = cnt_max
+        self.margin = margin
+    
+    def split(self, dates):
+        date_len = dates.shape[0]
+        date_range = np.arange(date_len)
+        
+        cnt_max = min(self.cnt_max, date_len)
+        cnt_min = self.cnt_min
+
+        lengths = np.random.randint(cnt_min, cnt_max, self.split_count)
+
+        prev_len = lengths[0]
+        prev_pos = np.random.randint(0, date_len - prev_len)
+
+        splits = [date_range[prev_pos: prev_pos + prev_len]]
+
+        for i in range(1, self.split_count):
+            curr_len = lengths[i]
+
+            curr_start = max(0, prev_pos - curr_len - self.margin)
+            curr_end = min(date_len - curr_len, prev_pos + prev_len + self.margin)
+
+            curr_pos = np.random.randint(curr_start, curr_end)
+            splits.append(date_range[curr_pos: curr_pos + curr_len])
+
+            prev_pos, prev_len = curr_pos, curr_len
+        
+        return splits
+
+class SplitByNearestTime(AbsSplit):
+    """
+    Split into subsequences close in time.
+    """
+    def __init__(self, split_count, cnt_min, cnt_max, margin=0):
+        self.split_count = split_count
+        self.cnt_min = cnt_min
+        self.cnt_max = cnt_max
+        self.margin = margin
+    
+    def split(self, dates):
+        date_len = dates.shape[0]
+        date_range = np.arange(date_len)
+        
+        cnt_max = min(date_len, self.cnt_max)
+        cnt_min = self.cnt_min
+        
+        lengths = np.random.randint(cnt_min, cnt_max, self.split_count)
+
+        len_start = lengths[0]
+        pos_start = np.random.randint(0, date_len - len_start)
+        splits = [date_range[pos_start: pos_start + len_start]]
+
+        for i in range(self.split_count - 1):
+
+            curr_len = lengths[i]
+            curr_start = max(0, pos_start - curr_len - self.margin)
+            curr_end = min(pos_start + len_start + self.margin, date_len - curr_len)
+
+            curr_pos = np.random.randint(curr_start, curr_end)
+
+            splits.append(date_range[curr_pos: curr_pos + curr_len])
+        
+        return splits
         
 class CutByDays(AbsSplit):
     def __init__(self, first_date, last_date):
