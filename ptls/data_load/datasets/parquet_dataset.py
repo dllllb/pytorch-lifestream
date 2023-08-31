@@ -7,12 +7,22 @@ from typing import Union, List
 
 import numpy as np
 import torch
+import torch.distributed as dist
+import pyarrow.parquet as pq
 from omegaconf import ListConfig
 
 from ptls.data_load import read_pyarrow_file
 from ptls.data_load import IterableChain
 
 logger = logging.getLogger(__name__)
+
+def iter_with_max_num (iter, max_num = None):
+    num = 0
+    for i in iter:
+        yield i
+        num += 1
+        if max_num is not None and num >= max_num:
+            break
 
 
 class ParquetFiles:
@@ -145,6 +155,135 @@ class ParquetDataset(torch.utils.data.IterableDataset):
         if self.post_processing is not None:
             gen = self.post_processing(gen)
         return gen
+
+    def iter_file(self, file_name):
+        """
+
+        :param file_name:
+        :return: [(customer_id, features)]
+        """
+        logger.debug(f'[{self._worker_id}/{self._num_workers}] Iter file "{file_name}"')
+        for rec in read_pyarrow_file(file_name, use_threads=True):
+            rec = {k: self.to_torch(v) for k, v in rec.items()}
+            yield rec
+
+    @staticmethod
+    def to_torch(x):
+        if type(x) is np.ndarray and x.dtype.kind in ('i', 'f'):
+            return torch.from_numpy(x)
+        return x
+
+class DistributedParquetDataset(torch.utils.data.IterableDataset):
+    """Lazy (IterableDataset) load from parquet files
+
+    DistributedDataset processes different files on different nodes(gpus)
+        this should be used when using iterable-style dataset (NOT stored in memory) 
+        (when dataset is stored in memory Lightning automatically chunks it between GPUs)
+
+    File structure:
+    *.parquet
+
+    File structure example:
+    data/
+        part1.parquet
+        part2.parquet
+        ...
+
+    Each file is read sequentially
+
+    Parameters
+    ----------
+    data_files:
+        ParquetFile object with list of files or just list of files
+    post_processing:
+        - deprecated, use i_filters
+    i_filters:
+        - list of `ptls.data_load.iterable_processing` filters
+    shuffle_files:
+        - shuffle data_files before reading when True.
+    cache_schema:
+        - dict schema (feature names) will be read once
+    shuffle_seed:
+        - random seed for shuffle_files
+
+    """
+    def __init__(self, data_files: Union[ParquetFiles, List[str]],
+                 post_processing=None,
+                 i_filters: List = None,
+                 shuffle_files=False, cache_schema=True, shuffle_seed=42):
+        if type(data_files) is ParquetFiles:
+            self.data_files = data_files.data_files
+        else:
+            self.data_files = data_files
+        if i_filters is not None:
+            self.post_processing = IterableChain(*i_filters)
+        else:
+            self.post_processing = post_processing
+        if post_processing is not None:
+            warnings.warn('`post_processing` parameter is deprecated, use `i_filters`')
+        self.shuffle_files = shuffle_files
+        self.cache_schema = cache_schema
+        self.shuffle_seed = shuffle_seed
+        self.rs = None
+        self.max_return_items = None
+
+        self._worker_id = None
+        self._num_workers = None
+        self._shuffle_seed = None
+        self._schema = None
+
+    def _calc_min_items_per_gpu(self, world_size, workers_per_rank):
+        nums = []
+        for rank in range(world_size):
+            per_gpu = 0
+            for fname in self.data_files[rank::world_size]:
+                per_gpu += pq.read_table(fname).shape[0]
+            nums.append(per_gpu)
+        return min(nums) // workers_per_rank
+
+    def _get_my_files(self):
+        my_files = [name for i, name in enumerate(sorted(self.data_files)) if i % self.real_num_workers == self.real_worker_id]
+        return my_files
+
+    def _init_worker(self):
+        worker_info = torch.utils.data.get_worker_info()
+        if worker_info is None:  # single-process data loading, return the full iterator
+            self._worker_id = 0
+            self._num_workers = 1
+            self._shuffle_seed = self.shuffle_seed
+        else:  # in a worker process
+            self._worker_id = worker_info.id
+            self._num_workers = worker_info.num_workers
+            self._shuffle_seed = worker_info.seed
+        
+        self.real_worker_id = self._worker_id
+        self.real_num_workers = self._num_workers
+        if dist.is_initialized():
+            rank = dist.get_rank()
+            world_size = dist.get_world_size()
+            self.real_num_workers = self._num_workers * world_size
+            self.real_worker_id = rank + self._worker_id * world_size
+        logger.debug(f'Started [{self.real_worker_id:02d}/{self.real_num_workers:02d}]')
+
+    def __iter__(self):
+        self._init_worker()
+        if dist.is_initialized():
+            self.max_return_items = self._calc_min_items_per_gpu(dist.get_world_size(), self._num_workers)
+
+        my_files = self._get_my_files()
+        if self.shuffle_files:
+            rs = np.random.RandomState(self._shuffle_seed % 2**32)
+            rs.shuffle(my_files)
+
+        logger.debug(f'Iter [{self._worker_id:02d}/{self._num_workers:02d}]: {my_files}')
+        if self.max_return_items:
+            gen = chain(*[self.iter_file(name) for _ in range(3) for name in my_files])
+        else:
+            gen = chain(*[self.iter_file(name) for name in my_files])
+
+        if self.post_processing is not None:
+            gen = self.post_processing(gen)
+        return iter_with_max_num(gen, self.max_return_items)
 
     def iter_file(self, file_name):
         """

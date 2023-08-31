@@ -1,4 +1,23 @@
 import torch
+import torch.distributed as dist
+
+class AllGather(torch.autograd.Function):
+    @staticmethod
+    def forward(ctx, tensor):
+        gathered = [torch.zeros_like(tensor) for _ in range(dist.get_world_size())]
+        dist.all_gather(gathered, tensor)
+        return tuple(gathered)
+
+    @staticmethod
+    def backward(ctx, *grad_outs):
+        # if os.environ.get('REDUCE_GRADS'):
+        # grad_outs = torch.stack(grad_outs)
+        # dist.all_reduce(grad_outs)
+        return grad_outs[dist.get_rank()]
+
+def all_gather_and_cat(tensor):
+    return torch.cat(AllGather.apply(tensor))
+
 
 
 class SoftmaxLoss(torch.nn.Module):
@@ -13,12 +32,20 @@ class SoftmaxLoss(torch.nn.Module):
             `softmax(distances / temperature)` - scale a sub-exponent expression.
             default 0.05 value is for l2-normalized `embeddings` where dot product distance is in range [-1, 1]
     """
-    def __init__(self, temperature=0.05):
+    def __init__(self, temperature=0.05, distributed_mode = False, use_gpu_dependent_labels = False):
         super().__init__()
         
         self.temperature = temperature
+        self.use_gpu_dependent_labels = use_gpu_dependent_labels
+        self.distributed_mode = distributed_mode
         
     def forward(self, embeddings, classes):
+        if dist.is_initialized() and self.distributed_mode:
+            dist.barrier()
+            embeddings = all_gather_and_cat(embeddings)
+            if self.use_gpu_dependent_labels:
+                target = target + (target.max()+1) * dist.get_rank()
+            target = all_gather_and_cat(target)
         d = torch.einsum('bh,kh->bk', embeddings, embeddings) / self.temperature
         
         ix_pos = classes.unsqueeze(1) == classes.unsqueeze(0)
