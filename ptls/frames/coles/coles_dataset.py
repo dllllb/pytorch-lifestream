@@ -59,3 +59,58 @@ class ColesDataset(FeatureDict, torch.utils.data.Dataset):
 
 class ColesIterableDataset(ColesDataset, torch.utils.data.IterableDataset):
     pass
+
+class ColesMulticlassDataset(FeatureDict, torch.utils.data.Dataset):
+    """Dataset for ptls.frames.coles.CoLESModule
+
+    Parameters
+    ----------
+    data:
+        source data with feature dicts
+    splitter:
+        object from from `ptls.frames.coles.split_strategy`.
+        Used to split original sequence into subsequences which are samples from one client.
+    col_time:
+        column name with event_time
+    """
+
+    def __init__(self,
+                 data,
+                 splitter: AbsSplit,
+                 col_time='event_time',
+                 col_id = 'id',
+                 *args, **kwargs):
+        super().__init__(*args, **kwargs)  # required for mixin class
+
+        self.data = data
+        self.splitter = splitter
+        self.col_time = col_time
+        self.col_id = col_id
+
+    def __len__(self):
+        return len(self.data)
+
+    def __getitem__(self, idx):
+        feature_arrays = self.data[idx]
+        return self.get_splits(feature_arrays)
+
+    def __iter__(self):
+        for feature_arrays in self.data:
+            yield self.get_splits(feature_arrays)
+
+    def get_splits(self, feature_arrays):
+        local_date = feature_arrays[self.col_time]
+        indexes = self.splitter.split(local_date)
+        return [{k: v[ix] for k, v in feature_arrays.items() if self.is_seq_feature(k, v)} for ix in indexes], feature_arrays[self.col_id]
+
+    @staticmethod
+    def collate_fn(batch):
+        class_labels = [col_id for class_samples, col_id in batch for _ in class_samples]
+        batch = [class_samples for class_samples, col_id in batch]
+        batch = reduce(iadd, batch)
+        padded_batch = collate_feature_dict(batch)
+        return padded_batch, class_labels
+
+
+class ColesMulticlassIterableDataset(ColesDataset, torch.utils.data.IterableDataset):
+    pass
