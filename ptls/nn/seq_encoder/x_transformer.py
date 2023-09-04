@@ -18,12 +18,18 @@ class XTransformerEncoder(nn.Module):
         num_memory_tokens = 1,
         return_last = False,
         post_emb_norm = False,
+        is_reduce_sequence = True,
     ):
         super().__init__()
         assert isinstance(attn_layers, AttentionLayers), 'attention layers must be one of Encoder or Decoder'
 
         dim = attn_layers.dim
         emb_dim = dim
+        
+        if not is_reduce_sequence:
+            raise NotImplementedError()
+        if max_seq_len:
+            raise NotImplementedError()
 
         self.input_linear = nn.Linear(input_size, dim) 
 
