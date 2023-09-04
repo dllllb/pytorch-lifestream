@@ -1,6 +1,7 @@
-from x_transformers.x_transformers import *
+import torch
 import torch.nn as nn
-
+from x_transformers.x_transformers import AttentionLayers
+from einops import rearrange, repeat, reduce
 from ptls.data_load.padded_batch import PaddedBatch
 from ptls.nn.seq_encoder.abs_seq_encoder import AbsSeqEncoder
 from ptls.nn.seq_encoder.containers import SeqEncoderContainer
@@ -27,9 +28,9 @@ class XTransformerEncoder(nn.Module):
         emb_dim = dim
         
         if not is_reduce_sequence:
-            raise NotImplementedError()
+            raise NotImplementedError("Setting is_reduce_sequence=False is not supproted yet")
         if max_seq_len:
-            raise NotImplementedError()
+            raise NotImplementedError("Setting max_seq_len is not supproted yet")
 
         self.input_linear = nn.Linear(input_size, dim) 
 
@@ -40,7 +41,8 @@ class XTransformerEncoder(nn.Module):
         self.return_last = return_last
 
         # memory tokens (like [cls]) from Memory Transformers paper
-        num_memory_tokens = default(num_memory_tokens, 0)
+        if num_memory_tokens is None:
+            num_memory_tokens = 0
         self.num_memory_tokens = num_memory_tokens
         if num_memory_tokens > 0:
             self.memory_tokens = nn.Parameter(torch.randn(num_memory_tokens, dim))
