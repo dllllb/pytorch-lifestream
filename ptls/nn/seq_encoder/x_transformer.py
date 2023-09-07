@@ -1,14 +1,15 @@
+import os
 import torch
 import torch.nn as nn
-from x_transformers.x_transformers import AttentionLayers
-from einops import rearrange, repeat, reduce
+from x_transformers.x_transformers import AttentionLayers, pad_at_dim
+from einops import repeat
 from ptls.data_load.padded_batch import PaddedBatch
 from ptls.nn.seq_encoder.abs_seq_encoder import AbsSeqEncoder
 from ptls.nn.seq_encoder.containers import SeqEncoderContainer
 
 class XTransformerEncoder(nn.Module):
     '''
-    Slightly modified version of TransformerWrapper from x-transformers
+    Modified version of TransformerWrapper from x-transformers
     '''
     def __init__(
         self,
@@ -50,6 +51,8 @@ class XTransformerEncoder(nn.Module):
     def forward(
         self,
         x,
+        time = None,
+        mask = None,
         **kwargs
     ):
         x = x.payload
@@ -63,7 +66,11 @@ class XTransformerEncoder(nn.Module):
             mem = repeat(self.memory_tokens, 'n d -> b n d', b = b)
             x = torch.cat((mem, x), dim = 1)
 
-        x = self.attn_layers(x, **kwargs)
+            # auto-handle masking after appending memory tokens
+            if mask is not None:
+                mask = pad_at_dim(mask, (num_mem, 0), dim = -1, value = True)
+
+        x = self.attn_layers(x, mask = mask, time = time, **kwargs)
 
         x = self.norm(x)
 
@@ -105,8 +112,23 @@ class XTransformerSeqEncoder(SeqEncoderContainer):
             seq_encoder_params=seq_encoder_params,
             is_reduce_sequence=is_reduce_sequence,
         )
+        if os.environ.get("USE_TIME_MASK", False) == '1':
+            self.use_mask = True
+        else:
+            self.use_mask = False
+        print("use_mask:", self.use_mask)
+
+        if os.environ.get("USE_DP_BIAS", False) == '1':     
+            self.use_time = False
+        else:
+            self.use_time = True                       
 
     def forward(self, x):
+        time = x.payload['event_time']
+        if self.use_mask:
+            mask  = time.bool()
+        else:
+            mask = None
         x = self.trx_encoder(x)
-        x = self.seq_encoder(x)
+        x = self.seq_encoder(x, mask = mask, time = time if self.use_time else None)
         return x
