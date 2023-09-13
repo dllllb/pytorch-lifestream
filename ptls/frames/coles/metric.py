@@ -128,3 +128,16 @@ class BatchRecallTopK(torchmetrics.MeanMetric):
 
     def update(self, preds, target):
         super().update(metric_recall_top_K(preds, target, self.k, self.metric))
+
+class RankMe(torchmetrics.CatMetric):
+    def __init__(self, ):
+        super().__init__()
+
+    def update (self, x, y):
+        super().update(x)
+
+    def compute(self,):
+        embs = super().compute()
+        svd = np.linalg.svd(embs.cpu().numpy(), compute_uv = False, full_matrices = False)
+        p = svd / svd.sum() + 1e-7
+        return np.exp(-(p * np.log(p)).sum())
