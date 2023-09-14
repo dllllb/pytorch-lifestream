@@ -29,19 +29,18 @@ class ContrastiveLoss(nn.Module):
     https://papers.nips.cc/paper/769-signature-verification-using-a-siamese-time-delay-neural-network.pdf
     """
 
-    def __init__(self, margin, sampling_strategy, distributed_mode = False, use_gpu_dependent_labels = False):
+    def __init__(self, margin, sampling_strategy, distributed_mode = False, do_loss_mult = False):
         super(ContrastiveLoss, self).__init__()
         self.margin = margin
         self.pair_selector = sampling_strategy
-        self.use_gpu_dependent_labels = use_gpu_dependent_labels
         self.distributed_mode = distributed_mode
+        self.do_loss_mult = do_loss_mult
 
     def forward(self, embeddings, target):
         if dist.is_initialized() and self.distributed_mode:
             dist.barrier()
             embeddings = all_gather_and_cat(embeddings)
-            if self.use_gpu_dependent_labels:
-                target = target + (target.max()+1) * dist.get_rank()
+            target = target + (target.max()+1) * dist.get_rank()
             target = all_gather_and_cat(target)
 
         positive_pairs, negative_pairs = self.pair_selector.get_pairs(embeddings, target)
@@ -52,7 +51,7 @@ class ContrastiveLoss(nn.Module):
         ).pow(2)
         loss = torch.cat([positive_loss, negative_loss], dim=0)
 
-        if dist.is_initialized() and self.distributed_mode:
+        if dist.is_initialized() and self.do_loss_mult:
             loss_mult = dist.get_world_size()
         else:
             loss_mult = 1
