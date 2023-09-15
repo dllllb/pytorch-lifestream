@@ -74,7 +74,7 @@ class ABSModule(pl.LightningModule):
         self._validation_metric(y_h, y)
 
     def validation_epoch_end(self, outputs):
-        self.log(self.metric_name, self._validation_metric.compute(), prog_bar=True)
+        self.log(f'valid/{self.metric_name}', self._validation_metric.compute(), prog_bar=True)
         self._validation_metric.reset()
 
     def configure_optimizers(self):
