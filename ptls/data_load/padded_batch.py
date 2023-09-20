@@ -25,7 +25,31 @@ class PaddedBatch:
             All sequences in `payload` has length T, but only L first are used.
             Unused positions padded with zeros
 
-    Example:
+    Examples:
+        >>> # Dict with features
+        >>>
+        >>> data = PaddedBatch(
+        >>>     payload={
+        >>>         'mcc': torch.tensor([[1, 2, 0, 0], [3, 4, 5, 6]])
+        >>>         'amnt': torch.tensor([[90, 50, 0, 0], [40, 10, 55, 70]])
+        >>>     },
+        >>>     length=torch.Tensor([2, 4])  
+        >>> )
+        >>>
+        >>> # check shape
+        >>> >> torch.testing.assert_close(data.payload['mcc'].size(), (2, 4))
+        >>> 
+        >>> # check first transaction
+        >>> torch.testing.assert_close(data.payload['mcc'][:, 0], torch.tensor([1, 3]), check_stride=False)
+        >>>
+        >>> # get last transaction
+        >>> torch.testing.assert_close(data.payload['mcc'][torch.arange(2), data.seq_lens - 1], torch.tensor([2, 6]))
+        >>> 
+        >>> # get all transaction flatten
+        >>> torch.testing.assert_close(data.payload['mcc'][data.seq_len_mask.bool()], torch.tensor([1, 2, 3, 4, 5, 6]))
+        >>>
+        >>> # Feature tensor
+        >>>
         >>> data = PaddedBatch(
         >>>     payload=torch.tensor([
         >>>         [1, 2, 0, 0],
@@ -39,7 +63,7 @@ class PaddedBatch:
         >>> torch.testing.assert_close(data.payload.size(), (3, 4))
         >>>
         >>> # get first transaction
-        >>> torch.testing.assert_close(data.payload[:, 0], torch.tensor([1, 3, 7]))
+        >>> torch.testing.assert_close(data.payload[:, 0], torch.tensor([1, 3, 7]), check_stride=False)
         >>>
         >>> # get last transaction
         >>> torch.testing.assert_close(data.payload[torch.arange(3), data.seq_lens - 1], torch.tensor([2, 6, 9]))
@@ -50,7 +74,7 @@ class PaddedBatch:
     """
     def __init__(self, payload: Dict[str, torch.Tensor], length: torch.LongTensor):
         self._payload = payload
-        self._length = length
+        self._length = length.to(torch.long)
 
     @property
     def payload(self):
@@ -87,8 +111,7 @@ class PaddedBatch:
             B, T = next(v for k, v in self._payload.items() if self.is_seq_feature(k, v)).size()
         else:
             B, T = self._payload.size()[:2]
-        return (torch.arange(T, device=self._length.device).unsqueeze(0).expand(B, T) < \
-                self._length.unsqueeze(1)).long()
+        return (torch.arange(T, device=self._length.device).unsqueeze(0).expand(B, T) <                 self._length.unsqueeze(1)).long()
 
     @staticmethod
     def is_seq_feature(k: str, x):
