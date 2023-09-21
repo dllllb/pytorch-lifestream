@@ -74,7 +74,7 @@ class PaddedBatch:
     """
     def __init__(self, payload: Dict[str, torch.Tensor], length: torch.LongTensor):
         self._payload = payload
-        self._length = length.to(torch.long)
+        self._length = length
 
     @property
     def payload(self):
