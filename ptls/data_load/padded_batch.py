@@ -40,7 +40,7 @@ class PaddedBatch:
         >>> >> torch.testing.assert_close(data.payload['mcc'].size(), (2, 4))
         >>> 
         >>> # check first transaction
-        >>> torch.testing.assert_close(data.payload['mcc'][:, 0], torch.tensor([1, 3]), check_stride=False)
+        >>> torch.testing.assert_close(data.payload['mcc'][:, 0], torch.tensor([1, 3]))
         >>>
         >>> # get last transaction
         >>> torch.testing.assert_close(data.payload['mcc'][torch.arange(2), data.seq_lens - 1], torch.tensor([2, 6]))
@@ -63,7 +63,7 @@ class PaddedBatch:
         >>> torch.testing.assert_close(data.payload.size(), (3, 4))
         >>>
         >>> # get first transaction
-        >>> torch.testing.assert_close(data.payload[:, 0], torch.tensor([1, 3, 7]), check_stride=False)
+        >>> torch.testing.assert_close(data.payload[:, 0], torch.tensor([1, 3, 7]))
         >>>
         >>> # get last transaction
         >>> torch.testing.assert_close(data.payload[torch.arange(3), data.seq_lens - 1], torch.tensor([2, 6, 9]))
