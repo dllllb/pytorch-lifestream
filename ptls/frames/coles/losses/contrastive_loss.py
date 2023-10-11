@@ -15,8 +15,11 @@ class ContrastiveLoss(nn.Module):
         super(ContrastiveLoss, self).__init__()
         self.margin = margin
         self.pair_selector = sampling_strategy
+        self.loss_name = "coles"
 
-    def forward(self, embeddings, target):
+    def forward(self, embeddings, target, *argv):
+        if type(target) is dict:
+            target = target["coles_target"]
 
         positive_pairs, negative_pairs = self.pair_selector.get_pairs(embeddings, target)
         positive_loss = F.pairwise_distance(embeddings[positive_pairs[:, 0]], embeddings[positive_pairs[:, 1]]).pow(2)
@@ -24,6 +27,9 @@ class ContrastiveLoss(nn.Module):
         negative_loss = F.relu(
             self.margin - F.pairwise_distance(embeddings[negative_pairs[:, 0]], embeddings[negative_pairs[:, 1]])
         ).pow(2)
-        loss = torch.cat([positive_loss, negative_loss], dim=0)
+        loss = torch.cat([positive_loss, negative_loss], dim=0).mean()
 
-        return loss.sum()
+        return loss, {'name': self.loss_name,
+                      'loss': loss.detach().cpu().item(),
+                      'y_h': embeddings.detach(),
+                      'y': target.detach()}

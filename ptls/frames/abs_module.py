@@ -25,10 +25,10 @@ class ABSModule(pl.LightningModule):
         raise NotImplementedError()
 
     def __init__(self, validation_metric=None,
-                       seq_encoder=None,
-                       loss=None,
-                       optimizer_partial=None,
-                       lr_scheduler_partial=None):
+                 seq_encoder=None,
+                 loss=None,
+                 optimizer_partial=None,
+                 lr_scheduler_partial=None):
         """
         Parameters
         ----------
@@ -73,14 +73,14 @@ class ABSModule(pl.LightningModule):
         y_h, y = self.shared_step(*batch)
         self._validation_metric(y_h, y)
 
-    def validation_epoch_end(self, outputs):
-        self.log(self.metric_name, self._validation_metric.compute(), prog_bar=True)
+    def on_validation_epoch_end(self):
+        self.log(self.metric_name, self._validation_metric.compute(), prog_bar=True, logger=True)
         self._validation_metric.reset()
 
     def configure_optimizers(self):
         optimizer = self._optimizer_partial(self.parameters())
         scheduler = self._lr_scheduler_partial(optimizer)
-        
+
         if isinstance(scheduler, torch.optim.lr_scheduler.ReduceLROnPlateau):
             scheduler = {
                 'scheduler': scheduler,
