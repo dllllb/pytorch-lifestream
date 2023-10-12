@@ -2,7 +2,7 @@ import numpy as np
 from ptls.frames.coles.split_strategy import AbsSplit
 
 
-class SampleSlices(AbsSplit):
+class SubSlices(AbsSplit):
     def __init__(self, long_split_count, pos_split_count, neg_split_count,
                  long_cnt_min, long_cnt_max,
                  short_cnt_min, short_cnt_max):

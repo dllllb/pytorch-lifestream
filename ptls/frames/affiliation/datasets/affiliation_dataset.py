@@ -1,8 +1,4 @@
-from functools import reduce
-from operator import iadd
-
 import torch
-
 from ptls.data_load.feature_dict import FeatureDict
 from ptls.data_load.utils import collate_feature_dict
 from ptls.frames.coles.split_strategy import AbsSplit
@@ -34,29 +30,47 @@ class AffiliationDataset(FeatureDict, torch.utils.data.Dataset):
     def get_splits(self, feature_arrays):
         local_date = feature_arrays[self.col_time]
         long_indexes, pos_indexes, neg_indexes = self.splitter.split(local_date)
+
         long = {i: {k: v[ix] for k, v in feature_arrays.items() if self.is_seq_feature(k, v)}
                 for i, ix in long_indexes.items()}
-        short = {i: [{k: v[ix] for k, v in feature_arrays.items() if self.is_seq_feature(k, v)} for ix in ixx]
-                 for i, ixx in short_indexes.items()}
-        return long, short
+        pos = {i: [{k: v[ix] for k, v in feature_arrays.items() if self.is_seq_feature(k, v)} for ix in ixx]
+               for i, ixx in pos_indexes.items()}
+        neg = {i: [{k: v[ix] for k, v in feature_arrays.items() if self.is_seq_feature(k, v)} for ix in ixx]
+               for i, ixx in neg_indexes.items()}
+        return long, pos, neg
+
+    @staticmethod
+    def get_random_inds(i, bs, n):
+        return
 
     @staticmethod
     def collate_fn(batch):
         long_batch, short_batch = list(), list()
-        long_labels, short_labels = list(), list()
-        global_i = 0
+        labels = list()
+        n_repeats = list()
+        bs = len(batch)
 
         for i, sample in enumerate(batch):
-            for k in batch[0]:
-                long_batch.append(sample[0][k])
-                long_labels.append(global_i)
-                short_batch.extend(sample[1][k])
-                short_labels.extend([global_i for _ in range(len(sample[1][k]))])
-                global_i += 1
+            long, pos, neg = sample
+            for k in long:
+                long_batch.append(long[k])
+
+                short_batch.extend(pos[k])
+                labels.extend([1 for _ in range(len(pos[k]))])
+
+                short_batch.extend(neg[k])
+                inds = AffiliationDataset.get_random_inds(i, bs, int(len(neg[k])/2))
+                for ind in inds:
+                    _, pos_, neg_ = batch[ind]
+                    short_batch.append(pos_[0][0])
+                    short_batch.append(neg_[0][0])
+                labels.extend([0 for _ in range(len(neg[k]) + int(len(neg[k])/2))])
+
+                n_repeats.append(len(pos[k]) + len(neg[k]) + int(len(neg[k])/2))
 
         long_padded_batch = collate_feature_dict(long_batch)
         short_padded_batch = collate_feature_dict(short_batch)
-        return long_padded_batch, short_padded_batch, torch.LongTensor(long_labels), torch.LongTensor(short_labels)
+        return long_padded_batch, short_padded_batch, torch.LongTensor(labels), torch.LongTensor(n_repeats)
 
 
 class AffiliationIterableDataset(AffiliationDataset, torch.utils.data.IterableDataset):
