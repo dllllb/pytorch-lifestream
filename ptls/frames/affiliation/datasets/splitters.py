@@ -54,9 +54,9 @@ class SubSlices(AbsSplit):
         left_piece, right_piece = dates[left_start:left_end], dates[right_start:right_end]
 
         if left_len < a:
-            return SampleSlices.sub_split(right_piece, a, b, n)
+            return SubSlices.sub_split(right_piece, a, b, n)
         elif right_len < a:
-            return SampleSlices.sub_split(left_piece, a, b, n)
+            return SubSlices.sub_split(left_piece, a, b, n)
         else:
             p = left_len / (left_len + right_len)
             n_left = (np.random.rand(n) < p).sum()
@@ -64,7 +64,7 @@ class SubSlices(AbsSplit):
 
             neg_splits = list()
             if n_left:
-                neg_splits.extend(SampleSlices.sub_split(left_piece, a, b, n_left))
+                neg_splits.extend(SubSlices.sub_split(left_piece, a, b, n_left))
             if n_right:
-                neg_splits.extend(SampleSlices.sub_split(right_piece, a, b, n_right))
+                neg_splits.extend(SubSlices.sub_split(right_piece, a, b, n_right))
             return neg_splits

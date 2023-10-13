@@ -10,12 +10,17 @@ metrics = {
     'accuracy': accuracy_score
 }
 
+binary = ['recall', 'precision', 'f1', 'accuracy']
+
 
 class SKLMetric(torchmetrics.MeanMetric):
     def __init__(self, metric_name='rocauc'):
         assert metric_name in ['rocauc', 'f1', 'recall', 'precision', 'accuracy']
         super().__init__()
-        self.metric = metrics[metric_name]()
+        self.metric = metrics[metric_name]
+        self.binary = metric_name in binary
 
     def update(self, preds, target):
-        super().update(self.metric(target, preds))
+        if self.binary:
+            preds = preds.round().astype(int)
+        super().update(self.metric(target, preds.astype(int)))

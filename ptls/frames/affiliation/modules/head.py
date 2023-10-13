@@ -3,7 +3,7 @@ from torch import nn
 
 
 class MergeProjectionHead(nn.Module):
-    def __init__(self, h_dims=None):
+    def __init__(self, h_dims=None, use_layer_norm=True):
         super().__init__()
         if h_dims is None:
             h_dims = list()
@@ -12,7 +12,10 @@ class MergeProjectionHead(nn.Module):
 
         layers = list()
         for h in h_dims:
-            layers.extend([nn.LazyLinear(h), nn.LazyInstanceNorm1d(), nn.LeakyReLU()])
+            if use_layer_norm:
+                layers.extend([nn.LazyLinear(h), nn.LayerNorm(h), nn.LeakyReLU()])
+            else:
+                layers.extend([nn.LazyLinear(h), nn.LeakyReLU()])
         layers.extend([nn.LazyLinear(1), nn.Sigmoid(), nn.Flatten(0, -1)])
         self.model = nn.Sequential(*layers)
 

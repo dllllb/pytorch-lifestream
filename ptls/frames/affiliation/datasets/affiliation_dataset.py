@@ -1,3 +1,4 @@
+import numpy as np
 import torch
 from ptls.data_load.feature_dict import FeatureDict
 from ptls.data_load.utils import collate_feature_dict
@@ -41,7 +42,9 @@ class AffiliationDataset(FeatureDict, torch.utils.data.Dataset):
 
     @staticmethod
     def get_random_inds(i, bs, n):
-        return
+        inds = np.random.choice((bs - 1), n, replace=False)
+        inds = [x if x < i else x + 1 for x in inds]
+        return inds
 
     @staticmethod
     def collate_fn(batch):
@@ -64,13 +67,13 @@ class AffiliationDataset(FeatureDict, torch.utils.data.Dataset):
                     _, pos_, neg_ = batch[ind]
                     short_batch.append(pos_[0][0])
                     short_batch.append(neg_[0][0])
-                labels.extend([0 for _ in range(len(neg[k]) + int(len(neg[k])/2))])
+                labels.extend([0 for _ in range(len(neg[k]) + 2 * int(len(neg[k])/2))])
 
-                n_repeats.append(len(pos[k]) + len(neg[k]) + int(len(neg[k])/2))
+                n_repeats.append(len(pos[k]) + len(neg[k]) + 2 * int(len(neg[k])/2))
 
         long_padded_batch = collate_feature_dict(long_batch)
         short_padded_batch = collate_feature_dict(short_batch)
-        return long_padded_batch, short_padded_batch, torch.LongTensor(labels), torch.LongTensor(n_repeats)
+        return long_padded_batch, short_padded_batch, torch.FloatTensor(labels), torch.LongTensor(n_repeats)
 
 
 class AffiliationIterableDataset(AffiliationDataset, torch.utils.data.IterableDataset):

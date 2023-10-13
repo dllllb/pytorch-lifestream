@@ -1,6 +1,6 @@
 import pytorch_lightning as pl
 from ptls.frames.affiliation.losses import AffiliationLoss, SKLMetric
-from ptls.frames.affiliation.modules import MergeProjectionHead
+from .head import MergeProjectionHead
 from ptls.nn.seq_encoder.containers import SeqEncoderContainer
 import torch
 from ptls.data_load.padded_batch import PaddedBatch
