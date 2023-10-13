@@ -36,7 +36,8 @@ class ClusterModule(ABSModule):
                  validation_metric=None,
                  optimizer_partial=None,
                  lr_scheduler_partial=None,
-                 num_cluster=None):
+                 num_cluster=None,
+                 warmup_steps=0):
         if head is None:
             head = Head(use_norm_encoder=True)
 
@@ -56,6 +57,7 @@ class ClusterModule(ABSModule):
         self._head = head
         self.train_clusters = {'idx2cluster': [], 'centroids': [], 'density': []}
         self.val_clusters = {'idx2cluster': [], 'centroids': [], 'density': []}
+        self.warmup_steps = warmup_steps
 
         assert type(num_cluster) == list
         self._num_cluster = num_cluster
@@ -92,6 +94,9 @@ class ClusterModule(ABSModule):
         y_h, y = self.shared_step(*batch)
         loss, info = self._loss(y_h, y, self.train_clusters)
         self.log_losses("loss", info)
+        self.warmup_steps -= 1
+        if self.warmup_steps <= 0:
+            self._loss.enable_all_losses()
 
         if type(batch) is tuple:
             x, y = batch
