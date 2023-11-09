@@ -162,6 +162,5 @@ class TrxEncoderBase(nn.Module):
 
     @property
     def category_max_size(self):
-        """Returns dict with categorical feature names. Value is dictionary size
-        """
-        return {k: v['in'] for k, v in self.embeddings.items()}
+        """Returns dict with categorical feature names. Value is dictionary size"""
+        return {k: v.num_embeddings for k, v in self.embeddings.items()}
