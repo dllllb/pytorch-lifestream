@@ -138,3 +138,19 @@ def test_output_size_extended():
     assert m.numerical_size == 2
     assert m.embedding_size == 8
     assert m.output_size == 10
+
+def test_category_max_size():
+    m = TrxEncoderBase(
+        embeddings={
+            'mcc': {'in': 4, 'out': 5},
+            'currency': torch.nn.Embedding(5, 3),
+        },
+        numeric_values={
+            'amount': 'log',
+            'amount_log': IdentityScaler(col_name='amount'),
+        },
+    )
+    category_max_size = m.category_max_size
+    assert category_max_size['mcc'] == 4
+    assert category_max_size['currency'] == 5
+
