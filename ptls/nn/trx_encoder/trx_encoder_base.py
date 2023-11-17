@@ -1,5 +1,6 @@
 from typing import Dict, Union
 
+import numpy as np
 import torch
 from ptls.data_load.padded_batch import PaddedBatch
 from ptls.nn.trx_encoder.encoders import BaseEncoder
@@ -114,7 +115,7 @@ class TrxEncoderBase(nn.Module):
         indexes = self.get_category_indexes(x, col_name)
         return self.embeddings[col_name](indexes)
 
-    def get_custom_embeddings(self, x: PaddedBatch, col_name: str):
+    def _get_custom_embeddings(self, x: PaddedBatch, col_name: str):
         """Returns embeddings given by custom embedder
         
         Parameters
@@ -131,6 +132,34 @@ class TrxEncoderBase(nn.Module):
             embedder(trx_value)
             for trx_value in x.payload[col_name]], batch_first=True
         )
+        return embeddings
+
+    def get_custom_embeddings(self, x: PaddedBatch, col_name: str):
+        """Returns embeddings given by custom embedder
+
+        Parameters
+        ----------
+        x: PaddedBatch with feature dict. Each value is `(B, T)` size
+        col_name: required feature name
+        """
+        embedder = self.custom_embeddings[col_name]
+        col_name = col_name if embedder.col_name is None else embedder.col_name
+        if isinstance(embedder, IdentityScaler):
+            return embedder(x.payload[col_name])
+
+        # B, T, L
+        custom_col = x.payload[col_name]
+        assert type(custom_col) is list
+        assert type(custom_col[1]) is np.ndarray
+
+        custom_col_flat = np.concatenate(custom_col, axis=0)  # T1+Ti+Tn, L
+        custom_embeddings = torch.cat([
+            embedder(custom_col_flat[i:i+embedder.batch_size])
+            for i in range(0, len(custom_col_flat), embedder.batch_size)
+        ], dim=0) # T1+Ti+Tn, H
+        custom_embeddings = torch.split(custom_embeddings, x.seq_lens.tolist())  # B, T, H
+
+        embeddings = torch.nn.utils.rnn.pad_sequence(custom_embeddings, batch_first=True)
         return embeddings
 
     @property
