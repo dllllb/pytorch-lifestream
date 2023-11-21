@@ -164,3 +164,25 @@ class PaddedBatch:
             payload={k: v for k, v in self.payload.items() if PaddedBatch.is_seq_feature(k, v)},
             length=self.seq_lens,
         )
+        
+    def seq_indexing(self, ix):
+        """Indexes PaddedBatch's seq features with indices given by ix
+
+        Parameters:
+        ----------
+            ix:
+                indices, slice object, or anything a Tensor can be indexed with
+        
+        Returns:
+        -------
+            PaddedBatch with updated seq features and seq_lens
+        """
+        if isinstance(self._payload, dict):
+            payload = {k: v[:, ix] for k, v in self._payload.items() if self.is_seq_feature(k, v)}
+        else:
+            payload = self._payload[:, ix]
+            
+        old_seq_mask = self.seq_len_mask
+        new_seq_mask = old_seq_mask[:, ix]
+        new_seq_lens = torch.sum(new_seq_mask, 1)
+        return PaddedBatch(payload, new_seq_lens)
