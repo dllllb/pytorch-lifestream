@@ -115,7 +115,7 @@ class TrxEncoderBase(nn.Module):
         indexes = self.get_category_indexes(x, col_name)
         return self.embeddings[col_name](indexes)
 
-    def _get_custom_embeddings(self, x: PaddedBatch, col_name: str):
+    def get_custom_embeddings(self, x: PaddedBatch, col_name: str):
         """Returns embeddings given by custom embedder
         
         Parameters
@@ -134,7 +134,7 @@ class TrxEncoderBase(nn.Module):
         )
         return embeddings
 
-    def get_custom_embeddings(self, x: PaddedBatch, col_name: str):
+    def _get_custom_embeddings(self, x: PaddedBatch, col_name: str):
         """Returns embeddings given by custom embedder
 
         Parameters
