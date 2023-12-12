@@ -69,8 +69,11 @@ class XTransformerEncoder(nn.Module):
             # auto-handle masking after appending memory tokens
             if mask is not None:
                 mask = pad_at_dim(mask, (num_mem, 0), dim = -1, value = True)
+        if time is not None:
+            x = self.attn_layers(x, mask = mask, time = time, **kwargs)
+        else:
+            x = self.attn_layers(x, mask = mask, **kwargs)
 
-        x = self.attn_layers(x, mask = mask, time = time, **kwargs)
 
         x = self.norm(x)
 
@@ -103,6 +106,8 @@ class XTransformerSeqEncoder(SeqEncoderContainer):
                  trx_encoder=None,
                  input_size=None,
                  is_reduce_sequence=True,
+                 use_mask_of_padded=False,
+                 pass_time_to_encoder=False
                  **seq_encoder_params,
                  ):
         super().__init__(
@@ -112,23 +117,15 @@ class XTransformerSeqEncoder(SeqEncoderContainer):
             seq_encoder_params=seq_encoder_params,
             is_reduce_sequence=is_reduce_sequence,
         )
-        if os.environ.get("USE_TIME_MASK", False) == '1':
-            self.use_mask = True
-        else:
-            self.use_mask = False
-        print("use_mask:", self.use_mask)
-
-        if os.environ.get("USE_DP_BIAS", False) == '1':     
-            self.use_time = False
-        else:
-            self.use_time = True                       
+        self.use_mask_of_padded = use_mask_of_padded
+        self.pass_time_to_encoder = pass_time_to_encoder                   
 
     def forward(self, x):
         time = x.payload['event_time']
-        if self.use_mask:
+        if self.use_mask_of_padded:
             mask  = time.bool()
         else:
             mask = None
         x = self.trx_encoder(x)
-        x = self.seq_encoder(x, mask = mask, time = time if self.use_time else None)
+        x = self.seq_encoder(x, mask = mask, time = time if self.pass_time_to_encoder else None)
         return x
