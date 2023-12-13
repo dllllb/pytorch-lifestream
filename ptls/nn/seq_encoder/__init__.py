@@ -3,7 +3,6 @@ from .transformer_encoder import TransformerEncoder
 from .longformer_encoder import LongformerEncoder
 from .gpt_encoder import GptEncoder
 from .custom_encoder import Encoder
-from .x_transformer import XTransformerEncoder, XTransformerSeqEncoder
 
 from .containers import RnnSeqEncoder, TransformerSeqEncoder, LongformerSeqEncoder, CustomSeqEncoder
 from .agg_feature_seq_encoder import AggFeatureSeqEncoder
