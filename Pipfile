@@ -13,17 +13,14 @@ setuptools = ">=59.5.0"
 catboost = "*"
 mkdocs = "*"
 matplotlib = ">=3.1.1"
-pandas = "==1.4.*"
+pandas = ">=0.24.2"
 scikit-learn = ">=0.21.2"
 pyspark = ">=2"
 tqdm = ">=4.32.2"
 tensorboard = ">=2.1.0"
+pyarrow = ">=1"
 pyhocon = "*"
 hydra-optuna-sweeper = '>=1.2.0'
-duckdb = "*"
-pyarrow = '>=7.0'
-transformers = '*'
-hydra-core = '>=1.1.2'
 
 [packages]
 pytorch-lifestream = {editable = true, path = "."}
