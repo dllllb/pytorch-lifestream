@@ -107,7 +107,7 @@ class XTransformerSeqEncoder(SeqEncoderContainer):
                  input_size=None,
                  is_reduce_sequence=True,
                  use_mask_of_padded=False,
-                 pass_time_to_encoder=False
+                 pass_time_to_encoder=False,
                  **seq_encoder_params,
                  ):
         super().__init__(
