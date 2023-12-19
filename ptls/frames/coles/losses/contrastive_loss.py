@@ -12,7 +12,7 @@ class ContrastiveLoss(nn.Module):
     """
 
     def __init__(self, margin, sampling_strategy):
-        super(ContrastiveLoss, self).__init__()
+        super().__init__()
         self.margin = margin
         self.pair_selector = sampling_strategy
         self.loss_name = "coles"
@@ -29,7 +29,4 @@ class ContrastiveLoss(nn.Module):
         ).pow(2)
         loss = torch.cat([positive_loss, negative_loss], dim=0).mean()
 
-        return loss, {'name': self.loss_name,
-                      'loss': loss.detach().cpu().item(),
-                      'y_h': embeddings.detach(),
-                      'y': target.detach()}
+        return loss

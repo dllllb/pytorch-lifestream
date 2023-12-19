@@ -70,6 +70,14 @@ class CoLESModule(ABSModule):
     def is_requires_reduced_sequence(self):
         return True
 
+    def lr_scheduler_step(
+            self,
+            scheduler,
+            optimizer_idx,
+            metric,
+    ) -> None:
+        scheduler.step()
+
     def shared_step(self, x, y):
         y_h = self(x)
         if self._head is not None:
