@@ -49,10 +49,10 @@ def main(conf: DictConfig):
             save_dir='lightning_logs',
             name=conf.get('logger_name'),
         )
-    if _trainer_params.get('strategy', False):
-        if type(_trainer_params.strategy) is not str:
-            _trainer_params_additional['strategy'] = hydra.utils.instantiate(_trainer_params.strategy)
-            del _trainer_params.strategy
+    if not isinstance(_trainer_params.get('strategy', ''), str): # if strategy not exist or str do nothing, 
+        _trainer_params_additional['strategy'] = hydra.utils.instantiate(_trainer_params.strategy)
+        del _trainer_params.strategy
+
     lr_monitor = LearningRateMonitor(logging_interval='step')
     _trainer_params_callbacks.append(lr_monitor)
 

@@ -210,7 +210,7 @@ class DistributedParquetDataset(torch.utils.data.IterableDataset):
     def __init__(self, data_files: Union[ParquetFiles, List[str]],
                  post_processing=None,
                  i_filters: List = None,
-                 shuffle_files=False, cache_schema=True, shuffle_seed=42):
+                 shuffle_files=False, cache_schema=True, shuffle_seed=42, max_items_per_gpu = None):
         if type(data_files) is ParquetFiles:
             self.data_files = data_files.data_files
         else:
@@ -225,7 +225,7 @@ class DistributedParquetDataset(torch.utils.data.IterableDataset):
         self.cache_schema = cache_schema
         self.shuffle_seed = shuffle_seed
         self.rs = None
-        self.max_return_items = None
+        self.max_items_per_gpu = max_items_per_gpu
 
         self._worker_id = None
         self._num_workers = None
@@ -267,8 +267,8 @@ class DistributedParquetDataset(torch.utils.data.IterableDataset):
 
     def __iter__(self):
         self._init_worker()
-        if dist.is_initialized():
-            self.max_return_items = self._calc_min_items_per_gpu(dist.get_world_size(), self._num_workers)
+        if dist.is_initialized() and self.max_items_per_gpu is None:
+            self.max_items_per_gpu = self._calc_min_items_per_gpu(dist.get_world_size(), self._num_workers)
 
         my_files = self._get_my_files()
         if self.shuffle_files:
@@ -276,14 +276,14 @@ class DistributedParquetDataset(torch.utils.data.IterableDataset):
             rs.shuffle(my_files)
 
         logger.debug(f'Iter [{self._worker_id:02d}/{self._num_workers:02d}]: {my_files}')
-        if self.max_return_items:
+        if self.max_items_per_gpu:
             gen = chain(*[self.iter_file(name) for _ in range(3) for name in my_files])
         else:
             gen = chain(*[self.iter_file(name) for name in my_files])
 
         if self.post_processing is not None:
             gen = self.post_processing(gen)
-        return iter_with_max_num(gen, self.max_return_items)
+        return iter_with_max_num(gen, self.max_items_per_gpu)
 
     def iter_file(self, file_name):
         """
