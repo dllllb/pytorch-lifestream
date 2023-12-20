@@ -15,6 +15,16 @@ from ptls.data_load import IterableChain
 logger = logging.getLogger(__name__)
 
 
+class TransitionTensorGenerator:
+    def __init__(self, n_classes, n_states, n_hidden_states):
+        self.figs = list()
+        for i in range(n_classes):
+            get_fig()
+
+    def gen_tensor(self, c):
+        return
+
+
 class Dist:
     def sample(self):
         raise NotImplemented
@@ -98,19 +108,22 @@ class State:
 
 
 class HMM:
-    def __init__(self, states, hidden_states, state_transition_tensor, hidden_state_transition_matrix, noise=0.):
+    def __init__(self, states, hidden_states, state_transition_tensors,
+                 hidden_state_transition_matrix, seq_len=100, noise=0.):
         self.states = states
         self.n_states = len(self.states)
         self.hidden_states = hidden_states
         self.n_hidden_states = len(self.hidden_states)
-        self.state_transition_tensor = state_transition_tensor
+        self.state_transition_tensors = state_transition_tensors
         self.hidden_state_transition_matrix = hidden_state_transition_matrix
+        self.seq_len = seq_len
         self.noise = noise
 
-        assert self.state_transition_tensor.ndim == 3
+        assert self.seq_len >= 1
+        assert self.state_transition_tensors[0].ndim == 3
         assert self.hidden_state_transition_matrix.ndim == 2
-        assert self.state_transition_tensor.shape[0] == self.state_transition_tensor.shape[1] == self.n_states
-        assert self.state_transition_tensor.shape[2] == self.hidden_state_transition_matrix.shape[0]
+        assert self.state_transition_tensors[0].shape[0] == self.state_transition_tensors[0].shape[1] == self.n_states
+        assert self.state_transition_tensors[0].shape[2] == self.hidden_state_transition_matrix.shape[0]
         assert self.hidden_state_transition_matrix.shape[0] == \
                self.hidden_state_transition_matrix.shape[1] == \
                self.n_hidden_states
@@ -119,34 +132,45 @@ class HMM:
 
         self.state = None
         self.h_state = None
+        self.chosen_transition_tensor = None
+        self.event_time_tensor = torch.arange(self.seq_len)
         self.reset()
 
     def gen_next(self):
         self.h_state = np.random.choice(self.hidden_states, p=self.hidden_state_transition_matrix[self.h_state.ind])
-        self.state = np.random.choice(self.states, p=self.state_transition_tensor[self.state.ind, :, self.h_state.ind])
+        self.state = np.random.choice(self.states, p=self.chosen_transition_tensor[self.state.ind, :, self.h_state.ind])
         h_state = self.h_state if np.random.rand() >= self.noise else np.random.choice(self.hidden_states)
         return h_state, self.state
 
-    def gen_seq(self, l=100):
-        assert l > 1
+    def gen_seq(self):
         a, b = list(), list()
         hs, s = self.reset()
         a.append(hs.unwrap())
         b.append(s.unwrap())
 
-        for i in range(l-1):
+        for i in range(self.seq_len - 1):
             hs, s = self.gen_next()
             a.append(hs.unwrap())
             b.append(s.unwrap())
 
         a = {k: torch.Tensor([x[k] for x in a]) for k in a[0]}
         b = {k: torch.Tensor([x[k] for x in b]) for k in b[0]}
-        return {**a, **b, 'event_time': torch.arange(l)}
+        return {**a, **b, 'event_time': self.event_time_tensor}
 
     def reset(self):
         self.h_state = np.random.choice(self.hidden_states)
         self.state = np.random.choice(self.states)
         return self.h_state, self.state
+
+    def set_seq_len(self, seq_len):
+        self.seq_len = seq_len
+
+    def __len__(self):
+        return len(self.state_transition_tensors)
+
+    def __getitem__(self, item):
+        self.chosen_transition_tensor = self.state_transition_tensors[item]
+        return self.gen_seq()
 
     @staticmethod
     def check_states_for_inds(states):
@@ -157,12 +181,10 @@ class SyntheticDataset(torch.utils.data.Dataset):
     def __init__(self,
                  hmms,
                  seq_len=1000,
-                 dataset_size=10000,
                  post_processing=None,
                  i_filters: List = None):
         self.hmms = hmms
         self.seq_len = seq_len
-        self.dataset_size = dataset_size
         if i_filters is not None:
             self.post_processing = IterableChain(*i_filters)
         else:
@@ -172,15 +194,16 @@ class SyntheticDataset(torch.utils.data.Dataset):
 
     def __getitem__(self, item):
         c = item % len(self.hmms)
+        ind = item // len(self.hmms)
         hmm = self.hmms[c]
-        item = hmm.gen_seq(self.seq_len)
+        item = hmm[ind]
         item['class_label'] = c
         if self.post_processing is not None:
             item = self.post_processing(item)
         return item
 
     def __len__(self):
-        return self.dataset_size
+        return sum([len(x) for x in self.hmms])
 
     @staticmethod
     def to_torch(x):
