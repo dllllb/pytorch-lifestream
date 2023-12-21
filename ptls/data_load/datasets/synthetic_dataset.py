@@ -15,14 +15,73 @@ from ptls.data_load import IterableChain
 logger = logging.getLogger(__name__)
 
 
-class TransitionTensorGenerator:
-    def __init__(self, n_classes, n_states, n_hidden_states):
-        self.figs = list()
-        for i in range(n_classes):
-            get_fig()
+class SquareSampler:
+    def __init__(self, side, n_states, c=None):
+        self.side = side
+        self.n_states = n_states
+        self.dim = self.n_states**2
+        self.c = np.zeros((1, self.dim)) if c is None else c
+        assert self.c.shape[-1] == self.dim
 
-    def gen_tensor(self, c):
-        return
+    def sample(self, n=1, to_matrix=True):
+        x = ((np.random.rand(self.dim * n).reshape(-1, self.dim) - 0.5) * self.side) + self.c
+        if to_matrix:
+            x = x.reshape(n, self.n_states, self.n_states)
+        return x
+
+
+class PlaneClassAssigner:
+    def __init__(self, n_states, v=None, delta_shift=None):
+        self.n_states = n_states
+        self.dim = self.n_states**2
+        self.delta_shift = delta_shift
+        self.v = v
+        if self.v is not None:
+            self.norm_vector()
+
+    def set_random_vector(self):
+        self.v = np.random.randn(self.dim).reshape(1, -1)
+        self.norm_vector()
+
+    def norm_vector(self):
+        self.v = (self.v / np.sqrt((self.v ** 2).sum()))
+
+    def get_class(self, x):
+        c = np.where((self.v * x).sum(axis=-1) > 0, 1, -1)
+        if self.delta_shift is not None:
+            x = x + self.v * self.delta_shift * c.reshape(-1, 1)
+        c = np.where(c == 1, 1, 0)
+        return x, c
+
+
+class TransitionTensorGenerator:
+    def __init__(self, sampler, assigner, n_hidden_states):
+        self.sampler = sampler
+        self.assigner = assigner
+        self.n_hidden_states = n_hidden_states
+
+    def gen_tensors(self, n):
+        pos_tensors, neg_tensors = list(), list()
+        for h in range(self.n_hidden_states):
+            self.assigner.set_random_vector()
+            pos_matrices, neg_matrices = list(), list()
+            n_pos_matrices, n_neg_matrices = 0, 0
+            while n_pos_matrices < n or n_neg_matrices < n:
+                raw_vectors = self.sampler.sample(2 * n - 2 * min(n_pos_matrices, n_neg_matrices), to_matrix=False)
+                x, c = self.assigner.get_class(raw_vectors)
+                x = x.reshape(x.shape[0], self.sampler.n_states, self.sampler.n_states)
+                x = np.exp(x)/np.exp(x).sum(axis=-1, keepdims=True)
+                pos_matrices.append(x[c == 1])
+                neg_matrices.append(x[c == 0])
+                n_pos_matrices += pos_matrices[-1].shape[0]
+                n_neg_matrices += neg_matrices[-1].shape[0]
+            pos_matrices = np.concatenate(pos_matrices, axis=0)[:n]
+            neg_matrices = np.concatenate(neg_matrices, axis=0)[:n]
+            pos_tensors.append(pos_matrices)
+            neg_tensors.append(neg_matrices)
+        pos_tensors = np.stack(pos_tensors, axis=-1)
+        neg_tensors = np.stack(neg_tensors, axis=-1)
+        return pos_tensors, neg_tensors
 
 
 class Dist:
@@ -116,10 +175,8 @@ class HMM:
         self.n_hidden_states = len(self.hidden_states)
         self.state_transition_tensors = state_transition_tensors
         self.hidden_state_transition_matrix = hidden_state_transition_matrix
-        self.seq_len = seq_len
         self.noise = noise
 
-        assert self.seq_len >= 1
         assert self.state_transition_tensors[0].ndim == 3
         assert self.hidden_state_transition_matrix.ndim == 2
         assert self.state_transition_tensors[0].shape[0] == self.state_transition_tensors[0].shape[1] == self.n_states
@@ -133,7 +190,6 @@ class HMM:
         self.state = None
         self.h_state = None
         self.chosen_transition_tensor = None
-        self.event_time_tensor = torch.arange(self.seq_len)
         self.reset()
 
     def gen_next(self):
@@ -142,35 +198,32 @@ class HMM:
         h_state = self.h_state if np.random.rand() >= self.noise else np.random.choice(self.hidden_states)
         return h_state, self.state
 
-    def gen_seq(self):
+    def gen_seq(self, seq_len):
         a, b = list(), list()
         hs, s = self.reset()
         a.append(hs.unwrap())
         b.append(s.unwrap())
 
-        for i in range(self.seq_len - 1):
+        for i in range(seq_len - 1):
             hs, s = self.gen_next()
             a.append(hs.unwrap())
             b.append(s.unwrap())
 
         a = {k: torch.Tensor([x[k] for x in a]) for k in a[0]}
         b = {k: torch.Tensor([x[k] for x in b]) for k in b[0]}
-        return {**a, **b, 'event_time': self.event_time_tensor}
+        return {**a, **b, 'event_time': torch.arange(seq_len)}
 
     def reset(self):
         self.h_state = np.random.choice(self.hidden_states)
         self.state = np.random.choice(self.states)
         return self.h_state, self.state
 
-    def set_seq_len(self, seq_len):
-        self.seq_len = seq_len
-
     def __len__(self):
         return len(self.state_transition_tensors)
 
-    def __getitem__(self, item):
+    def gen_by_ind(self, item, seq_len):
         self.chosen_transition_tensor = self.state_transition_tensors[item]
-        return self.gen_seq()
+        return self.gen_seq(seq_len)
 
     @staticmethod
     def check_states_for_inds(states):
@@ -196,7 +249,7 @@ class SyntheticDataset(torch.utils.data.Dataset):
         c = item % len(self.hmms)
         ind = item // len(self.hmms)
         hmm = self.hmms[c]
-        item = hmm[ind]
+        item = hmm.gen_by_ind(ind, self.seq_len)
         item['class_label'] = c
         if self.post_processing is not None:
             item = self.post_processing(item)
