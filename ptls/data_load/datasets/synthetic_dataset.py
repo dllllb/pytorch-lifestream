@@ -37,8 +37,6 @@ class SphereSampler:
 
     def sample(self, n=1, to_matrix=True):
         x = np.random.randn(n * self.dim).reshape(n, self.dim)
-        x = x ** 2
-        x = x / x.sum(axis=-1, keepdims=True)
         if to_matrix:
             x = x.reshape(n, self.n_states, self.n_states)
         return x
@@ -74,7 +72,7 @@ class TransitionTensorGenerator:
         self.assigner = assigner
         self.n_hidden_states = n_hidden_states
 
-    def gen_tensors(self, n, soft_norm=True):
+    def gen_tensors(self, n, soft_norm=True, square_norm=False):
         pos_tensors, neg_tensors = list(), list()
         for h in range(self.n_hidden_states):
             self.assigner.set_random_vector()
@@ -87,6 +85,8 @@ class TransitionTensorGenerator:
 
                 if soft_norm:
                     x = np.exp(x)/np.exp(x).sum(axis=-1, keepdims=True)
+                elif square_norm:
+                    x = x**2 / x.sum(axis=-1, keepdims=True)
 
                 pos_matrices.append(x[c == 1])
                 neg_matrices.append(x[c == 0])
@@ -245,6 +245,24 @@ class HMM:
     @staticmethod
     def check_states_for_inds(states):
         return sorted([s.ind for s in states]) == [i for i in range(len(states))]
+
+
+class IterableHMM(HMM):
+    def __init__(self, states, hidden_states, transition_tensor_generator,
+                 hidden_state_transition_matrix, noise=0., l=10000):
+        test_tensor = next(transition_tensor_generator)
+        super().__init__(states, hidden_states, test_tensor,
+                 hidden_state_transition_matrix, noise)
+        self.transition_tensor_generator = transition_tensor_generator
+        self.l = l
+
+    def gen_by_ind(self, item, seq_len):
+        self.chosen_transition_tensor = next(self.transition_tensor_generator)
+        return self.gen_seq(seq_len)
+
+    def __len__(self):
+        return self.l
+
 
 
 class SyntheticDataset(torch.utils.data.Dataset):
