@@ -19,12 +19,26 @@ class SquareSampler:
     def __init__(self, side, n_states, c=None):
         self.side = side
         self.n_states = n_states
-        self.dim = self.n_states**2
+        self.dim = self.n_states ** 2
         self.c = np.zeros((1, self.dim)) if c is None else c
         assert self.c.shape[-1] == self.dim
 
     def sample(self, n=1, to_matrix=True):
         x = ((np.random.rand(self.dim * n).reshape(-1, self.dim) - 0.5) * self.side) + self.c
+        if to_matrix:
+            x = x.reshape(n, self.n_states, self.n_states)
+        return x
+
+
+class SphereSampler:
+    def __init__(self, n_states, c=None):
+        self.n_states = n_states
+        self.dim = self.n_states ** 2
+
+    def sample(self, n=1, to_matrix=True):
+        x = np.random.randn(n * self.dim).reshape(n, self.dim)
+        x = x ** 2
+        x = x / x.sum(axis=-1, keepdims=True)
         if to_matrix:
             x = x.reshape(n, self.n_states, self.n_states)
         return x
@@ -60,7 +74,7 @@ class TransitionTensorGenerator:
         self.assigner = assigner
         self.n_hidden_states = n_hidden_states
 
-    def gen_tensors(self, n):
+    def gen_tensors(self, n, soft_norm=True):
         pos_tensors, neg_tensors = list(), list()
         for h in range(self.n_hidden_states):
             self.assigner.set_random_vector()
@@ -70,7 +84,10 @@ class TransitionTensorGenerator:
                 raw_vectors = self.sampler.sample(2 * n - 2 * min(n_pos_matrices, n_neg_matrices), to_matrix=False)
                 x, c = self.assigner.get_class(raw_vectors)
                 x = x.reshape(x.shape[0], self.sampler.n_states, self.sampler.n_states)
-                x = np.exp(x)/np.exp(x).sum(axis=-1, keepdims=True)
+
+                if soft_norm:
+                    x = np.exp(x)/np.exp(x).sum(axis=-1, keepdims=True)
+
                 pos_matrices.append(x[c == 1])
                 neg_matrices.append(x[c == 0])
                 n_pos_matrices += pos_matrices[-1].shape[0]
@@ -168,7 +185,7 @@ class State:
 
 class HMM:
     def __init__(self, states, hidden_states, state_transition_tensors,
-                 hidden_state_transition_matrix, seq_len=100, noise=0.):
+                 hidden_state_transition_matrix, noise=0.):
         self.states = states
         self.n_states = len(self.states)
         self.hidden_states = hidden_states
