@@ -44,16 +44,19 @@ class SphereSampler:
 
 class PlaneClassAssigner:
     def __init__(self, n_states, v=None, delta_shift=None):
+        self.ready = False
         self.n_states = n_states
         self.dim = self.n_states**2
         self.delta_shift = delta_shift
         self.v = v
         if self.v is not None:
             self.norm_vector()
+            self.ready = True
 
     def set_random_vector(self):
         self.v = np.random.randn(self.dim).reshape(1, -1)
         self.norm_vector()
+        self.ready = True
 
     def norm_vector(self):
         self.v = (self.v / np.sqrt((self.v ** 2).sum()))
@@ -75,7 +78,8 @@ class TransitionTensorGenerator:
     def gen_tensors(self, n, soft_norm=True, square_norm=False):
         pos_tensors, neg_tensors = list(), list()
         for h in range(self.n_hidden_states):
-            self.assigner.set_random_vector()
+            if not self.assigner.ready:
+                self.assigner.set_random_vector()
             pos_matrices, neg_matrices = list(), list()
             n_pos_matrices, n_neg_matrices = 0, 0
             while n_pos_matrices < n or n_neg_matrices < n:
