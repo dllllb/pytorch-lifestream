@@ -31,7 +31,11 @@ class MultiModalInferenceDataset(FeatureDict, torch.utils.data.Dataset):
         for feature_arrays in self.data:
             split_data = self.split_source(feature_arrays)
             yield split_data
-            
+    
+    def __getitem__(self, idx):
+        feature_arrays = self.data[idx]
+        return self.split_source(feature_arrays)
+    
     def split_source(self, feature_arrays):
         res = defaultdict(dict)
         for feature_name, feature_array in feature_arrays.items():

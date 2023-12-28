@@ -41,13 +41,6 @@ def save_scores(df_scores, output_conf):
 
 @hydra.main(version_base='1.2', config_path=None)
 def main(conf: DictConfig):
-    if os.environ.get("STDOUT_TO_FILE"):
-        if not os.path.exists(os.path.join('logs', conf.logger_name)):
-            os.makedirs(os.path.join('logs', conf.logger_name))
-        datestr = datetime.datetime.today().strftime("%Y-%m-%d-%H:%M:%S")
-        out = open(os.path.join("logs", conf.logger_name, f"{datestr}.log"), 'w')
-        sys.stdout = out
-        sys.stderr = out
     if 'seed_everything' in conf:
         pl.seed_everything(conf.seed_everything)
 
@@ -56,6 +49,7 @@ def main(conf: DictConfig):
         pl_module = hydra.utils.instantiate(conf.pl_module)
         pl_module.load_state_dict(torch.load(seq_encoder['f'])['state_dict'])
         seq_encoder = pl_module.seq_encoder
+    assert 'collate_fn' in conf, 'Add MultimodalInferenceDataset.collate_fn to config'
     model = InferenceModuleMultimodal(
         model=seq_encoder,
         pandas_output=True, model_out_name='emb',
@@ -63,24 +57,14 @@ def main(conf: DictConfig):
     )
     model.model.is_reduce_sequence = True
     dataset_inference = hydra.utils.instantiate(conf.inference.dataset)
-    if 'collate_fn' in conf:
-        collate_fn = hydra.utils.instantiate(conf.collate_fn)
-        inference_dl = DataLoader(
+    collate_fn = hydra.utils.instantiate(conf.collate_fn)
+    inference_dl = DataLoader(
         dataset=dataset_inference,
         collate_fn=collate_fn,
         shuffle=False,
         num_workers=conf.inference.get('num_workers', 0),
         batch_size=conf.inference.get('batch_size', 128),
     )
-    else:
-        inference_dl = DataLoader(
-            dataset=dataset_inference,
-            collate_fn=collate_feature_dict,
-            shuffle=False,
-            num_workers=conf.inference.get('num_workers', 0),
-            batch_size=conf.inference.get('batch_size', 128),
-        )
-
     gpus = 1 if torch.cuda.is_available() else 0
     gpus = conf.inference.get('gpus', gpus)
     df_scores = pl.Trainer(gpus=gpus, max_epochs=-1).predict(model, inference_dl)
