@@ -1,7 +1,7 @@
 from ptls.data_load.iterable_processing_dataset import IterableProcessingDataset
 import numpy as np
 
-class Add_Modal_Name(IterableProcessingDataset):
+class AddModalName(IterableProcessingDataset):
     '''Add_Modal_Name(cols = ['mcc', 'amount'], source = 'Source1') ---> Source1_mcc, Source1_amount'''
     def __init__(self, cols, source):
         super().__init__()
