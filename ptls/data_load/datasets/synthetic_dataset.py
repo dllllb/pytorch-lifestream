@@ -90,7 +90,7 @@ class TransitionTensorGenerator:
                 if soft_norm:
                     x = np.exp(x)/np.exp(x).sum(axis=-1, keepdims=True)
                 elif square_norm:
-                    x = x**2 / x.sum(axis=-1, keepdims=True)
+                    x = x**2 / (x**2).sum(axis=-1, keepdims=True)
 
                 pos_matrices.append(x[c == 1])
                 neg_matrices.append(x[c == 0])
