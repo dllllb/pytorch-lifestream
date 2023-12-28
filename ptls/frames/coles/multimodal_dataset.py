@@ -97,7 +97,8 @@ class MultiModalDataset(FeatureDict, torch.utils.data.Dataset):
     
     def __getitem__(self, idx):
         feature_arrays = self.data[idx]
-        return self.get_splits(feature_arrays)
+        split_data = self.split_source(feature_arrays)
+        return self.get_splits(split_data)
     
     def __iter__(self):
         for feature_arrays in self.data:
