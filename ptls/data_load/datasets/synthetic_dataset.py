@@ -43,9 +43,10 @@ class SphereSampler:
 
 
 class PlaneClassAssigner:
-    def __init__(self, n_states, v=None, delta_shift=None):
+    def __init__(self, n_states, n_hidden_states, v=None, delta_shift=None):
         self.ready = False
         self.n_states = n_states
+        self.n_hidden_states = n_hidden_states
         self.dim = self.n_states**2
         self.delta_shift = delta_shift
         self.v = v
@@ -54,17 +55,22 @@ class PlaneClassAssigner:
             self.ready = True
 
     def set_random_vector(self):
-        self.v = np.random.randn(self.dim).reshape(1, -1)
-        self.norm_vector()
+        self.v = list()
+        for i in range(self.n_hidden_states):
+            v = np.random.randn(self.dim).reshape(1, -1)
+            v = self.norm_vector(v)
+            self.v.append(v)
         self.ready = True
 
-    def norm_vector(self):
-        self.v = (self.v / np.sqrt((self.v ** 2).sum()))
+    @staticmethod
+    def norm_vector(v):
+        return v / np.sqrt((v ** 2).sum())
 
-    def get_class(self, x):
-        c = np.where((self.v * x).sum(axis=-1) > 0, 1, -1)
+    def get_class(self, x, h_state_n):
+        v = self.v[h_state_n]
+        c = np.where((v * x).sum(axis=-1) > 0, 1, -1)
         if self.delta_shift is not None:
-            x = x + self.v * self.delta_shift * c.reshape(-1, 1)
+            x = x + v * self.delta_shift * c.reshape(-1, 1)
         c = np.where(c == 1, 1, 0)
         return x, c
 
@@ -75,7 +81,7 @@ class TransitionTensorGenerator:
         self.assigner = assigner
         self.n_hidden_states = n_hidden_states
 
-    def gen_tensors(self, n, soft_norm=True, square_norm=False):
+    def gen_tensors(self, n, soft_norm=True, sphere_norm=False, sphere_r=1):
         pos_tensors, neg_tensors = list(), list()
         for h in range(self.n_hidden_states):
             if not self.assigner.ready:
@@ -84,13 +90,15 @@ class TransitionTensorGenerator:
             n_pos_matrices, n_neg_matrices = 0, 0
             while n_pos_matrices < n or n_neg_matrices < n:
                 raw_vectors = self.sampler.sample(2 * n - 2 * min(n_pos_matrices, n_neg_matrices), to_matrix=False)
-                x, c = self.assigner.get_class(raw_vectors)
+
+                if sphere_norm:
+                    raw_vectors = raw_vectors / np.sqrt((raw_vectors**2).sum(axis=-1, keepdims=True)) * sphere_r
+
+                x, c = self.assigner.get_class(raw_vectors, h)
                 x = x.reshape(x.shape[0], self.sampler.n_states, self.sampler.n_states)
 
                 if soft_norm:
                     x = np.exp(x)/np.exp(x).sum(axis=-1, keepdims=True)
-                elif square_norm:
-                    x = x**2 / (x**2).sum(axis=-1, keepdims=True)
 
                 pos_matrices.append(x[c == 1])
                 neg_matrices.append(x[c == 0])
@@ -140,6 +148,14 @@ class ConstDist(Dist):
 class Feature:
     def sample(self):
         raise NotImplemented
+
+
+class ConstFeature(Feature):
+    def __init__(self, value):
+        self.value = value
+
+    def sample(self):
+        return self.value
 
 
 class CategoryFeature(Feature):
