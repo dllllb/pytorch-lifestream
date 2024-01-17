@@ -62,6 +62,7 @@ def cmp_schema(s1, s2, ignore_nullable=False):
 class TestCollectLists(TestCase):
     def setUp(self):
         self.spark = SparkSession.builder.master("local").appName("test").getOrCreate()
+        self.maxDiff = None
 
     def assertEqualDataframes(self, df1, df2, sort_col, ignore_nullable=False):
         cmp_schema(df1.schema, df2.schema, ignore_nullable=ignore_nullable)
@@ -87,4 +88,8 @@ class TestCollectLists(TestCase):
 
 
 if __name__ == "__main__":
+    if 'unittest.util' in __import__('sys').modules:
+        # Show full diff in self.assertEqual.
+        __import__('sys').modules['unittest.util']._MAX_LENGTH = 999999999
+
     main()
