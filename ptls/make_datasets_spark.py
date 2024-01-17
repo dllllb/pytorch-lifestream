@@ -192,20 +192,20 @@ class DatasetConverter:
         return df
 
     def collect_lists(self, df, col_id):
-        col_list = [col for col in df.columns if col != col_id]
+        col_list = ['event_time'] + [col for col in df.columns if col != col_id and col != 'event_time']
+        unpack_col_list = [col_id] + [F.col(f'struct.{col}').alias(col) for col in col_list]
 
         if self.config.save_partitioned_data:
             df = df.withColumn('mon_id', (F.col('event_time') / 30).cast('int'))
             col_id = [col_id, 'mon_id']
+            unpack_col_list.append('mon_id')
 
-        df = df \
-            .withColumn('trx_count', F.count(F.lit(1)).over(Window.partitionBy(col_id))) \
-            .withColumn('_rn', F.row_number().over(Window.partitionBy(col_id).orderBy('event_time')))
-
-        for col in col_list:
-            df = df.withColumn(col, F.collect_list(col).over(Window.partitionBy(col_id).orderBy('_rn'))) \
-
-        df = df.filter('_rn = trx_count').drop('_rn')
+        # Put columns into structs and collect structs.
+        df = df.groupBy(col_id).agg(F.sort_array(F.collect_list(F.struct(*col_list))).alias('struct'))
+        # Unpack structs.
+        df = df.select(*unpack_col_list).drop('struct').persist()
+        # Get counts.
+        df = df.withColumn('trx_count', F.size(F.col('event_time')).cast('long'))
         return df
 
     def join_dict(self, df, df_dict_name, col_id):
