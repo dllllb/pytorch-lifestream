@@ -193,7 +193,7 @@ class DatasetConverter:
 
     def collect_lists(self, df, col_id):
         col_list = ['event_time'] + [col for col in df.columns if col != col_id and col != 'event_time']
-        unpack_col_list = [col_id] + [F.col(f'struct.{col}').alias(col) for col in col_list]
+        unpack_col_list = [col_id] + [F.col(f'_struct.{col}').alias(col) for col in col_list]
 
         if self.config.save_partitioned_data:
             df = df.withColumn('mon_id', (F.col('event_time') / 30).cast('int'))
@@ -201,9 +201,9 @@ class DatasetConverter:
             unpack_col_list.append('mon_id')
 
         # Put columns into structs and collect structs.
-        df = df.groupBy(col_id).agg(F.sort_array(F.collect_list(F.struct(*col_list))).alias('struct'))
+        df = df.groupBy(col_id).agg(F.sort_array(F.collect_list(F.struct(*col_list))).alias('_struct'))
         # Unpack structs.
-        df = df.select(*unpack_col_list).drop('struct').persist()
+        df = df.select(*unpack_col_list).drop('_struct').persist()
         # Get counts.
         df = df.withColumn('trx_count', F.size(F.col('event_time')).cast('long'))
         return df
