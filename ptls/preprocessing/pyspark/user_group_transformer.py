@@ -59,7 +59,7 @@ class UserGroupTransformer(ColTransformerPandasMixin, ColTransformer):
             df = df.withColumn('_struct', array_slice)
 
         # Unpack structs.
-        df = df.select(*unpack_col_list).drop('_struct').persist()
+        df = df.select(*unpack_col_list)
 
         # Select last elements.
         for col in self.cols_last_item:
