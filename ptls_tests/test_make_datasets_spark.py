@@ -86,7 +86,8 @@ class TestCollectLists(TestCase):
             converter_v1.config = config
             df_lists = converter.collect_lists(df, 'client_id')
             df_lists_v1 = converter_v1.collect_lists(df, 'client_id')
-            self.assertEqualDataframes(df_lists, df_lists_v1, 'client_id', ignore_nullable=True)
+            sort_col = ['client_id', 'mon_id'] if save_partitioned_data else 'client_id'
+            self.assertEqualDataframes(df_lists, df_lists_v1, sort_col, ignore_nullable=True)
 
 
 if __name__ == "__main__":
