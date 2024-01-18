@@ -68,7 +68,9 @@ class TestCollectLists(TestCase):
         cmp_schema(df1.schema, df2.schema, ignore_nullable=ignore_nullable)
         rows1 = list(map(lambda row: row.asDict(), df1.orderBy(sort_col).collect()))
         rows2 = list(map(lambda row: row.asDict(), df2.orderBy(sort_col).collect()))
-        self.assertEqual(rows1, rows2)
+        self.assertEqual(len(rows1), len(rows2))
+        for row1, row2 in zip(rows1, rows2):
+            self.assertEqual(row1, row2)
 
     def test_compare_v1(self):
         loader = self.spark.read.format("csv").option("header","true").option("inferSchema","true")
