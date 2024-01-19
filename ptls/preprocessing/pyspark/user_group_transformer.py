@@ -46,28 +46,23 @@ class UserGroupTransformer(ColTransformerPandasMixin, ColTransformer):
                                  f'Found {x.columns}')
         return self
 
-
     def transform(self, x: pyspark.sql.DataFrame):
-        col_list = [col for col in x.columns if col != self.col_name_original]
+        col_list = ['event_time'] + [col for col in x.columns if col != self.col_name_original and col != 'event_time']
+        unpack_col_list = [self.col_name_original] + [F.col(f'_struct.{col}').alias(col) for col in col_list]
 
-        df = x.withColumn('_rn', F.row_number().over(
-            Window.partitionBy(self.col_name_original).orderBy(F.col('event_time').desc())))
+        # Put columns into structs and collect structs.
+        df = x.groupBy(self.col_name_original).agg(F.sort_array(F.collect_list(F.struct(*col_list))).alias('_struct'))
         if self.max_trx_count is not None:
-            df = df.where(F.col('_rn') <= self.max_trx_count)
+            array_slice = F.slice(F.col('_struct'),
+                                  F.greatest(F.size(F.col('_struct')) - (self.max_trx_count - 1), F.lit(1)),
+                                  self.max_trx_count)
+            df = df.withColumn('_struct', array_slice)
 
-        df = df.groupby(self.col_name_original).agg(
-            *[
-                F.sort_array(F.collect_list(F.struct('_rn', col)), asc=False).alias(col)
-                for col in col_list if col not in self.cols_last_item
-            ],
-            *[
-                F.struct(F.max(F.when(F.col('_rn') == 1, F.col(col))).alias(col)).alias(col)
-                for col in col_list if col in self.cols_last_item
-            ],
-        )
-        for col in col_list:
-            df = df.withColumn(col, F.col(f'{col}.{col}'))
+        # Unpack structs.
+        df = df.select(*unpack_col_list)
 
-        # we don't heed to drop original column in this transformer
-        # x = super().transform(x)
+        # Select last elements.
+        for col in self.cols_last_item:
+            df = df.withColumn(col, F.element_at(F.col(col), -1))
+
         return df
