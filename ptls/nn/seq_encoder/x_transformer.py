@@ -76,7 +76,7 @@ class DynamicPositionBias(nn.Module):
         # get position biases        
         bias = pos[indices]
         bias = rearrange(bias, 'i j h -> h i j')
-        bias = F.pad(bias, (num_mem,0,num_mem, 0), value = 1.)
+        bias = F.pad(bias, (num_mem,0,num_mem, 0), value = 0.)
         return bias
 
 class DynamicTimeDifBias(nn.Module):
