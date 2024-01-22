@@ -192,7 +192,6 @@ class FloatFeature(Feature):
         return v
 
 
-
 class State:
     def __init__(self, features, ind):
         self.features = features
@@ -215,23 +214,33 @@ class HMM:
         self.noise = noise
 
         assert self.state_transition_tensors[0].ndim == 3
-        assert self.hidden_state_transition_matrix.ndim == 2
         assert self.state_transition_tensors[0].shape[0] == self.state_transition_tensors[0].shape[1] == self.n_states
-        assert self.state_transition_tensors[0].shape[2] == self.hidden_state_transition_matrix.shape[0]
-        assert self.hidden_state_transition_matrix.shape[0] == \
-               self.hidden_state_transition_matrix.shape[1] == \
-               self.n_hidden_states
         assert self.check_states_for_inds(self.states)
         assert self.check_states_for_inds(self.hidden_states)
 
+        if type(self.hidden_state_transition_matrix) is list:
+            assert len(self.hidden_state_transition_matrix) == len(self.state_transition_tensors)
+            hidden_state_transition_matrix = self.hidden_state_transition_matrix[0]
+        else:
+            hidden_state_transition_matrix = self.hidden_state_transition_matrix
+
+        assert hidden_state_transition_matrix.ndim == 2
+        assert self.state_transition_tensors[0].shape[2] == hidden_state_transition_matrix.shape[0]
+        assert hidden_state_transition_matrix.shape[0] == \
+               hidden_state_transition_matrix.shape[1] == \
+               self.n_hidden_states
+
         self.state = None
         self.h_state = None
+        self.chosen_hidden_state_transition_matrix = None
         self.chosen_transition_tensor = None
         self.reset()
 
     def gen_next(self):
-        self.h_state = np.random.choice(self.hidden_states, p=self.hidden_state_transition_matrix[self.h_state.ind])
-        self.state = np.random.choice(self.states, p=self.chosen_transition_tensor[self.state.ind, :, self.h_state.ind])
+        self.h_state = np.random.choice(self.hidden_states,
+                                        p=self.chosen_hidden_state_transition_matrix[self.h_state.ind])
+        self.state = np.random.choice(self.states,
+                                      p=self.chosen_transition_tensor[self.state.ind, :, self.h_state.ind])
         h_state = self.h_state if np.random.rand() >= self.noise else np.random.choice(self.hidden_states)
         return h_state, self.state
 
@@ -259,6 +268,10 @@ class HMM:
         return len(self.state_transition_tensors)
 
     def gen_by_ind(self, item, seq_len):
+        if type(self.hidden_state_transition_matrix) is list:
+            self.chosen_hidden_state_transition_matrix = self.hidden_state_transition_matrix[item]
+        else:
+            self.chosen_hidden_state_transition_matrix = self.hidden_state_transition_matrix
         self.chosen_transition_tensor = self.state_transition_tensors[item]
         return self.gen_seq(seq_len)
 
@@ -282,7 +295,6 @@ class IterableHMM(HMM):
 
     def __len__(self):
         return self.l
-
 
 
 class SyntheticDataset(torch.utils.data.Dataset):
