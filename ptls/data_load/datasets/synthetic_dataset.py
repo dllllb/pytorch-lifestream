@@ -203,14 +203,17 @@ class State:
 
 
 class HMM:
-    def __init__(self, states, hidden_states, state_transition_tensors,
-                 hidden_state_transition_matrix, noise=0.):
+    def __init__(self, states, hidden_states,
+                 state_transition_tensors,
+                 hidden_state_transition_matrix,
+                 noise_hidden_state_transition_matrix=None, noise=0.):
         self.states = states
         self.n_states = len(self.states)
         self.hidden_states = hidden_states
         self.n_hidden_states = len(self.hidden_states)
         self.state_transition_tensors = state_transition_tensors
         self.hidden_state_transition_matrix = hidden_state_transition_matrix
+        self.noise_hidden_state_transition_matrix = noise_hidden_state_transition_matrix
         self.noise = noise
 
         assert self.state_transition_tensors[0].ndim == 3
@@ -232,7 +235,9 @@ class HMM:
 
         self.state = None
         self.h_state = None
+        self.noise_h_state = None
         self.chosen_hidden_state_transition_matrix = None
+        self.chosen_noise_hidden_state_transition_matrix = None
         self.chosen_transition_tensor = None
         self.reset()
 
@@ -241,7 +246,13 @@ class HMM:
                                         p=self.chosen_hidden_state_transition_matrix[self.h_state.ind])
         self.state = np.random.choice(self.states,
                                       p=self.chosen_transition_tensor[self.state.ind, :, self.h_state.ind])
-        h_state = self.h_state if np.random.rand() >= self.noise else np.random.choice(self.hidden_states)
+
+        if self.noise_hidden_state_transition_matrix is not None:
+            self.noise_h_state = np.random.choice(self.hidden_states,
+                                                  p=self.chosen_noise_hidden_state_transition_matrix[self.noise_h_state.ind])
+            h_state = self.h_state if np.random.rand() >= self.noise else self.noise_h_state
+        else:
+            h_state = self.h_state if np.random.rand() >= self.noise else np.random.choice(self.hidden_states)
         return h_state, self.state
 
     def gen_seq(self, seq_len):
@@ -261,6 +272,7 @@ class HMM:
 
     def reset(self):
         self.h_state = np.random.choice(self.hidden_states)
+        self.noise_h_state = np.random.choice(self.hidden_states)
         self.state = np.random.choice(self.states)
         return self.h_state, self.state
 
@@ -270,8 +282,10 @@ class HMM:
     def gen_by_ind(self, item, seq_len):
         if type(self.hidden_state_transition_matrix) is list:
             self.chosen_hidden_state_transition_matrix = self.hidden_state_transition_matrix[item]
+            self.chosen_noise_hidden_state_transition_matrix = self.noise_hidden_state_transition_matrix[item]
         else:
             self.chosen_hidden_state_transition_matrix = self.hidden_state_transition_matrix
+            self.chosen_noise_hidden_state_transition_matrix = self.noise_hidden_state_transition_matrix
         self.chosen_transition_tensor = self.state_transition_tensors[item]
         return self.gen_seq(seq_len)
 
