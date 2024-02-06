@@ -44,8 +44,8 @@ class SoftmaxLoss(torch.nn.Module):
             dist.barrier()
             embeddings = all_gather_and_cat(embeddings)
             if self.use_gpu_dependent_labels:
-                target = target + (target.max()+1) * dist.get_rank()
-            target = all_gather_and_cat(target)
+                classes = classes + (classes.max()+1) * dist.get_rank()
+            classes = all_gather_and_cat(classes)
         d = torch.einsum('bh,kh->bk', embeddings, embeddings) / self.temperature
         
         ix_pos = classes.unsqueeze(1) == classes.unsqueeze(0)
