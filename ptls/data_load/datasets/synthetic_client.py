@@ -1,34 +1,52 @@
 import numpy as np
 from collections import defaultdict
+from copy import deepcopy
 
 
 class SyntheticClient:
-    def __init__(self, labels, config):
+    def __init__(self, labels, config, schedule):
         self.labels = labels
         self.config = config
-        self.tensors = None
+        self.schedule = schedule
+        self.sampler = SphereSampler()
+        self.chains = self.config.get_chains()
         self.gen_transition_tensors()
-        self.sampler = SphereSampler
+
+        self.timestamp = 0
 
     def gen_transition_tensors(self):
-        self.tensors = dict()
-        for ch_name in self.config.chains:
+        for ch_name in self.chains:
             ch_transition_tensor = list()
-            n_states = self.config.chains[ch_name].n_states
-            n_h_states = self.config.chains[ch_name].n_h_states
-            sphere_r = self.config.chains[ch_name].sphere_r
+            n_states = self.chains[ch_name].n_states
+            n_h_states = self.chains[ch_name].n_h_states
+            sphere_r = self.chains[ch_name].sphere_r
             assigner_names = self.config.chain2label[ch_name]
             labeling_tensor = [self.config.class_assigners[a_name].v[ch_name] for a_name in assigner_names]
             for h_state in range(n_h_states):
-                label_vectors = [lv[h_state] for lv in labeling_tensor ]
+                label_vectors = [lv[h_state] for lv in labeling_tensor]
                 matrix = self.sampler.sample(n_states, sphere_r, label_vectors).reshape(n_states, n_states)
                 matrix = np.exp(matrix)/np.exp(matrix).sum(axis=-1, keepdims=True)
                 ch_transition_tensor.append(matrix)
-            self.tensors[ch_name] = np.stack(ch_transition_tensor, axis=-1)
+            self.chains[ch_name].set_transition_tensor(np.stack(ch_transition_tensor, axis=-1))
 
-    def gen_seq(self):
+    def init_chains(self):
+        pass
+
+    def gen_seq(self, l=1000):
         seq = dict()
+        self.init_chains()
+
+        for i in range(l):
+            next_chain = self.schedule.next_chain(self.timestamp)
+            self.timestamp += 1
+
+
         return seq, self.labels
+
+
+class Schedule:
+    def init(self):
+        pass
 
 
 class Config:
@@ -64,7 +82,7 @@ class Config:
             if len(self.conj_from[ch_name]) == 0:
                 n_h_states = 1
             else:
-                n_h_states = sum([self.chain_confs[conj_ch][0] for conj_ch in self.conj_from[ch_name]])
+                n_h_states = np.prod([self.chain_confs[conj_ch][0] for conj_ch in self.conj_from[ch_name]])
             self.chains[ch_name] = MarkovChain(n_states, sphere_r, n_h_states)
 
         self.labeling_conf = labeling_conf
@@ -76,6 +94,9 @@ class Config:
             n_states = (self.chains[ch].n_states for ch in chains)
             n_h_states = (self.chains[ch].n_h_states for ch in chains)
             self.class_assigners[key] = PlaneClassAssigner(chains, n_states, n_h_states)
+
+    def get_chains(self):
+        return deepcopy(self.chains)
 
 
 class PlaneClassAssigner:
@@ -125,10 +146,6 @@ class MarkovChain:
 
     def set_transition_tensor(self, transition_tensor=None):
         self.transition_tensor = transition_tensor
-        self.ready = False if self.transition_tensor is None else True
-
-    def reset_transition_tensor(self):
-        self.transition_tensor = None
         self.ready = False if self.transition_tensor is None else True
 
     def reset(self):
