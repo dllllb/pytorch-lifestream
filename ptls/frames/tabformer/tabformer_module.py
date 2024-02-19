@@ -122,7 +122,7 @@ class TabformerPretrainModule(pl.LightningModule):
             out = self.fn_norm_predict(out)
         return out
 
-    def get_masks_and_labels(self, batch: PaddedBatch) -> Tuple(torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor):
+    def get_masks_and_labels(self, batch: PaddedBatch) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
         feature_tensors, random_words = [], []
         for field_name, noisy_emb_module in self.trx_encoder.embeddings.items():
             feature_tensors += [batch.payload[field_name].unsqueeze(0)]
