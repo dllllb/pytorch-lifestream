@@ -1,6 +1,7 @@
 import numpy as np
 from collections import defaultdict
 from copy import deepcopy
+import pickle
 
 
 class SyntheticClient:
@@ -10,53 +11,105 @@ class SyntheticClient:
         self.schedule = schedule
         self.sampler = SphereSampler()
         self.chains = self.config.get_chains()
-        self.gen_transition_tensors()
 
+        self.curr_states = None
         self.timestamp = 0
 
-    def gen_transition_tensors(self):
+        self.norm_labels = dict()
+        for y in self.labels:
+            self.norm_labels[y] = 1 if self.labels[y] else -1
+
+        self.set_transition_tensors()
+
+    def gen_set_transition_tensor(self, ch_name):
+        ch_transition_tensor = list()
+        n_states = self.chains[ch_name].n_states
+        n_h_states = self.chains[ch_name].n_h_states
+        sphere_r = self.chains[ch_name].sphere_r
+        assigner_names = self.config.chain2label[ch_name]
+        labeling_tensors = [self.config.class_assigners[a_name].v[ch_name] for a_name in assigner_names]
+        norm_labels = [self.norm_labels[y] for y in assigner_names]
+        for h_state in range(n_h_states):
+            label_vectors = [lv[h_state] * norm for lv, norm in zip(labeling_tensors, norm_labels)]
+            matrix = self.sampler.sample(n_states, sphere_r, label_vectors).reshape(n_states, n_states)
+            matrix = np.exp(matrix) / np.exp(matrix).sum(axis=-1, keepdims=True)
+            ch_transition_tensor.append(matrix)
+        return np.stack(ch_transition_tensor, axis=-1)
+
+    def set_transition_tensors(self):
         for ch_name in self.chains:
-            ch_transition_tensor = list()
-            n_states = self.chains[ch_name].n_states
-            n_h_states = self.chains[ch_name].n_h_states
-            sphere_r = self.chains[ch_name].sphere_r
-            assigner_names = self.config.chain2label[ch_name]
-            labeling_tensor = [self.config.class_assigners[a_name].v[ch_name] for a_name in assigner_names]
-            for h_state in range(n_h_states):
-                label_vectors = [lv[h_state] for lv in labeling_tensor]
-                matrix = self.sampler.sample(n_states, sphere_r, label_vectors).reshape(n_states, n_states)
-                matrix = np.exp(matrix)/np.exp(matrix).sum(axis=-1, keepdims=True)
-                ch_transition_tensor.append(matrix)
-            self.chains[ch_name].set_transition_tensor(np.stack(ch_transition_tensor, axis=-1))
+            tensor = self.gen_set_transition_tensor(ch_name)
+            self.chains[ch_name].set_transition_tensor(tensor)
+
+            if self.chains[ch_name].add_noise_tensor:
+                noise_tensor = self.gen_set_transition_tensor(ch_name)
+                self.chains[ch_name].set_noise_tensor(noise_tensor)
 
     def init_chains(self):
-        pass
+        self.curr_states = dict()
+        for ch in self.chains:
+            self.curr_states[ch] = self.chains[ch].reset()
 
-    def gen_seq(self, l=1000):
-        seq = dict()
+    def gen_seq(self, l=512):
+        seq = defaultdict(list)
         self.init_chains()
 
         for i in range(l):
-            next_chain = self.schedule.next_chain(self.timestamp)
+            next_chain_name = self.schedule.get_next_chain(self.timestamp)
+
+            h_state_chains = list(self.config.conj_from[next_chain_name])
+            if len(h_state_chains):
+                h_state = 0
+                skip = 1
+                for ch in sorted(h_state_chains):
+                    h_state += skip * self.curr_states[ch]
+                    skip *= self.chains[ch].n_states
+            else:
+                h_state = None
+
+            new_state = self.chains[next_chain_name].next_state(h_state)
+            t2s = self.chains[next_chain_name].transition2state(self.curr_states[next_chain_name], new_state)
+            seq[next_chain_name].append(t2s)
+            self.curr_states[next_chain_name] = new_state
+
             self.timestamp += 1
 
+        seq = dict(**seq)
 
-        return seq, self.labels
+        if len(self.labels) == 1:
+            seq["class_label"] = list(self.labels.values())[0]
+        else:
+            for key, value in self.labels.items():
+                seq["_".join(["class_label", value])] = key
+
+        seq['event_time'] = [i for i in range(len(seq[next_chain_name]))]
+
+        return seq
 
 
-class Schedule:
-    def init(self):
-        pass
+class BaseSchedule:
+    def __init__(self, config):
+        self.config = config
+        self.chain_names = list(self.config.chains.keys())
+        self.n_chains = len(self.chain_names)
+
+    def get_next_chain(self, timestamp):
+        raise NotImplemented
+
+
+class SimpleSchedule(BaseSchedule):
+    def get_next_chain(self, timestamp):
+        return self.chain_names[int(timestamp % self.n_chains)]
 
 
 class Config:
     def __init__(self, chain_confs, state_from, state_to, labeling_conf):
         """
         chain_confs = {
-        "A": (n_states, sphere_R),
-        "B": (n_states, sphere_R),
-        "C": (n_states, sphere_R),
-        "D": (n_states, sphere_R),
+        "A": (n_states, sphere_R, noise),
+        "B": (n_states, sphere_R, noise),
+        "C": (n_states, sphere_R, noise),
+        "D": (n_states, sphere_R, noise),
         }
 
         state_from = ["A", "B", "C"]
@@ -78,12 +131,16 @@ class Config:
         self.chain_confs = chain_confs
         self.chains = dict()
         for ch_name, ch_conf in self.chain_confs.items():
-            n_states, sphere_r = ch_conf
+            n_states, sphere_r, noise = ch_conf
             if len(self.conj_from[ch_name]) == 0:
                 n_h_states = 1
             else:
                 n_h_states = np.prod([self.chain_confs[conj_ch][0] for conj_ch in self.conj_from[ch_name]])
-            self.chains[ch_name] = MarkovChain(n_states, sphere_r, n_h_states)
+            if len(self.conj_to[ch_name]) > 0:
+                add_noise_tensor = True
+            else:
+                add_noise_tensor = False
+            self.chains[ch_name] = MarkovChain(n_states, sphere_r, n_h_states, add_noise_tensor, noise)
 
         self.labeling_conf = labeling_conf
         self.chain2label = defaultdict(list)
@@ -97,6 +154,14 @@ class Config:
 
     def get_chains(self):
         return deepcopy(self.chains)
+
+    def save_assigners(self, file):
+        for assigner_name, assigner in self.class_assigners.items():
+            assigner.save_tensor("_".join([file, str(assigner_name)]))
+
+    def load_assigners(self, file):
+        for assigner_name, assigner in self.class_assigners.items():
+            assigner.load_tensor("_".join([file, str(assigner_name)]))
 
 
 class PlaneClassAssigner:
@@ -134,31 +199,62 @@ class PlaneClassAssigner:
         c = 1 if (v * x).sum() > 0 else 0
         return c
 
+    def save_tensor(self, file):
+        with open(file, "wb") as f:
+            pickle.dump(self.v, f)
+
+    def load_tensor(self, file):
+        with open(file, "rb") as f:
+            self.v = pickle.load(f)
+
 
 class MarkovChain:
-    def __init__(self, n_states, sphere_r, n_h_states=1, transition_tensor=None):
+    def __init__(self, n_states, sphere_r, n_h_states=1, add_noise_tensor=True, noise=0.):
         self.n_states = n_states
         self.n_h_states = n_h_states
         self.sphere_r = sphere_r
-        self.transition_tensor = transition_tensor
+        self.transition_tensor = None
+
+        self.add_noise_tensor = add_noise_tensor
+        self.noise_tensor = None
+        self.noise = noise
+
         self.state = None
+        self.noise_state = None
+
+        self.transition2state_matrix = np.arange(self.n_states**2).reshape(self.n_states, self.n_states)
         self.ready = False if self.transition_tensor is None else True
 
     def set_transition_tensor(self, transition_tensor=None):
         self.transition_tensor = transition_tensor
-        self.ready = False if self.transition_tensor is None else True
+        condition = self.transition_tensor is not None and (self.noise_tensor is not None or not self.add_noise_tensor)
+        self.ready = True if condition else False
+
+    def set_noise_tensor(self, noise_tensor=None):
+        self.noise_tensor = noise_tensor
+        condition = self.transition_tensor is not None and (self.noise_tensor is not None or not self.add_noise_tensor)
+        self.ready = True if condition else False
 
     def reset(self):
         assert self.ready
         self.state = np.random.choice(self.n_states)
+        self.noise_state = np.random.choice(self.n_states)
+        return self.state
 
     def next_state(self, h_state=None):
         assert self.ready
-        if self.n_h_states > 1:
-            self.state = np.random.choice(self.n_states, p=self.transition_tensor[self.state, :, h_state])
+        if self.n_h_states <= 1:
+            h_state = 0
+        self.state = np.random.choice(self.n_states, p=self.transition_tensor[self.state, :, h_state])
+        if self.noise_tensor is not None:
+            self.noise_state = np.random.choice(self.n_states, p=self.noise_tensor[self.noise_state, :, h_state])
+            state = self.state if np.random.rand() >= self.noise else self.noise_state
         else:
-            self.state = np.random.choice(self.n_states, p=self.transition_tensor[self.state, :, 0])
-        return self.state
+            state = self.state
+        return state
+
+    def transition2state(self, a, b):
+        return self.transition2state_matrix[a, b]
 
 
 class SphereSampler:
@@ -170,7 +266,7 @@ class SphereSampler:
                 x = np.random.randn(dim)
                 flag = True
                 for label_vector in label_vectors:
-                    if x * label_vector < 0:
+                    if (x * label_vector).sum() < 0:
                         flag = False
                         break
                 if flag:
@@ -178,43 +274,5 @@ class SphereSampler:
         else:
             x = np.random.randn(dim)
 
-        x = x / np.sqrt((x**2).sum())
+        x = x / np.sqrt((x**2).sum()) * sphere_r
         return x
-
-
-class TransitionTensorGenerator:
-    def __init__(self, sampler, assigner, n_hidden_states):
-        self.sampler = sampler
-        self.assigner = assigner
-        self.n_hidden_states = n_hidden_states
-
-    def gen_tensors(self, n, soft_norm=True, sphere_norm=False, sphere_r=1):
-        pos_tensors, neg_tensors = list(), list()
-        for h in range(self.n_hidden_states):
-            if not self.assigner.ready:
-                self.assigner.set_random_vector()
-            pos_matrices, neg_matrices = list(), list()
-            n_pos_matrices, n_neg_matrices = 0, 0
-            while n_pos_matrices < n or n_neg_matrices < n:
-                raw_vectors = self.sampler.sample(2 * n - 2 * min(n_pos_matrices, n_neg_matrices), to_matrix=False)
-
-                if sphere_norm:
-                    raw_vectors = raw_vectors / np.sqrt((raw_vectors**2).sum(axis=-1, keepdims=True)) * sphere_r
-
-                x, c = self.assigner.get_class(raw_vectors, h)
-                x = x.reshape(x.shape[0], self.sampler.n_states, self.sampler.n_states)
-
-                if soft_norm:
-                    x = np.exp(x)/np.exp(x).sum(axis=-1, keepdims=True)
-
-                pos_matrices.append(x[c == 1])
-                neg_matrices.append(x[c == 0])
-                n_pos_matrices += pos_matrices[-1].shape[0]
-                n_neg_matrices += neg_matrices[-1].shape[0]
-            pos_matrices = np.concatenate(pos_matrices, axis=0)[:n]
-            neg_matrices = np.concatenate(neg_matrices, axis=0)[:n]
-            pos_tensors.append(pos_matrices)
-            neg_tensors.append(neg_matrices)
-        pos_tensors = np.stack(pos_tensors, axis=-1)
-        neg_tensors = np.stack(neg_tensors, axis=-1)
-        return pos_tensors, neg_tensors
