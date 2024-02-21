@@ -13,6 +13,7 @@ class SyntheticClient:
         self.chains = self.config.get_chains()
 
         self.curr_states = None
+        self.curr_h_states = None
         self.timestamp = 0
 
         self.norm_labels = dict()
@@ -21,7 +22,7 @@ class SyntheticClient:
 
         self.set_transition_tensors()
 
-    def gen_set_transition_tensor(self, ch_name):
+    def gen_transition_tensor(self, ch_name):
         ch_transition_tensor = list()
         n_states = self.chains[ch_name].n_states
         n_h_states = self.chains[ch_name].n_h_states
@@ -38,17 +39,19 @@ class SyntheticClient:
 
     def set_transition_tensors(self):
         for ch_name in self.chains:
-            tensor = self.gen_set_transition_tensor(ch_name)
+            tensor = self.gen_transition_tensor(ch_name)
             self.chains[ch_name].set_transition_tensor(tensor)
 
             if self.chains[ch_name].add_noise_tensor:
-                noise_tensor = self.gen_set_transition_tensor(ch_name)
+                noise_tensor = self.gen_transition_tensor(ch_name)
                 self.chains[ch_name].set_noise_tensor(noise_tensor)
 
     def init_chains(self):
         self.curr_states = dict()
+        self.curr_h_states = dict()
         for ch in self.chains:
             self.curr_states[ch] = self.chains[ch].reset()
+            self.curr_h_states[ch] = self.curr_states[ch]
 
     def gen_seq(self, l=512):
         seq = defaultdict(list)
@@ -62,15 +65,16 @@ class SyntheticClient:
                 h_state = 0
                 skip = 1
                 for ch in sorted(h_state_chains):
-                    h_state += skip * self.curr_states[ch]
+                    h_state += skip * self.curr_h_states[ch]
                     skip *= self.chains[ch].n_states
             else:
                 h_state = None
 
-            new_state = self.chains[next_chain_name].next_state(h_state)
+            new_state, new_h_state = self.chains[next_chain_name].next_state(h_state)
             t2s = self.chains[next_chain_name].transition2state(self.curr_states[next_chain_name], new_state)
             seq[next_chain_name].append(t2s)
             self.curr_states[next_chain_name] = new_state
+            self.curr_h_states[next_chain_name] = new_h_state
 
             self.timestamp += 1
 
@@ -251,7 +255,7 @@ class MarkovChain:
             state = self.state if np.random.rand() >= self.noise else self.noise_state
         else:
             state = self.state
-        return state
+        return state, self.state
 
     def transition2state(self, a, b):
         return self.transition2state_matrix[a, b]
