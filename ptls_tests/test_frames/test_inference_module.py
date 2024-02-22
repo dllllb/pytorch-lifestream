@@ -126,6 +126,15 @@ def test_inference_module_sequence():
     assert df_out.shape == (trx_num, 20)
     assert list(df_out.mcc_code) == [mcc for usr in trx_data for mcc in usr['mcc_code']]
 
+def test_inference_module_sequence_drop_seq():
+    lengths = (torch.rand(1000)*60+1).long()
+    trx_num = np.sum(lengths.numpy())
+    trx_data = gen_trx_data(lengths, target_type='multi_cls', use_feature_arrays_key=False)
+    valid_loader = torch.utils.data.DataLoader(
+        trx_data,
+        batch_size=64, collate_fn=collate_feature_dict)
+    seq_enc = get_rnn_seq_encoder_emb()
+    seq_enc.is_reduce_sequence = False
     rnn_model = InferenceModule(
         model=seq_enc,
         drop_seq_features=True,
@@ -135,6 +144,7 @@ def test_inference_module_sequence():
     df_out = pd.concat(pl.Trainer(gpus=0, max_epochs=-1).predict(rnn_model, valid_loader))
     assert df_out.shape == (trx_num, 17)
     assert list(df_out.target) == list(chain(*[[usr['target']]*usr['mcc_code'].shape[0] for usr in trx_data]))
+
 
 def test_inference_module_record():
     lengths = (torch.rand(1000)*60+1).long()
@@ -154,6 +164,14 @@ def test_inference_module_record():
     assert df_out.shape == (1000, 20)
     np.testing.assert_array_almost_equal(list(df_out.mcc_code)[0], [mcc for mcc in trx_data[0]['mcc_code']])
 
+def test_inference_module_record_drop_seq():
+    lengths = (torch.rand(1000)*60+1).long()
+    trx_data = gen_trx_data(lengths, target_type='multi_cls', use_feature_arrays_key=False)
+    valid_loader = torch.utils.data.DataLoader(
+        trx_data,
+        batch_size=64, collate_fn=collate_feature_dict)
+    seq_enc = get_rnn_seq_encoder_emb()
+    seq_enc.is_reduce_sequence = True
     rnn_model = InferenceModule(
         model=seq_enc,
         drop_seq_features=True,
