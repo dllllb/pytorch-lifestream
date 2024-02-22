@@ -40,9 +40,6 @@ class Head(torch.nn.Module):
 
         layers = []
 
-        if use_norm_encoder:
-            layers.append(L2NormEncoder())
-
         if use_batch_norm:
             layers.append(BatchNorm1d(input_size))
 
@@ -82,6 +79,9 @@ class Head(torch.nn.Module):
         elif objective is not None:
             raise AttributeError(f"Unknown objective {objective}. Supported: classification, regression and softplus.")
 
+        if use_norm_encoder:
+            layers.append(L2NormEncoder())
+                    
         self.model = torch.nn.Sequential(*layers)
 
     def forward(self, x):

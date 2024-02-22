@@ -51,6 +51,8 @@ pytest
 - PySpark and Parquet for data preprocessing [notebook](demo/pyspark-parquet.ipynb)
 - Fast inference on large dataset [notebook](demo/extended_inference.ipynb)
 - Supervised multilabel classification [notebook](demo/multilabel-classification.ipynb)
+- Text features demo:
+  - Using pretrained encoder to text features[notebook](demo/coles-pretrained-embeddings.ipynb)
 
 ## Docs
 
@@ -69,3 +71,9 @@ Library description [index](docs/index.md)
 - [VK.com Graph ML Hackaton report](https://habr.com/ru/companies/vk/articles/703484/) (in Russian)
 - [VK.com Graph ML Hackaton report, AlfaBank team](https://habr.com/ru/companies/alfa/articles/698660/) (in Russian)
 - [American Express - Default Prediction Kaggle contest report](https://habr.com/ru/articles/704440/) (in Russian)
+
+## How to contribute
+
+1. Make your chages via Fork and Pull request.
+2. Write unit test for new code in `ptls_tests`.
+3. Check unit test via `pytest`: [Example](.#install-from-source).

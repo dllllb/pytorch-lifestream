@@ -1,5 +1,6 @@
 from typing import Dict, Union
 
+import numpy as np
 import torch
 from ptls.data_load.padded_batch import PaddedBatch
 from ptls.nn.trx_encoder.encoders import BaseEncoder
@@ -133,6 +134,34 @@ class TrxEncoderBase(nn.Module):
         )
         return embeddings
 
+    def _get_custom_embeddings(self, x: PaddedBatch, col_name: str):
+        """Returns embeddings given by custom embedder
+
+        Parameters
+        ----------
+        x: PaddedBatch with feature dict. Each value is `(B, T)` size
+        col_name: required feature name
+        """
+        embedder = self.custom_embeddings[col_name]
+        col_name = col_name if embedder.col_name is None else embedder.col_name
+        if isinstance(embedder, IdentityScaler):
+            return embedder(x.payload[col_name])
+
+        # B, T, L
+        custom_col = x.payload[col_name]
+        assert type(custom_col) is list
+        assert type(custom_col[1]) is np.ndarray
+
+        custom_col_flat = np.concatenate(custom_col, axis=0)  # T1+Ti+Tn, L
+        custom_embeddings = torch.cat([
+            embedder(custom_col_flat[i:i+embedder.batch_size])
+            for i in range(0, len(custom_col_flat), embedder.batch_size)
+        ], dim=0) # T1+Ti+Tn, H
+        custom_embeddings = torch.split(custom_embeddings, x.seq_lens.tolist())  # B, T, H
+
+        embeddings = torch.nn.utils.rnn.pad_sequence(custom_embeddings, batch_first=True)
+        return embeddings
+
     @property
     def numerical_size(self):
         # :TODO: this property is only for backward compability
@@ -162,6 +191,5 @@ class TrxEncoderBase(nn.Module):
 
     @property
     def category_max_size(self):
-        """Returns dict with categorical feature names. Value is dictionary size
-        """
-        return {k: v['in'] for k, v in self.embeddings.items()}
+        """Returns dict with categorical feature names. Value is dictionary size"""
+        return {k: v.num_embeddings for k, v in self.embeddings.items()}
