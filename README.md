@@ -69,19 +69,19 @@ We have collected a set of topics related to the processing of event sequences. 
 | 3.1.   | Network Types                           | Different networks for sequences      |  |
 | 3.1.1. | Recurrent neural networks               |    | tbd based on `supervised-sequence-to-target.ipynb` |
 | 3.1.2. | (optional) Convolutonal neural networks |    | tbd based on `supervised-sequence-to-target.ipynb` |
-| 3.1.3. | Transformers                            |    | tbd based on `supervised-sequence-to-target.ipynb` |
+| 3.1.3. | Transformers                            |    | [demo/supervised-sequence-to-target-transformer.ipynb](demo/supervised-sequence-to-target-transformer.ipynb) |
 | 3.2.   | Problem types                           | Different problems types for sequences  |  |
-| 3.2.1. | Global problems                         | Binary, multilabel, regression, ...   | tbd based on [demo/multilabel-classification.ipynb](demo/mu3tilabel-classification.ipynb) | 
-| 3.2.2. | Local problems                          | Next event prediction                 | tbd |
+| 3.2.1. | Global problems                         | Binary, multilabel, regression, ...   | tbd based on [demo/multilabel-classification.ipynb](demo/multilabel-classification.ipynb) | 
+| 3.2.2. | Local problems                          | Next event prediction                 | [demo/event-sequence-local-embeddings.ipynb](demo/event-sequence-local-embeddings.ipynb) |
 | 4.   | Unsupervised learning                   | Pretrain foundation model with some pretrain task | tbd based on [demo/coles-emb.ipynb](./demo/coles-emb.ipynb)  [![O4en In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/dllllb/pytorch-lifestream/blob/master/demo/co4es-emb.ipynb)     |
 | 4.1. | (optional) word2vec                     | Context based methods                   |     |
 | 4.2. | mlm, rtd, gpt                           | Event bases methods                     | Self-supervided training and embeddings for clients' transactions [notebook](event-sequence-local-embeddings.ipynb) [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/dllllb/pytorch-lifestream/blob/master/demo/event-sequence-local-embeddings.ipynb) |
-| 4.3. | nsp, sop                                | Sequence based methods                  | tbd |
+| 4.3. | nsp, sop                                | Sequence based methods                  | [demo/nsp-sop-emb.ipynb](demo/nsp-sop-emb.ipynb) |
 | 5.   | Contrasvive and non contrastive learing | Latent representation based losses      | tbd based on [demo/coles-emb.ipynb](./demo/coles-emb.ipynb)             |
 | 5.1. | coles                                   |    | [demo/coles-emb.ipynb](./demo/coles-emb.ipynb)                |
 | 5.2. | vicreg                                  |    | tbd based on [demo/coles-emb.ipynb](./demo/coles-emb.ipynb)                   |
 | 5.3. | cpc                                     |    | tbd based on [demo/coles-emb.ipynb](./demo/coles-emb.ipynb)                   |
-| 5.4. | mlm and others                          | Self-supervised TrxEncoder only training with Masked Language Model | tbd based on [demo/mlm-emb.ipynb](./demo/mlm-emb.ipynb)                   |
+| 5.4. | mlm, tabformer and others               | Self-supervised TrxEncoder only training with Masked Language Model | [demo/mlm-emb.ipynb](./demo/mlm-emb.ipynb) [demo/tabformer-emb.ipynb](demo/tabformer-emb.ipynb)                  |
 | 6.   | Pretrained model usage                  |    |    |
 | 6.1. | Downstream model on frozen embeddings   |    | tbd based on [demo/coles-emb.ipynb](./demo/coles-emb.ipynb)  |
 | 6.2. | CatBoost embeddings features            |    | [demo/coles-catboost.ipynb](demo/coles-catboost.ipynb) |
