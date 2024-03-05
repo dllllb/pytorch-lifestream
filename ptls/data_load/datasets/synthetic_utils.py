@@ -88,3 +88,10 @@ class State:
 
     def unwrap(self):
         return {k: v.sample() for k, v in self.features.items()}
+
+
+def correct_round(x):
+    if x % 1 == 0.5:
+        return int(x) + 1
+    else:
+        return round(x)

@@ -2,6 +2,7 @@ import numpy as np
 from collections import defaultdict
 from copy import deepcopy
 import pickle
+from .synthetic_utils import correct_round
 
 
 class SyntheticClient:
@@ -9,8 +10,8 @@ class SyntheticClient:
         self.labels = labels
         self.config = config
         self.schedule = schedule
-        self.sampler = SphereSampler()
         self.chains = self.config.get_chains()
+        self.sampler = SphereSampler(self.config.sampling_conf, self.config.class_assigners)
 
         self.curr_states = None
         self.curr_h_states = None
@@ -22,29 +23,13 @@ class SyntheticClient:
 
         self.set_transition_tensors()
 
-    def gen_transition_tensor(self, ch_name):
-        ch_transition_tensor = list()
-        n_states = self.chains[ch_name].n_states
-        n_h_states = self.chains[ch_name].n_h_states
-        sphere_r = self.chains[ch_name].sphere_r
-        assigner_names = self.config.chain2label[ch_name]
-        labeling_tensors = [self.config.class_assigners[a_name].v[ch_name] for a_name in assigner_names]
-        norm_labels = [self.norm_labels[y] for y in assigner_names]
-        for h_state in range(n_h_states):
-            label_vectors = [lv[h_state] * norm for lv, norm in zip(labeling_tensors, norm_labels)]
-            matrix = self.sampler.sample(n_states, sphere_r, label_vectors).reshape(n_states, n_states)
-            matrix = np.exp(matrix) / np.exp(matrix).sum(axis=-1, keepdims=True)
-            ch_transition_tensor.append(matrix)
-        return np.stack(ch_transition_tensor, axis=-1)
-
     def set_transition_tensors(self):
-        for ch_name in self.chains:
-            tensor = self.gen_transition_tensor(ch_name)
-            self.chains[ch_name].set_transition_tensor(tensor)
-
-            if self.chains[ch_name].add_noise_tensor:
-                noise_tensor = self.gen_transition_tensor(ch_name)
-                self.chains[ch_name].set_noise_tensor(noise_tensor)
+        tensors_dict = self.sampler.sample(self.labels)
+        noise_tensor_dict = self.sampler.sample(self.labels)
+        for ch in tensors_dict:
+            self.chains[ch].set_transition_tensor(tensors_dict[ch])
+            if self.chains[ch].add_noise_tensor:
+                self.chains[ch].set_noise_tensor(noise_tensor_dict[ch])
 
     def init_chains(self):
         self.curr_states = dict()
@@ -121,13 +106,15 @@ class Config:
         state_to = ["B", "D", "D"]
 
         labeling_conf = {
-        1 : ("A",),
-        2 : ("B", "D")
+        1 : {"A": 0.6},
+        2 : {"B": 1.,
+             "D": 0.2}
         }
         """
         assert len(state_from) == len(state_to)
 
         self.conj_from, self.conj_to = defaultdict(list), defaultdict(list)
+        self.sampling_conf = dict()
         for f, t in zip(state_from, state_to):
             self.conj_from[t].append(f)
             self.conj_to[f].append(t)
@@ -144,6 +131,10 @@ class Config:
                 add_noise_tensor = True
             else:
                 add_noise_tensor = False
+            self.sampling_conf[ch_name] = {'n_states': n_states,
+                                           'n_h_states': n_h_states,
+                                           'dim': n_states ** 2,
+                                           'sphere_r': sphere_r}
             self.chains[ch_name] = MarkovChain(n_states, sphere_r, n_h_states, add_noise_tensor, noise)
 
         self.labeling_conf = labeling_conf
@@ -152,64 +143,132 @@ class Config:
         for key, chains in labeling_conf.items():
             for ch in chains:
                 self.chain2label[ch].append(key)
-            n_states = (self.chains[ch].n_states for ch in chains)
-            n_h_states = (self.chains[ch].n_h_states for ch in chains)
-            self.class_assigners[key] = PlaneClassAssigner(chains, n_states, n_h_states)
+            self.class_assigners[key] = PlaneClassAssigner(chains, self.sampling_conf)
 
     def get_chains(self):
         return deepcopy(self.chains)
 
     def save_assigners(self, file):
         for assigner_name, assigner in self.class_assigners.items():
-            assigner.save_tensor("_".join([file, str(assigner_name)]))
+            assigner.save_plane("_".join([file, str(assigner_name)]))
 
     def load_assigners(self, file):
         for assigner_name, assigner in self.class_assigners.items():
-            assigner.load_tensor("_".join([file, str(assigner_name)]))
+            assigner.load_plane("_".join([file, str(assigner_name)]))
 
 
 class PlaneClassAssigner:
     """
-    chains: ("A", "B")
-    n_states: (4, 8)
-    n_hidden_states: (1, 4)
+    chains: {"B": 1.,
+             "D": 0.2}
+    sampling_conf: {"A": {'n_states': n_states,
+                          'n_h_states': n_h_states,
+                          'dim': n_states ** 2,
+                          'sphere_r': sphere_r},
+                    .
+                    .
+                    .
+                   }
     """
-    def __init__(self, chains, n_states, n_hidden_states):
-        self.chains = chains
-        self.n_states = n_states
-        self.n_hidden_states = n_hidden_states
+    def __init__(self, chains_saturation, sampling_conf):
+        self.chains_saturation = chains_saturation
+        self.sampling_conf = sampling_conf
         self.v = None
         self.set_planes()
 
     def set_planes(self):
         self.v = dict()
-        for ch, n_states, n_hidden_states in zip(self.chains, self.n_states, self.n_hidden_states):
-            ch_v = list()
-            dim = n_states ** 2
-            for i in range(n_hidden_states):
-                v = np.random.randn(dim)
-                v = self.norm_vector(v)
-                ch_v.append(v)
-            self.v[ch] = ch_v
+        for ch in self.sampling_conf:
+            if ch in self.chains_saturation:
+                self.v[ch] = list()
+                for i in range(self.sampling_conf[ch]['n_h_states']):
+                    saturation_value = correct_round(self.sampling_conf[ch]['dim'] * self.chains_saturation[ch])
 
-    @staticmethod
-    def norm_vector(v):
-        return v / np.sqrt((v ** 2).sum())
+                    raw_vector = np.random.rand(self.sampling_conf[ch]['dim'])
+                    saturation_vector = np.random.permutation(
+                        [1. for _ in range(saturation_value)] +
+                        [0. for _ in range(self.sampling_conf[ch]['dim'] - saturation_value)]
+                    )
+                    self.v[ch].append(raw_vector * saturation_vector)
+            else:
+                self.v[ch] = [np.zeros(self.sampling_conf[ch]['dim'])]
 
-    def get_class(self, x, h_state_n=0, ch=None):
-        assert ch is not None or len(self.chains) == 1
-        ch = self.chains[0] if ch is None else ch
-        v = self.v[ch][h_state_n]
-        c = 1 if (v * x).sum() > 0 else 0
+    def get_class(self, client_vector):
+        max_prods, min_prods = list(), list()
+        for ch, x in client_vector.items():
+            if ch in self.chains_saturation:
+                prod_max, prod_min = -float('inf'), float('inf')
+                for xi, vi in zip(x, self.v[ch]):
+                    prod = (xi * vi).sum()
+                    prod_max = prod if prod > prod_max else prod_max
+                    prod_min = prod if prod < prod_min else prod_min
+                max_prods.append(prod_max)
+                min_prods.append(prod_min)
+
+        if sum(min_prods) > 0:
+            c = 1
+        elif sum(max_prods) < 0:
+            c = 0
+        else:
+            c = None
         return c
 
-    def save_tensor(self, file):
+    def save_plane(self, file):
         with open(file, "wb") as f:
             pickle.dump(self.v, f)
 
-    def load_tensor(self, file):
+    def load_plane(self, file):
         with open(file, "rb") as f:
             self.v = pickle.load(f)
+
+
+class SphereSampler:
+    def __init__(self, sampling_conf, class_assigners):
+        self.sampling_conf = sampling_conf
+        self.class_assigners = class_assigners
+
+    def sample_tensor(self):
+        tensor = dict()
+        for ch in self.sampling_conf:
+            tensor[ch] = list()
+            for i in range(self.sampling_conf[ch]['n_h_states']):
+                tensor[ch].append(np.random.randn(self.sampling_conf[ch]['dim']))
+        return tensor
+
+    def sample(self, labels):
+        while True:
+            flag = True
+            candidate = self.norm(self.sample_tensor())
+            for k, v in labels.items():
+                if self.class_assigners[k].get_class(candidate) != v:
+                    flag = False
+                    break
+            if flag:
+                break
+
+        candidate = self.reshape(candidate)
+        return candidate
+
+    def norm(self, client_tensor):
+        for ch, t in client_tensor.items():
+            r = self.sampling_conf[ch]['sphere_r']
+            norm_t = list()
+            for x in t:
+                norm_x = x / np.sqrt((x**2).sum()) * r
+                norm_t.append(norm_x)
+            client_tensor[ch] = norm_t
+        return client_tensor
+
+    def reshape(self, client_tensor):
+        for ch, t in client_tensor.items():
+            n_states = self.sampling_conf[ch]['n_states']
+            shaped_t = [self.softmax_norm(x.reshape(n_states, n_states)) for x in t]
+            client_tensor[ch] = np.stack(shaped_t, axis=-1)
+        return client_tensor
+
+    @staticmethod
+    def softmax_norm(matrix):
+        return np.exp(matrix) / np.exp(matrix).sum(axis=-1, keepdims=True)
 
 
 class MarkovChain:
@@ -259,24 +318,3 @@ class MarkovChain:
 
     def transition2state(self, a, b):
         return self.transition2state_matrix[a, b]
-
-
-class SphereSampler:
-    @staticmethod
-    def sample(n_states, sphere_r, label_vectors=None):
-        dim = n_states ** 2
-        if label_vectors is not None:
-            while True:
-                x = np.random.randn(dim)
-                flag = True
-                for label_vector in label_vectors:
-                    if (x * label_vector).sum() < 0:
-                        flag = False
-                        break
-                if flag:
-                    break
-        else:
-            x = np.random.randn(dim)
-
-        x = x / np.sqrt((x**2).sum()) * sphere_r
-        return x
