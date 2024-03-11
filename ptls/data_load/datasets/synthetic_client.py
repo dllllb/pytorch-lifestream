@@ -184,7 +184,7 @@ class PlaneClassAssigner:
                 for i in range(self.sampling_conf[ch]['n_h_states']):
                     saturation_value = correct_round(self.sampling_conf[ch]['dim'] * self.chains_saturation[ch])
 
-                    raw_vector = np.random.rand(self.sampling_conf[ch]['dim'])
+                    raw_vector = np.random.randn(self.sampling_conf[ch]['dim'])
                     saturation_vector = np.random.permutation(
                         [1. for _ in range(saturation_value)] +
                         [0. for _ in range(self.sampling_conf[ch]['dim'] - saturation_value)]
