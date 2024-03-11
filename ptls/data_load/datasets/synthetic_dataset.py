@@ -84,7 +84,7 @@ class SyntheticDatasetWriter:
         for mode, n_files, n_per_file in zip(["train", "eval", "test"],
                                              [self.n_train_files, self.n_eval_files, self.n_test_files],
                                              [self.train_per_file, self.eval_per_file, self.test_per_file]):
-            for fn in tqdm(range(n_files)):
+            for fn in range(n_files):
                 folder = os.path.join(self.path, mode)
                 os.makedirs(folder, exist_ok=True)
                 data = self.get_datamodule(n_per_file)
@@ -98,16 +98,13 @@ class SyntheticDatasetWriter:
                 df = pd.DataFrame(df)
                 df.to_parquet(os.path.join(folder, mode + "_" + str(fn) + ".parquet"))
 
-from time import time
+
 class MonoTargetSyntheticDatasetWriter(SyntheticDatasetWriter):
     def get_clients(self, n):
         per_class_n = int(n / 2)
         pool = mp.Pool(self.n_procs)
         sc = partial(SyntheticClient, config=self.config, schedule=self.schedule)
-        qqq = time()
         clients = pool.map(sc, [{0: 0} for _ in range(per_class_n)]+[{0: 1} for _ in range(per_class_n)])
-        www = time()
-        print(www-qqq)
         pool.close()
         pool.join()
         shuffle(clients)
