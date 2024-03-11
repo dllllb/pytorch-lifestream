@@ -189,7 +189,9 @@ class PlaneClassAssigner:
                         [1. for _ in range(saturation_value)] +
                         [0. for _ in range(self.sampling_conf[ch]['dim'] - saturation_value)]
                     )
-                    self.v[ch].append(raw_vector * saturation_vector)
+                    vector = raw_vector * saturation_vector
+                    vector = vector / np.sqrt((vector**2).sum())
+                    self.v[ch].append(vector)
             else:
                 self.v[ch] = [np.zeros(self.sampling_conf[ch]['dim'])]
 
