@@ -283,6 +283,7 @@ class SphereSampler:
         return candidate
 
     def sample(self, labels):
+        n_try = 0
         candidate = self.norm(self.sample_tensor())
         while True:
             flag = True
@@ -291,9 +292,12 @@ class SphereSampler:
                 if len(resample_dict):
                     candidate = self.resample(candidate, resample_dict)
                     flag = False
+                    n_try += 1
                     break
             if flag:
                 break
+            elif n_try == 100:
+                candidate = self.norm(self.sample_tensor())
 
         candidate = self.reshape(candidate)
         return candidate
