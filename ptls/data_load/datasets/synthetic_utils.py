@@ -95,3 +95,17 @@ def correct_round(x):
         return int(x) + 1
     else:
         return round(x)
+
+
+@np.vectorize
+def sign(x):
+    if x >= 0:
+        return 1
+    else:
+        return -1
+
+def norm_vector(vector):
+    if np.all(vector == 0):
+        return vector
+    else:
+        return vector / np.sqrt((vector ** 2).sum())

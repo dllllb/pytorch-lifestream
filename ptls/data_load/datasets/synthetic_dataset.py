@@ -55,7 +55,7 @@ class SyntheticDatasetWriter:
     def __init__(self, config, path, seq_len,
                  n_train_files, n_eval_files, n_test_files,
                  train_per_file, eval_per_file, test_per_file,
-                 save_config_name=None, n_procs=16):
+                 save_config_name=None, save=False, load=False, n_procs=16):
         self.config = config
         self.schedule = SimpleSchedule(config)
         self.path = path
@@ -64,8 +64,10 @@ class SyntheticDatasetWriter:
         self.train_per_file, self.eval_per_file, self.test_per_file = train_per_file, eval_per_file, test_per_file
         self.n_procs = n_procs
 
-        if save_config_name is not None:
+        if save_config_name is not None and save:
             self.config.save_assigners(str(save_config_name))
+        if save_config_name is not None and load:
+            self.config.load_assigners(str(save_config_name))
 
     def get_clients(self, n):
         raise NotImplementedError
@@ -84,7 +86,7 @@ class SyntheticDatasetWriter:
         for mode, n_files, n_per_file in zip(["train", "eval", "test"],
                                              [self.n_train_files, self.n_eval_files, self.n_test_files],
                                              [self.train_per_file, self.eval_per_file, self.test_per_file]):
-            for fn in range(n_files):
+            for fn in tqdm(range(n_files)):
                 folder = os.path.join(self.path, mode)
                 os.makedirs(folder, exist_ok=True)
                 data = self.get_datamodule(n_per_file)
@@ -100,6 +102,7 @@ class SyntheticDatasetWriter:
 
 
 class MonoTargetSyntheticDatasetWriter(SyntheticDatasetWriter):
+    '''
     def get_clients(self, n):
         per_class_n = int(n / 2)
         pool = mp.Pool(self.n_procs)
@@ -107,5 +110,13 @@ class MonoTargetSyntheticDatasetWriter(SyntheticDatasetWriter):
         clients = pool.map(sc, [{0: 0} for _ in range(per_class_n)]+[{0: 1} for _ in range(per_class_n)])
         pool.close()
         pool.join()
+        shuffle(clients)
+        return clients
+    '''
+
+    def get_clients(self, n):
+        per_class_n = int(n / 2)
+        clients = [SyntheticClient({0: 0}, self.config, self.schedule) for _ in range(per_class_n)] + \
+                  [SyntheticClient({0: 1}, self.config, self.schedule) for _ in range(per_class_n)]
         shuffle(clients)
         return clients

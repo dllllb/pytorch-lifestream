@@ -2,7 +2,7 @@ import numpy as np
 from collections import defaultdict
 from copy import deepcopy
 import pickle
-from .synthetic_utils import correct_round
+from .synthetic_utils import correct_round, sign, norm_vector
 
 
 class SyntheticClient:
@@ -174,54 +174,89 @@ class PlaneClassAssigner:
         self.chains_saturation = chains_saturation
         self.sampling_conf = sampling_conf
         self.v = None
+        self.backup_v = None
+        self.backup_sat = None
+        self.h_saturation_impact, self.n_sat, self.saturation_factor = 0, 0, 0
         self.set_planes()
+
+        assert len(self.chains_saturation) <= 2
+        assert min([self.sampling_conf[ch]['n_h_states'] for ch in self.chains_saturation]) == 1
 
     def set_planes(self):
         self.v = dict()
-        for ch in self.sampling_conf:
-            if ch in self.chains_saturation:
-                self.v[ch] = list()
-                for i in range(self.sampling_conf[ch]['n_h_states']):
-                    saturation_value = correct_round(self.sampling_conf[ch]['dim'] * self.chains_saturation[ch])
+        self.backup_v = dict()
+        self.backup_sat = dict()
+        for ch in self.chains_saturation:
+            self.v[ch] = list()
+            self.backup_v[ch] = list()
 
-                    raw_vector = np.random.randn(self.sampling_conf[ch]['dim'])
-                    saturation_vector = np.random.permutation(
-                        [1. for _ in range(saturation_value)] +
-                        [0. for _ in range(self.sampling_conf[ch]['dim'] - saturation_value)]
-                    )
-                    vector = raw_vector * saturation_vector
-                    vector = vector / np.sqrt((vector**2).sum())
-                    self.v[ch].append(vector)
-            else:
-                self.v[ch] = [np.zeros(self.sampling_conf[ch]['dim'])]
+            self.n_sat += self.chains_saturation[ch]
+            if self.sampling_conf[ch]['n_h_states'] > 1:
+                self.h_saturation_impact = self.chains_saturation[ch]
 
-    def get_class(self, client_vector):
-        max_prods, min_prods = list(), list()
+            self.backup_sat[ch] = np.random.permutation(np.arange(self.sampling_conf[ch]['dim']))
+            saturation_value = correct_round(self.sampling_conf[ch]['dim'] * self.chains_saturation[ch])
+            saturation_vector = np.where(self.backup_sat[ch] < saturation_value, 1, 0)
+
+            for i in range(self.sampling_conf[ch]['n_h_states']):
+                raw_vector = np.random.randn(self.sampling_conf[ch]['dim'])
+                vector = norm_vector(raw_vector * saturation_vector)
+                self.backup_v[ch].append(raw_vector)
+                self.v[ch].append(vector)
+
+        self.saturation_factor = self.h_saturation_impact / self.n_sat
+
+    def check_class(self, client_vector, class_label):
+        resample_dict = dict()
+        mono_ch = list()
+        multi_ch = None
+        curr_prod = np.zeros(1)
         for ch, x in client_vector.items():
             if ch in self.chains_saturation:
-                prod_max, prod_min = -float('inf'), float('inf')
-                for xi, vi in zip(x, self.v[ch]):
-                    prod = (xi * vi).sum()
-                    prod_max = prod if prod > prod_max else prod_max
-                    prod_min = prod if prod < prod_min else prod_min
-                max_prods.append(prod_max)
-                min_prods.append(prod_min)
 
-        if sum(min_prods) > 0:
-            c = 1
-        elif sum(max_prods) < 0:
-            c = 0
+                num_vectors = len(x)
+                if num_vectors > 1:
+                    multi_ch = ch
+                    curr_prod = np.tile(curr_prod, num_vectors)
+                else:
+                    mono_ch.append(ch)
+
+                x_ = np.stack(x, axis=0)
+                v_ = np.stack(self.v[ch], axis=0)
+                prod = (x_ * v_).sum(axis=1)
+                curr_prod = curr_prod + prod
+        class_sign = 1 if class_label == 1 else -1
+        total = len(curr_prod)
+        corr = sign(curr_prod)
+        num_corr = (corr == class_sign).sum()
+        if total == num_corr:
+            return dict()
+        elif num_corr / total > self.saturation_factor or self.saturation_factor == 0:
+            for ch in mono_ch:
+                resample_dict[ch] = [0]
         else:
-            c = None
-        return c
+            resample_dict[multi_ch] = np.where(corr != class_sign)[0]
+        return resample_dict
 
     def save_plane(self, file):
-        with open(file, "wb") as f:
-            pickle.dump(self.v, f)
+        with open(file + "_v", "wb") as f:
+            pickle.dump(self.backup_v, f)
+        with open(file + "_sat", "wb") as f:
+            pickle.dump(self.backup_sat, f)
 
     def load_plane(self, file):
-        with open(file, "rb") as f:
-            self.v = pickle.load(f)
+        with open(file + "v", "rb") as f:
+            self.backup_v = pickle.load(f)
+        with open(file + "sat", "rb") as f:
+            self.backup_sat = pickle.load(f)
+
+        self.v = dict()
+        for ch in self.chains_saturation:
+            saturation_value = correct_round(self.sampling_conf[ch]['dim'] * self.chains_saturation[ch])
+            saturation_vector = np.where(self.backup_sat[ch] < saturation_value, 1, 0)
+            self.v[ch] = list()
+            for vector in self.backup_v[ch]:
+                self.v[ch].append(norm_vector(vector * saturation_vector))
 
 
 class SphereSampler:
@@ -237,12 +272,24 @@ class SphereSampler:
                 tensor[ch].append(np.random.randn(self.sampling_conf[ch]['dim']))
         return tensor
 
+    def resample(self, candidate, resample_dict):
+        for ch in candidate:
+            if ch in resample_dict:
+                for i, vector in enumerate(candidate[ch]):
+                    if i in resample_dict[ch]:
+                        new_vector = np.random.randn(vector.shape[0])
+                        candidate[ch][i] = new_vector
+        candidate = self.norm(candidate)
+        return candidate
+
     def sample(self, labels):
+        candidate = self.norm(self.sample_tensor())
         while True:
             flag = True
-            candidate = self.norm(self.sample_tensor())
             for k, v in labels.items():
-                if self.class_assigners[k].get_class(candidate) != v:
+                resample_dict = self.class_assigners[k].check_class(candidate, v)
+                if len(resample_dict):
+                    candidate = self.resample(candidate, resample_dict)
                     flag = False
                     break
             if flag:
@@ -256,7 +303,7 @@ class SphereSampler:
             r = self.sampling_conf[ch]['sphere_r']
             norm_t = list()
             for x in t:
-                norm_x = x / np.sqrt((x**2).sum()) * r
+                norm_x = norm_vector(x) * r
                 norm_t.append(norm_x)
             client_tensor[ch] = norm_t
         return client_tensor
