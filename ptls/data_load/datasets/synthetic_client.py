@@ -245,9 +245,9 @@ class PlaneClassAssigner:
             pickle.dump(self.backup_sat, f)
 
     def load_plane(self, file):
-        with open(file + "v", "rb") as f:
+        with open(file + "_v", "rb") as f:
             self.backup_v = pickle.load(f)
-        with open(file + "sat", "rb") as f:
+        with open(file + "_sat", "rb") as f:
             self.backup_sat = pickle.load(f)
 
         self.v = dict()
