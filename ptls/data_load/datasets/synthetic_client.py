@@ -297,6 +297,7 @@ class SphereSampler:
             if flag:
                 break
             elif n_try == 100:
+                n_try = 0
                 candidate = self.norm(self.sample_tensor())
 
         candidate = self.reshape(candidate)
