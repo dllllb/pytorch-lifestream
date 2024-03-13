@@ -229,10 +229,10 @@ class PlaneClassAssigner:
         class_sign = 1 if class_label == 1 else -1
         total = len(curr_prod)
         corr = sign(curr_prod)
-        num_corr = (corr == class_sign).sum()
-        if total == num_corr:
+        num_wrong = (corr != class_sign).sum()
+        if num_wrong == 0:
             return dict()
-        elif num_corr / total < self.saturation_factor or self.saturation_factor == 0:
+        elif num_wrong / total > self.saturation_factor or self.saturation_factor == 0:
             for ch in mono_ch:
                 resample_dict[ch] = [0]
         else:
