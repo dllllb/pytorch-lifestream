@@ -104,6 +104,7 @@ def sign(x):
     else:
         return -1
 
+
 def norm_vector(vector):
     if np.all(vector == 0):
         return vector

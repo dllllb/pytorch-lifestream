@@ -221,7 +221,8 @@ class PlaneClassAssigner:
                 else:
                     mono_ch.append(ch)
 
-                x_ = np.stack(x, axis=0)
+                norm_x = [norm_vector(a) for a in x]
+                x_ = np.stack(norm_x, axis=0)
                 v_ = np.stack(self.v[ch], axis=0)
                 prod = (x_ * v_).sum(axis=1)
                 curr_prod = curr_prod + prod
@@ -231,7 +232,7 @@ class PlaneClassAssigner:
         num_corr = (corr == class_sign).sum()
         if total == num_corr:
             return dict()
-        elif num_corr / total > self.saturation_factor or self.saturation_factor == 0:
+        elif num_corr / total < self.saturation_factor or self.saturation_factor == 0:
             for ch in mono_ch:
                 resample_dict[ch] = [0]
         else:
