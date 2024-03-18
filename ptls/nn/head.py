@@ -3,6 +3,7 @@ from typing import List
 import torch
 from torch.nn import Linear, BatchNorm1d, Sigmoid, Sequential, ReLU, LogSoftmax, Flatten, Softplus, Dropout
 from ptls.nn.normalization import L2NormEncoder
+from ptls.nn.seq_encoder.utils import reset_parameters
 
 
 class Head(torch.nn.Module):
@@ -34,7 +35,8 @@ class Head(torch.nn.Module):
                  hidden_layers_sizes: List[int] = None,
                  drop_probs: List[float] = None,
                  objective: str = None,
-                 num_classes: int = 1):
+                 num_classes: int = 1,
+                 n_copies=1):
         super().__init__()
         # TODO: check possibility to create empty head with do nothing
 
@@ -82,7 +84,15 @@ class Head(torch.nn.Module):
         elif objective is not None:
             raise AttributeError(f"Unknown objective {objective}. Supported: classification, regression and softplus.")
 
-        self.model = torch.nn.Sequential(*layers)
+        self.n_copies = n_copies
+        if self.n_copies == 1:
+            self.model = torch.nn.Sequential(*layers)
+        else:
+            self.model = torch.nn.ModuleList([torch.nn.Sequential(*layers) for _ in range(self.n_copies)])
+            for m in self.model:
+                reset_parameters(m)
 
     def forward(self, x):
+        if type(x) is list:
+            return [self.model[i](x[i]) for i in range(len(x))]
         return self.model(x)
