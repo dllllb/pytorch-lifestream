@@ -58,11 +58,7 @@ class ABSModule(pl.LightningModule):
     def training_step(self, batch, _):
         y_h, y = self.shared_step(*batch)
         out = self._loss(y_h, y)
-        if hasattr(out, "__getitem__"):
-            loss, info = out
-        else:
-            loss = out
-            info = {"loss": out}
+        loss, info = out
         for k, v in info.items():
             self.log(k, v)
         if type(batch) is tuple:
@@ -85,7 +81,7 @@ class ABSModule(pl.LightningModule):
             for i, m in enumerate(metric):
                 self.log(self.metric_name+"_"+str(i), m, prog_bar=True, logger=True)
         else:
-            self.log(self.metric_name, metric, prog_bar=True, logger=True)
+            self.log(self.metric_name+"_0", metric, prog_bar=True, logger=True)
         self._validation_metric.reset()
 
     def configure_optimizers(self):

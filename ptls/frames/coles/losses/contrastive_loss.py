@@ -29,7 +29,7 @@ class ContrastiveLoss(nn.Module):
         ).pow(2)
         loss = torch.cat([positive_loss, negative_loss], dim=0).mean()
 
-        return loss, {}
+        return loss, {"loss_0": loss.cpu().item()}
 
 
 class MultiContrastiveLoss(nn.Module):
