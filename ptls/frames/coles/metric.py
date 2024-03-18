@@ -146,3 +146,20 @@ class BatchRecallTopK(torchmetrics.MeanMetric):
 
     def update(self, preds, target):
         super().update(metric_recall_top_K(preds, target, self.k, self.metric))
+
+
+class MultiBatchRecallTopK:
+    def __init__(self, n, K, metric='cosine'):
+        self.metrics = [BatchRecallTopK(K, metric) for _ in range(n)]
+        self._multimetric = True
+
+    def __call__(self, multi_y_h, y):
+        for i, y_h in enumerate(multi_y_h):
+            self.metrics[i](y_h, y)
+
+    def reset(self):
+        for m in self.metrics:
+            m.reset()
+
+    def compute(self):
+        return [m.compute() for m in self.metrics]

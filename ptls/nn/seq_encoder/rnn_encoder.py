@@ -5,6 +5,7 @@ from torch import nn as nn
 from ptls.nn.seq_encoder.abs_seq_encoder import AbsSeqEncoder
 from ptls.nn.seq_step import LastStepEncoder, LastMaxAvgEncoder, FirstStepEncoder
 from ptls.data_load.padded_batch import PaddedBatch
+from ptls.nn.seq_encoder.utils import reset_parameters
 
 
 # TODO: split it on GRU Rnn Encoder and LSTM Rnn Encoder
@@ -54,7 +55,8 @@ class RnnEncoder(AbsSeqEncoder):
                  dropout=0,
                  trainable_starter='static',
                  is_reduce_sequence=False,  # previous default behavior RnnEncoder
-                 reducer='last_step'
+                 reducer='last_step',
+                 n_rnns = 5
                  ):
         super().__init__(is_reduce_sequence=is_reduce_sequence)
 
@@ -84,6 +86,15 @@ class RnnEncoder(AbsSeqEncoder):
                 batch_first=True,
                 bidirectional=self.bidirectional,
                 dropout=dropout)
+        elif self.rnn_type == 'multi_lstm':
+            self.rnn = torch.nn.ModuleList([nn.LSTM(input_size,
+                                                    self.hidden_size,
+                                                    num_layers=num_layers,
+                                                    batch_first=True,
+                                                    bidirectional=self.bidirectional,
+                                                    dropout=dropout) for _ in range(n_rnns)])
+            for m in self.rnn:
+                reset_parameters(m)
         else:
             raise Exception(f'wrong rnn type "{self.rnn_type}"')
 
@@ -134,13 +145,21 @@ class RnnEncoder(AbsSeqEncoder):
             out, _ = self.rnn(x.payload)
         elif self.rnn_type == 'gru':
             out, _ = self.rnn(x.payload, h_0)
+        elif self.rnn_type == 'multi_lstm':
+            out = [m(x.payload)[0] for m in self.rnn]
         else:
             raise Exception(f'wrong rnn type "{self.rnn_type}"')
 
-        out = PaddedBatch(out, x.seq_lens)
-        if self.is_reduce_sequence:
-            return self.reducer(out)
-        return out
+        if self.rnn_type == 'multi_lstm':
+            out = [PaddedBatch(x_, x.seq_lens) for x_ in out]
+            if self.is_reduce_sequence:
+                return [self.reducer(x_) for x_ in out]
+            return out
+        else:
+            out = PaddedBatch(out, x.seq_lens)
+            if self.is_reduce_sequence:
+                return self.reducer(out)
+            return out
 
     @property
     def embedding_size(self):
