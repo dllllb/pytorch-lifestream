@@ -16,6 +16,8 @@ class InferenceModule(pl.LightningModule):
 
     def forward(self, x: PaddedBatch):
         out = self.model(x)
+        if type(out) is list:
+            out = torch.cat(out, dim=-1)
         if self.drop_seq_features:
             x = x.drop_seq_features()
             x[self.model_out_name] = out
