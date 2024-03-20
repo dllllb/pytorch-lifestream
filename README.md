@@ -73,15 +73,13 @@ Library description [index](docs/index.md)
 
 We now have a [paper](https://arxiv.org/abs/2002.08232) you can cite for the None:
 ```bibtex
-@inproceedings{None,
-    title = "None",
-    author = "None",
-    booktitle = "None",
-    month = None,
-    year = "None",
-    address = "None",
-    publisher = "None",
-    url = "None",
-    pages = "None"
-}
+@inproceedings{Babaev_2022, series={SIGMOD/PODS ’22},
+   title={CoLES: Contrastive Learning for Event Sequences with Self-Supervision},
+   url={http://dx.doi.org/10.1145/3514221.3526129},
+   DOI={10.1145/3514221.3526129},
+   booktitle={Proceedings of the 2022 International Conference on Management of Data},
+   publisher={ACM},
+   author={Babaev, Dmitrii and Ovsov, Nikita and Kireev, Ivan and Ivanova, Maria and Gusev, Gleb and Nazarov, Ivan and Tuzhilin, Alexander},
+   year={2022},
+   month=jun, collection={SIGMOD/PODS ’22} }
 ```
