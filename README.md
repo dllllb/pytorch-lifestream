@@ -73,7 +73,7 @@ Library description [index](docs/index.md)
 
 We now have a [paper](https://arxiv.org/abs/2002.08232) you can cite for the None:
 ```bibtex
-@inproceedings{wolf-etal-2020-transformers,
+@inproceedings{None,
     title = "None",
     author = "None",
     booktitle = "None",
