@@ -1,5 +1,12 @@
 ![ptls-logo](https://sun9-70.userapi.com/impg/Oku1cYIJ-C8AJWE6xNs21_Y2hmYTeJi2Q1e_-Q/rEikfMcWMWA.jpg?size=2560x271&quality=96&sign=516a7b42c362b586b6c2e69a6eb70bb9&type=album)
 
+[![GitHub license](https://img.shields.io/github/license/catboost/catboost.svg)](https://github.com/catboost/catboost/blob/master/LICENSE)
+[![PyPI version](https://badge.fury.io/py/catboost.svg)](https://badge.fury.io/py/catboost)
+[![Conda Version](https://img.shields.io/conda/vn/conda-forge/catboost.svg)](https://anaconda.org/conda-forge/catboost)
+[![GitHub issues](https://img.shields.io/github/issues/catboost/catboost.svg)](https://github.com/catboost/catboost/issues)
+[![Telegram](https://img.shields.io/badge/chat-on%20Telegram-2ba2d9.svg)](https://t.me/catboost_en)
+[![Twitter](https://img.shields.io/badge/@CatBoostML--_.svg?style=social&logo=twitter)](https://twitter.com/CatBoostML)
+
 `pytorch-lifestream` a library built upon [PyTorch](https://pytorch.org/) for building embeddings on discrete event sequences using self-supervision. It can process terabyte-size volumes of raw events like game history events, clickstream data, purchase history or card transactions.
 
 It supports various methods of self-supervised training, adapted for event sequences:
