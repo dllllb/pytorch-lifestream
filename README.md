@@ -1,6 +1,6 @@
 ![ptls-logo](https://sun9-70.userapi.com/impg/Oku1cYIJ-C8AJWE6xNs21_Y2hmYTeJi2Q1e_-Q/rEikfMcWMWA.jpg?size=2560x271&quality=96&sign=516a7b42c362b586b6c2e69a6eb70bb9&type=album)
 
-[![GitHub license](https://img.shields.io/github/license/catboost/catboost.svg)](https://github.com/catboost/catboost/blob/master/LICENSE)
+[![GitHub license](https://img.shields.io/github/license/dllllb/pytorch-lifestream.svg)](https://github.com/dllllb/pytorch-lifestream/blob/master/LICENSE)
 [![PyPI version](https://badge.fury.io/py/pytorch-lifestream.svg)](https://badge.fury.io/py/pytorch-lifestream)
 [![GitHub issues](https://img.shields.io/github/issues/dllllb/pytorch-lifestream.svg)](https://github.com/dllllb/pytorch-lifestream/issues)
 [![Telegram](https://img.shields.io/badge/chat-on%20Telegram-2ba2d9.svg)](https://t.me/pytorch_lifestream)
