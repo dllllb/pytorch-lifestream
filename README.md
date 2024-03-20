@@ -68,3 +68,20 @@ Library description [index](docs/index.md)
 ## Experiments on public datasets
 
 `pytorch-lifestream` usage experiments on several public event datasets are available in the separate [repo](https://github.com/dllllb/ptls-experiments)
+
+## Citation
+
+We now have a [paper](https://arxiv.org/abs/2002.08232) you can cite for the None:
+```bibtex
+@inproceedings{wolf-etal-2020-transformers,
+    title = "None",
+    author = "None",
+    booktitle = "None",
+    month = None,
+    year = "None",
+    address = "None",
+    publisher = "None",
+    url = "None",
+    pages = "None"
+}
+```
