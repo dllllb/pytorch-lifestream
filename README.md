@@ -71,7 +71,7 @@ Library description [index](docs/index.md)
 
 ## Citation
 
-We now have a [paper](https://arxiv.org/abs/2002.08232) you can cite for the None:
+We have a [paper](https://arxiv.org/abs/2002.08232) you can cite it:
 ```bibtex
 @inproceedings{Babaev_2022, series={SIGMOD/PODS ’22},
    title={CoLES: Contrastive Learning for Event Sequences with Self-Supervision},
@@ -81,5 +81,6 @@ We now have a [paper](https://arxiv.org/abs/2002.08232) you can cite for the Non
    publisher={ACM},
    author={Babaev, Dmitrii and Ovsov, Nikita and Kireev, Ivan and Ivanova, Maria and Gusev, Gleb and Nazarov, Ivan and Tuzhilin, Alexander},
    year={2022},
-   month=jun, collection={SIGMOD/PODS ’22} }
+   month=jun, collection={SIGMOD/PODS ’22}
+}
 ```
