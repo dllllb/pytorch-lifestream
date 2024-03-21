@@ -194,9 +194,7 @@ class PlaneClassAssigner:
                 vector = norm_vector(raw_vector) * saturation_vector
             else:
                 vector = norm_vector(raw_vector * saturation_vector)
-            self.backup_v[ch] = raw_vector.reshape((self.sampling_conf[ch]['n_h_states'],
-                                                    self.sampling_conf[ch]['n_states'],
-                                                    self.sampling_conf[ch]['n_states']))
+            self.backup_v[ch] = raw_vector
             self.v[ch] = vector.reshape((self.sampling_conf[ch]['n_h_states'],
                                          self.sampling_conf[ch]['n_states'],
                                          self.sampling_conf[ch]['n_states']))
@@ -224,9 +222,14 @@ class PlaneClassAssigner:
         for ch in self.chains_saturation:
             saturation_value = correct_round(self.sampling_conf[ch]['dim'] * self.chains_saturation[ch])
             saturation_vector = np.where(self.backup_sat[ch] < saturation_value, 1, 0)
-            self.v[ch] = list()
-            for vector in self.backup_v[ch]:
-                self.v[ch].append(norm_vector(vector * saturation_vector))
+
+            if self.norm_before_saturation:
+                vector = norm_vector(self.backup_v[ch]) * saturation_vector
+            else:
+                vector = norm_vector(self.backup_v[ch]* saturation_vector)
+            self.v[ch] = vector.reshape((self.sampling_conf[ch]['n_h_states'],
+                                         self.sampling_conf[ch]['n_states'],
+                                         self.sampling_conf[ch]['n_states']))
 
 
 class SphereSampler:
