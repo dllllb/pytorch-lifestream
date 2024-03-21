@@ -271,7 +271,8 @@ class SphereSampler:
 
     @staticmethod
     def soft_norm(candidate):
-        candidate = np.exp(candidate) / np.exp(candidate).sum(axis=-1, keepdims=True)
+        for ch in candidate:
+            candidate[ch] = np.exp(candidate[ch]) / np.exp(candidate[ch]).sum(axis=-1, keepdims=True)
         return candidate
 
 
