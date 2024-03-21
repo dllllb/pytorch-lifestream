@@ -170,74 +170,43 @@ class PlaneClassAssigner:
                     .
                    }
     """
-    def __init__(self, chains_saturation, sampling_conf):
+    def __init__(self, chains_saturation, sampling_conf, norm_before_saturation=False):
         self.chains_saturation = chains_saturation
         self.sampling_conf = sampling_conf
         self.v = None
         self.backup_v = None
         self.backup_sat = None
-        self.h_saturation_impact, self.n_sat, self.saturation_factor = 0, 0, 0
+        self.norm_before_saturation = norm_before_saturation
         self.set_planes()
-
-        assert len(self.chains_saturation) <= 2
-        assert min([self.sampling_conf[ch]['n_h_states'] for ch in self.chains_saturation]) == 1
 
     def set_planes(self):
         self.v = dict()
         self.backup_v = dict()
         self.backup_sat = dict()
         for ch in self.chains_saturation:
-            self.v[ch] = list()
-            self.backup_v[ch] = list()
-
-            self.n_sat += self.chains_saturation[ch]
-            if self.sampling_conf[ch]['n_h_states'] > 1:
-                self.h_saturation_impact = self.chains_saturation[ch]
-
-            self.backup_sat[ch] = np.random.permutation(np.arange(self.sampling_conf[ch]['dim']))
-            saturation_value = correct_round(self.sampling_conf[ch]['dim'] * self.chains_saturation[ch])
+            vector_size = self.sampling_conf[ch]['dim'] * self.sampling_conf[ch]['n_h_states']
+            self.backup_sat[ch] = np.random.permutation(np.arange(vector_size))
+            saturation_value = correct_round(vector_size * self.chains_saturation[ch])
             saturation_vector = np.where(self.backup_sat[ch] < saturation_value, 1, 0)
 
-            for i in range(self.sampling_conf[ch]['n_h_states']):
-                raw_vector = np.random.randn(self.sampling_conf[ch]['dim'])
+            raw_vector = np.random.randn(vector_size)
+            if self.norm_before_saturation:
+                vector = norm_vector(raw_vector) * saturation_vector
+            else:
                 vector = norm_vector(raw_vector * saturation_vector)
-                self.backup_v[ch].append(raw_vector)
-                self.v[ch].append(vector)
+            self.backup_v[ch] = raw_vector.reshape((self.sampling_conf[ch]['n_h_states'],
+                                                    self.sampling_conf[ch]['n_states'],
+                                                    self.sampling_conf[ch]['n_states']))
+            self.v[ch] = vector.reshape((self.sampling_conf[ch]['n_h_states'],
+                                         self.sampling_conf[ch]['n_states'],
+                                         self.sampling_conf[ch]['n_states']))
 
-        self.saturation_factor = self.h_saturation_impact / self.n_sat
-
-    def check_class(self, client_vector, class_label):
-        resample_dict = dict()
-        mono_ch = list()
-        multi_ch = None
-        curr_prod = np.zeros(1)
+    def get_class(self, client_vector):
+        prod = 0
         for ch, x in client_vector.items():
             if ch in self.chains_saturation:
-
-                num_vectors = len(x)
-                if num_vectors > 1:
-                    multi_ch = ch
-                    curr_prod = np.tile(curr_prod, num_vectors)
-                else:
-                    mono_ch.append(ch)
-
-                norm_x = [norm_vector(a) for a in x]
-                x_ = np.stack(norm_x, axis=0)
-                v_ = np.stack(self.v[ch], axis=0)
-                prod = (x_ * v_).sum(axis=1)
-                curr_prod = curr_prod + prod
-        class_sign = 1 if class_label == 1 else -1
-        total = len(curr_prod)
-        corr = sign(curr_prod)
-        num_wrong = (corr != class_sign).sum()
-        if num_wrong == 0:
-            return dict()
-        elif num_wrong / total > self.saturation_factor or self.saturation_factor == 0:
-            for ch in mono_ch:
-                resample_dict[ch] = [0]
-        else:
-            resample_dict[multi_ch] = np.where(corr != class_sign)[0]
-        return resample_dict
+                prod += (self.v[ch] * x).sum()
+        return 1 if prod > 0 else 0
 
     def save_plane(self, file):
         with open(file + "_v", "wb") as f:
@@ -261,69 +230,46 @@ class PlaneClassAssigner:
 
 
 class SphereSampler:
-    def __init__(self, sampling_conf, class_assigners):
+    def __init__(self, sampling_conf, class_assigners, separate_norm=False):
         self.sampling_conf = sampling_conf
         self.class_assigners = class_assigners
+        self.separate_norm = separate_norm
 
     def sample_tensor(self):
         tensor = dict()
         for ch in self.sampling_conf:
-            tensor[ch] = list()
-            for i in range(self.sampling_conf[ch]['n_h_states']):
-                tensor[ch].append(np.random.randn(self.sampling_conf[ch]['dim']))
+            r = self.sampling_conf[ch]['sphere_r']
+            raw_vector = np.random.randn(self.sampling_conf[ch]['dim'] * self.sampling_conf[ch]['n_h_states'])
+            if self.separate_norm:
+                vector = raw_vector
+                for i in range(self.sampling_conf[ch]['n_h_states']):
+                    s = self.sampling_conf[ch]['dim'] * i
+                    e = self.sampling_conf[ch]['dim'] * (i + 1)
+                    vector[s:e] = norm_vector(raw_vector[s:e]) * r
+            else:
+                vector = norm_vector(raw_vector) * r
+
+            tensor[ch] = vector.reshape((self.sampling_conf[ch]['n_h_states'],
+                                         self.sampling_conf[ch]['n_states'],
+                                         self.sampling_conf[ch]['n_states']))
         return tensor
 
-    def resample(self, candidate, resample_dict):
-        for ch in candidate:
-            if ch in resample_dict:
-                for i, vector in enumerate(candidate[ch]):
-                    if i in resample_dict[ch]:
-                        new_vector = np.random.randn(vector.shape[0])
-                        candidate[ch][i] = new_vector
-        candidate = self.norm(candidate)
-        return candidate
-
     def sample(self, labels):
-        n_try = 0
-        candidate = self.norm(self.sample_tensor())
         while True:
+            candidate = self.sample_tensor()
             flag = True
             for k, v in labels.items():
-                resample_dict = self.class_assigners[k].check_class(candidate, v)
-                if len(resample_dict):
-                    candidate = self.resample(candidate, resample_dict)
+                if v != self.class_assigners[k].get_class(candidate):
                     flag = False
-                    n_try += 1
-                    break
             if flag:
                 break
-            elif n_try == 100:
-                n_try = 0
-                candidate = self.norm(self.sample_tensor())
-
-        candidate = self.reshape(candidate)
+        candidate = self.soft_norm(candidate)
         return candidate
 
-    def norm(self, client_tensor):
-        for ch, t in client_tensor.items():
-            r = self.sampling_conf[ch]['sphere_r']
-            norm_t = list()
-            for x in t:
-                norm_x = norm_vector(x) * r
-                norm_t.append(norm_x)
-            client_tensor[ch] = norm_t
-        return client_tensor
-
-    def reshape(self, client_tensor):
-        for ch, t in client_tensor.items():
-            n_states = self.sampling_conf[ch]['n_states']
-            shaped_t = [self.softmax_norm(x.reshape(n_states, n_states)) for x in t]
-            client_tensor[ch] = np.stack(shaped_t, axis=-1)
-        return client_tensor
-
     @staticmethod
-    def softmax_norm(matrix):
-        return np.exp(matrix) / np.exp(matrix).sum(axis=-1, keepdims=True)
+    def soft_norm(candidate):
+        candidate = np.exp(candidate) / np.exp(candidate).sum(axis=-1, keepdims=True)
+        return candidate
 
 
 class MarkovChain:
@@ -338,7 +284,6 @@ class MarkovChain:
         self.noise = noise
 
         self.state = None
-        self.noise_state = None
 
         self.transition2state_matrix = np.arange(self.n_states**2).reshape(self.n_states, self.n_states)
         self.ready = False if self.transition_tensor is None else True
@@ -363,10 +308,10 @@ class MarkovChain:
         assert self.ready
         if self.n_h_states <= 1:
             h_state = 0
-        self.state = np.random.choice(self.n_states, p=self.transition_tensor[self.state, :, h_state])
+        self.state = np.random.choice(self.n_states, p=self.transition_tensor[h_state, self.state, :])
         if self.noise_tensor is not None:
-            self.noise_state = np.random.choice(self.n_states, p=self.noise_tensor[self.noise_state, :, h_state])
-            state = self.state if np.random.rand() >= self.noise else self.noise_state
+            noise_state = np.random.choice(self.n_states, p=self.noise_tensor[h_state, self.state, :])
+            state = self.state if np.random.rand() >= self.noise else noise_state
         else:
             state = self.state
         return state, self.state

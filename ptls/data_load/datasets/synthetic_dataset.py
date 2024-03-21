@@ -113,7 +113,6 @@ class MonoTargetSyntheticDatasetWriter(SyntheticDatasetWriter):
         shuffle(clients)
         return clients
     '''
-
     def get_clients(self, n):
         per_class_n = int(n / 2)
         clients = [SyntheticClient({0: 0}, self.config, self.schedule) for _ in range(per_class_n)] + \
