@@ -311,13 +311,13 @@ class MarkovChain:
         assert self.ready
         if self.n_h_states <= 1:
             h_state = 0
-        true_state = np.random.choice(self.n_states, p=self.transition_tensor[h_state, self.state, :])
+        self.state = np.random.choice(self.n_states, p=self.transition_tensor[h_state, self.state, :])
         if self.noise_tensor is not None:
             noise_state = np.random.choice(self.n_states, p=self.noise_tensor[h_state, self.state, :])
-            self.state = true_state if np.random.rand() >= self.noise else noise_state
+            state_h = self.state if np.random.rand() >= self.noise else noise_state
         else:
-            self.state = true_state
-        return self.state, true_state
+            state_h = self.state
+        return self.state, state_h
 
     def transition2state(self, a, b):
         return self.transition2state_matrix[a, b]
