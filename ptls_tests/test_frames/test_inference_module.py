@@ -3,6 +3,7 @@ import torch
 from omegaconf import OmegaConf
 import pandas as pd
 from sklearn.metrics import roc_auc_score
+from itertools import chain
 import numpy as np
 
 from ptls.data_load import PaddedBatch
@@ -28,7 +29,7 @@ _args_:
         trans_type:
           in: 11
           out: 2
-      numeric_values: 
+      numeric_values:
         amount: log
     hidden_size: 16
   - _target_: ptls.nn.Head
@@ -86,3 +87,97 @@ def test_score_model_mult2():
 
     np.testing.assert_array_almost_equal(id1, np.array([0, 1, 2, 3, 0, 1, 0]))
     assert id2.tolist() == ['0', '1', '2', '3', '0', '1', '0']
+
+def get_rnn_seq_encoder_emb():
+    conf = OmegaConf.create("""
+_target_: ptls.nn.RnnSeqEncoder
+trx_encoder:
+  _target_: ptls.nn.TrxEncoder
+  embeddings:
+    mcc_code:
+      in: 21
+      out: 3
+    trans_type:
+      in: 11
+      out: 2
+  numeric_values:
+    amount: log
+hidden_size: 16
+    """)
+    return hydra.utils.instantiate(conf)
+
+
+def test_inference_module_sequence():
+    lengths = (torch.rand(1000)*60+1).long()
+    trx_num = np.sum(lengths.numpy())
+    trx_data = gen_trx_data(lengths, target_type='multi_cls', use_feature_arrays_key=False)
+    valid_loader = torch.utils.data.DataLoader(
+        trx_data,
+        batch_size=64, collate_fn=collate_feature_dict)
+    seq_enc = get_rnn_seq_encoder_emb()
+    seq_enc.is_reduce_sequence = False
+    rnn_model = InferenceModule(
+        model=seq_enc,
+        drop_seq_features=False,
+        model_out_name='pred',
+    )
+
+    df_out = pd.concat(pl.Trainer(gpus=0, max_epochs=-1).predict(rnn_model, valid_loader))
+    assert df_out.shape == (trx_num, 20)
+    assert list(df_out.mcc_code) == [mcc for usr in trx_data for mcc in usr['mcc_code']]
+
+def test_inference_module_sequence_drop_seq():
+    lengths = (torch.rand(1000)*60+1).long()
+    trx_num = np.sum(lengths.numpy())
+    trx_data = gen_trx_data(lengths, target_type='multi_cls', use_feature_arrays_key=False)
+    valid_loader = torch.utils.data.DataLoader(
+        trx_data,
+        batch_size=64, collate_fn=collate_feature_dict)
+    seq_enc = get_rnn_seq_encoder_emb()
+    seq_enc.is_reduce_sequence = False
+    rnn_model = InferenceModule(
+        model=seq_enc,
+        drop_seq_features=True,
+        model_out_name='pred',
+    )
+
+    df_out = pd.concat(pl.Trainer(gpus=0, max_epochs=-1).predict(rnn_model, valid_loader))
+    assert df_out.shape == (trx_num, 17)
+    assert list(df_out.target) == list(chain(*[[usr['target']]*usr['mcc_code'].shape[0] for usr in trx_data]))
+
+
+def test_inference_module_record():
+    lengths = (torch.rand(1000)*60+1).long()
+    trx_data = gen_trx_data(lengths, target_type='multi_cls', use_feature_arrays_key=False)
+    valid_loader = torch.utils.data.DataLoader(
+        trx_data,
+        batch_size=64, collate_fn=collate_feature_dict)
+    seq_enc = get_rnn_seq_encoder_emb()
+    seq_enc.is_reduce_sequence = True
+    rnn_model = InferenceModule(
+        model=seq_enc,
+        drop_seq_features=False,
+        model_out_name='pred',
+    )
+
+    df_out = pd.concat(pl.Trainer(gpus=0, max_epochs=-1).predict(rnn_model, valid_loader))
+    assert df_out.shape == (1000, 20)
+    np.testing.assert_array_almost_equal(list(df_out.mcc_code)[0], [mcc for mcc in trx_data[0]['mcc_code']])
+
+def test_inference_module_record_drop_seq():
+    lengths = (torch.rand(1000)*60+1).long()
+    trx_data = gen_trx_data(lengths, target_type='multi_cls', use_feature_arrays_key=False)
+    valid_loader = torch.utils.data.DataLoader(
+        trx_data,
+        batch_size=64, collate_fn=collate_feature_dict)
+    seq_enc = get_rnn_seq_encoder_emb()
+    seq_enc.is_reduce_sequence = True
+    rnn_model = InferenceModule(
+        model=seq_enc,
+        drop_seq_features=True,
+        model_out_name='pred',
+    )
+
+    df_out = pd.concat(pl.Trainer(gpus=0, max_epochs=-1).predict(rnn_model, valid_loader))
+    assert df_out.shape == (1000, 17)
+    assert list(df_out.target)[0] == trx_data[0]['target']
