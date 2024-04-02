@@ -73,6 +73,10 @@ class ABSModule(pl.LightningModule):
 
     def validation_step(self, batch, _):
         y_h, y = self.shared_step(*batch)
+        out = self._loss(y_h, y)
+        loss, info = out
+        for k, v in info.items():
+            self.log("valid_" + k, v)
         self._validation_metric(y_h, y)
 
     def on_validation_epoch_end(self):
