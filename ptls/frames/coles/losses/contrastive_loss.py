@@ -100,6 +100,11 @@ class CLUBLoss(nn.Module):
         for param in chain(self.model_mu.parameters(), self.model_log_var.parameters()):
             param.requires_grad = true_false
 
+    def get_mu_log_var(self, inp):
+        mu = self.model_mu(inp)
+        log_var = self.model_logvar(inp)
+        return mu, log_var
+
     def forward(self, multi_embeddings, *argv):
         assert len(multi_embeddings) == 2
         domain_a, domain_b = multi_embeddings
