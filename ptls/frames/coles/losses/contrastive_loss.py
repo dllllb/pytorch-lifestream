@@ -102,7 +102,7 @@ class CLUBLoss(nn.Module):
 
     def get_mu_log_var(self, inp):
         mu = self.model_mu(inp)
-        log_var = self.model_logvar(inp)
+        log_var = self.model_log_var(inp)
         return mu, log_var
 
     def forward(self, multi_embeddings, *argv):
