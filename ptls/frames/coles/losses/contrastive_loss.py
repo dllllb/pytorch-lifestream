@@ -1,6 +1,7 @@
 import torch
 from torch import nn as nn
 from torch.nn import functional as F
+from ptls.nn.normalization import L2NormEncoder
 
 
 class ContrastiveLoss(nn.Module):
@@ -60,38 +61,37 @@ class MultiContrastiveLoss(nn.Module):
         return loss, info
 
 
-class AdvLoss(nn.Module):
-    def __init__(self, input_dim, h_sizes):
-        super().__init__()
-        self.input_dim = input_dim
-        h_sizes = [input_dim] + h_sizes + [1]
-        layers = list()
-        for i in range(1, len(h_sizes)):
-            layers.append(nn.Linear(h_sizes[i - 1], h_sizes[i]))
-            layers.append(nn.BatchNorm1d(h_sizes[i]))
-            layers.append(nn.ReLU())
-        layers.pop(-1)
-        layers.append(nn.Sigmoid())
-        self.prob_model = nn.Sequential(*layers)
-
-    def forward(self, multi_embeddings, *argv):
-        domain_a, domain_b = multi_embeddings
-        return
-
-
 class CLUBLoss(nn.Module):
-    def __init__(self, input_dim, h_sizes, emb_coef=1., prob_coef=1.):
+    def __init__(self, input_dim, h_sizes, emb_coef=1., prob_coef=1., use_batch_norm=False):
         super().__init__()
         self.input_dim = input_dim
-        h_sizes = [input_dim * 2] + h_sizes + [1]
-        layers = list()
+        h_sizes = [input_dim] + h_sizes + [input_dim]
+        layers_mu, layers_log_var = list(), list()
+
         for i in range(1, len(h_sizes)):
-            layers.append(nn.Linear(h_sizes[i-1], h_sizes[i]))
-            layers.append(nn.BatchNorm1d(h_sizes[i]))
-            layers.append(nn.ReLU())
-        layers.pop(-1)
-        layers.append(nn.Sigmoid())
-        self.prob_model = nn.Sequential(*layers)
+
+            layers_mu.append(nn.Linear(h_sizes[i-1], h_sizes[i]))
+            if use_batch_norm:
+                layers_mu.append(nn.BatchNorm1d(h_sizes[i]))
+            layers_mu.append(nn.ReLU())
+
+            layers_log_var.append(nn.Linear(h_sizes[i - 1], h_sizes[i]))
+            if use_batch_norm:
+                layers_log_var.append(nn.BatchNorm1d(h_sizes[i]))
+            layers_log_var.append(nn.ReLU())
+
+        layers_mu.pop(-1)
+        if use_batch_norm:
+            layers_mu.pop(-1)
+        layers_mu.append(L2NormEncoder())
+
+        layers_log_var.pop(-1)
+        if use_batch_norm:
+            layers_log_var.pop(-1)
+        layers_log_var.append(nn.Tanh())
+
+        self.model_mu = nn.Sequential(*layers_mu)
+        self.model_log_var = nn.Sequential(*layers_log_var)
         self.emb_coef = emb_coef
         self.prob_coef = prob_coef
 
@@ -99,28 +99,32 @@ class CLUBLoss(nn.Module):
         for param in self.prob_model.parameters():
             param.requires_grad = true_false
 
+    def get_mu_log_var(self, inp):
+        mu = self.model_mu(inp)
+        log_var = self.model_logvar(inp)
+        return mu, log_var
+
+    def log_like(self, domain_a, domain_b):
+        mu, log_var = self.get_mu_log_var(domain_a)
+        return (-(domain_b - mu) ** 2 / log_var.exp() - log_var).sum(dim=-1)
+
     def forward(self, multi_embeddings, *argv):
         assert len(multi_embeddings) == 2
         domain_a, domain_b = multi_embeddings
-        random_inds = torch.randperm(domain_a.shape[0])
-        neg_inp = torch.cat([domain_a[random_inds], domain_b], dim=-1)
-        pos_inp = torch.cat([domain_a, domain_b], dim=-1)
 
         self.switch_prob_model_rg(False)
-        embed_model_pos = self.prob_model(pos_inp)
-        embed_model_neg = self.prob_model(neg_inp)
-        embed_model_loss = (torch.log(embed_model_pos) - torch.log(embed_model_neg)).mean()
-        with torch.no_grad():
-            accuracy = ((embed_model_pos > 0.5).float().mean() + (embed_model_neg < 0.5).float().mean()) / 2
+        mu, log_var = self.get_mu_log_var(domain_a)
+        pos_probs = (-(domain_b - mu) ** 2 / log_var.exp() - log_var).sum(dim=-1)
+        neg_probs = ((-(domain_b.unsqueeze(0) - mu.unsqueeze(1)) ** 2).mean(dim=1)
+                     / log_var.exp() - log_var).sum(dim=-1)
+        embed_model_loss = (pos_probs - neg_probs).mean()
 
         self.switch_prob_model_rg(True)
-        prob_model_loss_pos = self.prob_model(pos_inp.detach())
-        prob_model_loss_neg = self.prob_model(neg_inp.detach())
-        prob_model_loss = -(torch.log(prob_model_loss_pos) + torch.log(1 - prob_model_loss_neg)).mean()
+        mu, log_var = self.get_mu_log_var(domain_a.detach())
+        prob_model_loss = ((domain_b.detach() - mu) ** 2 / log_var.exp() + log_var).sum(dim=-1).mean()
 
         loss = self.emb_coef * embed_model_loss + self.prob_coef * prob_model_loss
         info = {"CLUB_embed_loss": embed_model_loss.item(),
                 "CLUB_prob_loss": prob_model_loss.item(),
-                "CLUB_total_loss": loss.item(),
-                "CLUB_accuracy": accuracy.item()}
+                "CLUB_total_loss": loss.item()}
         return loss, info
