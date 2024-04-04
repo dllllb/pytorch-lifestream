@@ -2,6 +2,7 @@ import torch
 from torch import nn as nn
 from torch.nn import functional as F
 from ptls.nn.normalization import L2NormEncoder
+from itertools import chain
 
 
 class ContrastiveLoss(nn.Module):
@@ -96,17 +97,8 @@ class CLUBLoss(nn.Module):
         self.prob_coef = prob_coef
 
     def switch_prob_model_rg(self, true_false):
-        for param in self.prob_model.parameters():
+        for param in chain(self.model_mu.parameters(), self.model_log_var.parameters()):
             param.requires_grad = true_false
-
-    def get_mu_log_var(self, inp):
-        mu = self.model_mu(inp)
-        log_var = self.model_logvar(inp)
-        return mu, log_var
-
-    def log_like(self, domain_a, domain_b):
-        mu, log_var = self.get_mu_log_var(domain_a)
-        return (-(domain_b - mu) ** 2 / log_var.exp() - log_var).sum(dim=-1)
 
     def forward(self, multi_embeddings, *argv):
         assert len(multi_embeddings) == 2
