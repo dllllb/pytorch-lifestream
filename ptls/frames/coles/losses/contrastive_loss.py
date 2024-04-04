@@ -120,8 +120,12 @@ class CLUBLoss(nn.Module):
         mu, log_var = self.get_mu_log_var(domain_a.detach())
         prob_model_loss = ((domain_b.detach() - mu) ** 2 / log_var.exp() + log_var).sum(dim=-1).mean()
 
+        with torch.no_grad():
+            cos_dist = (mu * domain_b).sum(dim=-1).mean()
+
         loss = self.emb_coef * embed_model_loss + self.prob_coef * prob_model_loss
         info = {"CLUB_embed_loss": embed_model_loss.item(),
                 "CLUB_prob_loss": prob_model_loss.item(),
-                "CLUB_total_loss": loss.item()}
+                "CLUB_total_loss": loss.item(),
+                "CLUB_cos_dist": cos_dist.item()}
         return loss, info
