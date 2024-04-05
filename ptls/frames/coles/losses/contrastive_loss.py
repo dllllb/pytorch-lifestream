@@ -26,13 +26,13 @@ class ContrastiveLoss(nn.Module):
 
         positive_pairs, negative_pairs = self.pair_selector.get_pairs(embeddings, target)
         #positive_loss = F.pairwise_distance(embeddings[positive_pairs[:, 0]], embeddings[positive_pairs[:, 1]]).pow(2)
-        positive_loss = - embeddings[positive_pairs[:, 0]] * embeddings[positive_pairs[:, 1]]
+        positive_loss = - (embeddings[positive_pairs[:, 0]] * embeddings[positive_pairs[:, 1]]).sum(axis=-1)
 
         #negative_loss = F.relu(
         #    self.margin - F.pairwise_distance(embeddings[negative_pairs[:, 0]], embeddings[negative_pairs[:, 1]])
         #).pow(2)
         negative_loss = F.relu(
-            1 + embeddings[negative_pairs[:, 0]] * embeddings[negative_pairs[:, 1]] - self.margin
+            1 + (embeddings[negative_pairs[:, 0]] * embeddings[negative_pairs[:, 1]]).sum(axis=-1) - self.margin
         )
         loss = torch.cat([positive_loss, negative_loss], dim=0).mean()
 
@@ -61,12 +61,12 @@ class MultiContrastiveLoss(nn.Module):
             positive_pairs, negative_pairs = self.pair_selector.get_pairs(embeddings, target)
             #positive_loss = F.pairwise_distance(embeddings[positive_pairs[:, 0]],
             #                                    embeddings[positive_pairs[:, 1]]).pow(2)
-            positive_loss = - embeddings[positive_pairs[:, 0]] * embeddings[positive_pairs[:, 1]]
+            positive_loss = - (embeddings[positive_pairs[:, 0]] * embeddings[positive_pairs[:, 1]]).sum(axis=-1)
 
             #negative_loss = F.relu(self.margin - F.pairwise_distance(embeddings[negative_pairs[:, 0]],
             #                                                         embeddings[negative_pairs[:, 1]])).pow(2)
             negative_loss = F.relu(
-                1 + embeddings[negative_pairs[:, 0]] * embeddings[negative_pairs[:, 1]] - self.margin
+                1 + (embeddings[negative_pairs[:, 0]] * embeddings[negative_pairs[:, 1]]).sum(axis=-1) - self.margin
             )
             loss_i = torch.cat([positive_loss, negative_loss], dim=0).mean()
             loss += loss_i
