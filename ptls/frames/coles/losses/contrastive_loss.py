@@ -26,22 +26,26 @@ class ContrastiveLoss(nn.Module):
 
         positive_pairs, negative_pairs = self.pair_selector.get_pairs(embeddings, target)
         #positive_loss = F.pairwise_distance(embeddings[positive_pairs[:, 0]], embeddings[positive_pairs[:, 1]]).pow(2)
-        positive_loss = - (embeddings[positive_pairs[:, 0]] * embeddings[positive_pairs[:, 1]]).sum(axis=-1)
+        positive_loss = - (embeddings[positive_pairs[:, 0]] * embeddings[positive_pairs[:, 1]]).sum(axis=-1).mean()
 
         #negative_loss = F.relu(
         #    self.margin - F.pairwise_distance(embeddings[negative_pairs[:, 0]], embeddings[negative_pairs[:, 1]])
         #).pow(2)
         negative_loss = F.relu(
             1 + (embeddings[negative_pairs[:, 0]] * embeddings[negative_pairs[:, 1]]).sum(axis=-1) - self.margin
-        )
-        loss = torch.cat([positive_loss, negative_loss], dim=0).mean()
+        ).mean()
+        #loss = torch.cat([positive_loss, negative_loss], dim=0).mean()
+        loss = positive_loss + negative_loss
 
         with torch.no_grad():
             rand_inds = torch.randperm(embeddings.shape[0])
             rand_embs = embeddings[rand_inds]
             rand_cos = (embeddings * rand_embs).sum(dim=-1).mean()
 
-        return loss, {"loss_0": loss.cpu().item(), "CLUB_cos_b2neg_b": rand_cos.item(),}
+        return loss, {"loss_0": loss.item(),
+                      "pos_loss_0": positive_loss.item(),
+                      "neg_loss_0": negative_loss.item(),
+                      "CLUB_cos_b2neg_b": rand_cos.item()}
 
 
 class MultiContrastiveLoss(nn.Module):
