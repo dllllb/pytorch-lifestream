@@ -3,6 +3,7 @@ from torch import nn as nn
 from torch.nn import functional as F
 from ptls.nn.normalization import L2NormEncoder
 from itertools import chain
+import numpy as np
 
 
 class ContrastiveLoss(nn.Module):
@@ -102,30 +103,44 @@ class CLUBLoss(nn.Module):
 
     def get_mu_log_var(self, inp):
         mu = self.model_mu(inp)
-        log_var = self.model_log_var(inp)
+        log_var = self.model_log_var(inp) * 2
         return mu, log_var
 
     def forward(self, multi_embeddings, *argv):
         assert len(multi_embeddings) == 2
         domain_a, domain_b = multi_embeddings
+        random_inds = torch.randperm(domain_b.shape[0])
+        neg_domain_b = domain_b[random_inds]
 
         self.switch_prob_model_rg(False)
         mu, log_var = self.get_mu_log_var(domain_a)
         pos_probs = (-(domain_b - mu) ** 2 / log_var.exp() - log_var).sum(dim=-1)
-        neg_probs = ((-(domain_b.unsqueeze(0) - mu.unsqueeze(1)) ** 2).mean(dim=1)
-                     / log_var.exp() - log_var).sum(dim=-1)
+        #neg_probs = ((-(domain_b.unsqueeze(0) - mu.unsqueeze(1)) ** 2).mean(dim=1)
+        #             / log_var.exp() - log_var).sum(dim=-1)
+        neg_probs = (-(neg_domain_b - mu) ** 2 / log_var.exp() - log_var).sum(dim=-1)
         embed_model_loss = (pos_probs - neg_probs).mean()
-
-        self.switch_prob_model_rg(True)
-        mu, log_var = self.get_mu_log_var(domain_a.detach())
-        prob_model_loss = ((domain_b.detach() - mu) ** 2 / log_var.exp() + log_var).sum(dim=-1).mean()
 
         with torch.no_grad():
             cos_dist = (mu * domain_b).sum(dim=-1).mean()
+            cos_random_dist = (mu * neg_domain_b).sum(dim=-1).mean()
+            cos_b2neg_b = (domain_b * neg_domain_b).sum(dim=-1).mean()
+            mean_pos_prob = torch.exp(0.5 * (pos_probs / domain_b.shape[-1] - np.log(2*np.pi))).mean()
+            mean_neg_prob = torch.exp(0.5 * (neg_probs / domain_b.shape[-1] - np.log(2*np.pi))).mean()
+            mean_logvar = log_var.mean()
+
+        self.switch_prob_model_rg(True)
+        mu, log_var = self.get_mu_log_var(domain_a.detach())
+        #prob_model_loss = ((domain_b.detach() - mu) ** 2 / log_var.exp() + log_var).sum(dim=-1).mean()
+        prob_model_loss = 0.5 * ((domain_b.detach() - mu) ** 2 / log_var.exp() + log_var + np.log(2*np.pi)).sum(dim=-1).mean()
 
         loss = self.emb_coef * embed_model_loss + self.prob_coef * prob_model_loss
         info = {"CLUB_embed_loss": embed_model_loss.item(),
                 "CLUB_prob_loss": prob_model_loss.item(),
                 "CLUB_total_loss": loss.item(),
-                "CLUB_cos_dist": cos_dist.item()}
+                "CLUB_cos_dist": cos_dist.item(),
+                "CLUB_cos_random_dist": cos_random_dist.item(),
+                "CLUB_cos_b2neg_b": cos_b2neg_b.item(),
+                "CLUB_mean_pos_prob": mean_pos_prob.item(),
+                "CLUB_mean_neg_prob": mean_neg_prob.item(),
+                "CLUB_mean_logvar": mean_logvar.item()}
         return loss, info
