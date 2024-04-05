@@ -33,7 +33,6 @@ def outer_pairwise_distance(A, B=None):
         return A @ B.T
 
     else:
-        0/0
         batch_size = max(1, max_size // (n * d))
         batch_results = []
         for i in range((m - 1) // batch_size + 1):
