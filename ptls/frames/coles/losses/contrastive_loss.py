@@ -25,11 +25,15 @@ class ContrastiveLoss(nn.Module):
             target = target["coles_target"]
 
         positive_pairs, negative_pairs = self.pair_selector.get_pairs(embeddings, target)
-        positive_loss = F.pairwise_distance(embeddings[positive_pairs[:, 0]], embeddings[positive_pairs[:, 1]]).pow(2)
+        #positive_loss = F.pairwise_distance(embeddings[positive_pairs[:, 0]], embeddings[positive_pairs[:, 1]]).pow(2)
+        positive_loss = - embeddings[positive_pairs[:, 0]] * embeddings[positive_pairs[:, 1]]
 
+        #negative_loss = F.relu(
+        #    self.margin - F.pairwise_distance(embeddings[negative_pairs[:, 0]], embeddings[negative_pairs[:, 1]])
+        #).pow(2)
         negative_loss = F.relu(
-            self.margin - F.pairwise_distance(embeddings[negative_pairs[:, 0]], embeddings[negative_pairs[:, 1]])
-        ).pow(2)
+            1 + embeddings[negative_pairs[:, 0]] * embeddings[negative_pairs[:, 1]] - self.margin
+        )
         loss = torch.cat([positive_loss, negative_loss], dim=0).mean()
 
         with torch.no_grad():
@@ -55,11 +59,15 @@ class MultiContrastiveLoss(nn.Module):
         info = dict()
         for i, embeddings in enumerate(multi_embeddings):
             positive_pairs, negative_pairs = self.pair_selector.get_pairs(embeddings, target)
-            positive_loss = F.pairwise_distance(embeddings[positive_pairs[:, 0]],
-                                                embeddings[positive_pairs[:, 1]]).pow(2)
+            #positive_loss = F.pairwise_distance(embeddings[positive_pairs[:, 0]],
+            #                                    embeddings[positive_pairs[:, 1]]).pow(2)
+            positive_loss = - embeddings[positive_pairs[:, 0]] * embeddings[positive_pairs[:, 1]]
 
-            negative_loss = F.relu(self.margin - F.pairwise_distance(embeddings[negative_pairs[:, 0]],
-                                                                     embeddings[negative_pairs[:, 1]])).pow(2)
+            #negative_loss = F.relu(self.margin - F.pairwise_distance(embeddings[negative_pairs[:, 0]],
+            #                                                         embeddings[negative_pairs[:, 1]])).pow(2)
+            negative_loss = F.relu(
+                1 + embeddings[negative_pairs[:, 0]] * embeddings[negative_pairs[:, 1]] - self.margin
+            )
             loss_i = torch.cat([positive_loss, negative_loss], dim=0).mean()
             loss += loss_i
             info["COLES_loss_" + str(i)] = loss_i.item()
@@ -129,6 +137,7 @@ class CLUBLoss(nn.Module):
             cos_dist = (mu * domain_b).sum(dim=-1).mean()
             cos_random_dist = (mu * neg_domain_b).sum(dim=-1).mean()
             cos_b2neg_b = (domain_b * neg_domain_b).sum(dim=-1).mean()
+            cos_mu2neg_mu = (mu * mu[random_inds]).sum(dim=-1).mean()
             mean_pos_prob = torch.exp(0.5 * (pos_probs / domain_b.shape[-1] - np.log(2*np.pi))).mean()
             mean_neg_prob = torch.exp(0.5 * (neg_probs / domain_b.shape[-1] - np.log(2*np.pi))).mean()
             mean_logvar = log_var.mean()
@@ -144,6 +153,7 @@ class CLUBLoss(nn.Module):
                 "CLUB_cos_dist": cos_dist.item(),
                 "CLUB_cos_random_dist": cos_random_dist.item(),
                 "CLUB_cos_b2neg_b": cos_b2neg_b.item(),
+                "CLUB_cos_mu2neg_mu": cos_mu2neg_mu.item(),
                 "CLUB_mean_pos_prob": mean_pos_prob.item(),
                 "CLUB_mean_neg_prob": mean_neg_prob.item(),
                 "CLUB_mean_logvar": mean_logvar.item()}

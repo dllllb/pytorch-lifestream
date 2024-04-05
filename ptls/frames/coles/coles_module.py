@@ -48,7 +48,7 @@ class CoLESModule(ABSModule):
             head = Head(use_norm_encoder=True)
 
         if loss is None:
-            loss = ContrastiveLoss(margin=0.5,
+            loss = ContrastiveLoss(margin=1.,#margin=0.5,
                                    sampling_strategy=HardNegativePairSelector(neg_count=5))
 
         if validation_metric is None:
