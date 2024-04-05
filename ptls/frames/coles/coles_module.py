@@ -2,7 +2,7 @@ from ptls.frames.abs_module import ABSModule
 from ptls.frames.coles.losses import ContrastiveLoss
 from ptls.frames.coles.metric import BatchRecallTopK
 from ptls.frames.coles.sampling_strategies import HardNegativePairSelector
-from ptls.nn.head import Head
+from ptls.nn.head import Head, SphereHead
 from ptls.nn.seq_encoder.containers import SeqEncoderContainer
 
 
@@ -45,7 +45,8 @@ class CoLESModule(ABSModule):
                  optimizer_partial=None,
                  lr_scheduler_partial=None):
         if head is None:
-            head = Head(use_norm_encoder=True)
+            #head = Head(use_norm_encoder=True)
+            head = SphereHead()
 
         if loss is None:
             loss = ContrastiveLoss(margin=1.,#margin=0.5,

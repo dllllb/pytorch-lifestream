@@ -96,3 +96,21 @@ class Head(torch.nn.Module):
         if type(x) is list:
             return [self.model[i](x[i]) for i in range(len(x))]
         return self.model(x)
+
+
+class SphereHead(torch.nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.register_buffer("one", torch.tensor(1).reshape(1, 1))
+
+    def forward(self, phi):
+        if type(phi) is list:
+            return [self.model[i](phi[i]) for i in range(len(phi))]
+        bs, _ = phi.shape
+        phi = phi + 1
+        phi[:, :-1] = phi[:, :-1] / 2
+        phi = phi * torch.pi
+        sin = torch.cat([torch.tile(self.one, [bs, 1]), torch.sin(phi)], dim=1)
+        cos = torch.cat([torch.cos(phi), torch.tile(self.one, [bs, 1])], dim=1)
+        x = torch.cumprod(sin, dim=1) * cos
+        return x
