@@ -32,7 +32,12 @@ class ContrastiveLoss(nn.Module):
         ).pow(2)
         loss = torch.cat([positive_loss, negative_loss], dim=0).mean()
 
-        return loss, {"loss_0": loss.cpu().item()}
+        with torch.no_grad():
+            rand_inds = torch.randperm(embeddings.shape[0])
+            rand_embs = embeddings[rand_inds]
+            rand_cos = (embeddings * rand_embs).sum(dim=-1).mean()
+
+        return loss, {"loss_0": loss.cpu().item(), "CLUB_cos_b2neg_b": rand_cos.item(),}
 
 
 class MultiContrastiveLoss(nn.Module):
@@ -130,8 +135,7 @@ class CLUBLoss(nn.Module):
 
         self.switch_prob_model_rg(True)
         mu, log_var = self.get_mu_log_var(domain_a.detach())
-        #prob_model_loss = ((domain_b.detach() - mu) ** 2 / log_var.exp() + log_var).sum(dim=-1).mean()
-        prob_model_loss = 0.5 * ((domain_b.detach() - mu) ** 2 / log_var.exp() + log_var + np.log(2*np.pi)).sum(dim=-1).mean()
+        prob_model_loss = ((domain_b.detach() - mu) ** 2 / log_var.exp() + log_var).sum(dim=-1).mean()
 
         loss = self.emb_coef * embed_model_loss + self.prob_coef * prob_model_loss
         info = {"CLUB_embed_loss": embed_model_loss.item(),
