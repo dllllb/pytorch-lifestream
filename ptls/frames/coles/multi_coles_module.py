@@ -39,11 +39,6 @@ class MultiCoLESModule(ABSModule):
             loss = ContrastiveLoss(margin=1.,
                                    sampling_strategy=HardNegativePairSelector(neg_count=5))
 
-        if discriminator_loss is None:
-            self.discriminator_loss = CLUBLoss(emb_coef=1., prob_coef=1.)
-        else:
-            self.discriminator_loss = discriminator_loss
-
         if validation_metric is None:
             validation_metric = BatchRecallTopK(K=4, metric='cosine')
 
@@ -52,6 +47,11 @@ class MultiCoLESModule(ABSModule):
                          loss,
                          optimizer_partial,
                          lr_scheduler_partial)
+
+        if discriminator_loss is None:
+            self.discriminator_loss = CLUBLoss(emb_coef=1., prob_coef=1.)
+        else:
+            self.discriminator_loss = discriminator_loss
 
         self.trained_models = None
         if trained_encoders is not None:
