@@ -24,13 +24,15 @@ class MultiCoLESModule(ABSModule):
                  trained_encoders=None,
                  coles_coef=1.,
                  embed_coef=1.,
-                 g_step_every=1):
+                 g_step_every=1,
+                 disc_warmup=0):
 
         assert discriminator is not None and d_optimizer_partial is not None
         #assert (seq_encoder.n_encoders == 1) != (trained_encoders is not None)
         self.coles_coef = coles_coef
         self.embed_coef = embed_coef
         self.g_step_every = g_step_every
+        self.disc_warmup = disc_warmup
 
         if head is None:
             head = Head(use_norm_encoder=True)
@@ -116,7 +118,7 @@ class MultiCoLESModule(ABSModule):
         d_opt.step()
 
         # g opt
-        if batch_idx % self.g_step_every == 0:
+        if batch_idx % self.g_step_every == 0 and batch_idx >= self.disc_warmup:
             domain_a_pred = self.discriminator(domain_b)
             coles_loss, coles_info = self._loss(domain_b, y)
             embed_loss, embed_info = self.discriminator_loss.embed_loss(domain_a, domain_a_pred)
