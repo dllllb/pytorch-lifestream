@@ -33,6 +33,7 @@ class MultiCoLESModule(ABSModule):
         self.embed_coef = embed_coef
         self.g_step_every = g_step_every
         self.disc_warmup = disc_warmup
+        self.total_step = 0
 
         if head is None:
             head = Head(use_norm_encoder=True)
@@ -106,6 +107,7 @@ class MultiCoLESModule(ABSModule):
             return y_h, y
 
     def training_step(self, batch, batch_idx):
+        self.total_step += 1
         opt, d_opt = self.optimizers()
         (domain_a, domain_b), y = self.shared_step(*batch)
         coles_info, embed_info = dict(), dict()
@@ -118,7 +120,7 @@ class MultiCoLESModule(ABSModule):
         d_opt.step()
 
         # g opt
-        if batch_idx % self.g_step_every == 0 and batch_idx >= self.disc_warmup:
+        if batch_idx % self.g_step_every == 0 and self.total_step > self.disc_warmup:
             domain_a_pred = self.discriminator(domain_b)
             coles_loss, coles_info = self._loss(domain_b, y)
             embed_loss, embed_info = self.discriminator_loss.embed_loss(domain_a, domain_a_pred)
