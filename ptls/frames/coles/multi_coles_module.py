@@ -107,8 +107,8 @@ class MultiCoLESModule(ABSModule):
         coles_info, embed_info = dict(), dict()
 
         # d opt
-        domain_b_pred = self.discriminator(domain_a)
-        d_loss, d_info = self.discriminator_loss.pred_loss(domain_b.detach(), domain_b_pred.detach())
+        domain_b_pred = self.discriminator(domain_a.detach())
+        d_loss, d_info = self.discriminator_loss.pred_loss(domain_b.detach(), domain_b_pred)
         d_opt.zero_grad()
         self.manual_backward(d_loss)
         d_opt.step()
