@@ -134,6 +134,14 @@ class MultiCoLESModule(ABSModule):
             self.log('seq_len', -1, prog_bar=True)
             raise AssertionError('batch is not a tuple')
 
+    def validation_step(self, batch, _):
+        (domain_a, domain_b), y = self.shared_step(*batch)
+        out = self._loss(domain_b, y)
+        loss, info = out
+        for k, v in info.items():
+            self.log("valid_" + k, v)
+        self._validation_metric(domain_b, y)
+
     def configure_optimizers(self):
         optimizer = self._optimizer_partial(self._seq_encoder.parameters())
         d_optimizer = self.d_optimizer_partial(self.discriminator.parameters())
