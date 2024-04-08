@@ -115,6 +115,7 @@ class MultiCoLESModule(ABSModule):
 
         # g opt
         if batch_idx % self.g_step_every == 0:
+            domain_b_pred = self.discriminator(domain_a)
             coles_loss, coles_info = self._loss(domain_b, y)
             embed_loss, embed_info = self.discriminator_loss.embed_loss(domain_b, domain_b_pred)
             loss = self.coles_coef * coles_loss + self.embed_coef * embed_loss
