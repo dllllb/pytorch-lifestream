@@ -47,7 +47,7 @@ class ContrastiveLoss(nn.Module):
         return loss, {"COLES_loss_0": loss.item(),
                       "COLES_pos_loss_0": p_l.item(),
                       "COLES_neg_loss_0": n_l.item(),
-                      "CLUB_cos_b2neg_b": rand_cos.item()}
+                      "COLES_cos_b2neg_b": rand_cos.item()}
 
 
 class MultiContrastiveLoss(nn.Module):
