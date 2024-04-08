@@ -93,6 +93,8 @@ class MultiCoLESModule(ABSModule):
                 out_h.append(y_h_)
             domain_a = torch.cat(out_h, dim=-1)
             domain_b = self(x)
+            if self._head is not None:
+                domain_b = self._head(domain_b)
             return [domain_a, domain_b], y
 
         else:
