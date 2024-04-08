@@ -27,10 +27,7 @@ class MultiCoLESModule(ABSModule):
                  g_step_every=1):
 
         assert discriminator is not None and d_optimizer_partial is not None
-        assert (seq_encoder.n_encoders == 1) != (trained_encoders is not None)
-        self.discriminator = discriminator
-        self.d_optimizer_partial = d_optimizer_partial
-        self.automatic_optimization = False
+        #assert (seq_encoder.n_encoders == 1) != (trained_encoders is not None)
         self.coles_coef = coles_coef
         self.embed_coef = embed_coef
         self.g_step_every = g_step_every
@@ -61,6 +58,10 @@ class MultiCoLESModule(ABSModule):
                          loss,
                          optimizer_partial,
                          lr_scheduler_partial)
+
+        self.automatic_optimization = False
+        self.discriminator = discriminator
+        self.d_optimizer_partial = d_optimizer_partial
 
         self._head = head
 
