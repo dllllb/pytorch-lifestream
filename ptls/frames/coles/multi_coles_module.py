@@ -39,14 +39,6 @@ class MultiCoLESModule(ABSModule):
             loss = ContrastiveLoss(margin=1.,
                                    sampling_strategy=HardNegativePairSelector(neg_count=5))
 
-        self.trained_models = None
-        if trained_encoders is not None:
-            self.trained_models = torch.nn.ModuleList([deepcopy(seq_encoder) for _ in trained_encoders])
-            for i, enc_path in enumerate(trained_encoders):
-                self.trained_models[i].load_state_dict(torch.load(enc_path))
-                for param in self.trained_models[i].parameters():
-                    param.requires_grad = False
-
         if discriminator_loss is None:
             self.discriminator_loss = CLUBLoss(emb_coef=1., prob_coef=1.)
 
@@ -58,6 +50,14 @@ class MultiCoLESModule(ABSModule):
                          loss,
                          optimizer_partial,
                          lr_scheduler_partial)
+
+        self.trained_models = None
+        if trained_encoders is not None:
+            self.trained_models = torch.nn.ModuleList([deepcopy(seq_encoder) for _ in trained_encoders])
+            for i, enc_path in enumerate(trained_encoders):
+                self.trained_models[i].load_state_dict(torch.load(enc_path))
+                for param in self.trained_models[i].parameters():
+                    param.requires_grad = False
 
         self.automatic_optimization = False
         self.discriminator = discriminator
