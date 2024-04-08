@@ -141,9 +141,11 @@ class MultiCoLESModule(ABSModule):
 
     def validation_step(self, batch, _):
         (domain_a, domain_b), y = self.shared_step(*batch)
-        out = self._loss(domain_b, y)
-        loss, info = out
-        for k, v in info.items():
+        domain_a_pred = self.discriminator(domain_b)
+        coles_loss, coles_info = self._loss(domain_b, y)
+        d_loss, d_info = self.discriminator_loss.pred_loss(domain_a, domain_a_pred)
+        embed_loss, embed_info = self.discriminator_loss.embed_loss(domain_a, domain_a_pred)
+        for k, v in chain(d_info.items(), coles_info.items(), embed_info.items()):
             self.log("valid_" + k, v)
         self._validation_metric(domain_b, y)
 
