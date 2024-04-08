@@ -7,6 +7,7 @@ from ptls.nn.seq_encoder.longformer_encoder import LongformerEncoder
 from ptls.nn.seq_encoder.custom_encoder import Encoder
 from ptls.nn.seq_encoder.utils import reset_parameters
 
+
 class SeqEncoderContainer(torch.nn.Module):
     """Base container class for Sequence encoder.
     Include `TrxEncoder` and `ptls.seq_encoder.abs_seq_encoder.AbsSeqEncoder` implementation

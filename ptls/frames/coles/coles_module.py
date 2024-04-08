@@ -45,11 +45,10 @@ class CoLESModule(ABSModule):
                  optimizer_partial=None,
                  lr_scheduler_partial=None):
         if head is None:
-            #head = Head(use_norm_encoder=True)
-            head = SphereHead()
+            head = Head(use_norm_encoder=True)
 
         if loss is None:
-            loss = ContrastiveLoss(margin=1.,#margin=0.5,
+            loss = ContrastiveLoss(margin=1.,
                                    sampling_strategy=HardNegativePairSelector(neg_count=5))
 
         if validation_metric is None:

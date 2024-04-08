@@ -26,11 +26,10 @@ def outer_pairwise_distance(A, B=None):
 
     if n * m * d <= max_size or m == 1:
 
-        #return torch.pairwise_distance(
-        #    A[:, None].expand(n, m, d).reshape((-1, d)),
-        #    B.expand(n, m, d).reshape((-1, d))
-        #).reshape((n, m))
-        return A @ B.T
+        return torch.pairwise_distance(
+            A[:, None].expand(n, m, d).reshape((-1, d)),
+            B.expand(n, m, d).reshape((-1, d))
+        ).reshape((n, m))
 
     else:
         batch_size = max(1, max_size // (n * d))

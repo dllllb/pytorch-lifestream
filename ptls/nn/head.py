@@ -2,6 +2,7 @@ from typing import List
 
 import torch
 from torch.nn import Linear, BatchNorm1d, Sigmoid, Sequential, ReLU, LogSoftmax, Flatten, Softplus, Dropout
+import torch.nn.functional as F
 from ptls.nn.normalization import L2NormEncoder
 from ptls.nn.seq_encoder.utils import reset_parameters
 
@@ -106,6 +107,7 @@ class SphereHead(torch.nn.Module):
     def forward(self, phi):
         if type(phi) is list:
             return [self.model[i](phi[i]) for i in range(len(phi))]
+        phi = F.tanh(phi)
         bs, _ = phi.shape
         phi = phi + 1
         phi[:, :-1] = phi[:, :-1] / 2
