@@ -41,6 +41,8 @@ class MultiCoLESModule(ABSModule):
 
         if discriminator_loss is None:
             self.discriminator_loss = CLUBLoss(emb_coef=1., prob_coef=1.)
+        else:
+            self.discriminator_loss = discriminator_loss
 
         if validation_metric is None:
             validation_metric = BatchRecallTopK(K=4, metric='cosine')
