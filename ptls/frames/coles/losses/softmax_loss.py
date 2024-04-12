@@ -32,19 +32,17 @@ class SoftmaxLoss(torch.nn.Module):
             `softmax(distances / temperature)` - scale a sub-exponent expression.
             default 0.05 value is for l2-normalized `embeddings` where dot product distance is in range [-1, 1]
     """
-    def __init__(self, temperature=0.05, distributed_mode = False, use_gpu_dependent_labels = False):
+    def __init__(self, temperature=0.05, distributed_mode = False):
         super().__init__()
         
         self.temperature = temperature
-        self.use_gpu_dependent_labels = use_gpu_dependent_labels
         self.distributed_mode = distributed_mode
         
     def forward(self, embeddings, classes):
         if dist.is_initialized() and self.distributed_mode:
             dist.barrier()
             embeddings = all_gather_and_cat(embeddings)
-            if self.use_gpu_dependent_labels:
-                classes = classes + (classes.max()+1) * dist.get_rank()
+            classes = classes + (classes.max()+1) * dist.get_rank()
             classes = all_gather_and_cat(classes)
         d = torch.einsum('bh,kh->bk', embeddings, embeddings) / self.temperature
         

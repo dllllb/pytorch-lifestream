@@ -22,6 +22,8 @@ def iter_with_max_num (iter, max_num = None):
         yield i
         num += 1
         if max_num is not None and num >= max_num:
+            if dist.is_initialized():
+                print("STOPPING WORKER on GPU", dist.get_rank())
             break
 
 
@@ -173,23 +175,14 @@ class ParquetDataset(torch.utils.data.IterableDataset):
             return torch.from_numpy(x)
         return x
 
-class DistributedParquetDataset(torch.utils.data.IterableDataset):
-    """Lazy (IterableDataset) load from parquet files
+class DistributedParquetDataset(ParquetDataset):
+    """Modification of ParquetDataset for working with DDP
+    Each GPU processes its own set of files
+    Make sure that number of parquet files > number of GPUs
 
-    DistributedDataset processes different files on different nodes(gpus)
-        this should be used when using iterable-style dataset (NOT stored in memory) 
-        (when dataset is stored in memory Lightning automatically chunks it between GPUs)
+    max_items_per_file is used to ensure that dataloader on different GPUs produce the same amount of batches
+    it's better to calculate it manually (minimal number of rows in parquet files) before training
 
-    File structure:
-    *.parquet
-
-    File structure example:
-    data/
-        part1.parquet
-        part2.parquet
-        ...
-
-    Each file is read sequentially
 
     Parameters
     ----------
@@ -205,41 +198,39 @@ class DistributedParquetDataset(torch.utils.data.IterableDataset):
         - dict schema (feature names) will be read once
     shuffle_seed:
         - random seed for shuffle_files
+    max_items_per_file:
+        - if passed, worker reads max_items_per_file rows from parquet file to ensure equal amount of examples for different GPUs, 
+        else this quantity is calculated before training which take significant amount of time. 
+        You should calculate it by yourself by counting minimal number of rows in all parquet files
+    repeat_items:
+        - whether to start reading same files again on the worker for preventing deadlocks 
+        (caused by inability to calculate exact number of yielded items per worker 
+        and as a result inability to yield the same number of items on different GPUs)
 
     """
     def __init__(self, data_files: Union[ParquetFiles, List[str]],
                  post_processing=None,
                  i_filters: List = None,
-                 shuffle_files=False, cache_schema=True, shuffle_seed=42, max_items_per_gpu = None):
-        if type(data_files) is ParquetFiles:
-            self.data_files = data_files.data_files
-        else:
-            self.data_files = data_files
-        if i_filters is not None:
-            self.post_processing = IterableChain(*i_filters)
-        else:
-            self.post_processing = post_processing
-        if post_processing is not None:
-            warnings.warn('`post_processing` parameter is deprecated, use `i_filters`')
-        self.shuffle_files = shuffle_files
-        self.cache_schema = cache_schema
-        self.shuffle_seed = shuffle_seed
-        self.rs = None
-        self.max_items_per_gpu = max_items_per_gpu
+                 shuffle_files=False, cache_schema=True, shuffle_seed=42, max_items_per_file = None, repeat_items = True):
+        super().__init__(data_files = data_files,
+                 post_processing=post_processing,
+                 i_filters = i_filters,
+                 shuffle_files=shuffle_files, cache_schema=cache_schema, shuffle_seed=shuffle_seed)
+        self.max_items_per_file = max_items_per_file
+        self.items_per_worker = None
+        self.repeat_items = repeat_items
 
-        self._worker_id = None
-        self._num_workers = None
-        self._shuffle_seed = None
-        self._schema = None
-
-    def _calc_min_items_per_gpu(self, world_size, workers_per_rank):
+    def _calc_min_items_per_worker(self):
         nums = []
-        for rank in range(world_size):
+        for rank in range(dist.get_world_size()):
             per_gpu = 0
-            for fname in self.data_files[rank::world_size]:
-                per_gpu += pq.read_table(fname).shape[0]
+            for fname in self.data_files[rank::dist.get_world_size()]:
+                if self.max_items_per_file is not None:
+                    per_gpu += self.max_items_per_file
+                else:
+                    per_gpu += pq.read_table(fname).shape[0]
             nums.append(per_gpu)
-        return min(nums) // workers_per_rank
+        return min(nums) // self._num_workers
 
     def _get_my_files(self):
         my_files = [name for i, name in enumerate(sorted(self.data_files)) if i % self.real_num_workers == self.real_worker_id]
@@ -255,7 +246,7 @@ class DistributedParquetDataset(torch.utils.data.IterableDataset):
             self._worker_id = worker_info.id
             self._num_workers = worker_info.num_workers
             self._shuffle_seed = worker_info.seed
-        
+
         self.real_worker_id = self._worker_id
         self.real_num_workers = self._num_workers
         if dist.is_initialized():
@@ -267,8 +258,8 @@ class DistributedParquetDataset(torch.utils.data.IterableDataset):
 
     def __iter__(self):
         self._init_worker()
-        if dist.is_initialized() and self.max_items_per_gpu is None:
-            self.max_items_per_gpu = self._calc_min_items_per_gpu(dist.get_world_size(), self._num_workers)
+        if dist.is_initialized() and self.items_per_worker is None:
+            self.items_per_worker = self._calc_min_items_per_worker()
 
         my_files = self._get_my_files()
         if self.shuffle_files:
@@ -276,28 +267,11 @@ class DistributedParquetDataset(torch.utils.data.IterableDataset):
             rs.shuffle(my_files)
 
         logger.debug(f'Iter [{self._worker_id:02d}/{self._num_workers:02d}]: {my_files}')
-        if self.max_items_per_gpu:
-            gen = chain(*[self.iter_file(name) for _ in range(3) for name in my_files])
+        if self.repeat_items:
+            gen = chain(*[self.iter_file(name) for _ in range(2) for name in my_files])
         else:
             gen = chain(*[self.iter_file(name) for name in my_files])
 
         if self.post_processing is not None:
             gen = self.post_processing(gen)
-        return iter_with_max_num(gen, self.max_items_per_gpu)
-
-    def iter_file(self, file_name):
-        """
-
-        :param file_name:
-        :return: [(customer_id, features)]
-        """
-        logger.debug(f'[{self._worker_id}/{self._num_workers}] Iter file "{file_name}"')
-        for rec in read_pyarrow_file(file_name, use_threads=True):
-            rec = {k: self.to_torch(v) for k, v in rec.items()}
-            yield rec
-
-    @staticmethod
-    def to_torch(x):
-        if type(x) is np.ndarray and x.dtype.kind in ('i', 'f'):
-            return torch.from_numpy(x)
-        return x
+        return iter_with_max_num(gen, self.items_per_worker) 
