@@ -1,7 +1,7 @@
 import torch
 import torch.distributed as dist
 
-from dist_utils import all_gather_and_cat
+from ptls.frames.coles.losses.dist_utils import all_gather_and_cat
 
 class SoftmaxLoss(torch.nn.Module):
     """Also known as NCE loss

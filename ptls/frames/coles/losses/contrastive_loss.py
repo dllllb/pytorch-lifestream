@@ -3,7 +3,7 @@ from torch import nn as nn
 from torch.nn import functional as F
 import torch.distributed as dist
 
-from dist_utils import all_gather_and_cat
+from ptls.frames.coles.losses.dist_utils import all_gather_and_cat
 
 class ContrastiveLoss(nn.Module):
     """
