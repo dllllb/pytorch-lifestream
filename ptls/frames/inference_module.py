@@ -15,7 +15,13 @@ class InferenceModule(pl.LightningModule):
         self.model_out_name = model_out_name
 
     def forward(self, x: PaddedBatch):
-        out = self.model(x)
+        if hasattr(self.model, 'trained_models'):
+            if self.model.trained_models is not None:
+                out = [t_model(x) for t_model in self.model.trained_models]
+                out.append(self.model(x))
+                out = torch.cat(out, dim=-1)
+        else:
+            out = self.model(x)
         if type(out) is list:
             out = torch.cat(out, dim=-1)
         if self.drop_seq_features:
