@@ -91,7 +91,8 @@ Library description [index](docs/index.md)
 
 We have a [paper](https://arxiv.org/abs/2002.08232) you can cite it:
 ```bibtex
-@inproceedings{Babaev_2022, series={SIGMOD/PODS ’22},
+@inproceedings{
+   Babaev_2022, series={SIGMOD/PODS ’22},
    title={CoLES: Contrastive Learning for Event Sequences with Self-Supervision},
    url={http://dx.doi.org/10.1145/3514221.3526129},
    DOI={10.1145/3514221.3526129},
@@ -101,4 +102,5 @@ We have a [paper](https://arxiv.org/abs/2002.08232) you can cite it:
    year={2022},
    month=jun, collection={SIGMOD/PODS ’22}
 }
+
 ```
