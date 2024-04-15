@@ -1,4 +1,4 @@
-![ptls-logo](https://github.com/Dzagcoffee/pytorch-lifestream/assets/109000119/3684ba52-80d7-4c2a-b70c-55ceac9d37ca)
+![ptls-logo](ptls-banner.png)
 
 
 [![GitHub license](https://img.shields.io/github/license/dllllb/pytorch-lifestream.svg)](https://github.com/dllllb/pytorch-lifestream/blob/master/LICENSE)
