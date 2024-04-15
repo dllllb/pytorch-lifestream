@@ -70,6 +70,14 @@ Library description [index](docs/index.md)
 
 `pytorch-lifestream` usage experiments on several public event datasets are available in the separate [repo](https://github.com/dllllb/ptls-experiments)
 
+## PyTorch-LifeStream in ML competitions
+
+- [Data Fusion Contest 2022 report](https://habr.com/ru/companies/vtb/articles/673666/) (in Russian)
+- [Data Fusion Contest 2022 report, Sber AI Lab team](https://habr.com/ru/companies/ods/articles/670572/) (in Russian)
+- [VK.com Graph ML Hackaton report](https://habr.com/ru/companies/vk/articles/703484/) (in Russian)
+- [VK.com Graph ML Hackaton report, AlfaBank team](https://habr.com/ru/companies/alfa/articles/698660/) (in Russian)
+- [American Express - Default Prediction Kaggle contest report](https://habr.com/ru/articles/704440/) (in Russian)
+
 ## Citation
 
 We have a [paper](https://arxiv.org/abs/2002.08232) you can cite it:
