@@ -1,5 +1,7 @@
 import torch
+import torch.distributed as dist
 
+from ptls.frames.coles.losses.dist_utils import all_gather_and_cat
 
 class SoftmaxLoss(torch.nn.Module):
     """Also known as NCE loss
@@ -13,12 +15,18 @@ class SoftmaxLoss(torch.nn.Module):
             `softmax(distances / temperature)` - scale a sub-exponent expression.
             default 0.05 value is for l2-normalized `embeddings` where dot product distance is in range [-1, 1]
     """
-    def __init__(self, temperature=0.05):
+    def __init__(self, temperature=0.05, distributed_mode = False):
         super().__init__()
         
         self.temperature = temperature
+        self.distributed_mode = distributed_mode
         
     def forward(self, embeddings, classes):
+        if dist.is_initialized() and self.distributed_mode:
+            dist.barrier()
+            embeddings = all_gather_and_cat(embeddings)
+            classes = classes + (classes.max()+1) * dist.get_rank()
+            classes = all_gather_and_cat(classes)
         d = torch.einsum('bh,kh->bk', embeddings, embeddings) / self.temperature
         
         ix_pos = classes.unsqueeze(1) == classes.unsqueeze(0)
