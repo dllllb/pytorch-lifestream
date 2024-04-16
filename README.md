@@ -1,4 +1,12 @@
-`PyTorch-LifeStream` or PTLS a library built upon [PyTorch](https://pytorch.org/) for building embeddings on discrete event sequences using self-supervision. It can process terabyte-size volumes of raw events like game history events, clickstream data, purchase history or card transactions.
+![ptls-logo](ptls-banner.png)
+
+
+[![GitHub license](https://img.shields.io/github/license/dllllb/pytorch-lifestream.svg)](https://github.com/dllllb/pytorch-lifestream/blob/master/LICENSE)
+[![PyPI version](https://badge.fury.io/py/pytorch-lifestream.svg)](https://badge.fury.io/py/pytorch-lifestream)
+[![GitHub issues](https://img.shields.io/github/issues/dllllb/pytorch-lifestream.svg)](https://github.com/dllllb/pytorch-lifestream/issues)
+[![Telegram](https://img.shields.io/badge/chat-on%20Telegram-2ba2d9.svg)](https://t.me/pytorch_lifestream)
+
+`pytorch-lifestream` or ptls a library built upon [PyTorch](https://pytorch.org/) for building embeddings on discrete event sequences using self-supervision. It can process terabyte-size volumes of raw events like game history events, clickstream data, purchase history or card transactions.
 
 It supports various methods of self-supervised training, adapted for event sequences:
 
@@ -34,7 +42,7 @@ pip install pytorch-lifestream
 sudo apt install python3.8 python3-venv
 pip3 install pipenv
 
-pipenv sync  --dev # install packages exactly as specified in Pipfile.lock
+pipenv sync --dev # install packages exactly as specified in Pipfile.lock
 pipenv shell
 pytest
 
@@ -53,7 +61,7 @@ pytest
 - Fast inference on large dataset [notebook](demo/extended_inference.ipynb)
 - Supervised multilabel classification [notebook](demo/multilabel-classification.ipynb)
 - Text features demo:
-  - Using pretrained encoder to text features[notebook](demo/coles-pretrained-embeddings.ipynb)
+  - Using pretrained encoder to text features [notebook](demo/coles-pretrained-embeddings.ipynb)
 
 ## Docs
 
@@ -78,3 +86,21 @@ Library description [index](docs/index.md)
 1. Make your chages via Fork and Pull request.
 2. Write unit test for new code in `ptls_tests`.
 3. Check unit test via `pytest`: [Example](.#install-from-source).
+
+## Citation
+
+We have a [paper](https://arxiv.org/abs/2002.08232) you can cite it:
+```bibtex
+@inproceedings{
+   Babaev_2022, series={SIGMOD/PODS ’22},
+   title={CoLES: Contrastive Learning for Event Sequences with Self-Supervision},
+   url={http://dx.doi.org/10.1145/3514221.3526129},
+   DOI={10.1145/3514221.3526129},
+   booktitle={Proceedings of the 2022 International Conference on Management of Data},
+   publisher={ACM},
+   author={Babaev, Dmitrii and Ovsov, Nikita and Kireev, Ivan and Ivanova, Maria and Gusev, Gleb and Nazarov, Ivan and Tuzhilin, Alexander},
+   year={2022},
+   month=jun, collection={SIGMOD/PODS ’22}
+}
+
+```
