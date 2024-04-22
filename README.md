@@ -75,8 +75,8 @@ Library description [index](docs/index.md)
 
 ## PyTorch-LifeStream in ML competitions
 
-- [Data Fusion Contest 2024, Sber AI Lab team] (https://github.com/warofgam/Sber-AI-Lab---datafusion) (in Russian)
-- [Data Fusion Contest 2024, Ivan Alexandrov] (https://github.com/Ivanich-spb/datafusion_2024_churn) (in Russian)
+- [Data Fusion Contest 2024, Sber AI Lab team](https://github.com/warofgam/Sber-AI-Lab---datafusion) (in Russian)
+- [Data Fusion Contest 2024, Ivan Alexandrov](https://github.com/Ivanich-spb/datafusion_2024_churn) (in Russian)
 - [Data Fusion Contest 2022 report](https://habr.com/ru/companies/vtb/articles/673666/) (in Russian)
 - [Data Fusion Contest 2022 report, Sber AI Lab team](https://habr.com/ru/companies/ods/articles/670572/) (in Russian)
 - [VK.com Graph ML Hackaton report](https://habr.com/ru/companies/vk/articles/703484/) (in Russian)
