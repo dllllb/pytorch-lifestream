@@ -54,7 +54,7 @@ Learn event sequence deep learning analysis with Pytorch-Lifestream.
 
 We have collected a set of topics related to the processing of event sequences. Most themes are supported by demo code using the ptls library. We recommend studying the topics sequentially. However, if you are familiar in some areas, you can skip them and take only the relevant topics.
 
-| ix   |  Topic                                  | Desctiption                             | Demo  |
+| ix   |  Topic                                  | Description                             | Demo  |
 | ---- | --------------------------------------- | --------------------------------------- | ----- |
 | 1.   | Prerequisites                           |                                         |       |
 | 1.1. | torch                                   | Deep Learning framework                 | https://pytorch.org/       |
@@ -63,7 +63,7 @@ We have collected a set of topics related to the processing of event sequences. 
 | 1.4. | pandas                                  | Data preprocessing                      | https://pandas.pydata.org/ |
 | 1.5. | (optional) spark                        | Big Data preprocessing                  | [https://spark.apache.org/](https://spark.apache.org/docs/latest/api/python/index.html) |
 | 2.   | Event sequences                         | Problem statement and classical methods |     |
-| 2.1. | Event sequence for global problems      | Event sequence classifacation           | tbd |
+| 2.1. | Event sequence for global problems      | Event sequence classification           | tbd |
 | 2.2. | Event sequence for local problems       | Next event prediction                   | tbd |
 | 3.     | Supervised neural networks              | Supervised learning for event sequence classification  | [demo/supervised-sequence-to-target.ipynb](./demo/su3ervised-sequence-to-target.ipynb)  |
 | 3.1.   | Network Types                           | Different networks for sequences      |  |
@@ -73,11 +73,11 @@ We have collected a set of topics related to the processing of event sequences. 
 | 3.2.   | Problem types                           | Different problems types for sequences  |  |
 | 3.2.1. | Global problems                         | Binary, multilabel, regression, ...   | tbd based on [demo/multilabel-classification.ipynb](demo/multilabel-classification.ipynb) | 
 | 3.2.2. | Local problems                          | Next event prediction                 | [demo/event-sequence-local-embeddings.ipynb](demo/event-sequence-local-embeddings.ipynb) |
-| 4.   | Unsupervised learning                   | Pretrain foundation model with some pretrain task | tbd based on [demo/coles-emb.ipynb](./demo/coles-emb.ipynb)  [![O4en In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/dllllb/pytorch-lifestream/blob/master/demo/co4es-emb.ipynb)     |
+| 4.   | Unsupervised learning                   | Pretrain self-supervised model with some proxy task | tbd based on [demo/coles-emb.ipynb](./demo/coles-emb.ipynb)  [![O4en In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/dllllb/pytorch-lifestream/blob/master/demo/co4es-emb.ipynb)     |
 | 4.1. | (optional) word2vec                     | Context based methods                   |     |
 | 4.2. | mlm, rtd, gpt                           | Event bases methods                     | Self-supervided training and embeddings for clients' transactions [notebook](event-sequence-local-embeddings.ipynb) [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/dllllb/pytorch-lifestream/blob/master/demo/event-sequence-local-embeddings.ipynb) |
 | 4.3. | nsp, sop                                | Sequence based methods                  | [demo/nsp-sop-emb.ipynb](demo/nsp-sop-emb.ipynb) |
-| 5.   | Contrasvive and non contrastive learing | Latent representation based losses      | tbd based on [demo/coles-emb.ipynb](./demo/coles-emb.ipynb)             |
+| 5.   | Contrastive and non contrastive learing | Latent representation based losses      | tbd based on [demo/coles-emb.ipynb](./demo/coles-emb.ipynb)             |
 | 5.1. | coles                                   |    | [demo/coles-emb.ipynb](./demo/coles-emb.ipynb)                |
 | 5.2. | vicreg                                  |    | tbd based on [demo/coles-emb.ipynb](./demo/coles-emb.ipynb)                   |
 | 5.3. | cpc                                     |    | tbd based on [demo/coles-emb.ipynb](./demo/coles-emb.ipynb)                   |
