@@ -1,3 +1,4 @@
+import numpy as np
 import torch
 from ptls.frames.abs_module import ABSModule
 from ptls.frames.coles.losses import ContrastiveLoss, CLUBLoss
@@ -6,6 +7,7 @@ from ptls.frames.coles.sampling_strategies import HardNegativePairSelector
 from ptls.nn.head import Head
 from ptls.nn.seq_encoder.containers import SeqEncoderContainer
 from ptls.data_load.padded_batch import PaddedBatch
+from ptls.nn.seq_encoder.utils import reset_parameters
 from itertools import chain
 from copy import deepcopy
 
@@ -25,7 +27,12 @@ class MultiCoLESModule(ABSModule):
                  coles_coef=1.,
                  embed_coef=1.,
                  g_step_every=1,
-                 disc_warmup=0):
+                 disc_warmup=0,
+                 ema_alpha=0.1,
+                 gamma_max=0.95,
+                 gamma_min=0.85,
+                 delta_coef=0.05,
+                 delta_up_coef=1):
 
         assert discriminator is not None and d_optimizer_partial is not None
         #assert (seq_encoder.n_encoders == 1) != (trained_encoders is not None)
@@ -66,9 +73,18 @@ class MultiCoLESModule(ABSModule):
 
         self.automatic_optimization = False
         self.discriminator = discriminator
+        self.reference_discriminator = deepcopy(discriminator)
+        reset_parameters(self.reference_discriminator)
         self.d_optimizer_partial = d_optimizer_partial
-
         self._head = head
+
+        self.ema_embed_loss = None
+        self.ema_ref_embed_loss = None
+        self.ema_alpha = ema_alpha
+        self.gamma_max = gamma_max
+        self.gamma_min = gamma_min
+        self.delta_coef = delta_coef
+        self.delta_up_coef = delta_up_coef
 
     @property
     def metric_name(self):
@@ -106,6 +122,34 @@ class MultiCoLESModule(ABSModule):
                 y_h = self._head(y_h)
             return y_h, y
 
+    def update_ema_loss(self, x):
+        if self.ema_embed_loss is None:
+            self.ema_embed_loss = [x]
+        elif type(self.ema_embed_loss) is list:
+            self.ema_embed_loss.append(x)
+            if len(self.ema_embed_loss) == 10:
+                self.ema_embed_loss = float(np.mean(self.ema_embed_loss))
+        else:
+            self.ema_embed_loss = self.ema_embed_loss * (1 - self.ema_alpha) + x * self.ema_alpha
+
+    def update_ema_ref_loss(self, x):
+        if self.ema_ref_embed_loss is None:
+            self.ema_ref_embed_loss = [x]
+        elif type(self.ema_ref_embed_loss) is list:
+            self.ema_ref_embed_loss.append(x)
+            if len(self.ema_ref_embed_loss) == 10:
+                self.ema_ref_embed_loss = float(np.mean(self.ema_ref_embed_loss))
+        else:
+            self.ema_ref_embed_loss = self.ema_ref_embed_loss * (1 - self.ema_alpha) + x * self.ema_alpha
+
+    def adjust_embed_coef(self):
+        if (type(self.ema_embed_loss) is float) and (type(self.ema_ref_embed_loss) is float):
+            ratio = self.ema_embed_loss / self.ema_ref_embed_loss
+            if ratio < self.gamma_min:
+                self.embed_coef *= (1 - self.delta_coef)
+            elif ratio > self.gamma_max:
+                self.embed_coef *= (1 + self.delta_coef / self.delta_up_coef)
+
     def training_step(self, batch, batch_idx):
         self.total_step += 1
         opt, d_opt = self.optimizers()
@@ -113,24 +157,55 @@ class MultiCoLESModule(ABSModule):
         coles_info, embed_info = dict(), dict()
 
         # d opt
-        domain_a_pred = self.discriminator(domain_b.detach())
-        d_loss, d_info = self.discriminator_loss.pred_loss(domain_a.detach(), domain_a_pred)
+        #domain_a_pred = self.discriminator(domain_b.detach())
+        #d_loss, d_info = self.discriminator_loss.pred_loss(domain_a.detach(), domain_a_pred)
+
+        random_inds = torch.randperm(domain_b.shape[0])
+        pos_preds = self.discriminator(domain_a.detach(), domain_b.detach())
+        neg_preds = self.discriminator(domain_a.detach(), domain_b.detach()[random_inds])
+        d_loss, d_info = self.discriminator_loss.pred_loss_prob(pos_preds, neg_preds)
+
+        ref_pos_preds = self.reference_discriminator(domain_a.detach(), domain_b.detach())
+        ref_neg_preds = self.reference_discriminator(domain_a.detach(), domain_b.detach()[random_inds])
+        ref_d_loss, ref_d_info = self.discriminator_loss.pred_loss_prob(ref_pos_preds, ref_neg_preds)
+        loss = d_loss + ref_d_loss
+
         d_opt.zero_grad()
-        self.manual_backward(d_loss)
+        self.manual_backward(loss)
+        self.clip_gradients(d_opt, gradient_clip_val=0.5, gradient_clip_algorithm="norm")
         d_opt.step()
 
         # g opt
         if batch_idx % self.g_step_every == 0 and self.total_step > self.disc_warmup:
-            domain_a_pred = self.discriminator(domain_b)
+            #domain_a_pred = self.discriminator(domain_b)
+            #embed_loss, embed_info = self.discriminator_loss.embed_loss(domain_a, domain_a_pred)
+
             coles_loss, coles_info = self._loss(domain_b, y)
-            embed_loss, embed_info = self.discriminator_loss.embed_loss(domain_a, domain_a_pred)
+
+            pos_preds = self.discriminator(domain_a.detach(), domain_b)
+            neg_preds = self.discriminator(domain_a.detach(), domain_b[random_inds])
+            embed_loss, embed_info = self.discriminator_loss.embed_loss_prob(pos_preds, neg_preds)
+            self.update_ema_loss(embed_loss.item())
+
+            with torch.no_grad():
+                ref_pos_preds = self.reference_discriminator(domain_a.detach(), domain_b.detach())
+                ref_neg_preds = self.reference_discriminator(domain_a.detach(), domain_b.detach()[random_inds])
+                ref_embed_loss, ref_embed_info = self.discriminator_loss.embed_loss_prob(ref_pos_preds, ref_neg_preds)
+                self.update_ema_ref_loss(ref_embed_loss.item())
+
+            self.adjust_embed_coef()
+
             loss = self.coles_coef * coles_loss + self.embed_coef * embed_loss
             opt.zero_grad()
             self.manual_backward(loss)
+            self.clip_gradients(opt, gradient_clip_val=0.5, gradient_clip_algorithm="norm")
             opt.step()
 
+        for k, v in chain(ref_d_info.items(), ref_embed_info.items()):
+            self.log("ref_" + k, v)
         for k, v in chain(d_info.items(), coles_info.items(), embed_info.items()):
             self.log(k, v)
+        self.log("embed_coef", self.embed_coef)
 
         if type(batch) is tuple:
             x, y = batch
@@ -143,17 +218,26 @@ class MultiCoLESModule(ABSModule):
 
     def validation_step(self, batch, _):
         (domain_a, domain_b), y = self.shared_step(*batch)
-        domain_a_pred = self.discriminator(domain_b)
+        random_inds = torch.randperm(domain_b.shape[0])
+        pos_preds = self.discriminator(domain_a.detach(), domain_b.detach())
+        neg_preds = self.discriminator(domain_a.detach(), domain_b.detach()[random_inds])
+        ref_pos_preds = self.reference_discriminator(domain_a.detach(), domain_b.detach())
+        ref_neg_preds = self.reference_discriminator(domain_a.detach(), domain_b.detach()[random_inds])
         coles_loss, coles_info = self._loss(domain_b, y)
-        d_loss, d_info = self.discriminator_loss.pred_loss(domain_a, domain_a_pred)
-        embed_loss, embed_info = self.discriminator_loss.embed_loss(domain_a, domain_a_pred)
+        d_loss, d_info = self.discriminator_loss.pred_loss_prob(pos_preds, neg_preds)
+        embed_loss, embed_info = self.discriminator_loss.embed_loss_prob(pos_preds, neg_preds)
+        ref_d_loss, ref_d_info = self.discriminator_loss.pred_loss_prob(ref_pos_preds, ref_neg_preds)
+        ref_embed_loss, ref_embed_info = self.discriminator_loss.embed_loss_prob(ref_pos_preds, ref_neg_preds)
+        for k, v in chain(ref_d_info.items(), ref_embed_info.items()):
+            self.log("ref_" + k, v)
         for k, v in chain(d_info.items(), coles_info.items(), embed_info.items()):
             self.log("valid_" + k, v)
         self._validation_metric(domain_b, y)
 
     def configure_optimizers(self):
         optimizer = self._optimizer_partial(self._seq_encoder.parameters())
-        d_optimizer = self.d_optimizer_partial(self.discriminator.parameters())
+        d_optimizer = self.d_optimizer_partial([{'params': self.discriminator.parameters()},
+                                                {'params': self.reference_discriminator.parameters(), 'lr': 0.01}])
         scheduler = self._lr_scheduler_partial(optimizer)
 
         if isinstance(scheduler, torch.optim.lr_scheduler.ReduceLROnPlateau):
