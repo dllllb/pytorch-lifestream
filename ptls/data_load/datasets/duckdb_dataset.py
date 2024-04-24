@@ -48,6 +48,7 @@ class DuckDbDataset(torch.utils.data.IterableDataset):
             SELECT {self.col_id}, {fields}
             FROM {self.data_read_func}
             GROUP BY {self.col_id}
+            ORDER BY {self.col_id}
             """
     
         rel = duckdb.sql(query)

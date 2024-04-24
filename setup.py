@@ -7,7 +7,7 @@ with open("README.md", "r") as fh:
     
 setuptools.setup(
     name='pytorch-lifestream',
-    version='0.5.3',
+    version='0.6.0',
     author='',
     author_email='',
     description='Lifestream data analysis with PyTorch',
@@ -21,10 +21,10 @@ setuptools.setup(
     ],
     python_requires='>=3.7',
     install_requires=[
-        'pytorch-lightning==1.6.*',
-        'torch==1.12.*',
-        'numpy==1.23.*',
-        'torchmetrics==0.9.*',
+        'pytorch-lightning>=1.6.0',
+        'torch>=1.12.0',
+        'numpy>=1.23.0',
+        'torchmetrics>=0.9.0',
         'omegaconf',
     ],
 )

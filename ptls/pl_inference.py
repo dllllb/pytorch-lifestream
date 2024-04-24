@@ -60,9 +60,21 @@ def main(conf: DictConfig):
         batch_size=conf.inference.get('batch_size', 128),
     )
 
-    gpus = 1 if torch.cuda.is_available() else 0
-    gpus = conf.inference.get('gpus', gpus)
-    df_scores = pl.Trainer(gpus=gpus, max_epochs=-1).predict(model, inference_dl)
+    if torch.cuda.is_available():
+        accelerator = "cuda"
+        devices = 1
+    else:
+        accelerator = "cpu"
+        devices = 0
+    user_defined_gpus = conf.inference.get("devices", conf.inference.get("gpus", None))
+    if user_defined_gpus is not None:
+        if user_defined_gpus:
+            accelerator = "gpu"
+            devices = user_defined_gpus
+        else:
+            accelerator = "cpu"
+            devices = 0
+    df_scores = pl.Trainer(accelerator=accelerator, devices=devices, max_epochs=-1).predict(model, inference_dl)
     df_scores = pd.concat(df_scores, axis=0)
     logger.info(f'df_scores examples: {df_scores.shape}:')
 

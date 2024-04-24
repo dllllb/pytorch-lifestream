@@ -206,11 +206,11 @@ class TabformerPretrainModule(pl.LightningModule):
         loss_tabformer = self.loss_tabformer(z_trx, tabf_labels, is_train_step=False)
         self.valid_tabformer_loss(loss_tabformer)
 
-    def training_epoch_end(self, _):
+    def on_training_epoch_end(self):
         self.log(f'tabformer/train_tabformer_loss', self.train_tabformer_loss, prog_bar=False)
         # self.train_tabformer_loss reset not required here
 
-    def validation_epoch_end(self, _):
+    def on_validation_epoch_end(self):
         self.log(f'tabformer/valid_tabformer_loss', self.valid_tabformer_loss, prog_bar=True)
         # self.valid_tabformer_loss reset not required here
 
