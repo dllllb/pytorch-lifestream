@@ -23,7 +23,7 @@ setuptools.setup(
     install_requires=[
         'pytorch-lightning>=1.6.0',
         'torch>=1.12.0',
-        'numpy>=1.23.0',
+        'numpy>=1.21.5',
         'torchmetrics>=0.9.0',
         'omegaconf',
     ],
