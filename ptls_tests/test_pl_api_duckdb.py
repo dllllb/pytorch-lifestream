@@ -69,7 +69,8 @@ def test_train_inference():
 
     trainer = pl.Trainer(
         max_epochs=1,
-        devices=1 if torch.cuda.is_available() else 0,
+        accelerator="cuda" if torch.cuda.is_available() else "cpu",
+        devices=1 if torch.cuda.is_available() else None,
         logger=False
     )
     trainer.fit(model, train_dl)
