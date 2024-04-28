@@ -74,6 +74,7 @@ class MultiCoLESModule(ABSModule):
         self.automatic_optimization = False
         self.discriminator = discriminator
         self.reference_discriminator = deepcopy(discriminator)
+        reset_parameters(self.discriminator)
         reset_parameters(self.reference_discriminator)
         self.d_optimizer_partial = d_optimizer_partial
         self._head = head
