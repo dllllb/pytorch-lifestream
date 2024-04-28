@@ -41,6 +41,7 @@ class MultiCoLESModule(ABSModule):
         self.g_step_every = g_step_every
         self.disc_warmup = disc_warmup
         self.total_step = 0
+        self.trx_lr = trx_lr
 
         if head is None:
             head = Head(use_norm_encoder=True)
@@ -182,8 +183,8 @@ class MultiCoLESModule(ABSModule):
 
             coles_loss, coles_info = self._loss(domain_b, y)
 
-            pos_preds = self.discriminator(domain_a.detach(), domain_b)
-            neg_preds = self.discriminator(domain_a.detach(), domain_b[random_inds])
+            pos_preds = self.discriminator(domain_a.detach(), domain_b.detach())
+            neg_preds = self.discriminator(domain_a.detach(), domain_b.detach()[random_inds])
             embed_loss, embed_info = self.discriminator_loss.embed_loss_prob(pos_preds, neg_preds)
             self.update_ema_loss(embed_loss.item())
 
@@ -236,8 +237,8 @@ class MultiCoLESModule(ABSModule):
 
     def configure_optimizers(self):
         optimizer = self._optimizer_partial(self._seq_encoder.parameters())
-        d_optimizer = self.d_optimizer_partial([{'params': self.discriminator.parameters()},
-                                                {'params': self.reference_discriminator.parameters(), 'lr': 0.01}])
+        d_optimizer = self.d_optimizer_partial(chain(self.discriminator.parameters(),
+                                                     self.reference_discriminator.parameters()))
         scheduler = self._lr_scheduler_partial(optimizer)
 
         if isinstance(scheduler, torch.optim.lr_scheduler.ReduceLROnPlateau):
