@@ -182,8 +182,8 @@ class MultiCoLESModule(ABSModule):
 
             coles_loss, coles_info = self._loss(domain_b, y)
 
-            pos_preds = self.discriminator(domain_a.detach(), domain_b.detach())
-            neg_preds = self.discriminator(domain_a.detach(), domain_b.detach()[random_inds])
+            pos_preds = self.discriminator(domain_a.detach(), domain_b)
+            neg_preds = self.discriminator(domain_a.detach(), domain_b[random_inds])
             embed_loss, embed_info = self.discriminator_loss.embed_loss_prob(pos_preds, neg_preds)
             self.update_ema_loss(embed_loss.item())
 
