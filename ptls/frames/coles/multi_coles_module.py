@@ -41,7 +41,6 @@ class MultiCoLESModule(ABSModule):
         self.g_step_every = g_step_every
         self.disc_warmup = disc_warmup
         self.total_step = 0
-        self.trx_lr = trx_lr
 
         if head is None:
             head = Head(use_norm_encoder=True)
