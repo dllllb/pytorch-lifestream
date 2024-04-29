@@ -32,7 +32,8 @@ class MultiCoLESModule(ABSModule):
                  gamma_max=0.95,
                  gamma_min=0.85,
                  delta_coef=0.05,
-                 delta_up_coef=1):
+                 delta_up_coef=1,
+                 adaptive_coef=True):
 
         assert discriminator is not None and d_optimizer_partial is not None
         #assert (seq_encoder.n_encoders == 1) != (trained_encoders is not None)
@@ -86,6 +87,7 @@ class MultiCoLESModule(ABSModule):
         self.gamma_min = gamma_min
         self.delta_coef = delta_coef
         self.delta_up_coef = delta_up_coef
+        self.adaptive_coef = adaptive_coef
 
     @property
     def metric_name(self):
@@ -194,7 +196,8 @@ class MultiCoLESModule(ABSModule):
                 ref_embed_loss, ref_embed_info = self.discriminator_loss.embed_loss_prob(ref_pos_preds, ref_neg_preds)
                 self.update_ema_ref_loss(ref_embed_loss.item())
 
-            self.adjust_embed_coef()
+            if self.adaptive_coef:
+                self.adjust_embed_coef()
 
             loss = self.coles_coef * coles_loss + self.embed_coef * embed_loss
             opt.zero_grad()
@@ -230,7 +233,7 @@ class MultiCoLESModule(ABSModule):
         ref_d_loss, ref_d_info = self.discriminator_loss.pred_loss_prob(ref_pos_preds, ref_neg_preds)
         ref_embed_loss, ref_embed_info = self.discriminator_loss.embed_loss_prob(ref_pos_preds, ref_neg_preds)
         for k, v in chain(ref_d_info.items(), ref_embed_info.items()):
-            self.log("ref_" + k, v)
+            self.log("valid_ref_" + k, v)
         for k, v in chain(d_info.items(), coles_info.items(), embed_info.items()):
             self.log("valid_" + k, v)
         self._validation_metric(domain_b, y)
