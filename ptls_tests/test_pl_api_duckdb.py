@@ -69,7 +69,8 @@ def test_train_inference():
 
     trainer = pl.Trainer(
         max_epochs=1,
-        gpus=0 if torch.cuda.is_available() else 0,
+        accelerator="cuda" if torch.cuda.is_available() else "cpu",
+        devices=1 if torch.cuda.is_available() else "auto",
         logger=False
     )
     trainer.fit(model, train_dl)
@@ -78,7 +79,7 @@ def test_train_inference():
         (SELECT * FROM read_csv_auto('{Path(__file__).parent / 'age-transactions.csv'}')
         WHERE hash(client_id) % 5 == 0)
         """
-    
+
     test_ds = DuckDbDataset(
         data_read_func = test_data,
         col_id = 'client_id',

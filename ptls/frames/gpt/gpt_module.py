@@ -131,11 +131,11 @@ class GptPretrainModule(pl.LightningModule):
         loss_gpt = self.loss_gpt(out, labels, is_train_step=False)
         self.valid_gpt_loss(loss_gpt)
 
-    def training_epoch_end(self, _):
+    def on_training_epoch_end(self):
         self.log(f'gpt/train_gpt_loss', self.train_gpt_loss, prog_bar=False, sync_dist=True, rank_zero_only=True)
         # self.train_gpt_loss reset not required here
 
-    def validation_epoch_end(self, _):
+    def on_validation_epoch_end(self):
         self.log(f'gpt/valid_gpt_loss', self.valid_gpt_loss, prog_bar=True, sync_dist=True, rank_zero_only=True)
         # self.valid_gpt_loss reset not required here
 

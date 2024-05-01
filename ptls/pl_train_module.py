@@ -24,7 +24,7 @@ def main(conf: DictConfig):
     _use_best_epoch = _trainer_params.get('use_best_epoch', False)
 
     if 'callbacks' in _trainer_params:
-        logger.warning(f'Overwrite `trainer.callbacks`, was "{_trainer_params.checkpoint_callback}"')
+        logger.warning(f'Overwrite `trainer.callbacks`, was `{_trainer_params.get("enable_checkpointing", _trainer_params.get("checkpoint_callback", None))}`')
     _trainer_params_callbacks = []
 
     if _use_best_epoch:

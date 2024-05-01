@@ -225,11 +225,11 @@ class MLMNSPModule(pl.LightningModule):
         self.valid_nsp_loss(loss_nsp)
         self.valid_mlm_loss(loss_mlm)
 
-    def training_epoch_end(self, _):
+    def on_training_epoch_end(self):
         self.log(f'mlm/train_mlm_loss', self.train_mlm_loss, prog_bar=False)
         self.log(f'nsp/train_nsp_loss', self.train_nsp_loss, prog_bar=False)
 
-    def validation_epoch_end(self, _):
+    def on_validation_epoch_end(self):
         self.log(f'mlm/valid_mlm_loss', self.valid_mlm_loss, prog_bar=True)
         self.log(f'nsp/valid_nsp_loss', self.valid_nsp_loss, prog_bar=False)
    

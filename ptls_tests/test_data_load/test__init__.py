@@ -8,9 +8,9 @@ from ptls_tests.utils.data_generation import gen_trx_data
 
 def test_padded_collate():
     data = [
-        ({'a': torch.LongTensor([1, 2, 3, 4])}, torch.LongTensor([0])),
-        ({'a': torch.LongTensor([1, 2])},  torch.LongTensor([0])),
-        ({'a': torch.LongTensor([1])},  torch.LongTensor([1])),
+        ({'a': torch.tensor([1, 2, 3, 4])}, torch.tensor(0)),
+        ({'a': torch.tensor([1, 2])},  torch.tensor(0)),
+        ({'a': torch.tensor([1])},  torch.tensor(1)),
     ]
 
     tt = torch.LongTensor([
