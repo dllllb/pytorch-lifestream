@@ -8,7 +8,7 @@ class VicregLoss(torch.nn.Module):
 
     """
     def __init__(self, sim_coeff, std_coeff, cov_coeff):
-        super(VicregLoss, self).__init__()
+        super().__init__()
 
         self.sim_coeff = sim_coeff
         self.std_coeff = std_coeff

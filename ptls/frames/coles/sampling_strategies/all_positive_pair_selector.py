@@ -10,7 +10,7 @@ class AllPositivePairSelector(PairSelector):
     """
 
     def __init__(self, balance=True):
-        super(AllPositivePairSelector, self).__init__()
+        super().__init__()
         self.balance = balance
 
     def get_pairs(self, embeddings, labels):
