@@ -6,7 +6,7 @@ class ComplexLoss(torch.nn.Module):
 
     """
     def __init__(self, ml_loss, aug_loss, ml_loss_weight=1.):
-        super(ComplexLoss, self).__init__()
+        super().__init__()
         self.aug_loss = aug_loss
         self.ml_loss = ml_loss
         self.ml_loss_weight = ml_loss_weight

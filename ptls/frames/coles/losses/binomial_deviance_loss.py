@@ -12,7 +12,7 @@ class BinomialDevianceLoss(nn.Module):
     """
 
     def __init__(self, pair_selector, alpha=1, beta=1, C=1):
-        super(BinomialDevianceLoss, self).__init__()
+        super().__init__()
         self.alpha = alpha
         self.beta = beta
         self.C = C

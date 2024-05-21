@@ -14,7 +14,7 @@ class HistogramLoss(torch.nn.Module):
     """
 
     def __init__(self, num_steps=100):
-        super(HistogramLoss, self).__init__()
+        super().__init__()
         self.step = 2 / (num_steps - 1)
         self.eps = 1 / num_steps
         self.t = torch.arange(-1, 1+self.step, self.step).view(-1, 1)

@@ -13,7 +13,7 @@ class AllTripletSelector(TripletSelector):
     """
 
     def __init__(self):
-        super(AllTripletSelector, self).__init__()
+        super().__init__()
 
     def get_triplets(self, embeddings, labels):
         np_labels = labels.cpu().data.numpy()

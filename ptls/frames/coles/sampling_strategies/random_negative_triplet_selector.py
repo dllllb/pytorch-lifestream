@@ -9,7 +9,7 @@ class RandomNegativeTripletSelector(TripletSelector):
     """
 
     def __init__(self, neg_count=1):
-        super(RandomNegativeTripletSelector, self).__init__()
+        super().__init__()
         self.neg_count = neg_count
 
     def get_triplets(self, embeddings, labels):

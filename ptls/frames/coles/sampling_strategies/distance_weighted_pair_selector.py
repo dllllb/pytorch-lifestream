@@ -35,7 +35,7 @@ class DistanceWeightedPairSelector(PairSelector):
     """
 
     def __init__(self, batch_k, cutoff=0.5, nonzero_loss_cutoff=1.4, normalize=False):
-        super(DistanceWeightedPairSelector, self).__init__()
+        super().__init__()
         self.batch_k = batch_k
         self.cutoff = cutoff
         self.nonzero_loss_cutoff = nonzero_loss_cutoff

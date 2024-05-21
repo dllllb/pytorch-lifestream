@@ -16,7 +16,7 @@ class PositionalEncoding(nn.Module):
                  use_start_random_shift=True,
                  max_len=5000,
                  ):
-        super(PositionalEncoding, self).__init__()
+        super().__init__()
         self.use_start_random_shift = use_start_random_shift
         self.max_len = max_len
 

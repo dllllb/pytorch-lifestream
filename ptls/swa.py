@@ -237,7 +237,7 @@ class SWA(Optimizer):
                           "param_groups": state_dict["param_groups"]}
         opt_state_dict = {"state": state_dict["opt_state"],
                           "param_groups": state_dict["param_groups"]}
-        super(SWA, self).load_state_dict(swa_state_dict)
+        super().load_state_dict(swa_state_dict)
         self.optimizer.load_state_dict(opt_state_dict)
         self.opt_state = self.optimizer.state
 
