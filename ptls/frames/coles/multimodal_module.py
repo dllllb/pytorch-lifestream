@@ -1,6 +1,5 @@
 import torch
 import torch.nn as nn
-import gc
 
 from ptls.data_load.padded_batch import PaddedBatch
 
