@@ -19,7 +19,7 @@ class PandasDataPreprocessor(DataPreprocessor):
     """Data preprocessor based on pandas.DataFrame
 
     During preprocessing it
-        * transform datetime column to `event_time`
+        * transforms datetime column to `event_time`
         * encodes category columns into indexes;
         * groups flat data by `col_id`;
         * arranges data into list of dicts with features
