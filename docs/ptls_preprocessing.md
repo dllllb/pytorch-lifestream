@@ -15,7 +15,7 @@ Use `pandas` for a small dataset and `pyspark` for a large one.
 3. Prepare `event_time` column. Convert it to a timestamp for a date and time, or use any sortable format otherwise.
 4. Fit and transform categorical features, from categorical values to embedding indexes.
 5. Check numeric feature column types
-6. Split and groups dataframe by users. One row was one transaction, one row became a user with a list of transactions.
+6. Split and group dataframe by users. Before this operation a row represents a single transaction; after a row represents a user with and contains a list of all transactions by the user.
 7. Join user-level columns: target, labels, features.
 8. Done. Use data from memory or save it to parquet format.
 9. Save fitted preprocessing for future usage.

@@ -63,11 +63,12 @@ class DatasetConverter:
         parser.add_argument('--dict', nargs='*', default=[])
         parser.add_argument('--cols_category', nargs='*', default=[],
                             help = 'List of categorical columns. All categorical ' \
-                                'features are encoded with an encoder. ' \
-                                'Currently there\'s only one encoder that ' \
-                                'replaces categorical values with a corresponding frequency rank:' \
-                                'The most common value will be replaced with 1, ' \
-                                'second common value will be replaced by 2 etc.')
+                                   'features are encoded with embedding indexes. ' \
+                                   'The indexes correspond to frequency rank:' \
+                                   'All values are sorted by frequency in descending order ' \
+                                   'and are numbered according to the order. ' \
+                                   'The most common value will be replaced with 1, ' \
+                                   'second common value will be replaced with 2 etc.')
         parser.add_argument('--cols_log_norm', nargs='*', default=[],
                             help='List of columns to apply log transformation to. ' \
                                  'Log transformation is applied as signum(x) * log(|x| + 1)')
