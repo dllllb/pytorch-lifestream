@@ -78,7 +78,8 @@ class MultiModalDataset(FeatureDict, torch.utils.data.Dataset):
         col_id:
             column name with user_id
         source_names:
-            column name with name sources
+            column name with name sources, must be specified in the same order as trx_encoders in 
+            ptls.frames.coles.multimodal_module.MultiModalSortTimeSeqEncoderContainer
         col_time:
             column name with event_time
         """
@@ -160,6 +161,10 @@ class MultiModalDataset(FeatureDict, torch.utils.data.Dataset):
         padded_batch = collate_multimodal_feature_dict(batch)
         source_indices = {source: index for index, source in enumerate(self.source_names)}
         
+        # common_local_time is a tensor containing information about event indexes from each modality for each sample
+        # dim_0 - the number of samples in the batch
+        # dim_1 - total length of the sample (including all modalities)
+        # dim_2 = 3 - event_time, index, source
         dim_0 = padded_batch[self.source_names[0]].payload[self.col_time].shape[0]
         dim_1 = sum(subseq.payload[self.col_time].shape[1] for source_name, subseq in padded_batch.items())
         common_local_time_shape = (dim_0, dim_1, 3)
@@ -169,24 +174,30 @@ class MultiModalDataset(FeatureDict, torch.utils.data.Dataset):
         current_dim_1 = 0
         for source_name, subseq in padded_batch.items():
             source_index = source_indices[source_name]
-
-            for i in range(dim_0):
-                current_dim_1_end = current_dim_1 + subseq.payload[self.col_time].shape[1]
-                common_local_time[i, current_dim_1:current_dim_1_end, 1] = torch.arange(subseq.payload[self.col_time].shape[1])
-                common_local_time[i, current_dim_1:current_dim_1_end, 2] = source_index
-
+            
+            # current_dim_1_end - a pointer to the index from which to fill in the next modality
+            current_dim_1_end = current_dim_1 + subseq.payload[self.col_time].shape[1]
+            
+            # each modality within itself is already sorted by time 
+            # so you can take arange as indexes inside the modality
+            common_local_time[:, current_dim_1:current_dim_1_end, 1] = torch.arange(subseq.payload[self.col_time].shape[1])
+            common_local_time[:, current_dim_1:current_dim_1_end, 2] = source_index
+            
+            # subseq_local_times - event_time for each modality, padding is replaced by inf
             subseq_local_times = subseq.payload[self.col_time].type(torch.FloatTensor)
             subseq_local_times_masked = subseq_local_times.masked_fill_(subseq_local_times == 0, float('inf'))
             common_local_time[:, current_dim_1:current_dim_1_end, 0] = subseq_local_times_masked
             current_dim_1 = current_dim_1_end
-            
-        indices = common_local_time[:,:,0].sort(dim=1, stable=True)[1]
-        common_local_time_sorted = torch.gather(common_local_time, 1, indices.unsqueeze(-1).expand(-1, -1, 3))[:, :, 1:]      
         
+        # getting indexes sorted by event_time order
+        indices = common_local_time[:,:,0].sort(dim=1, stable=True)[1]
+        
+        # gathering of the final tensor containing the order of the indies within each modality
+        # and a pointer to the modality to which the index belongs
+        common_local_time_sorted = torch.gather(common_local_time, 1, indices.unsqueeze(-1).expand(-1, -1, 3))[:, :, 1:]      
         if return_dct_labels:
-            return padded_batch, dict_class_labels
+            return (padded_batch, common_local_time_sorted.short()), dict_class_labels
         return (padded_batch, common_local_time_sorted.short()), dict_class_labels[list(dict_class_labels.keys())[0]]
-
 
     
 class MultiModalIterableDataset(MultiModalDataset, torch.utils.data.IterableDataset):
