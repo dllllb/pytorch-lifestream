@@ -93,7 +93,31 @@ class MultiModalSupervisedDataset(FeatureDict, torch.utils.data.Dataset):
             del sample[self.target_name]
         batch = reduce(lambda x, y: {k: x[k] + y[k] for k in x if k in y}, batch)
         padded_batch = collate_multimodal_feature_dict(batch)
-        return padded_batch, torch.Tensor(batch_y)
+        source_indices = {source: index for index, source in enumerate(self.source_names)}
+        
+        dim_0 = padded_batch[self.source_names[0]].payload[self.col_time].shape[0]
+        dim_1 = sum(subseq.payload[self.col_time].shape[1] for source_name, subseq in padded_batch.items())
+        common_local_time_shape = (dim_0, dim_1, 3)
+
+        common_local_time = torch.zeros(common_local_time_shape, dtype=torch.double)
+        current_dim_1 = 0
+        for source_name, subseq in padded_batch.items():
+            source_index = source_indices[source_name]
+           
+            current_dim_1_end = current_dim_1 + subseq.payload[self.col_time].shape[1]
+            common_local_time[:, current_dim_1:current_dim_1_end, 1] = torch.arange(subseq.payload[self.col_time].shape[1])
+            common_local_time[:, current_dim_1:current_dim_1_end, 2] = source_index
+                
+            subseq_local_times = subseq.payload[self.col_time].type(torch.FloatTensor)
+            subseq_local_times_masked = subseq_local_times.masked_fill_(subseq_local_times == 0, float('inf'))
+            common_local_time[:, current_dim_1:current_dim_1_end, 0] = subseq_local_times_masked
+            current_dim_1 = current_dim_1_end
+        indices = common_local_time[:,:,0].sort(dim=1, stable=True)[1]
+
+        common_local_time_sorted = torch.gather(common_local_time, 1, indices.unsqueeze(-1).expand(-1, -1, 3))[:, :, 1:]      
+    
+        
+        return (padded_batch, common_local_time_sorted.short()), torch.Tensor(batch_y)
 
     
 class MultiModalSupervisedIterableDataset(MultiModalSupervisedDataset, torch.utils.data.IterableDataset):
