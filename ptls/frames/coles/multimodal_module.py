@@ -4,6 +4,30 @@ import torch.nn as nn
 from ptls.data_load.padded_batch import PaddedBatch
 
 class MultiModalSortTimeSeqEncoderContainer(torch.nn.Module):
+    """Container for multimodal event sequences
+
+    It is used when there is data on sequences of events of different modality.
+    Subsequences are selected for each modality.
+    The modalities are then merged together, taking into account the time order
+    For each modality, its own trx_encoder is used, after which the received embedding events are fed to seq_encoder
+
+    Parameters
+        trx_encoders:
+            Dict with trx encoders for each modality.
+        seq_encoder_cls:
+            Class of model which calculate embeddings for original raw transaction sequences.
+            `seq_encoder` is trained by `CoLESModule` to get better representations of input sequences.
+            ptls.nn.seq_encoder.rnn_encoder.RnnEncoder can be used.
+        input_size:
+            Size of transaction embeddings.
+            Each trx_encoder should have the same linear_projection_size
+        col_time:
+            A column containing the time of events in the data to be merged.
+    
+    An example of use can be found at the link:
+    https://github.com/dllllb/pytorch-lifestream/blob/main/ptls_tests/test_frames/test_coles/test_multimodal_coles_module.py
+    """
+    
     def __init__(self,
                  trx_encoders,
                  seq_encoder_cls, 
@@ -21,7 +45,6 @@ class MultiModalSortTimeSeqEncoderContainer(torch.nn.Module):
             **seq_encoder_params,
         )
         self.is_inference = False
-        
         self.col_time = col_time
     
     @property
