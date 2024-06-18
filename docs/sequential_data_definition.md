@@ -33,12 +33,12 @@ We sort events by `date_time` for each user to assure correct event order.
 Each event (transaction) are described by categorical field `mcc_code`, numerical field `amount`, and time field `date_time`.
 These fields allow to distinguish events, vectorize them na use as a features.
 
-`pytorch-lifeatream` supports this format of data and provides the tools to process it throw the pipeline.
+`pytorch-lifeatream` supports this data format and provides the tools to process it through a pipeline.
 Data can be `pandas.DataFrame` or `pyspark.DataFrame`.
 
 ### Data collected in lists
 Table data should be converted to format more convenient for neural network feeding.
-There are steps:
+Here are the steps:
 
 1. Feature field transformation: encoding categorical features, amount normalizing, missing values imputing.
 This works like sklearn fit-transform preprocessors.
@@ -47,7 +47,7 @@ We transfer flat table with events to set of users with event collections.
 3. Split events by feature fields.
 Features are stored as 1d-arrays. Sequence orders are kept.
 
-Previous example with can be presented as (feature transformation missed for visibility):
+Previous example (сredit card transaction history) can be presented as (feature transformation missed for visibility):
 
 ```
 [
@@ -74,10 +74,10 @@ This is a main input data format in `pytorch-lifeatream`. Supported:
 - in-memory augmentations and transformations
 
 ## Dataset
-`pytorch-lifeatream` provide multiple `torch.Dataset` implementations.
-Dataset item present single user information and can be a combination of:
+`pytorch-lifeatream` provides multiple `torch.Dataset` implementations.
+Dataset item presents a single user information and can be a combination of:
 
-- `record` - is a dictionary where kees are feature names and values are 1d-tensors with feature sequences.
+- `record` - is a dictionary where keys are feature names and values are 1d-tensors with feature sequences.
 Similar as data collected in lists. 
 - `id` - how to identify a sequence
 - `target` - target value for supervised learning
@@ -91,11 +91,11 @@ X = dataset[0]
 ## DataLoader
 The main feature of `pytorch-lifestream` dataloader is customized `collate_fn`, provided to `torch.DataLoader` class.
 `collate_fn` collects single records of dictionaries to batch.
-Usually `collate_fn` pad and pack sequences into 2d tensors with shape `(B, T)`, where `B` - is sample num and `T` is max sequence length.
+Usually `collate_fn` pads and packs sequences into 2d tensors with shape `(B, T)`, where `B` - is sample num and `T` is max sequence length.
 Each feature packed separately.
 
-Output is `PaddedBatch` type which collect together packed sequences and lengths.
-`PaddedBatch` compatible with all `pytorch-lifestream` modules.
+Output is `PaddedBatch` type which collects together packed sequences and lengths.
+`PaddedBatch` is compatible with all `pytorch-lifestream` modules.
 
 Input and output example:
 ```python

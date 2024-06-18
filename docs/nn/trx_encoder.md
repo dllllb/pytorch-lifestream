@@ -16,7 +16,7 @@ x = PaddedBatch(
     length=torch.Tensor([2, 8, 5]).long()
 )
 ```
-And se can define a TrxEncoder
+And we can define a TrxEncoder
 ```python
 model = TrxEncoder(
     embeddings={
@@ -30,7 +30,7 @@ We should provide feature description to `TrxEncoder`.
 Dictionary size and embedding size for categorical features. Scaler name for numerical features.
 `identity` means no rescaling.
 
-`TrxEncoder` concatenate all feature embeddings, sow output embedding size will be `6 + 2 + 1`.
+`TrxEncoder` concatenates all feature embeddings, sow output embedding size will be `6 + 2 + 1`.
 You may get output size from `TrxEncoder` with property:
 ```python
 >>> model.output_size

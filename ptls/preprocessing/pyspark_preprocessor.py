@@ -26,7 +26,7 @@ class PysparkDataPreprocessor(DataPreprocessor):
     """Data preprocessor based on pyspark.sql.DataFrame
 
     During preprocessing it
-        * transform `cols_event_time` column with date and time
+        * transforms `cols_event_time` column with date and time
         * encodes category columns `cols_category` into ints;
         * apply logarithm transformation to `cols_log_norm' columns;
         * (Optional) select the last `max_trx_count` transactions for each `col_id`;

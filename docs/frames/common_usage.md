@@ -1,9 +1,9 @@
 # `ptls.frames` usage
 
-`frames` means frameworks. They are collects a popular technics to train a models.
+`frames` means frameworks. They are collections of popular model training technics.
 Each framework is a `LightningModule`. It means that you can train it with `pytorch_lightning.Trainer`.
 Frameworks consume data in a special format, so a `LightningDataModule` required.
-So there are three `pytorch_lightning` entities a required:
+So there are three `pytorch_lightning` entities required:
 
 - model
 - data
@@ -19,17 +19,17 @@ We make a special `torch.nn.Dataset` implementation for each framework. All of t
 - consume `map` or `iterable` input as dict of feature arrays
 - compatible with `ptls.frames.PtlsDataModule`
 
-Model is usually `seq_encoder` with `head` optional.
+Model is usually a `seq_encoder` with an optional `head`.
 We provide a model to framework assigned `LightningModule`.
 
 ## Example
 
-This example is for CoLES framework. You can try an others with the same way.
+This example is for CoLES framework. You can try others the same way.
 See module list in `ptls.frames` submodules. Check docstring for precise parameter tuning.
 
 ### Data generation
 
-We make a small test dataset. In real life you can use a many ways to load a data. See `ptls.data_load`.
+We make a small test dataset. In real life you can use many ways to load data. See `ptls.data_load`.
 
 ```python
 import torch
@@ -104,8 +104,8 @@ datamodule = PtlsDataModule(
 
 ### Model creation
 
-We have to create `seq_cncoder` that transform sequences to embedding 
-and create `CoLESModule` that will train `seq_cncoder`.
+We have to create `seq_cncoder` that transforms sequences to embedding 
+and create `CoLESModule` that will train `seq_encoder`.
 
 ```python
 import torch.optim
@@ -161,13 +161,13 @@ Now `coles_module` with `seq_encoder` are trained.
 
 This demo shows how to make embedding with pretrained `seq_encoder`.
 
-`pytorch_lightning.Trainer` have `predict` method that calls `seq_encoder.forward`.
+`pytorch_lightning.Trainer` has a `predict` method that calls `seq_encoder.forward`.
 `predict` requires `LightningModule` but `seq_encoder` is `torch.nn.Module`.
-We should cover `seq_encoder` to `LightningModule`.
+We should convert `seq_encoder` to `LightningModule`.
 
 We can use `CoLESModule` or any other module if available. In this example we can use `coles_module` object.
 Sometimes we have only `seq_encoder`, e.g. loaded from disk.
-`CoLESModule` have a little overhead. There are head, loss and metrics inside.
+`CoLESModule` has a little overhead. There are head, loss and metrics inside.
 
 Other way is using lightweight `ptls.frames.supervised.SequenceToTarget` module.
 It can run inference with only `seq_encoder`.

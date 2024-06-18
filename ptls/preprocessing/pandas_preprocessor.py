@@ -19,7 +19,7 @@ class PandasDataPreprocessor(DataPreprocessor):
     """Data preprocessor based on pandas.DataFrame
 
     During preprocessing it
-        * transform datetime column to `event_time`
+        * transforms datetime column to `event_time`
         * encodes category columns into indexes;
         * groups flat data by `col_id`;
         * arranges data into list of dicts with features
@@ -41,7 +41,7 @@ class PandasDataPreprocessor(DataPreprocessor):
         - 'none': without transformation, `col_event_time` is in correct format. Used `ColIdentityEncoder`
             Original column is kept by default cause it can be any type and we may use it in the future
     cols_category : list[str]
-        list of category columns. Each can me column name or `ColCategoryTransformer` implementation.
+        list of category columns. Each can be column name or `ColCategoryTransformer` implementation.
     category_transformation: str
         name of transformation for column names from `cols_category`
         - 'frequency': frequency encoding with `FrequencyEncoder`

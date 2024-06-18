@@ -4,6 +4,7 @@ import logging
 import os
 import pickle
 from random import Random
+from typing import List, Optional
 
 import numpy as np
 import pandas as pd
@@ -12,47 +13,94 @@ import pyspark.sql.functions as F
 import pyspark.sql.types as T
 from pyspark.sql import SparkSession
 from pyspark.sql import Window
+from pyspark.sql import DataFrame  # For typing
 
 
 logger = logging.getLogger(__name__)
 
 
 class DatasetConverter:
+    """
+    Converts datasets from transaction list to features for metric learning.
+
+    The class is designed to be run from command line with arguments.
+    Call python3 make_datasets_spark.py --help to see arguments description.
+    """
     def __init__(self):
         self.config = None
 
-    def parse_args(self, args=None):
+    def parse_args(self, args: Optional[List[str]]=None) -> None:
+        """
+        Parses command line arguments and saves them to self.config.
+
+        Arguments:
+        ----------
+        args: Optional[List[str]]
+            List of arguments to parse. If None, sys.argv is used.
+        """
         parser = argparse.ArgumentParser()
 
-        parser.add_argument('--data_path', type=os.path.abspath)
-        parser.add_argument('--trx_files', nargs='+')
-        parser.add_argument('--target_files', nargs='*', default=[])
+        parser.add_argument('--data_path', type=os.path.abspath, 
+                            help='Path to the directory containing trx files (datasets)')
+        parser.add_argument('--trx_files', nargs='+',
+                            help='List of dataset filenames with transaction features. ' \
+                                 'Note: target column will be ignored.' \
+                                 'Please use --target_files to specify targets.')
+        parser.add_argument('--target_files', nargs='*', default=[],
+                            help='List of target files containing client_id and target columns. '\
+                                'The files can overlap with trx_files or be separate.')
         parser.add_argument('--target_as_array', action='store_true')
 
         parser.add_argument('--print_dataset_info', action='store_true')
         parser.add_argument('--sample_fraction', type=float, default=None)
         parser.add_argument('--col_client_id', type=str)
-        parser.add_argument('--cols_event_time', nargs='+')
+        parser.add_argument('--cols_event_time', nargs='+', 
+                            help='Two arguments: 1) type of time transformation ' \
+                                 '2) time column name.\n' \
+                                 'Possible time transformation types: ' \
+                                 '"#float", "#datetime", "#gender"')
 
         parser.add_argument('--dict', nargs='*', default=[])
-        parser.add_argument('--cols_category', nargs='*', default=[])
-        parser.add_argument('--cols_log_norm', nargs='*', default=[])
+        parser.add_argument('--cols_category', nargs='*', default=[],
+                            help = 'List of categorical columns. All categorical ' \
+                                   'features are encoded with embedding indexes. ' \
+                                   'The indexes correspond to frequency rank:' \
+                                   'All values are sorted by frequency in descending order ' \
+                                   'and are numbered according to the order. ' \
+                                   'The most common value will be replaced with 1, ' \
+                                   'second common value will be replaced with 2 etc.')
+        parser.add_argument('--cols_log_norm', nargs='*', default=[],
+                            help='List of columns to apply log transformation to. ' \
+                                 'Log transformation is applied as signum(x) * log(|x| + 1)')
         parser.add_argument('--col_target', nargs='*', default=[])
         parser.add_argument('--test_size', default='0.1')
-        parser.add_argument('--salt', type=int, default=42)
-        parser.add_argument('--max_trx_count', type=int, default=5000)
+        parser.add_argument('--salt', type=int, default=42,
+                            help='Random seed for client shuffling')
+        parser.add_argument('--max_trx_count', type=int, default=5000,
+                            help='All sequences (transactions) ' \
+                                 'exceeding this number will be removed')
 
         parser.add_argument('--output_train_path', type=os.path.abspath)
         parser.add_argument('--output_test_path', type=os.path.abspath)
         parser.add_argument('--output_test_ids_path', type=os.path.abspath)
         parser.add_argument('--save_partitioned_data', action='store_true')
-        parser.add_argument('--log_file', type=os.path.abspath)
+        parser.add_argument('--log_file', type=os.path.abspath, 
+                            help='File to dump logs to. If set logs will ' \
+                            'be present in stdout and in the file, otherwise only in stdout. ' \
+                            'Notice that stdout will always contain both ' \
+                            'Spark logs and script logs, which makes it hard to read. ' \
+                            'Thus, log_file is useful to be able to read only script logs.')
+
 
         args = parser.parse_args(args)
         logger.info('Parsed args:\n' + '\n'.join([f'  {k:15}: {v}' for k, v in vars(args).items()]))
         self.config = args
 
-    def spark_read_file(self, path):
+    def spark_read_file(self, path: str):
+        """
+        Creates a spark.DataFrame from a given file 
+        using the file extension to determine the format.
+        """
         spark = SparkSession.builder.getOrCreate()
 
         ext = os.path.splitext(path)[1]
@@ -66,10 +114,18 @@ class DatasetConverter:
     def path_to_file(self, file_name):
         return os.path.join(self.config.data_path, file_name)
 
-    def load_source_data(self, trx_files):
+    def load_source_data(self, trx_files: List[str]):
         """
-        :param trx_files:
-        :return: spark.DataFrame with `event_time` column of float type
+        Arguments:
+        ----------
+        trx_files: List[str]
+            List of filenames stored in `self.config.data_path` 
+            directory to load data from.
+
+        Returns:
+        --------
+        data: spark.DataFrame
+            spark.DataFrame with `event_time` column of float type
         """
         data = None
         for file in trx_files:
@@ -105,7 +161,7 @@ class DatasetConverter:
         df['% of total'] = df['cnt'] / df['cnt'].sum()
         return df
 
-    def get_encoder(self, df, col_name):
+    def get_encoder(self, df: DataFrame, col_name: str) -> DataFrame:
         df = df.withColumn(col_name, F.coalesce(F.col(col_name).cast('string'), F.lit('#EMPTY')))
 
         col_orig = '_orig_' + col_name
@@ -120,6 +176,8 @@ class DatasetConverter:
 
         df_encoder = df_encoder.repartition(1)
         df_encoder.persist()
+
+        # AFAIU this call is to trigger the computation since pyspark is lazy.
         _ = df_encoder.count()
 
         return df_encoder
@@ -221,8 +279,8 @@ class DatasetConverter:
         logger.info(f'Join with "{path}" done. New {col_counter} columns joined')
         return df
 
-    def trx_to_features(self, df_data, print_dataset_info,
-                        col_client_id, cols_event_time, cols_category, cols_log_norm, max_trx_count):
+    def trx_to_features(self, df_data, print_dataset_info: bool,
+                        col_client_id, cols_event_time, cols_category, cols_log_norm, max_trx_count: int):
         if print_dataset_info:
             unique_clients = df_data.select(col_client_id).distinct().count()
             logger.info(f'Found {unique_clients} unique clients')
@@ -443,6 +501,10 @@ class DatasetConverter:
         logging.basicConfig(level=logging.INFO, format='%(funcName)-20s   : %(message)s', handlers=handlers)
 
     def load_transactions(self):
+        """
+        Returns a single spark.DataFrame with transaction 
+        data collected from all trx_files.
+        """
         spark = SparkSession.builder.getOrCreate()
 
         source_data = self.load_source_data(trx_files=self.config.trx_files)

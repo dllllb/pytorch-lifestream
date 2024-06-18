@@ -2,19 +2,19 @@
 
 ## Feature types
 
-Information about transaction features are stored as array in dictionary.
+Information about transaction features is stored as arrays in a dictionary.
 
-There are feature types:
+There are the feature types:
 
-- Sequential feature - is a `np.ndarray` or `torch.tensor` of shape `(seq_len,)`
+- Sequential feature - is a `np.ndarray` or a `torch.tensor` of shape `(seq_len,)`
     - for categorical features contains category indexes with type `long`
     - for numerical features contains feature value with type `float`
 - Scalar values. It can be `target`, `id`, `labels` or `scalar features`.
-Types are depends on purpose. Type should be compatible with torch if value will be fed into neural network
+Types depend on purpose. Type should be compatible with torch if value will be fed into a neural network
 - Array values. It also can be `target`, `id`, `labels` or `vector features`.
 Type is `np.ndarray` or `torch.tensor`.
 
-Sequential features correspond user's transactions.
+Sequential features correspond to a user's transactions.
 The length of each user's sequential feature is equal to the length of the entire sequence.
 The order of each user's sequential feature is the same as sequence order.
 Sequential feature length `seq_len` may vary from user to user.
@@ -24,18 +24,18 @@ Array features have a constant shape. This shape is the same for all users.
 This why we use `pad_sequence` which align length for sequential features and `stack` for array features
 during batch collection.
 
-`ptls` extract only sequential features for unsupervised task and additional target for the supervised task.
-Other fields used during preprocessing and inference.
+`ptls` extracts only sequential features for unsupervised task and additional target for the supervised task.
+Other fields are used during preprocessing and inference.
 
 ## Feature names
 
-The main purpose of the feature naming convention is sequential and array features distinguish.
-They both are `np.ndarray` or `torch.tensor` and we can't use data type for distinguish.
+The main purpose of the feature naming convention is to distinguish between sequential and array features.
+They both are `np.ndarray` or `torch.tensor` so we can't use data type to distinguish.
 
-It's important to know feature type because:
+It's important to know the feature type because:
 
 - sequential align lengths with `pad_sequence`, arrays use `stack` during batch collection.
-- only sequential features used to get length of entire sequence
+- only sequential features can be used to get length of entire sequence
 - only sequential features are augmented by timeline modifications like slice, trx dropout or shuffle
 
 We introduce naming rules to solve type discrimination problems.
@@ -62,7 +62,7 @@ x = {
 
 `target` prefix are mandatory only for array features.
 
-Sometimes we need a time sequence. It used fo trx correct order, for time features and for some splits.
+Sometimes we need a time sequence. It used for trx correct order, for time features and for some splits.
 We expect that transaction timestamp stored in `event_time` field.
 
 ## Naming rules
@@ -95,7 +95,7 @@ print(dataset[0])
 
 ## Code usage
 
-Need to take into account the type of features and the use of naming rules is in the classes:
+Theese are the classes where it is necessary to take into account the type of features and the use of naming rules:
 
 - `ptls.data_load.feature_dict.FeatureDict`
 - `ptls.data_load.padded_batch.PaddedBatch`
