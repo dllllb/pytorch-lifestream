@@ -56,7 +56,7 @@ class MultiModalInferenceDataset(FeatureDict, torch.utils.data.Dataset):
     def get_names(self, feature_name):
         idx_del = feature_name.find('_')
         return feature_name[:idx_del], feature_name[idx_del + 1:]
-    
+
     @staticmethod
     def collate_fn(batch, return_dct_labels=False, col_id = 'client_id'):
         batch_ids = []
@@ -69,8 +69,8 @@ class MultiModalInferenceDataset(FeatureDict, torch.utils.data.Dataset):
         padded_batch = collate_multimodal_feature_dict(batch)
         if return_dct_labels:
             return padded_batch, dict_class_labels
-        return padded_batch, batch_ids
-
+        return (padded_batch, None), batch_ids
+    
     
 class MultiModalInferenceIterableDataset(MultiModalInferenceDataset, torch.utils.data.IterableDataset):
     pass
