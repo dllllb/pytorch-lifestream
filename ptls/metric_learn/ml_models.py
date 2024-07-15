@@ -21,7 +21,7 @@ def projection_head(input_size, output_size):
 
 class ModelEmbeddingEnsemble(nn.Module):
     def __init__(self, submodels):
-        super(ModelEmbeddingEnsemble, self).__init__()
+        super().__init__()
         self.models = nn.ModuleList(submodels)
 
     def forward(self, x: PaddedBatch, h_0: torch.Tensor = None):

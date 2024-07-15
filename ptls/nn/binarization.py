@@ -18,7 +18,7 @@ binary = Binarization.apply
 
 class BinarizationLayer(nn.Module):
     def __init__(self, hs_from, hs_to):
-        super(BinarizationLayer, self).__init__()
+        super().__init__()
         self.linear = nn.Linear(hs_from, hs_to, bias=False)
 
     def forward(self, x):

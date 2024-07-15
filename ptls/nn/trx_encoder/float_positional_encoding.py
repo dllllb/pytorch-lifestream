@@ -6,7 +6,7 @@ from torch import nn as nn
 
 class FloatPositionalEncoding(nn.Module):
     def __init__(self, out_size):
-        super(FloatPositionalEncoding, self).__init__()
+        super().__init__()
 
         self.out_size = out_size
 
