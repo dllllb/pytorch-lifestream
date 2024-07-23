@@ -2,6 +2,13 @@ import numpy as np
 import pandas as pd
 
 
+def dt_to_timestamp(x: pd.Series):
+    return pd.to_datetime(x).astype('datetime64[ns]').astype('int64') // 1000000000
+
+
+def timestamp_to_dt(x: pd.Series):
+    return pd.to_datetime(x, unit='s')
+
 def pd_hist(data, name, bins=10):
     if data.dtype.kind == 'f':
         bins = np.linspace(data.min(), data.max(), bins + 1).round(1)

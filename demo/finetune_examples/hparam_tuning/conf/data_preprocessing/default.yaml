@@ -1,0 +1,4 @@
+salt: '42'
+n_folds: 6  # 1 + 5
+data_path: data/
+folds_path: data/folds/

@@ -2,6 +2,7 @@ from functools import reduce
 from operator import iadd
 from typing import List
 
+from pymonad.maybe import Maybe
 from sklearn.base import BaseEstimator, TransformerMixin
 
 from .col_category_transformer import ColCategoryTransformer
@@ -21,14 +22,17 @@ class DataPreprocessor(BaseEstimator, TransformerMixin):
         self.cts_numerical = cts_numerical
         self.cols_identity = cols_identity
         self.t_user_group = t_user_group
+        self._fit_transform_operation = lambda operation: operation.fit_transform
+        self._transform_operation = lambda operation: operation.transform
 
-        self._all_col_transformers = [
-            [self.ct_event_time],
-            self.cts_category,
-            self.cts_numerical,
-            [self.t_user_group],
-        ]
-        self._all_col_transformers = reduce(iadd, self._all_col_transformers, [])
+    # def _preproc_pipeline(self, X, y=None, transform_operation = None, **fit_params):
+    #     transformed_features = Maybe(value=X, monoid=True) \
+    #         .then(function=lambda x: list(map(transform_operation(x), self.cols_identity))) \
+    #         .then(function=lambda x: list(map(transform_operation, self.ct_event_time))) \
+    #         .then(function=lambda x: list(map(transform_operation, self.cts_numerical))) \
+    #         .then(function=lambda x: list(map(transform_operation, self.cts_category))).value
+    #
+    #     return transformed_features
 
     def fit(self, x):
         for i, ct in enumerate(self._all_col_transformers):
@@ -39,14 +43,22 @@ class DataPreprocessor(BaseEstimator, TransformerMixin):
         return self
 
     def fit_transform(self, X, y=None, **fit_params):
-        for ct in self._all_col_transformers:
-            X = ct.fit_transform(X)
-        return X
+        transformed_features = Maybe(value=X, monoid=True) \
+            .then(function=lambda x: list(map(lambda operation: operation.fit_transform(x), self.cols_identity))) \
+            .then(function=lambda x: list(map(lambda operation: operation.fit_transform(x), self.ct_event_time))) \
+            .then(function=lambda x: list(map(lambda operation: operation.fit_transform(x), self.cts_numerical))) \
+            .then(function=lambda x: list(map(lambda operation: operation.fit_transform(x), self.cts_category))).value
 
-    def transform(self, x):
-        for ct in self._all_col_transformers:
-            x = ct.transform(x)
-        return x
+        return transformed_features
+
+    def transform(self, X):
+        transformed_features = Maybe(value=X, monoid=True) \
+            .then(function=lambda x: list(map(lambda operation: operation.fit_transform(x), self.cols_identity))) \
+            .then(function=lambda x: list(map(lambda operation: operation.fit_transform(x), self.ct_event_time))) \
+            .then(function=lambda x: list(map(lambda operation: operation.fit_transform(x), self.cts_numerical))) \
+            .then(function=lambda x: list(map(lambda operation: operation.fit_transform(x), self.cts_category))).value
+
+        return transformed_features
 
     def get_category_dictionary_sizes(self):
         """Gets a dict of mapping to integers lengths for categories
