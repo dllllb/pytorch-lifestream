@@ -7,9 +7,6 @@ from get_paths import write_results
 from pyhocon import ConfigFactory
 
 
-mp.set_start_method('spawn')
-
-
 def main():
     conf_path = str(sys.argv[1])
     debug = True if str(sys.argv[2]) == 'debug' else False
@@ -34,4 +31,5 @@ def main():
 
 
 if __name__ == '__main__':
+    mp.set_start_method('spawn')
     main()
