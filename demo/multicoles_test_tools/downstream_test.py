@@ -53,7 +53,7 @@ def predict_on_dataloader(model, dataloader, gpu_n):
     return xx, yy
 
 
-def solve_downstream(xx, yy, test_xx, test_yy, metric_f, conf_path='./config.hocon'):
+def solve_downstream(xx, yy, test_xx, test_yy, metric, conf_path='./config.hocon'):
     scores = list()
     conf = ConfigFactory.parse_file(conf_path)
     lgbm_conf = conf.get('lgbm_conf')
@@ -65,7 +65,10 @@ def solve_downstream(xx, yy, test_xx, test_yy, metric_f, conf_path='./config.hoc
         clf = LGBMClassifier(**lgbm_conf)
         clf.fit(xx, yy)
         pred_y = clf.predict_proba(test_xx)[:, 1]
-        test_score = metric_f(test_yy, pred_y)
+        if metric == 'accuracy':
+            test_score = accuracy_score(test_yy, pred_y)
+        elif metric =='rocauc':
+            test_score = roc_auc_score(test_yy, pred_y[:, 1])
         scores.append(test_score)
     return scores
 
@@ -90,10 +93,10 @@ def inference(mode, task_info, gpu_n, conf_path='./config.hocon'):
     dataset = conf.get('dataset')
     if dataset == 'synthetic':
         dataf = get_synthetic_sup_datamodule
-        metric = roc_auc_score
+        metric = 'rocauc'
     elif dataset == 'age_pred':
         dataf = get_age_pred_sup_datamodule
-        metric = accuracy_score
+        metric = 'accuracy'
 
     if mode == 'mono':
         model_loader = partial(load_monomodel, gpu_n=gpu_n, conf_path=conf_path)
