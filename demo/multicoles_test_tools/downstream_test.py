@@ -76,6 +76,10 @@ def predict_on_fold(task_info, dataf, model_loader, gpu_n, metric, conf_path):
     model = model_loader(*model_loading_info)
 
     train_dl = sup_data.train_dataloader()
+    for batch in train_dl:
+        qwe = 10
+    print('dl is fine')
+    train_dl = sup_data.train_dataloader()
     train_xx, train_yy = predict_on_dataloader(model, train_dl, gpu_n)
 
     test_dl = sup_data.test_dataloader()
