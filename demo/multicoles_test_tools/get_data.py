@@ -82,19 +82,19 @@ def get_age_pred_sup_datamodule(fold_i, **kwargs):
     df_gbm_train = pd.read_pickle(f'idx_data/fold_{fold_i}/df_gbm_train.pickle')
     df_gbm_test = pd.read_pickle(f'idx_data/fold_{fold_i}/df_gbm_test.pickle')
 
+    test_dataset = ptls.data_load.datasets.MemoryMapDataset(
+        df_gbm_test.to_dict(orient='records'),
+        i_filters=[
+            ptls.data_load.iterable_processing.ISeqLenLimit(max_seq_len=2000),
+        ],
+    )
+
     train_dataset = ptls.data_load.datasets.MemoryMapDataset(
         df_gbm_train.to_dict(orient='records'),
         i_filters=[
             ptls.data_load.iterable_processing.ISeqLenLimit(max_seq_len=2000),
         ],
     )
-
-    test_dataset = ptls.data_load.datasets.MemoryMapDataset(
-        df_gbm_test.to_dict(orient='records'),
-        i_filters=[
-            ptls.data_load.iterable_processing.ISeqLenLimit(max_seq_len=2000),
-        ],
-    ),
 
     sup_datamodule = PtlsDataModule(
         train_data=SeqToTargetIterableDataset(train_dataset, target_col_name='bins', target_dtype=torch.long),
