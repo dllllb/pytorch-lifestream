@@ -75,7 +75,6 @@ def predict_on_fold(task_info, dataf, model_loader, gpu_n, metric, conf_path):
     sup_data = dataf(fold_i)
     model = model_loader(*model_loading_info)
 
-    train_dl = sup_data.train_dataloader()
     train_dl = sup_data.train_dataloader
     train_xx, train_yy = predict_on_dataloader(model, train_dl, gpu_n)
 
