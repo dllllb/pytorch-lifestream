@@ -64,11 +64,12 @@ def solve_downstream(xx, yy, test_xx, test_yy, metric, conf_path='./config.hocon
         lgbm_conf['random_state'] = 42 + gbm_i
         clf = LGBMClassifier(**lgbm_conf)
         clf.fit(xx, yy)
-        pred_y = clf.predict_proba(test_xx)[:, 1]
         if metric == 'accuracy':
-            test_score = accuracy_score(test_yy, pred_y)
+            pred_y = clf.predict(test_xx)
+            test_score = accuracy_score(y_pred=pred_y, y_true=test_yy)
         elif metric =='rocauc':
-            test_score = roc_auc_score(test_yy, pred_y[:, 1])
+            pred_y = clf.predict_proba(test_xx)[:, 1]
+            test_score = roc_auc_score(y_score=pred_y[:, 1], y_true=test_yy)
         scores.append(test_score)
     return scores
 
