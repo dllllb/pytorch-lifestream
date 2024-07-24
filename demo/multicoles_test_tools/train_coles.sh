@@ -2,7 +2,7 @@
 
 for fold_i in {0..4}
 do {
-  "python train_coles.py $fold_i $@" & pid=$!
+  python train_coles.py $fold_i $@ & pid=$!
   PID_LIST+=" $pid";
 } done
 
