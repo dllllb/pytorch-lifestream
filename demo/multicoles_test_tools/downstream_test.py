@@ -33,7 +33,7 @@ def load_multimodel(first_model_path, second_model_path, gpu_n, conf_path='./con
 
 def predict_on_dataloader(model, dataloader, gpu_n):
     xx, yy = list(), list()
-    for batch in dataloader:
+    for batch in dataloader():
 
         with torch.no_grad():
             x, y = batch
@@ -76,13 +76,10 @@ def predict_on_fold(task_info, dataf, model_loader, gpu_n, metric, conf_path):
     model = model_loader(*model_loading_info)
 
     train_dl = sup_data.train_dataloader()
-    for batch in train_dl:
-        qwe = 10
-    0/0
-    train_dl = sup_data.train_dataloader()
+    train_dl = sup_data.train_dataloader
     train_xx, train_yy = predict_on_dataloader(model, train_dl, gpu_n)
 
-    test_dl = sup_data.test_dataloader()
+    test_dl = sup_data.test_dataloader
     test_xx, test_yy = predict_on_dataloader(model, test_dl, gpu_n)
 
     metric_scores = solve_downstream(train_xx, train_yy, test_xx, test_yy, metric, conf_path=conf_path)
