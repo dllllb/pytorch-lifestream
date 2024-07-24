@@ -205,20 +205,20 @@ class MultiCoLESModule(ABSModule):
             self.clip_gradients(opt, gradient_clip_val=0.5, gradient_clip_algorithm="norm")
             opt.step()
 
-        for k, v in chain(ref_d_info.items(), ref_embed_info.items()):
-            self.log("ref_" + k, v)
-        for k, v in chain(d_info.items(), coles_info.items(), embed_info.items()):
-            self.log(k, v)
-        self.log("embed_coef", self.embed_coef)
+            for k, v in chain(ref_d_info.items(), ref_embed_info.items()):
+                self.log("ref_" + k, v)
+            for k, v in chain(d_info.items(), coles_info.items(), embed_info.items()):
+                self.log(k, v)
+            self.log("embed_coef", self.embed_coef)
 
-        if type(batch) is tuple:
-            x, y = batch
-            if isinstance(x, PaddedBatch):
-                self.log('seq_len', x.seq_lens.float().mean(), prog_bar=True)
-        else:
-            # this code should not be reached
-            self.log('seq_len', -1, prog_bar=True)
-            raise AssertionError('batch is not a tuple')
+            if type(batch) is tuple:
+                x, y = batch
+                if isinstance(x, PaddedBatch):
+                    self.log('seq_len', x.seq_lens.float().mean(), prog_bar=True)
+            else:
+                # this code should not be reached
+                self.log('seq_len', -1, prog_bar=True)
+                raise AssertionError('batch is not a tuple')
 
     def validation_step(self, batch, _):
         (domain_a, domain_b), y = self.shared_step(*batch)
