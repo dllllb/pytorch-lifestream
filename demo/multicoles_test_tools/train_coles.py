@@ -24,7 +24,7 @@ def main():
     score = inference(mode='mono', task_info=task_info, gpu_n=gpu_n, conf_path=conf_path)
 
     result = {
-        'fold_i': path_to_model[0],
+        'fold_i': str(path_to_model[0]),
         'tb_name': path_to_model[1],
         'model_path': path_to_model[2],
         'scores': ','.join([str(np.round(float(x), 5)) for x in score[1]]),
