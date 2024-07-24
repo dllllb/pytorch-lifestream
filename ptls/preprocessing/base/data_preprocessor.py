@@ -1,12 +1,13 @@
-from functools import reduce
-from operator import iadd
-from typing import List
+from typing import List, Union
 
+import pandas as pd
 from pymonad.maybe import Maybe
 from sklearn.base import BaseEstimator, TransformerMixin
+import dask.dataframe as dd
 
-from .col_category_transformer import ColCategoryTransformer
-from .col_transformer import ColTransformer
+from ptls.preprocessing.base.transformation.col_category_transformer import ColCategoryTransformer
+from ptls.preprocessing.base.transformation.col_numerical_transformer import ColTransformer
+from ptls.preprocessing.multithread_dispatcher import DaskDispatcher
 
 
 class DataPreprocessor(BaseEstimator, TransformerMixin):
@@ -24,15 +25,13 @@ class DataPreprocessor(BaseEstimator, TransformerMixin):
         self.t_user_group = t_user_group
         self._fit_transform_operation = lambda operation: operation.fit_transform
         self._transform_operation = lambda operation: operation.transform
+        self.multithread_dispatcher = DaskDispatcher()
 
-    # def _preproc_pipeline(self, X, y=None, transform_operation = None, **fit_params):
-    #     transformed_features = Maybe(value=X, monoid=True) \
-    #         .then(function=lambda x: list(map(transform_operation(x), self.cols_identity))) \
-    #         .then(function=lambda x: list(map(transform_operation, self.ct_event_time))) \
-    #         .then(function=lambda x: list(map(transform_operation, self.cts_numerical))) \
-    #         .then(function=lambda x: list(map(transform_operation, self.cts_category))).value
-    #
-    #     return transformed_features
+    def _preproc_function(self, X, y=None, transform_operation:str = 'transform', **fit_params):
+        pass
+
+    def _chunk_data(self, dataset: Union[pd.DataFrame, dd.DataFrame], col_to_transform: List[str]):
+        pass
 
     def fit(self, x):
         for i, ct in enumerate(self._all_col_transformers):
@@ -45,9 +44,10 @@ class DataPreprocessor(BaseEstimator, TransformerMixin):
     def fit_transform(self, X, y=None, **fit_params):
         transformed_features = Maybe(value=X, monoid=True) \
             .then(function=lambda x: list(map(lambda operation: operation.fit_transform(x), self.cols_identity))) \
-            .then(function=lambda x: list(map(lambda operation: operation.fit_transform(x), self.ct_event_time))) \
-            .then(function=lambda x: list(map(lambda operation: operation.fit_transform(x), self.cts_numerical))) \
-            .then(function=lambda x: list(map(lambda operation: operation.fit_transform(x), self.cts_category))).value
+            # .then(function=lambda x: list(map(lambda operation: operation.fit_transform(x), self.cols_identity))) \
+        # .then(function=lambda x: list(map(lambda operation: operation.fit_transform(x), self.ct_event_time))) \
+        # .then(function=lambda x: list(map(lambda operation: operation.fit_transform(x), self.cts_numerical))) \
+        # .then(function=lambda x: list(map(lambda operation: operation.fit_transform(x), self.cts_category))).value
 
         return transformed_features
 
