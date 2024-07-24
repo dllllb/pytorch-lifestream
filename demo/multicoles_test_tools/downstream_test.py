@@ -8,11 +8,11 @@ from lightgbm import LGBMClassifier
 from functools import partial
 
 
-def load_monomodel(model_path, conf_path='./config.hocon'):
+def load_monomodel(model_path, mono, conf_path='./config.hocon'):
     conf = ConfigFactory.parse_file(conf_path)
     trx_conf = conf.get('trx_conf')
     input_size = conf.get('input_size')
-    hsize = conf.get('hsize')
+    hsize = conf.get('hsize') * 2 if mono else conf.get('hsize')
     module = get_coles_module(trx_conf, input_size, hsize)
     module.seq_encoder.load_state_dict(torch.load(model_path))
     return module
