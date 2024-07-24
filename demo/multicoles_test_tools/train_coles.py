@@ -7,7 +7,7 @@ from get_paths import write_results
 from pyhocon import ConfigFactory
 
 
-mp.set_sharing_strategy('spawn')
+mp.set_start_method('spawn')
 
 
 def main():
