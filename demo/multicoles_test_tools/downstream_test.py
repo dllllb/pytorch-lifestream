@@ -56,6 +56,9 @@ def solve_downstream(xx, yy, test_xx, test_yy, metric_f, conf_path='./config.hoc
     scores = list()
     conf = ConfigFactory.parse_file(conf_path)
     lgbm_conf = conf.get('lgbm_conf')
+    for k, v in lgbm_conf.items():
+        if v == 'None':
+            lgbm_conf[k] = None
     for gbm_i in range(5):
         lgbm_conf['random_state'] = 42 + gbm_i
         clf = LGBMClassifier(**lgbm_conf)
