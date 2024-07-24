@@ -7,7 +7,30 @@ from get_data import get_age_pred_coles_datamodule, get_synthetic_coles_datamodu
 from get_model import get_coles_module, get_static_multicoles_module
 from get_paths import create_experiment_folder
 from pyhocon import ConfigFactory
+from functools import partial
 from datetime import datetime
+
+
+def train_coles_model_folder(fold_i, exp_name, dataf, trx_conf, input_size, hsize,
+                             path_to_logs, path_to_chkp, is_mono, gpu_n, max_epoch, debug):
+    datamodule = dataf(fold_i)
+    module = get_coles_module(trx_conf, input_size, hsize)
+    writer = TensorBoardLogger(save_dir=path_to_logs, name=is_mono + '_fold_' + str(fold_i))
+    trainer = pl.Trainer(gpus=[gpu_n],
+                         max_epochs=max_epoch,
+                         enable_checkpointing=False,
+                         enable_progress_bar=False,
+                         gradient_clip_val=0.5,
+                         gradient_clip_algorithm="value",
+                         track_grad_norm=2,
+                         logger=writer,
+                         fast_dev_run=debug)
+    logger_version = trainer.logger.version
+    tb_name = exp_name + '/' + is_mono + '_fold_' + str(fold_i) + '/' + str(logger_version)
+    trainer.fit(module, datamodule)
+    model_save_path = os.path.join(path_to_chkp, '_'.join([is_mono, str(fold_i)]) + '.pth')
+    torch.save(module.seq_encoder.state_dict(), model_save_path)
+    return fold_i, tb_name, model_save_path
 
 
 def train_coles_model(monomodel=True, conf_path='./config.hocon', debug=False):
@@ -35,30 +58,20 @@ def train_coles_model(monomodel=True, conf_path='./config.hocon', debug=False):
     else:
         is_mono = 'full'
 
-
-    def train_model_folder(fold_i):
-        datamodule = dataf(fold_i)
-        module = get_coles_module(trx_conf, input_size, hsize)
-        writer = TensorBoardLogger(save_dir=path_to_logs, name=is_mono+'_fold_'+str(fold_i))
-        trainer = pl.Trainer(gpus=[gpu_n],
-                             max_epochs=max_epoch,
-                             enable_checkpointing=False,
-                             enable_progress_bar=False,
-                             gradient_clip_val=0.5,
-                             gradient_clip_algorithm="value",
-                             track_grad_norm=2,
-                             logger=writer,
-                             fast_dev_run=debug)
-        logger_version = trainer.logger.version
-        tb_name = exp_name + '/' + is_mono+'_fold_'+str(fold_i) + '/' + str(logger_version)
-        trainer.fit(module, datamodule)
-        model_save_path = os.path.join(path_to_chkp, '_'.join([is_mono, str(fold_i)])+'.pth')
-        torch.save(module.seq_encoder.state_dict(), model_save_path)
-        return fold_i, tb_name, model_save_path
-
-
+    func = partial(train_coles_model_folder,
+                   exp_name=exp_name,
+                   dataf=dataf,
+                   trx_conf=trx_conf,
+                   input_size=input_size,
+                   hsize=hsize,
+                   path_to_logs=path_to_logs,
+                   path_to_chkp=path_to_chkp,
+                   is_mono=is_mono,
+                   gpu_n=gpu_n,
+                   max_epoch=max_epoch,
+                   debug=debug)
     with mp.Pool(5) as p:
-        paths_to_models = p.map(train_model_folder, [i for i in range(5)], chunksize=1)
+        paths_to_models = p.map(func, [i for i in range(5)], chunksize=1)
     return paths_to_models
 
 

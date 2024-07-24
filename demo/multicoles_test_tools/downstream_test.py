@@ -6,6 +6,7 @@ from get_data import get_synthetic_sup_datamodule, get_age_pred_sup_datamodule
 from pyhocon import ConfigFactory
 from sklearn.metrics import accuracy_score, roc_auc_score
 from lightgbm import LGBMClassifier
+from functools import partial
 
 
 def load_monomodel(model_path, conf_path='./config.hocon'):
@@ -69,6 +70,21 @@ def solve_downstream(xx, yy, test_xx, test_yy, metric_f, conf_path='./config.hoc
     return scores
 
 
+def predict_on_fold(task_info, dataf, model_loader, gpu_n, metric, conf_path):
+    model_loading_info, fold_i = task_info
+    sup_data = dataf(fold_i)
+    model = model_loader(*model_loading_info)
+
+    train_dl = sup_data.train_dataloader()
+    train_xx, train_yy = predict_on_dataloader(model, train_dl, gpu_n)
+
+    test_dl = sup_data.test_dataloader()
+    test_xx, test_yy = predict_on_dataloader(model, test_dl, gpu_n)
+
+    metric_scores = solve_downstream(train_xx, train_yy, test_xx, test_yy, metric, conf_path=conf_path)
+    return fold_i, metric_scores
+
+
 def inference(mode, models_info, conf_path='./config.hocon'):
     conf = ConfigFactory.parse_file(conf_path)
     dataset = conf.get('dataset')
@@ -85,22 +101,13 @@ def inference(mode, models_info, conf_path='./config.hocon'):
     else:
         model_loader = load_multimodel
 
-
-    def predict_on_fold(task_info):
-        model_loading_info, fold_i = task_info
-        sup_data = dataf(fold_i)
-        model = model_loader(*model_loading_info)
-
-        train_dl = sup_data.train_dataloader()
-        train_xx, train_yy = predict_on_dataloader(model, train_dl, gpu_n)
-
-        test_dl = sup_data.test_dataloader()
-        test_xx, test_yy = predict_on_dataloader(model, test_dl, gpu_n)
-
-        metric_scores = solve_downstream(train_xx, train_yy, test_xx, test_yy, metric, conf_path=conf_path)
-        return fold_i, metric_scores
-
-
+    func = partial(predict_on_fold,
+                   task_info=task_info,
+                   dataf=dataf,
+                   model_loader=model_loader,
+                   gpu_n=gpu_n,
+                   metric=metric,
+                   conf_path=conf_path)
     with mp.Pool(5) as p:
-        scores = p.map(predict_on_fold, models_info, chunksize=1)
+        scores = p.map(func, models_info, chunksize=1)
     return scores
