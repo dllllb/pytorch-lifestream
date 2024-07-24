@@ -14,7 +14,8 @@ def load_monomodel(model_path, mono, gpu_n, conf_path='./config.hocon'):
     input_size = conf.get('input_size')
     hsize = conf.get('hsize') * 2 if mono else conf.get('hsize')
     module = get_coles_module(trx_conf, input_size, hsize)
-    module.seq_encoder.load_state_dict(torch.load(model_path)).to('cuda'+str(gpu_n))
+    module.seq_encoder.load_state_dict(torch.load(model_path))
+    module.to('cuda'+str(gpu_n))
     return module
 
 
@@ -25,7 +26,8 @@ def load_multimodel(first_model_path, second_model_path, gpu_n, conf_path='./con
     hsize = conf.get('hsize')
     clf_hsize = conf.get('clf_hsize', 64)
     module = get_static_multicoles_module(trx_conf, input_size, 1., hsize, clf_hsize, first_model_path)
-    module.seq_encoder.load_state_dict(torch.load(second_model_path)).to('cuda'+str(gpu_n))
+    module.seq_encoder.load_state_dict(torch.load(second_model_path))
+    module.to('cuda' + str(gpu_n))
     return module
 
 
