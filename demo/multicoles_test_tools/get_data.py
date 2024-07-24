@@ -29,8 +29,8 @@ def get_age_pred_coles_datamodule(fold_i, **kwargs):
                 cnt_max=200,
             ),
         ),
-        valid_data=ptls.frames.coles.ColesDataset(
-            data=ptls.data_load.datasets.MemoryMapDataset(
+        valid_data=ColesDataset(
+            data=MemoryMapDataset(
                 df_seq_pretrain_train.to_dict(orient='records')),
             splitter=SampleSlices(
                 split_count=5,

@@ -33,8 +33,7 @@ def load_multimodel(first_model_path, second_model_path, gpu_n, conf_path='./con
 
 def predict_on_dataloader(model, dataloader, gpu_n):
     xx, yy = list(), list()
-    dl = iter(dataloader)
-    for batch in dl:
+    for batch in dataloader:
 
         with torch.no_grad():
             x, y = batch
