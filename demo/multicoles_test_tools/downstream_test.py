@@ -1,12 +1,10 @@
 import torch
-import torch.multiprocessing as mp
 import numpy as np
 from get_model import get_coles_module, get_static_multicoles_module
 from get_data import get_synthetic_sup_datamodule, get_age_pred_sup_datamodule
 from pyhocon import ConfigFactory
 from sklearn.metrics import accuracy_score, roc_auc_score
 from lightgbm import LGBMClassifier
-from functools import partial
 
 
 def load_monomodel(model_path, conf_path='./config.hocon'):
@@ -85,10 +83,9 @@ def predict_on_fold(task_info, dataf, model_loader, gpu_n, metric, conf_path):
     return fold_i, metric_scores
 
 
-def inference(mode, models_info, conf_path='./config.hocon'):
+def inference(mode, task_info, gpu_n, conf_path='./config.hocon'):
     conf = ConfigFactory.parse_file(conf_path)
     dataset = conf.get('dataset')
-    gpu_n = conf.get('gpu_n')
     if dataset == 'synthetic':
         dataf = get_synthetic_sup_datamodule
         metric = roc_auc_score
@@ -101,13 +98,5 @@ def inference(mode, models_info, conf_path='./config.hocon'):
     else:
         model_loader = load_multimodel
 
-    func = partial(predict_on_fold,
-                   task_info=task_info,
-                   dataf=dataf,
-                   model_loader=model_loader,
-                   gpu_n=gpu_n,
-                   metric=metric,
-                   conf_path=conf_path)
-    with mp.Pool(5) as p:
-        scores = p.map(func, models_info, chunksize=1)
-    return scores
+    score = predict_on_fold(task_info, dataf, model_loader, gpu_n, metric, conf_path)
+    return score

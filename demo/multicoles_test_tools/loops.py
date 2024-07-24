@@ -7,7 +7,6 @@ from get_data import get_age_pred_coles_datamodule, get_synthetic_coles_datamodu
 from get_model import get_coles_module, get_static_multicoles_module
 from get_paths import create_experiment_folder
 from pyhocon import ConfigFactory
-from functools import partial
 from datetime import datetime
 
 
@@ -33,7 +32,7 @@ def train_coles_model_folder(fold_i, exp_name, dataf, trx_conf, input_size, hsiz
     return fold_i, tb_name, model_save_path
 
 
-def train_coles_model(monomodel=True, conf_path='./config.hocon', debug=False):
+def train_coles_model(fold_i, gpu_n, monomodel=True, conf_path='./config.hocon', debug=False):
     conf = ConfigFactory.parse_file(conf_path)
     dataset = conf.get('dataset')
     assert dataset in ['synthetic', 'age_pred'], 'invalid dataset'
@@ -49,7 +48,6 @@ def train_coles_model(monomodel=True, conf_path='./config.hocon', debug=False):
     trx_conf = conf.get('trx_conf')
     input_size = conf.get('input_size')
     hsize = conf.get('hsize')
-    gpu_n = conf.get('gpu_n')
     max_epoch = conf.get('max_epoch', 50)
 
     if monomodel:
@@ -58,21 +56,9 @@ def train_coles_model(monomodel=True, conf_path='./config.hocon', debug=False):
     else:
         is_mono = 'full'
 
-    func = partial(train_coles_model_folder,
-                   exp_name=exp_name,
-                   dataf=dataf,
-                   trx_conf=trx_conf,
-                   input_size=input_size,
-                   hsize=hsize,
-                   path_to_logs=path_to_logs,
-                   path_to_chkp=path_to_chkp,
-                   is_mono=is_mono,
-                   gpu_n=gpu_n,
-                   max_epoch=max_epoch,
-                   debug=debug)
-    with mp.Pool(5) as p:
-        paths_to_models = p.map(func, [i for i in range(5)], chunksize=1)
-    return paths_to_models
+    paths_to_model = train_coles_model_folder(fold_i, exp_name, dataf, trx_conf, input_size, hsize,
+                                              path_to_logs, path_to_chkp, is_mono, gpu_n, max_epoch, debug)
+    return paths_to_model
 
 
 def train_multicoles_model(first_models, embed_coef, conf_path='./config.hocon', debug=False):
