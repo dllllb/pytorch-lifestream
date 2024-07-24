@@ -3,9 +3,9 @@ import torch
 import torch.multiprocessing as mp
 import pytorch_lightning as pl
 from pytorch_lightning.loggers import TensorBoardLogger
-from .get_data import get_age_pred_coles_datamodule, get_synthetic_coles_datamodule
-from .get_model import get_coles_module, get_static_multicoles_module
-from .get_paths import create_experiment_folder
+from get_data import get_age_pred_coles_datamodule, get_synthetic_coles_datamodule
+from get_model import get_coles_module, get_static_multicoles_module
+from get_paths import create_experiment_folder
 from pyhocon import ConfigFactory
 from datetime import datetime
 

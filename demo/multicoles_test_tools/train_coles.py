@@ -1,7 +1,7 @@
 import sys
 import numpy as np
 import torch.multiprocessing as mp
-from .loops import train_coles_model
+from loops import train_coles_model
 from downstream_test import inference
 from get_paths import write_results
 from pyhocon import ConfigFactory
