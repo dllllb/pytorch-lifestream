@@ -12,7 +12,7 @@ mp.set_sharing_strategy('spawn')
 
 def main():
     conf_path = str(sys.argv[1])
-    debug = bool(sys.argv[2])
+    debug = True if str(sys.argv[2]) == 'debug' else False
     if conf_path == 'def':
         conf_path = './config.hocon'
 
