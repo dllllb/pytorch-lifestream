@@ -141,8 +141,9 @@ class CLUBLoss(nn.Module):
                       "CLUB_neg_pred_delta": neg_delta.item()}
 
     def pred_loss_prob(self, pos_probs, neg_probs):
-        loss = - pos_probs.mean() + neg_probs.mean()
-        return loss, {"CLUB_prob_loss": loss.item()}
+        pl = - pos_probs.mean()
+        loss = pl + neg_probs.mean()
+        return loss, {"CLUB_prob_loss": pl.item()}
 
     def forward(self, *argv):
         return

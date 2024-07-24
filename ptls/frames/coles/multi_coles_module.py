@@ -33,7 +33,7 @@ class MultiCoLESModule(ABSModule):
                  gamma_min=0.85,
                  delta_coef=0.05,
                  delta_up_coef=1,
-                 adaptive_coef=True):
+                 adaptive_coef=False):
 
         assert discriminator is not None and d_optimizer_partial is not None
         #assert (seq_encoder.n_encoders == 1) != (trained_encoders is not None)
