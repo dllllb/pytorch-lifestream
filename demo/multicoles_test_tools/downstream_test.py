@@ -5,6 +5,7 @@ from get_data import get_synthetic_sup_datamodule, get_age_pred_sup_datamodule
 from pyhocon import ConfigFactory
 from sklearn.metrics import accuracy_score, roc_auc_score
 from lightgbm import LGBMClassifier
+from functools import partial
 
 
 def load_monomodel(model_path, conf_path='./config.hocon'):
@@ -94,9 +95,9 @@ def inference(mode, task_info, gpu_n, conf_path='./config.hocon'):
         metric = accuracy_score
 
     if mode == 'mono':
-        model_loader = load_monomodel
+        model_loader = partial(load_monomodel, conf_path=conf_path)
     else:
-        model_loader = load_multimodel
+        model_loader = partial(load_multimodel, conf_path=conf_path)
 
     score = predict_on_fold(task_info, dataf, model_loader, gpu_n, metric, conf_path)
     return score

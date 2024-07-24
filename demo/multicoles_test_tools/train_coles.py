@@ -19,8 +19,9 @@ def main():
 
     # list of (fold_i, tb_name, model_save_path)
     path_to_model = train_coles_model(fold_i=fold_i, gpu_n=gpu_n, monomodel=True, conf_path=conf_path, debug=debug)
+    task_info = [path_to_model[2]], fold_i
     # list of (fold_i, metric_scores)
-    score = inference(mode='mono', task_info=path_to_model, gpu_n=gpu_n, conf_path=conf_path)
+    score = inference(mode='mono', task_info=task_info, gpu_n=gpu_n, conf_path=conf_path)
 
     result = {
         'fold_i': path_to_model[0],
