@@ -8,24 +8,24 @@ from lightgbm import LGBMClassifier
 from functools import partial
 
 
-def load_monomodel(model_path, mono, conf_path='./config.hocon'):
+def load_monomodel(model_path, mono, gpu_n, conf_path='./config.hocon'):
     conf = ConfigFactory.parse_file(conf_path)
     trx_conf = conf.get('trx_conf')
     input_size = conf.get('input_size')
     hsize = conf.get('hsize') * 2 if mono else conf.get('hsize')
     module = get_coles_module(trx_conf, input_size, hsize)
-    module.seq_encoder.load_state_dict(torch.load(model_path))
+    module.load_state_dict(torch.load(model_path)).to('cuda'+str(gpu_n))
     return module
 
 
-def load_multimodel(first_model_path, second_model_path, conf_path='./config.hocon'):
+def load_multimodel(first_model_path, second_model_path, gpu_n, conf_path='./config.hocon'):
     conf = ConfigFactory.parse_file(conf_path)
     trx_conf = conf.get('trx_conf')
     input_size = conf.get('input_size')
     hsize = conf.get('hsize')
     clf_hsize = conf.get('clf_hsize', 64)
     module = get_static_multicoles_module(trx_conf, input_size, 1., hsize, clf_hsize, first_model_path)
-    module.seq_encoder.load_state_dict(torch.load(second_model_path))
+    module.load_state_dict(torch.load(second_model_path)).to('cuda'+str(gpu_n))
     return module
 
 
@@ -95,9 +95,9 @@ def inference(mode, task_info, gpu_n, conf_path='./config.hocon'):
         metric = accuracy_score
 
     if mode == 'mono':
-        model_loader = partial(load_monomodel, conf_path=conf_path)
+        model_loader = partial(load_monomodel, gpu_n=gpu_n, conf_path=conf_path)
     else:
-        model_loader = partial(load_multimodel, conf_path=conf_path)
+        model_loader = partial(load_multimodel, gpu_n=gpu_n, conf_path=conf_path)
 
     score = predict_on_fold(task_info, dataf, model_loader, gpu_n, metric, conf_path)
     return score
