@@ -2,6 +2,7 @@ from typing import List
 
 import torch
 import pandas as pd
+from joblib import parallel_backend, parallel_config, delayed, Parallel
 
 from ptls.preprocessing.base.transformation.col_numerical_transformer import ColTransformer
 
@@ -22,6 +23,7 @@ class UserGroupTransformer(ColTransformer):
         False: Result is a dataframe. Use `.to_dict(orient='records')` to transform it to `ptls` format.
         True: Result is a list of dicts - `ptls` format
     """
+
     def __init__(self,
                  col_name_original: str,
                  cols_first_item: List[str] = None,
@@ -35,37 +37,42 @@ class UserGroupTransformer(ColTransformer):
         self.cols_first_item = cols_first_item if cols_first_item is not None else []
         self.return_records = return_records
 
-    def fit(self, x):
-        # super().fit(x)
+    def __repr__(self):
+        return 'Aggregate transformation'
+
+    def _event_time_exist(self, x):
         if self.col_name_original not in x.columns:
             raise AttributeError(f'col_name_original="{self.col_name_original}" not in source dataframe. '
                                  f'Found {x.columns}')
         if 'event_time' not in x.columns:
             raise AttributeError(f'"event_time" not in source dataframe. '
                                  f'Found {x.columns}')
-        return self        
-    
-    def df_to_feature_arrays(self, df):
-        def decide(k, v):
-            if k in self.cols_first_item:
-                return v.iloc[0]
-            elif isinstance(v.iloc[0], torch.Tensor):
-                return torch.vstack(tuple(v))
-            elif v.dtype == 'object':
-                return v.values
-            else:
-                return torch.from_numpy(v.values)
 
-        return pd.Series({k: decide(k, v)
-                          for k, v in df.to_dict(orient='series').items()})
+    def _convert_type(self, group_name, group_df):
+        for k, v in group_df.to_dict(orient='series').items():
+            if k in self.cols_first_item:
+                v = v.iloc[0]
+            elif isinstance(v.iloc[0], torch.Tensor):
+                v = torch.vstack(tuple(v))
+            elif v.dtype == 'object':
+                v = v.values
+            else:
+                v = torch.from_numpy(v.values)
+        return {group_name:{k: v}}
+
+    def fit(self, x):
+        self._event_time_exist(x)
+        return self
+
+    def df_to_feature_arrays(self, df):
+        with parallel_config(backend='threading'):
+                result_dict = Parallel()(delayed(self._convert_type)(group_name, df_group)
+                                         for group_name, df_group in df)
+
+        return pd.Series(result_dict)
 
     def transform(self, x: pd.DataFrame):
-        x = self.attach_column(x, x['event_time'].rename('et_index')).set_index([self.col_name_original, 'et_index'])
-        x = x.sort_index().groupby(self.col_name_original)
-        x = x.apply(self.df_to_feature_arrays).reset_index()
-
-        # we don't heed to drop original column in this transformer
-        # x = super().transform(x)
-        if self.return_records:
-            x = x.to_dict(orient='records')
+        x = x.set_index([self.col_name_original, 'event_time']).sort_index().groupby(self.col_name_original)
+        x = self.df_to_feature_arrays(x)
+        x = x.to_dict(orient='records') if self.return_records else x
         return x

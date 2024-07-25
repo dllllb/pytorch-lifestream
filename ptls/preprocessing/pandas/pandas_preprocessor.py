@@ -6,9 +6,7 @@ import pandas as pd
 
 from ptls.preprocessing.base import DataPreprocessor
 from ptls.preprocessing.base.transformation.col_category_transformer import ColCategoryTransformer
-from ptls.preprocessing.base.transformation.col_identity_transformer import ColIdentityEncoder
 from ptls.preprocessing.base.transformation.col_numerical_transformer import ColTransformer
-from ptls.preprocessing.pandas.pandas_transformation.category_identity_encoder import CategoryIdentityEncoder
 
 logger = logging.getLogger(__name__)
 
@@ -71,58 +69,17 @@ class PandasDataPreprocessor(DataPreprocessor):
                  cols_first_item: List[str] = None,
                  return_records: bool = True,
                  ):
-        if cols_category is None:
-            cols_category = []
-        if cols_numerical is None:
-            cols_numerical = []
-        if cols_identity is None:
-            cols_identity = []
-        if cols_first_item is None:
-            cols_first_item = []
 
-
-        if type(col_event_time) is not str:
-            ct_event_time = col_event_time  # use as is
-        elif event_time_transformation == 'dt_to_timestamp':
-            ct_event_time = DatetimeToTimestamp(col_name_original=col_event_time)
-        elif event_time_transformation == 'none':
-            ct_event_time = ColIdentityEncoder(
-                col_name_original=col_event_time,
-                col_name_target='event_time',
-                is_drop_original_col=False,
-            )
-        else:
-            raise AttributeError(f'incorrect event_time parameters combination: '
-                                 f'`ct_event_time` = "{col_event_time}" '
-                                 f'`event_time_transformation` = "{event_time_transformation}"')
-
-        cts_category = []
-        for col in cols_category:
-            if type(col) is not str:
-                cts_category.append(col)  # use as is
-            elif category_transformation == 'frequency':
-                cts_category.append(FrequencyEncoder(col_name_original=col))
-            elif category_transformation == 'none':
-                cts_category.append(CategoryIdentityEncoder(col_name_original=col))
-            else:
-                raise AttributeError(f'incorrect category parameters combination: '
-                                     f'`cols_category[i]` = "{col}" '
-                                     f'`category_transformation` = "{category_transformation}"')
-
-        cts_numerical = [ColIdentityEncoder(col_name_original=col) for col in cols_numerical]
-        t_user_group = UserGroupTransformer(
-            col_name_original=col_id, 
-            cols_first_item=cols_first_item, 
-            return_records=return_records
-        )
-
-        super().__init__(
-            ct_event_time=ct_event_time,
-            cts_category=cts_category,
-            cts_numerical=cts_numerical,
-            cols_identity=cols_identity,
-            t_user_group=t_user_group,
-        )
+        self.category_transformation=category_transformation
+        self.return_records = return_records
+        self.cols_first_item = cols_first_item
+        self.event_time_transformation = event_time_transformation
+        super().__init__(col_id=col_id,
+                         col_event_time=col_event_time,
+                         cols_category=cols_category,
+                         cols_identity=cols_identity,
+                         cols_numerical=cols_numerical
+                         )
 
     @staticmethod
     def _td_default(df, cols_event_time):
