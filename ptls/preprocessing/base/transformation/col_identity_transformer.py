@@ -17,7 +17,8 @@ class ColIdentityEncoder(ColTransformer):
         When target and original columns are different manage original col deletion.
 
     """
+    def __repr__(self):
+        return 'Unitary transformation'
+
     def transform(self, x):
-        x = self.attach_column(x, x[self.col_name_original].rename(self.col_name_target))
-        x = super().transform(x)
-        return x
+        return super().transform(x)

@@ -17,6 +17,7 @@ class DatetimeToTimestamp(ColTransformer):
         When target and original columns are different manage original col deletion.
 
     """
+
     def __init__(self,
                  col_name_original: str = 'event_time',
                  is_drop_original_col: bool = True,
@@ -27,7 +28,10 @@ class DatetimeToTimestamp(ColTransformer):
             is_drop_original_col=is_drop_original_col,
         )
 
-    def transform(self, x: pd.DataFrame):
-        x = self.attach_column(x, dt_to_timestamp(x[self.col_name_original]).rename(self.col_name_target))
+    def __repr__(self):
+        return 'Unitary transformation'
+
+    def transform(self, x: pd.Series):
+        x = dt_to_timestamp(x)
         x = super().transform(x)
         return x
