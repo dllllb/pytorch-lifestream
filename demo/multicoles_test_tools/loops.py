@@ -51,10 +51,10 @@ def train_coles_model(fold_i, gpu_n, monomodel=True, conf_path='./config.hocon',
     max_epoch = conf.get('max_epoch', 50)
 
     if monomodel:
-        hsize = hsize * 2
-        is_mono = 'first_half'
-    else:
         is_mono = 'full'
+    else:
+        hsize = int(hsize / 2)
+        is_mono = 'first_half'
 
     paths_to_model = train_coles_model_folder(fold_i, exp_name, dataf, trx_conf, input_size, hsize,
                                               path_to_logs, path_to_chkp, is_mono, gpu_n, max_epoch, debug)
@@ -76,7 +76,7 @@ def train_multicoles_model(first_models, embed_coef, conf_path='./config.hocon',
 
     trx_conf = conf.get('trx_conf')
     input_size = conf.get('input_size')
-    hsize = conf.get('hsize')
+    hsize = int(conf.get('hsize')/2)
     clf_hsize = conf.get('clf_hsize', 64)
     gpu_n = conf.get('gpu_n')
     max_epoch = conf.get('max_epoch', 50)

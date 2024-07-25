@@ -12,8 +12,8 @@ def create_experiment_folder(experiment_name):
 
 
 def write_results(exp_name, result):
-    files = set([x for x in os.listdir('./') if x.endswith('.csv')])
-    exp_file = exp_name + '.csv'
+    files = set([x for x in os.listdir(f'./{exp_name}/') if x.endswith('.csv')])
+    exp_file = f'./{exp_name}/' + exp_name + '.csv'
     add_headers = False if exp_file in files else True
     with open(exp_file, 'a') as f:
         if add_headers:
