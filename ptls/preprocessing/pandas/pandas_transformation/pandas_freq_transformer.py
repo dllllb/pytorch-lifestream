@@ -1,10 +1,9 @@
 import pandas as pd
 
-from ptls.preprocessing.base.col_category_transformer import ColCategoryTransformer
-from ptls.preprocessing.pandas.col_transformer import ColTransformerPandasMixin
+from ptls.preprocessing.base.transformation.col_category_transformer import ColCategoryTransformer
 
 
-class FrequencyEncoder(ColTransformerPandasMixin, ColCategoryTransformer):
+class FrequencyEncoder(ColCategoryTransformer):
     """Use frequency encoding for categorical field
 
     Let's `col_name_original` value_counts looks like this:
@@ -35,6 +34,7 @@ class FrequencyEncoder(ColTransformerPandasMixin, ColCategoryTransformer):
     is_drop_original_col:
         When target and original columns are different manage original col deletion.
     """
+
     def __init__(self,
                  col_name_original: str,
                  col_name_target: str = None,
@@ -49,20 +49,22 @@ class FrequencyEncoder(ColTransformerPandasMixin, ColCategoryTransformer):
         self.mapping = None
         self.other_values_code = None
 
-    def fit(self, x: pd.DataFrame):
+    def __repr__(self):
+        return 'Unitary transformation'
+
+    def fit(self, x: pd.Series):
         super().fit(x)
-        pd_col = x[self.col_name_original].astype(str)
-        vc = pd_col.value_counts()
-        self.mapping = {k: i + 1 for i, k in enumerate(vc.index)}
-        self.other_values_code = len(vc) + 1
+        val_count = x.astype(str).value_counts()
+        self.mapping = {k: i + 1 for i, k in enumerate(val_count.index)}
+        self.other_values_code = len(val_count) + 1
         return self
 
     @property
     def dictionary_size(self):
         return self.other_values_code + 1
 
-    def transform(self, x: pd.DataFrame):
-        pd_col = x[self.col_name_original].astype(str)
+    def transform(self, x: pd.Series):
+        pd_col = x.astype(str)
         x = self.attach_column(x, pd_col.map(self.mapping).fillna(self.other_values_code).rename(self.col_name_target))
         x = super().transform(x)
         return x
