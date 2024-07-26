@@ -102,13 +102,12 @@ class DataPreprocessor(BaseEstimator, TransformerMixin):
         return self
 
     def fit_transform(self, X, y=None, **fit_params):
-        transformed_features = Maybe(value=self._chunk_data(dataset=X,
-                                                            func_to_transform=self._all_col_transformers), monoid=True) \
-            .then(function=lambda chunked_data: self.multithread_dispatcher.evaluate(individuals=chunked_data,
-                                                                                     objective_func=self.unitary_func)). \
-            then(function=lambda transformed_cols: self._apply_aggregation(individuals=transformed_cols,
-                                                                           input_data=X)).value
-
+        transformed_cols = Maybe.insert(self._chunk_data(dataset=X, func_to_transform=self._all_col_transformers)) \
+            .maybe(default_value=None,
+                   extraction_function=lambda chunked_data: self.multithread_dispatcher.evaluate(
+                       individuals=chunked_data, objective_func=self.unitary_func))
+        transformed_features = self._apply_aggregation(individuals=transformed_cols, input_data=X)
+        self.multithread_dispatcher.shutdown()
         return transformed_features
 
     def transform(self, X):
