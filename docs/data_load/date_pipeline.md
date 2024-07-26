@@ -1,6 +1,6 @@
 # Data pipeline
 
-All process support `map` and `iterable` data.
+All processes support `map` and `iterable` data.
 
 There are steps in pipeline:
 

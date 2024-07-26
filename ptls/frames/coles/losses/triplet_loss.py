@@ -11,7 +11,7 @@ class TripletLoss(nn.Module):
     """
 
     def __init__(self, margin, triplet_selector):
-        super(TripletLoss, self).__init__()
+        super().__init__()
         self.margin = margin
         self.triplet_selector = triplet_selector
 

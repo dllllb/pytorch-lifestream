@@ -5,7 +5,7 @@ from ptls.preprocessing.pandas.col_transformer import ColTransformerPandasMixin
 
 
 def dt_to_timestamp(x: pd.Series):
-    return pd.to_datetime(x).astype('datetime64[s]').astype('int64') // 1000000000
+    return pd.to_datetime(x).astype('datetime64[ns]').astype('int64') // 1000000000
 
 
 def timestamp_to_dt(x: pd.Series):

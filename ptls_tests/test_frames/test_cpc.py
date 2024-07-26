@@ -71,8 +71,8 @@ def test_rnn_model():
     valid_loader = create_validation_loader(valid_ds, config['valid'])
 
     trainer = pl.Trainer(
-        gpus=None,
+        accelerator="cpu",
         max_steps=50,
-        checkpoint_callback=False,
+        enable_checkpointing=False,
     )
     trainer.fit(pl_module, train_loader, valid_loader)

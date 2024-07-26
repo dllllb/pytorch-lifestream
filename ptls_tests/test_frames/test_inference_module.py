@@ -49,7 +49,7 @@ def test_inference_module_predict():
         model_out_name='pred',
     )
 
-    df_out = pd.concat(pl.Trainer(gpus=0, max_epochs=-1).predict(rnn_model, valid_loader))
+    df_out = pd.concat(pl.Trainer(accelerator="cpu", max_epochs=-1).predict(rnn_model, valid_loader))
     print(roc_auc_score(df_out['target'], df_out['pred']))
 
 
@@ -77,7 +77,7 @@ def test_score_model_mult2():
         model_out_name='pred', pandas_output=False,
     )
 
-    dict_out = pl.Trainer(gpus=0, max_epochs=-1).predict(model, iter(valid_loader))
+    dict_out = pl.Trainer(accelerator="cpu", max_epochs=-1).predict(model, iter(valid_loader))
     id1 = torch.cat([v['target_int'] for v in dict_out])
     id2 = np.concatenate([v['target_str'] for v in dict_out])
 
@@ -122,7 +122,7 @@ def test_inference_module_sequence():
         model_out_name='pred',
     )
 
-    df_out = pd.concat(pl.Trainer(gpus=0, max_epochs=-1).predict(rnn_model, valid_loader))
+    df_out = pd.concat(pl.Trainer(accelerator="cpu", max_epochs=-1).predict(rnn_model, valid_loader))
     assert df_out.shape == (trx_num, 20)
     assert list(df_out.mcc_code) == [mcc for usr in trx_data for mcc in usr['mcc_code']]
 
@@ -141,7 +141,7 @@ def test_inference_module_sequence_drop_seq():
         model_out_name='pred',
     )
 
-    df_out = pd.concat(pl.Trainer(gpus=0, max_epochs=-1).predict(rnn_model, valid_loader))
+    df_out = pd.concat(pl.Trainer(accelerator="cpu", max_epochs=-1).predict(rnn_model, valid_loader))
     assert df_out.shape == (trx_num, 17)
     assert list(df_out.target) == list(chain(*[[usr['target']]*usr['mcc_code'].shape[0] for usr in trx_data]))
 
@@ -160,7 +160,7 @@ def test_inference_module_record():
         model_out_name='pred',
     )
 
-    df_out = pd.concat(pl.Trainer(gpus=0, max_epochs=-1).predict(rnn_model, valid_loader))
+    df_out = pd.concat(pl.Trainer(accelerator="cpu", max_epochs=-1).predict(rnn_model, valid_loader))
     assert df_out.shape == (1000, 20)
     np.testing.assert_array_almost_equal(list(df_out.mcc_code)[0], [mcc for mcc in trx_data[0]['mcc_code']])
 
@@ -178,6 +178,6 @@ def test_inference_module_record_drop_seq():
         model_out_name='pred',
     )
 
-    df_out = pd.concat(pl.Trainer(gpus=0, max_epochs=-1).predict(rnn_model, valid_loader))
+    df_out = pd.concat(pl.Trainer(accelerator="cpu", max_epochs=-1).predict(rnn_model, valid_loader))
     assert df_out.shape == (1000, 17)
     assert list(df_out.target)[0] == trx_data[0]['target']

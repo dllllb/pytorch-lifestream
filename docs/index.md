@@ -43,7 +43,7 @@ CoLES, SimCLR, CPC, VICReg, ...
     - Use one of the available `ptls.data_load.datasets` to define input for the models.
 2. **Choose framework for encoder train**.
     - There are both supervised of unsupervised frameworks in `ptls.frames`.
-    - Keep in mind that each framework requires his own batch format.
+    - Keep in mind that each framework requires its own batch format.
     Tools for batch collate can be found in the selected framework package.
 3. **Build encoder**.
     - All parts are available in `ptls.nn`.

@@ -115,7 +115,7 @@ They takes `i_filters` as list of `iterable_processing` objects.
 
 ### Augmentations
 
-Sometimes we have to change an items from train data. This is `augmentations`.
+Sometimes we have to change items from train data. This is what `augmentations` do.
 They are in `ptls.data_load.augmentations`.
 
 Example:
@@ -138,11 +138,11 @@ Here `RandomSlice` augmentation take a random slice from source record.
 | Place it be before persist stage to run it once and save total cpu resource | Don't place it before persist stage because it kills the random |
 | Can delete items | Can not delete items |
 | Can yield new items | Can not create new items |
-| Works a generator and requires iterable processing | Works as a function can be both map or iterable |
+| Works as a generator and requires iterable processing | Works as a function can be both map or iterable |
 
 ## In memory data
 
-In memory data is common case. Data can a list or generator with feature dicts.
+In memory data is common case. Data can be a list or generator with feature dicts.
 
 ```python
 import torch
@@ -184,7 +184,7 @@ def data_gen(n):
 
 Both datasets support any kind of input: list or generator.
 As all datasets supports tha same format (list or generator) as input and output they can be chained.
-This make sense for some cases.
+This makes sense for some cases.
 
 Data pipelines:
 
@@ -237,7 +237,7 @@ for batch in dl:
 
 ## Parquet file read
 
-For large amount of data `pyspark` is possible engine to prepare data and convert it in feature dict format.
+For large amount of data `pyspark` is a possible engine to prepare data and convert it in feature dict format.
 See `demo/pyspark-parquet.ipynb` with example of data preprocessing with `pyspark` and parquet file preparation.
 
 `ptls.data_load.datasets.ParquetDataset` is a dataset which reads parquet files with feature dicts.
@@ -249,8 +249,8 @@ See `demo/pyspark-parquet.ipynb` with example of data preprocessing with `pyspar
 - looks like a generator
 - supports `i_filters`
 
-You can feed `ParquetDataset` directly fo dataloader for `iterable` way of usage.
-Cou can combine `ParquetDataset` with `MemoryMapDataset` to `map` way of usage.
+You can feed `ParquetDataset` directly to dataloader for `iterable` way of usage.
+You can combine `ParquetDataset` with `MemoryMapDataset` to `map` way of usage.
 
 `ParquetDataset` requires parquet file names. Usually `spark` saves many parquet files for one dataset, 
 depending on the number of partitions.
@@ -264,7 +264,7 @@ Many files for one dataset allows you to:
 
 `ptls.data_load.datasets.PersistDataset` store items from source dataset to the memory.
 
-If you source data is iterator (like python generator or `ParquetDataset`) 
+If your source data is iterator (like python generator or `ParquetDataset`) 
 all `i_filters` will be called each time when you access the data.
 Persist the data into memory and `i_filters` will be called once.
 Much memory may be used to store all dataset items.
