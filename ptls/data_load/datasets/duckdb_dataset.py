@@ -1,6 +1,4 @@
 from typing import Iterable, List
-import warnings
-
 import duckdb
 import torch
 
