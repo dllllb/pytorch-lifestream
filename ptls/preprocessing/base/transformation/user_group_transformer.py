@@ -1,9 +1,11 @@
+from functools import reduce
 from typing import List
 
+import joblib
 import torch
 import pandas as pd
-from joblib import parallel_backend, parallel_config, delayed, Parallel
-
+from joblib import delayed, Parallel
+from collections import ChainMap
 from ptls.preprocessing.base.transformation.col_numerical_transformer import ColTransformer
 
 
@@ -49,6 +51,8 @@ class UserGroupTransformer(ColTransformer):
                                  f'Found {x.columns}')
 
     def _convert_type(self, group_name, group_df):
+        group = {}
+
         for k, v in group_df.to_dict(orient='series').items():
             if k in self.cols_first_item:
                 v = v.iloc[0]
@@ -58,21 +62,23 @@ class UserGroupTransformer(ColTransformer):
                 v = v.values
             else:
                 v = torch.from_numpy(v.values)
-        return {group_name:{k: v}}
+            group[k] = v
+        return {group_name: group}
 
     def fit(self, x):
         self._event_time_exist(x)
         return self
 
     def df_to_feature_arrays(self, df):
-        with parallel_config(backend='threading'):
-                result_dict = Parallel()(delayed(self._convert_type)(group_name, df_group)
-                                         for group_name, df_group in df)
+        with joblib.parallel_backend(backend='threading'):
+            parallel = Parallel(verbose=1)
+            result_dict = parallel(delayed(self._convert_type)(group_name, df_group)
+                                   for group_name, df_group in df)
 
-        return pd.Series(result_dict)
+        return result_dict
 
     def transform(self, x: pd.DataFrame):
         x = x.set_index([self.col_name_original, 'event_time']).sort_index().groupby(self.col_name_original)
         x = self.df_to_feature_arrays(x)
-        x = x.to_dict(orient='records') if self.return_records else x
+        x = reduce(lambda a, b: {**a, **b}, x) if self.return_records else pd.Series(x)
         return x

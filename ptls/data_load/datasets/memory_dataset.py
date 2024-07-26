@@ -1,6 +1,5 @@
 import logging
 from typing import Iterable, List
-from abc import ABC, abstractmethod
 
 import joblib
 import pandas as pd
@@ -15,26 +14,17 @@ logger = logging.getLogger(__name__)
 
 
 class MemoryMapDataset(torch.utils.data.Dataset):
-    """
-    Dataset for in-memory data processing. It is useful for small datasets that can be loaded into memory.
 
-    Args:
-        data: iterable data
-        i_filters: list of iterable filters
-        n_jobs: number of workers requested by the callers
-    """
     def __repr__(self):
         return 'In-Memory Dataset'
-    
-    def __init__(self, 
-                 data, 
-                 i_filters: List[Iterable] = None, 
-                 n_jobs: int = -1):
-        self.n_jobs = n_jobs
+
+    def __init__(self, data, i_filters: List[Iterable] = None):
+        self.dask_client = DaskServer().client
         self.processed_data = Either(data, monoid=[i_filters, i_filters is None]).either(
             left_function=lambda filters: self.__apply_filters(data, filters),
             right_function=lambda x: [rec for rec in x])
         logger.info(f'Loaded {len(self.processed_data)} records')
+        self.dask_client.shutdown()
 
     def __apply_filters(self, data, i_filters):
         def _iterable_filtration(sample, i_filters):
@@ -42,11 +32,11 @@ class MemoryMapDataset(torch.utils.data.Dataset):
                 sample = f.transform(sample)
             return sample
 
-        with joblib.parallel_backend(backend='threading', n_jobs=self.n_jobs):
+        with joblib.parallel_backend(backend='dask'):
             parallel = Parallel(verbose=1)
             processed_data = parallel(delayed(_iterable_filtration)(row, i_filters)
-                                      for row in data)
-        return processed_data
+                                      for row in data.itertuples())
+        return pd.DataFrame(processed_data.processed_data)
 
     def __len__(self):
         return len(self.processed_data)
@@ -55,13 +45,16 @@ class MemoryMapDataset(torch.utils.data.Dataset):
         return self.processed_data[item]
 
 
-class MemoryIterableDataset(torch.utils.data.IterableDataset, ABC):
+class MemoryIterableDataset(torch.utils.data.IterableDataset):
     def __init__(self, data, i_filters=None):
-        super().__init__()
+        raise NotImplementedError()
+        """Multiprocessing case aren't defined
+        """
+        if i_filters is None:
+            i_filters = []
         self.data = data
-        self.i_filters = i_filters
+        self.post_processor_filter = IterableChain(ToTorch(), *i_filters)
 
-    @abstractmethod
     def __iter__(self):
-        """This method must be implemented in subclasses"""
-        pass
+        for rec in self.post_processor_filter(self.data):
+            yield rec
