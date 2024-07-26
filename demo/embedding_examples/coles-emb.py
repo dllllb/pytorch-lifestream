@@ -51,10 +51,7 @@ if __name__ == "__main__":
     profiler.stop()
     profiler.print()
 
-    df = pd.DataFrame.from_dict(dataset, orient='index', columns=['client_id', 'small_group', 'amount_rur'])
-    df['client_id'] = df.index.values
-    df = df.reset_index(drop=True)
-    train, test = train_test_split(df, test_size=0.2, random_state=42)
+    train, test = train_test_split(dataset, test_size=0.2, random_state=42)
     len_filter = SeqLenFilter(min_seq_len=25)
     profiler.start()
     in_memory_dataset = MemoryMapDataset(data=train, i_filters=[len_filter])
