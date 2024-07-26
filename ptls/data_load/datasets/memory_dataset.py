@@ -36,7 +36,7 @@ class MemoryMapDataset(torch.utils.data.Dataset):
             parallel = Parallel(verbose=1)
             processed_data = parallel(delayed(_iterable_filtration)(row, i_filters)
                                       for row in data.itertuples())
-        return pd.DataFrame(processed_data.processed_data)
+        return pd.DataFrame(processed_data)
 
     def __len__(self):
         return len(self.processed_data)
