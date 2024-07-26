@@ -11,9 +11,9 @@ from ptls.preprocessing.util import determine_n_jobs
 class DaskDispatcher:
     def __init__(self):
         self.dask_client = DaskServer().client
-        self._n_jobs = -1
         print(f'Link Dask Server - {self.dask_client.dashboard_link}')
         self.transformation_func = 'fit_transform'
+        self.n_jobs = determine_n_jobs(-1)
 
     def shutdown(self):
         self.dask_client.close()
@@ -32,20 +32,17 @@ class DaskDispatcher:
                                                            eval_func=func_impl) for func_name, func_impl in
                                       objective_func.items()]
         else:
-            evaluation_results = [self.evaluate_single(self,
-                                                       data=individuals_to_evaluate,
-                                                       eval_func=objective_func)]
+            evaluation_results = self.evaluate_single(self,
+                                                      data=individuals_to_evaluate,
+                                                      eval_func=objective_func)
         return evaluation_results
 
     def evaluate(self, individuals: Union[List, Dict], objective_func: Union[Callable, List[Callable]]):
-        # Evaluate individuals without valid fitness in parallel.
-        self.n_jobs = determine_n_jobs(self._n_jobs)
-        individuals_evaluated = Maybe(individuals, monoid=[individuals, True]). \
-            then(lambda generation: self._multithread_eval(generation, objective_func)).value
-
+        individuals_evaluated = Maybe.insert(individuals). \
+            maybe(default_value=None,
+                  extraction_function=lambda generation: self._multithread_eval(generation, objective_func))
         return individuals_evaluated
 
-    # @delayed
     @wrap_non_picklable_objects
     def evaluate_single(self,
                         data: Union[pd.DataFrame, pd.Series],

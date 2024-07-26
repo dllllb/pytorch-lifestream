@@ -1,7 +1,5 @@
-import numpy as np
-import torch
 import logging
-
+from itertools import compress
 from ptls.data_load import IterableProcessingDataset
 
 logger = logging.getLogger(__name__)
@@ -24,25 +22,25 @@ class SeqLenFilter(IterableProcessingDataset):
         self._sequence_col = sequence_col
         self._seq_len_col = seq_len_col
 
-    def __iter__(self):
-        for rec in self._src:
-            features = rec[0] if type(rec) is tuple else rec
-            seq_len = self.get_len(features)
-            if self._min_seq_len is not None and seq_len < self._min_seq_len:
-                continue
-            if self._max_seq_len is not None and seq_len > self._max_seq_len:
-                continue
-            yield rec
+    def _valid_seq_len(self, seq_len):
+        min_len_check = seq_len > self._min_seq_len if self._min_seq_len is not None else True
+        max_len_check = seq_len < self._max_seq_len if self._max_seq_len is not None else True
+        return all([min_len_check, max_len_check])
+
+    def transform(self, features):
+        valid_seq_len = self.get_len(features)
+        return features if valid_seq_len else None
 
     def get_sequence_col(self, rec):
-        if self._sequence_col is None:
-            arrays = [k for k, v in rec.items() if self.is_seq_feature(k, v)]
-            if len(arrays) == 0:
-                raise ValueError(f'Can not find field with sequence from record: {rec}')
-            self._sequence_col = arrays[0]
-        return self._sequence_col
+        iter_record = list(iter(rec))
+        iter_record = list(compress(iter_record, [self.is_seq_feature(i) for i in iter_record]))
+        if len(iter_record) == 0:
+            raise ValueError(f'Can not find field with sequence from record: {rec}')
+        else:
+            return all([self._valid_seq_len(len(feature)) for feature in iter_record])
 
     def get_len(self, rec):
         if self._seq_len_col is not None:
             return rec[self._seq_len_col]
-        return len(rec[self.get_sequence_col(rec)])
+        else:
+            return self.get_sequence_col(rec)
