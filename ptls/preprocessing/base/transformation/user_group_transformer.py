@@ -80,5 +80,5 @@ class UserGroupTransformer(ColTransformer):
     def transform(self, x: pd.DataFrame):
         x = x.set_index([self.col_name_original, 'event_time']).sort_index().groupby(self.col_name_original)
         x = self.df_to_feature_arrays(x)
-        x = reduce(lambda a, b: {**a, **b}, x) if self.return_records else pd.Series(x)
+        x = x if self.return_records else pd.Series(x)
         return x
