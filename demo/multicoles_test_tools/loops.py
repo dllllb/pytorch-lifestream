@@ -28,8 +28,8 @@ def train_coles_model_folder(fold_i, exp_name, dataf, trx_conf, input_size, hsiz
     logger_version = trainer.logger.version
     tb_name = exp_name + '/' + is_mono + '_fold_' + str(fold_i) + '/' + str(logger_version)
     trainer.fit(module, datamodule)
-    name = '_'.join([is_mono, str(fold_i)]) + '.pth'
-    name = add_next_ind(path_to_chkp, name)
+    name = '_'.join([is_mono, str(fold_i)])
+    name = add_next_ind(path_to_chkp, name) + '.pth'
     model_save_path = os.path.join(path_to_chkp, name)
     torch.save(module.seq_encoder.state_dict(), model_save_path)
     return fold_i, tb_name, model_save_path
@@ -78,8 +78,8 @@ def train_model_folder(fold_i, first_model_path, exp_name, dataf, trx_conf, inpu
     logger_version = trainer.logger.version
     tb_name = exp_name + '/' + 'second_half_fold_' + str(fold_i) + '/' + str(logger_version)
     trainer.fit(module, datamodule)
-    name = '_'.join(['second_half', str(fold_i)])+'.pth'
-    name = add_next_ind(path_to_chkp, name)
+    name = '_'.join(['second_half', str(fold_i)])
+    name = add_next_ind(path_to_chkp, name) + '.pth'
     model_save_path = os.path.join(path_to_chkp, name)
     torch.save(module.seq_encoder.state_dict(), model_save_path)
     return fold_i, tb_name, model_save_path

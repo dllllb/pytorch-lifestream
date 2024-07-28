@@ -31,7 +31,7 @@ def save_config_copy(conf_path, exp_name):
 
 
 def add_next_ind(fold, name):
-    files = set([x for x in os.listdir(fold)])
+    files = set([x.split('.')[0] for x in os.listdir(fold)])
     prop_name = name
     i = -1
     while True:
