@@ -5,7 +5,7 @@ from loops import train_multicoles_model
 from downstream_test import inference
 from get_paths import write_results
 from pyhocon import ConfigFactory
-from get_paths import create_experiment_folder
+from get_paths import create_experiment_folder, save_config_copy
 from train_coles import train_mono
 
 
@@ -20,6 +20,7 @@ def main():
     conf = ConfigFactory.parse_file(conf_path)
     exp_name = conf.get('exp_name', 'default_name')
     path_to_exp, path_to_chkp, path_to_logs = create_experiment_folder(exp_name)
+    save_config_copy(conf_path, exp_name)
     first_model_path = conf.get('first_model_path', None)
     remake_first_model = conf.get('remake_first_model', False)
     indep = conf.get('indep_mode', False)
