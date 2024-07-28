@@ -1,28 +1,38 @@
 import sys
+import os
 import numpy as np
-from loops import train_coles_model
+from loops import train_multicoles_model
 from downstream_test import inference
 from get_paths import write_results
 from pyhocon import ConfigFactory
 from get_paths import create_experiment_folder
+from train_coles import train_mono
 
 
-def train_mono(monomodel=True):
+def main():
     conf_path = str(sys.argv[3])
     debug = True if str(sys.argv[4]) == 'debug' else False
     gpu_n = int(sys.argv[2])
     fold_i = int(sys.argv[1])
-    nettype = 'mono' if monomodel else 'first'
     if conf_path == 'def':
         conf_path = './config.hocon'
 
     conf = ConfigFactory.parse_file(conf_path)
     exp_name = conf.get('exp_name', 'default_name')
     path_to_exp, path_to_chkp, path_to_logs = create_experiment_folder(exp_name)
+    first_model_path = conf.get('first_model_path', None)
+    remake_first_model = conf.get('remake_first_model', False)
+    indep = conf.get('indep_mode', False)
+    nettype = 'indep' if indep else 'multi'
+
+    if first_model_path is None:
+        first_model_path = os.path.join(path_to_chkp, '_'.join(['first_half', str(fold_i)])+'.pth')
+        if not os.path.isfile(first_model_path) or remake_first_model:
+            train_mono(monomodel=False)
 
     # list of (fold_i, tb_name, model_save_path)
-    path_to_model = train_coles_model(exp_name=exp_name, path_to_chkp=path_to_chkp, path_to_logs=path_to_logs,
-                                      fold_i=fold_i, gpu_n=gpu_n, monomodel=monomodel, conf_path=conf_path, debug=debug)
+    path_to_model = train_multicoles_model(fold_i=fold_i, first_model_path=first_model_path,
+                                           gpu_n=gpu_n, conf_path=conf_path, debug=debug)
     task_info = [path_to_model[2], True], fold_i
     # list of (fold_i, metric_scores)
     score = inference(mode='mono', task_info=task_info, gpu_n=gpu_n, conf_path=conf_path)
@@ -39,4 +49,4 @@ def train_mono(monomodel=True):
 
 
 if __name__ == '__main__':
-    train_mono(monomodel=True)
+    main()
