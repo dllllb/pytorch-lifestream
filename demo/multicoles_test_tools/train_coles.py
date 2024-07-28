@@ -19,7 +19,8 @@ def train_mono(monomodel=True):
     conf = ConfigFactory.parse_file(conf_path)
     exp_name = conf.get('exp_name', 'default_name')
     path_to_exp, path_to_chkp, path_to_logs = create_experiment_folder(exp_name)
-    save_config_copy(conf_path, exp_name)
+    if fold_i == 0:
+        save_config_copy(conf_path, exp_name)
 
     # list of (fold_i, tb_name, model_save_path)
     path_to_model = train_coles_model(exp_name=exp_name, path_to_chkp=path_to_chkp, path_to_logs=path_to_logs,

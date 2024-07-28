@@ -5,6 +5,7 @@ import pytorch_lightning as pl
 from pytorch_lightning.loggers import TensorBoardLogger
 from get_data import get_age_pred_coles_datamodule, get_synthetic_coles_datamodule
 from get_model import get_coles_module, get_static_multicoles_module
+from get_paths import add_next_ind
 
 from pyhocon import ConfigFactory
 from datetime import datetime
@@ -27,7 +28,9 @@ def train_coles_model_folder(fold_i, exp_name, dataf, trx_conf, input_size, hsiz
     logger_version = trainer.logger.version
     tb_name = exp_name + '/' + is_mono + '_fold_' + str(fold_i) + '/' + str(logger_version)
     trainer.fit(module, datamodule)
-    model_save_path = os.path.join(path_to_chkp, '_'.join([is_mono, str(fold_i)]) + '.pth')
+    name = '_'.join([is_mono, str(fold_i)]) + '.pth'
+    name = add_next_ind(path_to_chkp, name)
+    model_save_path = os.path.join(path_to_chkp, name)
     torch.save(module.seq_encoder.state_dict(), model_save_path)
     return fold_i, tb_name, model_save_path
 
@@ -75,7 +78,9 @@ def train_model_folder(fold_i, first_model_path, exp_name, dataf, trx_conf, inpu
     logger_version = trainer.logger.version
     tb_name = exp_name + '/' + 'second_half_fold_' + str(fold_i) + '/' + str(logger_version)
     trainer.fit(module, datamodule)
-    model_save_path = os.path.join(path_to_chkp, '_'.join(['second_half', str(fold_i)])+'.pth')
+    name = '_'.join(['second_half', str(fold_i)])+'.pth'
+    name = add_next_ind(path_to_chkp, name)
+    model_save_path = os.path.join(path_to_chkp, name)
     torch.save(module.seq_encoder.state_dict(), model_save_path)
     return fold_i, tb_name, model_save_path
 
