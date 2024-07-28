@@ -33,7 +33,8 @@ def main():
             train_mono(monomodel=False)
 
     # list of (fold_i, tb_name, model_save_path)
-    path_to_model = train_multicoles_model(fold_i=fold_i, first_model_path=first_model_path,
+    path_to_model = train_multicoles_model(path_to_logs=path_to_logs, path_to_chkp=path_to_chkp,
+                                           fold_i=fold_i, first_model_path=first_model_path,
                                            gpu_n=gpu_n, conf_path=conf_path, debug=debug)
     task_info = [path_to_model[2], True], fold_i
     # list of (fold_i, metric_scores)

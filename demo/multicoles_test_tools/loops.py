@@ -1,6 +1,5 @@
 import os
 import torch
-import torch.multiprocessing as mp
 import pytorch_lightning as pl
 from pytorch_lightning.loggers import TensorBoardLogger
 from get_data import get_age_pred_coles_datamodule, get_synthetic_coles_datamodule
@@ -85,7 +84,8 @@ def train_model_folder(fold_i, first_model_path, exp_name, dataf, trx_conf, inpu
     return fold_i, tb_name, model_save_path
 
 
-def train_multicoles_model(fold_i, first_model_path, gpu_n, conf_path='./config.hocon', debug=False):
+def train_multicoles_model(path_to_logs, path_to_chkp, fold_i, first_model_path, gpu_n,
+                           conf_path='./config.hocon', debug=False):
     conf = ConfigFactory.parse_file(conf_path)
     dataset = conf.get('dataset')
     assert dataset in ['synthetic', 'age_pred'], 'invalid dataset'
@@ -95,7 +95,6 @@ def train_multicoles_model(fold_i, first_model_path, gpu_n, conf_path='./config.
         dataf = get_age_pred_coles_datamodule
 
     exp_name = conf.get('exp_name', 'default_name')
-    path_to_exp, path_to_chkp, path_to_logs = create_experiment_folder(exp_name)
     #time = datetime.now().strftime('%Y-%m-%d_%H:%M:%S')
 
     trx_conf = conf.get('trx_conf')
