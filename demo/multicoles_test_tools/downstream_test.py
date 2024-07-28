@@ -77,7 +77,7 @@ def solve_downstream(xx, yy, test_xx, test_yy, metric, conf_path='./config.hocon
 def predict_on_fold(task_info, dataf, model_loader, gpu_n, metric, conf_path):
     model_loading_info, fold_i = task_info
     sup_data = dataf(fold_i)
-    model = model_loader(*model_loading_info)
+    model = model_loader(**model_loading_info)
 
     train_dl = sup_data.train_dataloader()
     train_xx, train_yy = predict_on_dataloader(model, train_dl, gpu_n)

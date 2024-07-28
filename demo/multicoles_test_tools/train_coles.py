@@ -25,7 +25,7 @@ def train_mono(monomodel=True):
     # list of (fold_i, tb_name, model_save_path)
     path_to_model = train_coles_model(exp_name=exp_name, path_to_chkp=path_to_chkp, path_to_logs=path_to_logs,
                                       fold_i=fold_i, gpu_n=gpu_n, monomodel=monomodel, conf_path=conf_path, debug=debug)
-    task_info = [path_to_model[2], True], fold_i
+    task_info = {'model_path': path_to_model[2], 'mono': monomodel}, fold_i
     # list of (fold_i, metric_scores)
     score = inference(mode='mono', task_info=task_info, gpu_n=gpu_n, conf_path=conf_path)
 
