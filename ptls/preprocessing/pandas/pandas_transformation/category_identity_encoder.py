@@ -56,17 +56,18 @@ class CategoryIdentityEncoder(ColCategoryTransformer):
 
         self.min_fit_index = None
         self.max_fit_index = None
+        self.filter_boundary = ['min', 'max']
     def __repr__(self):
         return 'Unitary transformation'
     def _detect_low_boundary(self, x):
-        self.min_fit_index, self.max_fit_index = x.astype(int).agg([min, max])
+        self.min_fit_index, self.max_fit_index = x.astype(int).agg(self.filter_boundary)
         if self.min_fit_index < 0:
             raise AttributeError(f'Negative values found in {self.col_name_original}')
         if self.min_fit_index == 0:
             warnings.warn(f'0 values fount in {self.col_name_original}. 0 is a padding index', UserWarning)
 
     def _detect_all_boundaries(self, x):
-        min_index, max_index = x.astype(int).agg([min, max])
+        min_index, max_index = x.astype(int).agg(self.filter_boundary)
         if min_index < self.min_fit_index:
             warnings.warn(f'Not fitted values. min_index({min_index}) < min_fit_index({self.min_fit_index})',
                           UserWarning)
