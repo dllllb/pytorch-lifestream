@@ -68,6 +68,7 @@ class PtlsDataModule(pl.LightningDataModule):
     def train_dl(self, train_data):
         return torch.utils.data.DataLoader(
             dataset=train_data,
+            persistent_workers=True,
             collate_fn=train_data.collate_fn,
             shuffle=not isinstance(train_data, torch.utils.data.IterableDataset),
             num_workers=self.hparams.train_num_workers,

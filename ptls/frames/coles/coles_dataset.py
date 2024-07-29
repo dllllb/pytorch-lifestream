@@ -13,35 +13,32 @@ from ptls.frames.coles.split_strategy import AbsSplit
 class ColesDataset(FeatureDict, torch.utils.data.Dataset):
     """Dataset for ptls.frames.coles.CoLESModule
 
-    Args:
-        data: source data with feature dicts
-        splitter: object from `ptls.frames.coles.split_strategy`.
-            Used to split original sequence into subsequences which are samples from one client.
-        col_time: column name with event_time
-        n_jobs: number of workers requested by the callers. 
-            Passing n_jobs=-1 means requesting all available workers for instance matching the number of
-            CPU cores on the worker host(s).
+    Parameters
+    ----------
+    data:
+        source data with feature dicts
+    splitter:
+        object from from `ptls.frames.coles.split_strategy`.
+        Used to split original sequence into subsequences which are samples from one client.
+    col_time:
+        column name with event_time
     """
 
     def __init__(self,
                  data,
                  splitter: AbsSplit,
-                 col_time: str = 'event_time',
-                 n_jobs: int = 1,
-                 *args,
-                 **kwargs
-                 ):
+                 col_time='event_time',
+                 *args, **kwargs):
         super().__init__(*args, **kwargs)  # required for mixin class
 
         self.data = data
         self.splitter = splitter
         self.col_time = col_time
-        self.n_jobs = n_jobs
 
     def __len__(self):
         return len(self.data)
 
-    def __getitem__(self, idx: int):
+    def __getitem__(self, idx):
         feature_arrays = self.data[idx]
         return self.get_splits(feature_arrays)
 
@@ -50,13 +47,13 @@ class ColesDataset(FeatureDict, torch.utils.data.Dataset):
             yield self.get_splits(feature_arrays)
 
     def _create_split_subset(self, idx, feature_arrays):
-        return {k: v[idx] for k, v in feature_arrays.items() if not isinstance(v, int)}
+        return {k: v[idx] for k, v in feature_arrays.items()}
 
-    def get_splits(self, feature_arrays: dict):
+    def get_splits(self, feature_arrays):
         local_date = feature_arrays[self.col_time]
         indexes = self.splitter.split(local_date)
-        with joblib.parallel_backend(backend='threading', n_jobs=self.n_jobs):
-            parallel = Parallel()
+        with joblib.parallel_backend(backend='threading'):
+            parallel = Parallel(verbose=1)
             result_dict = parallel(delayed(self._create_split_subset)(idx, feature_arrays)
                                    for idx in indexes)
 
@@ -64,9 +61,10 @@ class ColesDataset(FeatureDict, torch.utils.data.Dataset):
 
     @staticmethod
     def collate_fn(batch):
-        class_labels = torch.LongTensor(reduce(iadd, list(map(lambda x: [x[0] for _ in x[1]], enumerate(batch)))))
-        padded_batch = collate_feature_dict(reduce(iadd, batch))
-        return padded_batch, class_labels
+        class_labels = [i for i, class_samples in enumerate(batch) for _ in class_samples]
+        batch = reduce(iadd, batch)
+        padded_batch = collate_feature_dict(batch)
+        return padded_batch, torch.LongTensor(class_labels)
 
 
 class ColesIterableDataset(ColesDataset, torch.utils.data.IterableDataset):
