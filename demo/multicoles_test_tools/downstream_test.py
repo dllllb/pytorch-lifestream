@@ -79,7 +79,8 @@ def solve_downstream(train_data, test_data, metric, conf_path='./config.hocon'):
         print(test_data.shape)
         print(test_data.drop('downstream_target', axis=1).shape)
         print(test_data['downstream_target'].shape)
-        print(clf.predict(train_data.drop('downstream_target', axis=1).values).shape)
+        y_pred = clf.predict(train_data.drop('downstream_target', axis=1).values)
+        print(y_pred.shape)
         if metric == 'accuracy':
             pred_y = clf.predict(test_data.drop('downstream_target', axis=1))
             test_score = accuracy_score(y_pred=pred_y, y_true=test_data['downstream_target'])
