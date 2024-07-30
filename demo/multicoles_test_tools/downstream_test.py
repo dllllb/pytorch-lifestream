@@ -44,12 +44,12 @@ def predict_on_dataloader(model, dataloader, gpu_n, nonseq_feats=None):
                 if model.trained_models is not None:
                     x_list.extend([m(x.to('cuda:' + str(gpu_n))).detach().cpu().numpy() for m in model.trained_models])
             x_list.append(model(x.to('cuda:' + str(gpu_n))).detach().cpu().numpy())
-            x = np.concatenate(x_list[0:], axis=-1)
+            emb = np.concatenate(x_list[0:], axis=-1)
 
-            d = pd.DataFrame({'emb': list(x), 'target': list(y.numpy())})
+            d = pd.DataFrame({'emb': list(emb), 'target': list(y.numpy())})
             if nonseq_feats is not None:
                 for k, v in nonseq_feats.items():
-                    d[k] = list(batch.payload[k].numpy())
+                    d[k] = list(x.payload[k].cpu().numpy())
                     d = d.astype({k: v})
             data.append(d)
 
