@@ -35,7 +35,9 @@ def train_mono(monomodel=True):
         'model_path': path_to_model[2],
         'scores': ','.join([str(np.round(float(x), 5)) for x in score[1]]),
         'mean_score': str(np.mean(score[1])),
-        'net_type': nettype
+        'net_type': nettype,
+        'coef': 'None',
+        'ddim': 'None'
     }
     write_results(exp_name, result)
 

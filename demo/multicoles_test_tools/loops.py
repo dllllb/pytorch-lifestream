@@ -2,7 +2,7 @@ import os
 import torch
 import pytorch_lightning as pl
 from pytorch_lightning.loggers import TensorBoardLogger
-from get_data import get_age_pred_coles_datamodule, get_synthetic_coles_datamodule
+from get_data import get_age_pred_coles_datamodule, get_synthetic_coles_datamodule, get_alpha_battle_coles_datamodule
 from get_model import get_coles_module, get_static_multicoles_module
 from get_paths import add_next_ind
 
@@ -38,11 +38,13 @@ def train_coles_model(exp_name, path_to_chkp, path_to_logs,
                       fold_i, gpu_n, monomodel=True, conf_path='./config.hocon', debug=False):
     conf = ConfigFactory.parse_file(conf_path)
     dataset = conf.get('dataset')
-    assert dataset in ['synthetic', 'age_pred'], 'invalid dataset'
+    assert dataset in ['synthetic', 'age_pred', 'alpha_battle'], 'invalid dataset'
     if dataset == 'synthetic':
         dataf = get_synthetic_coles_datamodule
     elif dataset == 'age_pred':
         dataf = get_age_pred_coles_datamodule
+    elif dataset == 'alpha_battle':
+        dataf = get_alpha_battle_coles_datamodule
 
     #time = datetime.now().strftime('%Y-%m-%d_%H:%M:%S')
 
@@ -88,11 +90,13 @@ def train_multicoles_model(path_to_logs, path_to_chkp, fold_i, first_model_path,
                            conf_path='./config.hocon', debug=False):
     conf = ConfigFactory.parse_file(conf_path)
     dataset = conf.get('dataset')
-    assert dataset in ['synthetic', 'age_pred'], 'invalid dataset'
+    assert dataset in ['synthetic', 'age_pred', 'alpha_battle'], 'invalid dataset'
     if dataset == 'synthetic':
         dataf = get_synthetic_coles_datamodule
     elif dataset == 'age_pred':
         dataf = get_age_pred_coles_datamodule
+    elif dataset == 'alpha_battle':
+        dataf = get_alpha_battle_coles_datamodule
 
     exp_name = conf.get('exp_name', 'default_name')
     #time = datetime.now().strftime('%Y-%m-%d_%H:%M:%S')

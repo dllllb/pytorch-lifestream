@@ -10,6 +10,43 @@ from sklearn.model_selection import train_test_split
 from ptls.frames.coles.split_strategy import SampleSlices
 
 
+def get_alpha_battle_coles_datamodule(fold_i, **kwargs):
+    df_trx_pretrain = pd.read_pickle(f'data/fold_{fold_i}/df_trx_pretrain.pickle')
+    df_seq_pretrain = pd.read_pickle(f'data/fold_{fold_i}/df_seq_pretrain.pickle')
+
+    df_seq_pretrain_train, df_seq_pretrain_valid = train_test_split(
+        df_seq_pretrain, test_size=0.05, shuffle=True, random_state=42)
+
+    coles_datamodule = PtlsDataModule(
+        train_data=ColesDataset(
+            data=MemoryMapDataset(
+                df_seq_pretrain_train.to_dict(orient='records')# +
+                #df_trx_pretrain.to_dict(orient='records')
+            ),
+            splitter=SampleSlices(
+                split_count=5,
+                cnt_min=25,
+                cnt_max=200,
+            ),
+        ),
+        valid_data=ColesDataset(
+            data=MemoryMapDataset(
+                df_trx_pretrain.to_dict(orient='records')),
+            splitter=SampleSlices(
+                split_count=5,
+                cnt_min=25,
+                cnt_max=100,
+            ),
+        ),
+        train_batch_size=64,
+        train_num_workers=4,
+        valid_batch_size=512,
+        valid_num_workers=4,
+    )
+
+    return coles_datamodule
+
+
 def get_age_pred_coles_datamodule(fold_i, **kwargs):
     df_trx_pretrain = pd.read_pickle(f'idx_data/fold_{fold_i}/df_trx_pretrain.pickle')
     df_seq_pretrain = pd.read_pickle(f'idx_data/fold_{fold_i}/df_seq_pretrain.pickle')
@@ -76,6 +113,35 @@ def get_synthetic_coles_datamodule(path, **kwargs):
     )
 
     return coles_datamodule
+
+
+def get_alpha_battle_sup_datamodule(fold_i, **kwargs):
+    df_gbm_train = pd.read_pickle(f'data/fold_{fold_i}/df_gbm_train.pickle')
+    df_gbm_test = pd.read_pickle(f'data/fold_{fold_i}/df_gbm_test.pickle')
+
+    test_dataset = ptls.data_load.datasets.MemoryMapDataset(
+        df_gbm_test.to_dict(orient='records'),
+        i_filters=[
+            ptls.data_load.iterable_processing.ISeqLenLimit(max_seq_len=2000),
+        ],
+    )
+
+    train_dataset = ptls.data_load.datasets.MemoryMapDataset(
+        df_gbm_train.to_dict(orient='records'),
+        i_filters=[
+            ptls.data_load.iterable_processing.ISeqLenLimit(max_seq_len=2000),
+        ],
+    )
+
+    sup_datamodule = PtlsDataModule(
+        train_data=SeqToTargetIterableDataset(train_dataset, target_col_name='flag', target_dtype=torch.long),
+        test_data=SeqToTargetIterableDataset(test_dataset, target_col_name='flag', target_dtype=torch.long),
+        train_batch_size=512,
+        test_batch_size=512,
+        train_num_workers=4,
+        test_num_workers=4,
+    )
+    return sup_datamodule
 
 
 def get_age_pred_sup_datamodule(fold_i, **kwargs):

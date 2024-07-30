@@ -1,7 +1,8 @@
 import torch
 import numpy as np
+import pandas as pd
 from get_model import get_coles_module, get_static_multicoles_module
-from get_data import get_synthetic_sup_datamodule, get_age_pred_sup_datamodule
+from get_data import get_synthetic_sup_datamodule, get_age_pred_sup_datamodule, get_alpha_battle_sup_datamodule
 from pyhocon import ConfigFactory
 from sklearn.metrics import accuracy_score, roc_auc_score
 from lightgbm import LGBMClassifier
@@ -31,29 +32,32 @@ def load_multimodel(first_model_path, second_model_path, gpu_n, conf_path='./con
     return module
 
 
-def predict_on_dataloader(model, dataloader, gpu_n):
-    xx, yy = list(), list()
+def predict_on_dataloader(model, dataloader, gpu_n, nonseq_feats=None):
+    data = list()
     for batch in dataloader:
 
         with torch.no_grad():
             x, y = batch
-            yy.append(y.numpy())
 
             x_list = list()
             if hasattr(model, 'trained_models'):
                 if model.trained_models is not None:
                     x_list.extend([m(x.to('cuda:' + str(gpu_n))).detach().cpu().numpy() for m in model.trained_models])
             x_list.append(model(x.to('cuda:' + str(gpu_n))).detach().cpu().numpy())
-
             x = np.concatenate(x_list[0:], axis=-1)
-            xx.append(x)
 
-    xx = np.concatenate(xx, axis=0)
-    yy = np.concatenate(yy, axis=0)
-    return xx, yy
+            d = pd.DataFrame({'emb': x, 'target': y.numpy()})
+            if nonseq_feats is not None:
+                for k, v in nonseq_feats.items():
+                    d[k] = batch.payload[k].numpy()
+                    d = d.astype({k: v})
+            data.append(d)
+
+    data = pd.concat(data, axis=0, ignore_index=True)
+    return data
 
 
-def solve_downstream(xx, yy, test_xx, test_yy, metric, conf_path='./config.hocon'):
+def solve_downstream(train_data, test_data, metric, conf_path='./config.hocon'):
     scores = list()
     conf = ConfigFactory.parse_file(conf_path)
     lgbm_conf = conf.get('lgbm_conf')
@@ -63,29 +67,32 @@ def solve_downstream(xx, yy, test_xx, test_yy, metric, conf_path='./config.hocon
     for gbm_i in range(5):
         lgbm_conf['random_state'] = 42 + gbm_i
         clf = LGBMClassifier(**lgbm_conf)
-        clf.fit(xx, yy)
+        clf.fit(train_data.drop('target'), train_data.target)
         if metric == 'accuracy':
-            pred_y = clf.predict(test_xx)
-            test_score = accuracy_score(y_pred=pred_y, y_true=test_yy)
+            pred_y = clf.predict(test_data.drop('target'))
+            test_score = accuracy_score(y_pred=pred_y, y_true=test_data.target)
         elif metric =='rocauc':
-            pred_y = clf.predict_proba(test_xx)[:, 1]
-            test_score = roc_auc_score(y_score=pred_y[:, 1], y_true=test_yy)
+            pred_y = clf.predict_proba(test_data.drop('target'))[:, 1]
+            test_score = roc_auc_score(y_score=pred_y[:, 1], y_true=test_data.target)
         scores.append(test_score)
     return scores
 
 
 def predict_on_fold(task_info, dataf, model_loader, gpu_n, metric, conf_path):
+    conf = ConfigFactory.parse_file(conf_path)
+    nonseq_feats = conf.get('nonseq_feats', None)
+
     model_loading_info, fold_i = task_info
     sup_data = dataf(fold_i)
     model = model_loader(**model_loading_info)
 
     train_dl = sup_data.train_dataloader()
-    train_xx, train_yy = predict_on_dataloader(model, train_dl, gpu_n)
+    train_data = predict_on_dataloader(model, train_dl, gpu_n, nonseq_feats)
 
     test_dl = sup_data.test_dataloader()
-    test_xx, test_yy = predict_on_dataloader(model, test_dl, gpu_n)
+    test_data = predict_on_dataloader(model, test_dl, gpu_n, nonseq_feats)
 
-    metric_scores = solve_downstream(train_xx, train_yy, test_xx, test_yy, metric, conf_path=conf_path)
+    metric_scores = solve_downstream(train_data, test_data, metric, conf_path=conf_path)
     return fold_i, metric_scores
 
 
@@ -98,6 +105,9 @@ def inference(mode, task_info, gpu_n, conf_path='./config.hocon'):
     elif dataset == 'age_pred':
         dataf = get_age_pred_sup_datamodule
         metric = 'accuracy'
+    elif dataset == 'alpha_battle':
+        dataf = get_alpha_battle_sup_datamodule
+        metric = 'rocauc'
 
     if mode == 'mono':
         model_loader = partial(load_monomodel, gpu_n=gpu_n, conf_path=conf_path)

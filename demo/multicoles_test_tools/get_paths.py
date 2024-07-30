@@ -18,10 +18,11 @@ def write_results(exp_name, result):
     add_headers = False if exp_name + '.csv' in files else True
     with open(exp_file, 'a') as f:
         if add_headers:
-            headers = ';'.join(['AllScores', 'AverageScores', 'Fold', 'NetType', 'TBName', 'PathToModel'])+'\n'
+            headers = ';'.join(['AllScores', 'AverageScores', 'Coef', 'Fold', 'Ddim',
+                                'NetType', 'TBName', 'PathToModel'])+'\n'
             f.write(headers)
-        line = ';'.join([result['scores'], result['mean_score'], result['fold_i'], result['net_type'],
-                         result['tb_name'], result['model_path']])+'\n'
+        line = ';'.join([result['scores'], result['mean_score'], result['coef'], result['fold_i'],
+                         result['ddim'], result['net_type'], result['tb_name'], result['model_path']])+'\n'
         f.write(line)
 
 
