@@ -20,8 +20,13 @@ def get_alpha_battle_coles_datamodule(fold_i, **kwargs):
     coles_datamodule = PtlsDataModule(
         train_data=ColesDataset(
             data=MemoryMapDataset(
-                df_seq_pretrain_train.to_dict(orient='records')# +
+                df_seq_pretrain_train.to_dict(orient='records'),# +
                 #df_trx_pretrain.to_dict(orient='records')
+                i_filters=[
+                    ptls.data_load.iterable_processing.SeqLenFilter(min_seq_len=32, max_seq_len=2000),
+                    #ptls.data_load.iterable_processing.ISeqLenLimit(max_seq_len=2000),
+                    ptls.data_load.iterable_processing.ToTorch()
+                ],
             ),
             splitter=SampleSlices(
                 split_count=5,
@@ -31,7 +36,13 @@ def get_alpha_battle_coles_datamodule(fold_i, **kwargs):
         ),
         valid_data=ColesDataset(
             data=MemoryMapDataset(
-                df_trx_pretrain.to_dict(orient='records')),
+                df_trx_pretrain.to_dict(orient='records'),
+                i_filters=[
+                    ptls.data_load.iterable_processing.SeqLenFilter(min_seq_len=32, max_seq_len=2000),
+                    #ptls.data_load.iterable_processing.ISeqLenLimit(max_seq_len=2000),
+                    ptls.data_load.iterable_processing.ToTorch()
+                ],
+            ),
             splitter=SampleSlices(
                 split_count=5,
                 cnt_min=25,
@@ -123,6 +134,7 @@ def get_alpha_battle_sup_datamodule(fold_i, **kwargs):
         df_gbm_test.to_dict(orient='records'),
         i_filters=[
             ptls.data_load.iterable_processing.ISeqLenLimit(max_seq_len=2000),
+            ptls.data_load.iterable_processing.ToTorch()
         ],
     )
 
@@ -130,6 +142,7 @@ def get_alpha_battle_sup_datamodule(fold_i, **kwargs):
         df_gbm_train.to_dict(orient='records'),
         i_filters=[
             ptls.data_load.iterable_processing.ISeqLenLimit(max_seq_len=2000),
+            ptls.data_load.iterable_processing.ToTorch()
         ],
     )
 
