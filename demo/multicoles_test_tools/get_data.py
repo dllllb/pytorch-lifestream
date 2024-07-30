@@ -11,8 +11,8 @@ from ptls.frames.coles.split_strategy import SampleSlices
 
 
 def get_alpha_battle_coles_datamodule(fold_i, **kwargs):
-    df_trx_pretrain = pd.read_pickle(f'data/fold_{fold_i}/df_trx_pretrain_debug.pickle')
-    df_seq_pretrain = pd.read_pickle(f'data/fold_{fold_i}/df_seq_pretrain_debug.pickle')
+    df_trx_pretrain = pd.read_pickle(f'data/fold_{fold_i}/df_trx_pretrain.pickle')
+    df_seq_pretrain = pd.read_pickle(f'data/fold_{fold_i}/df_seq_pretrain.pickle')
 
     df_seq_pretrain_train, df_seq_pretrain_valid = train_test_split(
         df_seq_pretrain, test_size=0.05, shuffle=True, random_state=42)
@@ -127,8 +127,8 @@ def get_synthetic_coles_datamodule(path, **kwargs):
 
 
 def get_alpha_battle_sup_datamodule(fold_i, **kwargs):
-    df_gbm_train = pd.read_pickle(f'data/fold_{fold_i}/df_gbm_train_debug.pickle')
-    df_gbm_test = pd.read_pickle(f'data/fold_{fold_i}/df_gbm_test_debug.pickle')
+    df_gbm_train = pd.read_pickle(f'data/fold_{fold_i}/df_gbm_train.pickle')
+    df_gbm_test = pd.read_pickle(f'data/fold_{fold_i}/df_gbm_test.pickle')
 
     test_dataset = ptls.data_load.datasets.MemoryMapDataset(
         df_gbm_test.to_dict(orient='records'),
