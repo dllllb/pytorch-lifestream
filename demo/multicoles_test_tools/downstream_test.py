@@ -32,9 +32,9 @@ def load_multimodel(first_model_path, second_model_path, gpu_n, conf_path='./con
     return module
 
 
-def predict_on_dataloader(model, dataloader, gpu_n, nonseq_feats=None):
+def predict_on_dataloader(model, dataloader, gpu_n, nonseq_feats=None, debug=False):
     data = list()
-    for batch in dataloader:
+    for i, batch in enumerate(dataloader):
 
         with torch.no_grad():
             x, y = batch
@@ -52,6 +52,10 @@ def predict_on_dataloader(model, dataloader, gpu_n, nonseq_feats=None):
                     d[k] = list(x.payload[k].cpu().numpy())
                     d = d.astype({k: v})
             data.append(d)
+
+        if debug:
+            if i==2:
+                break
 
     data = pd.concat(data, axis=0, ignore_index=True)
     return data
@@ -78,7 +82,7 @@ def solve_downstream(train_data, test_data, metric, conf_path='./config.hocon'):
     return scores
 
 
-def predict_on_fold(task_info, dataf, model_loader, gpu_n, metric, conf_path):
+def predict_on_fold(task_info, dataf, model_loader, gpu_n, metric, conf_path, debug):
     conf = ConfigFactory.parse_file(conf_path)
     nonseq_feats = conf.get('nonseq_feats', None)
 
@@ -87,16 +91,16 @@ def predict_on_fold(task_info, dataf, model_loader, gpu_n, metric, conf_path):
     model = model_loader(**model_loading_info)
 
     train_dl = sup_data.train_dataloader()
-    train_data = predict_on_dataloader(model, train_dl, gpu_n, nonseq_feats)
+    train_data = predict_on_dataloader(model, train_dl, gpu_n, nonseq_feats, debug)
 
     test_dl = sup_data.test_dataloader()
-    test_data = predict_on_dataloader(model, test_dl, gpu_n, nonseq_feats)
+    test_data = predict_on_dataloader(model, test_dl, gpu_n, nonseq_feats, debug)
 
     metric_scores = solve_downstream(train_data, test_data, metric, conf_path=conf_path)
     return fold_i, metric_scores
 
 
-def inference(mode, task_info, gpu_n, conf_path='./config.hocon'):
+def inference(mode, task_info, gpu_n, conf_path='./config.hocon', debug=False):
     conf = ConfigFactory.parse_file(conf_path)
     dataset = conf.get('dataset')
     if dataset == 'synthetic':
@@ -114,5 +118,5 @@ def inference(mode, task_info, gpu_n, conf_path='./config.hocon'):
     else:
         model_loader = partial(load_multimodel, gpu_n=gpu_n, conf_path=conf_path)
 
-    score = predict_on_fold(task_info, dataf, model_loader, gpu_n, metric, conf_path)
+    score = predict_on_fold(task_info, dataf, model_loader, gpu_n, metric, conf_path, debug)
     return score

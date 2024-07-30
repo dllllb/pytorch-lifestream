@@ -38,7 +38,7 @@ def main():
                                            gpu_n=gpu_n, conf_path=conf_path, debug=debug)
     task_info = {'first_model_path': first_model_path, 'second_model_path': path_to_model[2]}, fold_i
     # list of (fold_i, metric_scores)
-    score = inference(mode='multi', task_info=task_info, gpu_n=gpu_n, conf_path=conf_path)
+    score = inference(mode='multi', task_info=task_info, gpu_n=gpu_n, conf_path=conf_path, debug=debug)
 
     result = {
         'fold_i': str(path_to_model[0]),

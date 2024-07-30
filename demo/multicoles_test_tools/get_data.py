@@ -30,13 +30,13 @@ def get_alpha_battle_coles_datamodule(fold_i, **kwargs):
             ),
             splitter=SampleSlices(
                 split_count=5,
-                cnt_min=25,
-                cnt_max=200,
+                cnt_min=20,
+                cnt_max=60,
             ),
         ),
         valid_data=ColesDataset(
             data=MemoryMapDataset(
-                df_trx_pretrain.to_dict(orient='records'),
+                df_seq_pretrain_valid.to_dict(orient='records'),
                 i_filters=[
                     ptls.data_load.iterable_processing.SeqLenFilter(min_seq_len=32, max_seq_len=2000),
                     #ptls.data_load.iterable_processing.ISeqLenLimit(max_seq_len=2000),
@@ -45,13 +45,13 @@ def get_alpha_battle_coles_datamodule(fold_i, **kwargs):
             ),
             splitter=SampleSlices(
                 split_count=5,
-                cnt_min=25,
-                cnt_max=100,
+                cnt_min=20,
+                cnt_max=60,
             ),
         ),
-        train_batch_size=64,
+        train_batch_size=256,
         train_num_workers=4,
-        valid_batch_size=512,
+        valid_batch_size=64,
         valid_num_workers=4,
     )
 
