@@ -71,13 +71,13 @@ def solve_downstream(train_data, test_data, metric, conf_path='./config.hocon'):
     for gbm_i in range(5):
         lgbm_conf['random_state'] = 42 + gbm_i
         clf = LGBMClassifier(**lgbm_conf)
-        clf.fit(train_data.drop('target'), train_data.target)
+        clf.fit(train_data.drop('target', axis=1), train_data['target'])
         if metric == 'accuracy':
-            pred_y = clf.predict(test_data.drop('target'))
-            test_score = accuracy_score(y_pred=pred_y, y_true=test_data.target)
+            pred_y = clf.predict(test_data.drop('target', axis=1))
+            test_score = accuracy_score(y_pred=pred_y, y_true=test_data['target'])
         elif metric =='rocauc':
-            pred_y = clf.predict_proba(test_data.drop('target'))[:, 1]
-            test_score = roc_auc_score(y_score=pred_y[:, 1], y_true=test_data.target)
+            pred_y = clf.predict_proba(test_data.drop('target', axis=1))[:, 1]
+            test_score = roc_auc_score(y_score=pred_y[:, 1], y_true=test_data['target'])
         scores.append(test_score)
     return scores
 
