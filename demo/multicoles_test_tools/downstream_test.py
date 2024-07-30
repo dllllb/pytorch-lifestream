@@ -34,7 +34,7 @@ def load_multimodel(first_model_path, second_model_path, gpu_n, conf_path='./con
 
 def predict_on_dataloader(model, dataloader, gpu_n, nonseq_feats=None, debug=False):
     data = list()
-    for i, batch in enumerate(dataloader):
+    for batch in dataloader:
 
         with torch.no_grad():
             x, y = batch
@@ -53,10 +53,6 @@ def predict_on_dataloader(model, dataloader, gpu_n, nonseq_feats=None, debug=Fal
                     d[k] = list(x.payload[k].cpu().numpy())
                     d = d.astype({k: v})
             data.append(d)
-
-        if debug:
-            if i == 2:
-                break
 
     data = pd.concat(data, axis=0, ignore_index=True)
     return data

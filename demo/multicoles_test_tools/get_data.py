@@ -51,7 +51,7 @@ def get_alpha_battle_coles_datamodule(fold_i, **kwargs):
         ),
         train_batch_size=256,
         train_num_workers=4,
-        valid_batch_size=64,
+        valid_batch_size=32,
         valid_num_workers=4,
     )
 
