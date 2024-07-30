@@ -73,6 +73,9 @@ def solve_downstream(train_data, test_data, metric, conf_path='./config.hocon'):
         lgbm_conf['random_state'] = 42 + gbm_i
         clf = LGBMClassifier(**lgbm_conf)
         clf.fit(train_data.drop('downstream_target', axis=1), train_data['downstream_target'])
+        print(train_data.shape)
+        print(train_data.drop('downstream_target', axis=1).shape)
+        print(train_data['downstream_target'].shape)
         if metric == 'accuracy':
             pred_y = clf.predict(test_data.drop('downstream_target', axis=1))
             test_score = accuracy_score(y_pred=pred_y, y_true=test_data['downstream_target'])
