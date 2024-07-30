@@ -47,14 +47,14 @@ def predict_on_dataloader(model, dataloader, gpu_n, nonseq_feats=None, debug=Fal
             emb = np.concatenate(x_list[0:], axis=-1)
 
             d = pd.DataFrame({'emb': list(emb), 'target': list(y.numpy())})
-            if nonseq_feats is not None:
-                for k, v in nonseq_feats.items():
-                    d[k] = list(x.payload[k].cpu().numpy())
-                    d = d.astype({k: v})
+            #if nonseq_feats is not None:
+            #    for k, v in nonseq_feats.items():
+            #        d[k] = list(x.payload[k].cpu().numpy())
+            #        d = d.astype({k: v})
             data.append(d)
 
         if debug:
-            if i==2:
+            if i == 2:
                 break
 
     data = pd.concat(data, axis=0, ignore_index=True)
