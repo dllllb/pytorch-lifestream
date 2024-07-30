@@ -47,7 +47,7 @@ def predict_on_dataloader(model, dataloader, gpu_n, nonseq_feats=None, debug=Fal
             emb = np.concatenate(x_list[0:], axis=-1)
 
             d = pd.DataFrame({'emb_'+('000'+f'{i}')[-4:]: emb[:, i] for i in range(emb.shape[1])})
-            d['target'] = y.numpy()
+            d['downstream_target'] = y.numpy()
             if nonseq_feats is not None:
                 for k, v in nonseq_feats.items():
                     d[k] = list(x.payload[k].cpu().numpy())
@@ -72,15 +72,15 @@ def solve_downstream(train_data, test_data, metric, conf_path='./config.hocon'):
     for gbm_i in range(5):
         lgbm_conf['random_state'] = 42 + gbm_i
         clf = LGBMClassifier(**lgbm_conf)
-        clf.fit(train_data.drop('target', axis=1), train_data['target'])
+        clf.fit(train_data.drop('downstream_target', axis=1), train_data['downstream_target'])
         if metric == 'accuracy':
-            pred_y = clf.predict(test_data.drop('target', axis=1))
-            test_score = accuracy_score(y_pred=pred_y, y_true=test_data['target'])
+            pred_y = clf.predict(test_data.drop('downstream_target', axis=1))
+            test_score = accuracy_score(y_pred=pred_y, y_true=test_data['downstream_target'])
         elif metric =='rocauc':
-            pred_y = clf.predict_proba(test_data.drop('target', axis=1))#[:, 1]
+            pred_y = clf.predict_proba(test_data.drop('downstream_target', axis=1))#[:, 1]
             print(pred_y.shape)
-            print(test_data['target'])
-            test_score = roc_auc_score(y_score=pred_y, y_true=test_data['target'])
+            print(test_data['downstream_target'])
+            test_score = roc_auc_score(y_score=pred_y, y_true=test_data['downstream_target'])
         scores.append(test_score)
     return scores
 
