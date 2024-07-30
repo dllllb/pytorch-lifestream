@@ -78,7 +78,7 @@ def solve_downstream(train_data, test_data, metric, conf_path='./config.hocon'):
             test_score = accuracy_score(y_pred=pred_y, y_true=test_data['target'])
         elif metric =='rocauc':
             pred_y = clf.predict_proba(test_data.drop('target', axis=1))[:, 1]
-            test_score = roc_auc_score(y_score=pred_y[:, 1], y_true=test_data['target'])
+            test_score = roc_auc_score(y_score=pred_y, y_true=test_data['target'])
         scores.append(test_score)
     return scores
 
