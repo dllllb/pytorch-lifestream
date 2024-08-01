@@ -29,7 +29,7 @@ def define_data():
         event_time_transformation='none',
         cols_category=['small_group'],
         cols_numerical=['amount_rur'],
-        return_records=True,
+        return_records=True
     )
     return preprocessor, source_data
 

@@ -1,12 +1,38 @@
 import numpy as np
 import torch
 from collections import defaultdict
-from functools import reduce
+from pymonad.maybe import Maybe
 
 from ptls.data_load.feature_dict import FeatureDict
 from ptls.data_load.padded_batch import PaddedBatch
+from itertools import compress
 
-from transformers.tokenization_utils_base import BatchEncoding
+torch_to_numpy = torch.from_numpy
+
+
+def convert_dtype(np_arr):
+    np_arr = np.array(np_arr)
+    return torch_to_numpy(np_arr, dtype=dtype_dict[np_arr.dtype.kind])
+
+
+def detect_transform_func(dtype_list):
+    transform_func = [torch.nn.utils.rnn.pad_sequence, torch.stack, None, np.array, convert_dtype]
+    return list(compress(transform_func, dtype_list))
+
+
+def detect_dtype(dict_tup):
+    target, tensor = dict_tup[0], dict_tup[1][0]
+    is_torch_tensor = isinstance(tensor, torch.Tensor)
+    is_torch_tensor_target = all([is_torch_tensor, target.startswith('target')])
+    is_np_array = isinstance(tensor, np.ndarray)
+    is_list = isinstance(tensor, list)
+    is_other = not any([is_list, is_torch_tensor, is_torch_tensor_target, is_np_array])
+    return [is_torch_tensor, is_torch_tensor_target, is_np_array, is_list, is_other]
+
+
+dtype_dict = {'i': torch.long,
+              'f': torch.float,
+              'b': torch.bool}
 
 
 def collate_feature_dict(batch):
@@ -23,37 +49,18 @@ def collate_feature_dict(batch):
     -------
         PaddedBatch
     """
-    new_x_ = defaultdict(list)
-    for i, x in enumerate(batch):
-        for k, v in x.items():
-            new_x_[k].append(v)
-        assert reduce(
-            lambda a, b: ((a[1] is not None and a[1] == b or a[1] is None) and a[0], b),
-            map(len, new_x_.values()), (True, None))[0]
+    new_x = defaultdict(list)
+    _ = list(map(lambda tup: [new_x[k].append(v) for k, v in tup[1].items()], enumerate(batch)))
+    del _
+    seq_col = next(k for k, v in batch[0].items() if FeatureDict.is_seq_feature(v))
+    lengths = torch.LongTensor(list(map(lambda rec: len(rec[seq_col]), batch)))
+    list_of_transform_func = Maybe.insert(list(new_x.items())).then(
+        function=lambda dict_tup: list(map(detect_dtype, dict_tup))). \
+        then(function=lambda dtype_list: list(map(detect_transform_func, dtype_list))). \
+        maybe(default_value=None, extraction_function=lambda list_of_transform_func: list_of_transform_func)
+    for func, dict_tup in zip(list_of_transform_func, new_x.items()):
+        new_x[dict_tup[0]] = func[0](dict_tup[1])
 
-    seq_col = next(k for k, v in batch[0].items() if FeatureDict.is_seq_feature(k, v))
-    lengths = torch.LongTensor([len(rec[seq_col]) for rec in batch])
-    new_x = {}
-    for k, v in new_x_.items():
-        if isinstance(v[0], torch.Tensor):
-            if k.startswith('target'):
-                new_x[k] = torch.stack(v, dim=0)
-            else:
-                new_x[k] = torch.nn.utils.rnn.pad_sequence(v, batch_first=True)
-        elif isinstance(v[0], np.ndarray):
-            new_x[k] = v  # list of arrays[object]
-        elif isinstance(v[0], list):
-            new_x[k] = np.array(v, dtype=object)
-        else:
-            v = np.array(v)
-            if v.dtype.kind == 'i':
-                new_x[k] = torch.from_numpy(v).long()
-            elif v.dtype.kind == 'f':
-                new_x[k] = torch.from_numpy(v).float()
-            elif v.dtype.kind == 'b':
-                new_x[k] = torch.from_numpy(v).bool()
-            else:
-                new_x[k] = v
     return PaddedBatch(new_x, lengths)
 
 
@@ -66,4 +73,4 @@ def collate_target(x, num=1):
     elif num < 0:
         return vec[:abs(num)]
     else:
-        return np.hstack((vec[:num-1], vec[num-1:].sum()))[:len(vec)]
+        return np.hstack((vec[:num - 1], vec[num - 1:].sum()))[:len(vec)]
