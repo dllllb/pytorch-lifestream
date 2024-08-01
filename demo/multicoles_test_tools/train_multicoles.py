@@ -24,6 +24,7 @@ def main():
         save_config_copy(conf_path, exp_name)
     first_model_path = conf.get('first_model_path', None)
     remake_first_model = conf.get('remake_first_model', False)
+    first_only = conf.get('first_only', False)
     indep = conf.get('indep_mode', False)
     nettype = 'indep' if indep else 'multi'
 
@@ -36,6 +37,9 @@ def main():
     assert type(embed_coef) in [float, list, tuple]
     if type(embed_coef) is float:
         embed_coef = [embed_coef]
+
+    if first_only:
+        return
 
     for coef in embed_coef:
         # list of (fold_i, tb_name, model_save_path)
