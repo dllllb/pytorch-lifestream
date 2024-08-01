@@ -61,7 +61,7 @@ def get_alpha_battle_coles_chunked_datamodule(fold_i, **kwargs):
     df_seq_pretrain = ParquetFiles(f'data/chunked_fold_{fold_i}/df_seq_pretrain.parquet')
 
     coles_datamodule = PtlsDataModule(
-        train_data=ColesDataset(
+        train_data=ColesIterableDataset(
             data=ParquetDataset(
                 df_seq_pretrain,
                 i_filters=[
@@ -75,7 +75,7 @@ def get_alpha_battle_coles_chunked_datamodule(fold_i, **kwargs):
                 cnt_max=60,
             ),
         ),
-        valid_data=ColesDataset(
+        valid_data=ColesIterableDataset(
             data=ParquetDataset(
                 df_trx_pretrain,
                 i_filters=[
