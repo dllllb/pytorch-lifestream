@@ -20,7 +20,7 @@ class DatetimeToTimestamp(ColTransformer):
 
     def __init__(self,
                  col_name_original: str = 'event_time',
-                 is_drop_original_col: bool = True,
+                 is_drop_original_col: bool = False,
                  ):
         super().__init__(
             col_name_original=col_name_original,
@@ -33,5 +33,5 @@ class DatetimeToTimestamp(ColTransformer):
 
     def transform(self, x: pd.Series):
         x = dt_to_timestamp(x)
-        x = super().transform(x)
-        return x
+        new_x = self.attach_column(x)
+        return new_x if self.is_drop_original_col else new_x.update({self.col_name_original:x})

@@ -47,13 +47,13 @@ class ColesDataset(FeatureDict, torch.utils.data.Dataset):
             yield self.get_splits(feature_arrays)
 
     def _create_split_subset(self, idx, feature_arrays):
-        return {k: v[idx] for k, v in feature_arrays.items()}
+        return {k: v[idx] for k, v in feature_arrays.items() if not isinstance(v, int)}
 
     def get_splits(self, feature_arrays):
         local_date = feature_arrays[self.col_time]
         indexes = self.splitter.split(local_date)
         with joblib.parallel_backend(backend='threading'):
-            parallel = Parallel(verbose=1)
+            parallel = Parallel()
             result_dict = parallel(delayed(self._create_split_subset)(idx, feature_arrays)
                                    for idx in indexes)
 
@@ -61,10 +61,9 @@ class ColesDataset(FeatureDict, torch.utils.data.Dataset):
 
     @staticmethod
     def collate_fn(batch):
-        class_labels = [i for i, class_samples in enumerate(batch) for _ in class_samples]
-        batch = reduce(iadd, batch)
-        padded_batch = collate_feature_dict(batch)
-        return padded_batch, torch.LongTensor(class_labels)
+        class_labels = torch.LongTensor(reduce(iadd, list(map(lambda x: [x[0] for _ in x[1]], enumerate(batch)))))
+        padded_batch = collate_feature_dict(reduce(iadd, batch))
+        return padded_batch, class_labels
 
 
 class ColesIterableDataset(ColesDataset, torch.utils.data.IterableDataset):

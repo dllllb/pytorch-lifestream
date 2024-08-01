@@ -69,8 +69,7 @@ class PandasDataPreprocessor(DataPreprocessor):
                  cols_first_item: List[str] = None,
                  return_records: bool = True,
                  ):
-
-        self.category_transformation=category_transformation
+        self.category_transformation = category_transformation
         self.return_records = return_records
         self.cols_first_item = cols_first_item
         self.event_time_transformation = event_time_transformation

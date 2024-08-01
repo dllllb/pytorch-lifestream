@@ -2,7 +2,6 @@ import torch
 import warnings
 from torch import nn as nn
 
-from ptls.constant_repository import TORCH_EMB_DTYPE
 from ptls.nn.seq_encoder.abs_seq_encoder import AbsSeqEncoder
 from ptls.nn.seq_step import LastStepEncoder, LastMaxAvgEncoder, FirstStepEncoder
 from ptls.data_load.padded_batch import PaddedBatch
@@ -89,7 +88,7 @@ class RnnEncoder(AbsSeqEncoder):
 
     @property
     def get_reducer(self):
-        return REDUCE_DICT[self.reducer_name]()
+        return REDUCE_DICT[self.reducer_name]
 
     @property
     def embedding_size(self):
@@ -111,7 +110,6 @@ class RnnEncoder(AbsSeqEncoder):
         else:
             have_init_state_for_predict = all([h_0 is not None, not self.training])
             h_0 = self.__create_default_init_state(shape) if h_0 is None else self.__update_init_state(h_0, shape)
-            h_0 = h_0.type(TORCH_EMB_DTYPE)
             return h_0
 
     def forward(self, x: PaddedBatch, h_0: torch.Tensor = None):
@@ -128,5 +126,5 @@ class RnnEncoder(AbsSeqEncoder):
         assert x.payload.size()[1] > 0, "Batch can'not have 0 transactions"
         h_0 = self._eval_init_state(x.payload.size(), h_0)
         out, _ = self.rnn(x.payload, h_0) if self.rnn_type == 'gru' else self.rnn(x.payload)
-        out = PaddedBatch(out, x.seq_lens)
-        return self.reducer(out) if self.is_reduce_sequence else out
+
+        return self.reducer(out) if self.is_reduce_sequence else PaddedBatch(out, x.seq_lens)
