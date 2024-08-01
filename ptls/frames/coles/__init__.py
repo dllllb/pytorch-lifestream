@@ -5,4 +5,4 @@ from .coles_module import CoLESModule
 from .multi_coles_module import MultiCoLESModule
 #from .cluster_module import ClusterModule, ClusterCallback
 from .coles_supervised_module import ColesSupervisedModule
-
+from  .multi_coles_module_sml import MultiCoLESSMLModule
