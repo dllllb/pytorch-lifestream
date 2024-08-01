@@ -44,7 +44,7 @@ def train_coles_model(exp_name, path_to_chkp, path_to_logs,
     elif dataset == 'age_pred':
         dataf = get_age_pred_coles_datamodule
     elif dataset == 'alpha_battle':
-        dataf = get_alpha_battle_coles_datamodule
+        dataf = get_alpha_battle_coles_chunked_datamodule
 
     #time = datetime.now().strftime('%Y-%m-%d_%H:%M:%S')
 
