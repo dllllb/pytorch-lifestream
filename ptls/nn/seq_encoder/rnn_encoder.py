@@ -88,7 +88,7 @@ class RnnEncoder(AbsSeqEncoder):
 
     @property
     def get_reducer(self):
-        return REDUCE_DICT[self.reducer_name]
+        return REDUCE_DICT[self.reducer_name]()
 
     @property
     def embedding_size(self):
@@ -126,5 +126,5 @@ class RnnEncoder(AbsSeqEncoder):
         assert x.payload.size()[1] > 0, "Batch can'not have 0 transactions"
         h_0 = self._eval_init_state(x.payload.size(), h_0)
         out, _ = self.rnn(x.payload, h_0) if self.rnn_type == 'gru' else self.rnn(x.payload)
-
-        return self.reducer(out) if self.is_reduce_sequence else PaddedBatch(out, x.seq_lens)
+        out = PaddedBatch(out, x.seq_lens)
+        return self.reducer(out) if self.is_reduce_sequence else out
