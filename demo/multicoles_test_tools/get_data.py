@@ -68,6 +68,7 @@ def get_alpha_battle_coles_chunked_datamodule(fold_i, **kwargs):
                     ptls.data_load.iterable_processing.SeqLenFilter(min_seq_len=32, max_seq_len=2000),
                     ptls.data_load.iterable_processing.ToTorch()
                 ],
+                shuffle_files=True
             ),
             splitter=SampleSlices(
                 split_count=5,
