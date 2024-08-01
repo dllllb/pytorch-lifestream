@@ -140,7 +140,7 @@ def get_synthetic_coles_datamodule(path, **kwargs):
     train_files = ParquetFiles(os.path.join(path, "train"))
     train_dataset = ParquetDataset(train_files, shuffle_files=True)
     eval_files = ParquetFiles(os.path.join(path, "eval"))
-    eval_dataset = ParquetDataset(eval_files, shuffle_files=True)
+    eval_dataset = ParquetDataset(eval_files)
 
     coles_datamodule = PtlsDataModule(
         train_data=ColesIterableDataset(
@@ -208,6 +208,7 @@ def get_alpha_battle_sup_chunked_datamodule(fold_i, **kwargs):
             ptls.data_load.iterable_processing.ISeqLenLimit(max_seq_len=2000),
             ptls.data_load.iterable_processing.ToTorch()
         ],
+        shuffle_files=True
     )
 
     train_dataset = ParquetDataset(
@@ -216,6 +217,7 @@ def get_alpha_battle_sup_chunked_datamodule(fold_i, **kwargs):
             ptls.data_load.iterable_processing.ISeqLenLimit(max_seq_len=2000),
             ptls.data_load.iterable_processing.ToTorch()
         ],
+        shuffle_files=True
     )
 
     sup_datamodule = PtlsDataModule(
