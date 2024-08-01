@@ -198,8 +198,8 @@ def get_alpha_battle_sup_datamodule(fold_i, **kwargs):
 
 
 def get_alpha_battle_sup_chunked_datamodule(fold_i, **kwargs):
-    df_gbm_train = ParquetFiles(f'chunked_data/fold_{fold_i}/df_gbm_train.parquet')
-    df_gbm_test = ParquetFiles(f'chunked_data/fold_{fold_i}/df_gbm_test.parquet')
+    df_gbm_train = ParquetFiles(f'data/chunked_fold_{fold_i}/df_gbm_train.parquet')
+    df_gbm_test = ParquetFiles(f'data/chunked_fold_{fold_i}/df_gbm_test.parquet')
 
     test_dataset = ParquetDataset(
         df_gbm_test,
