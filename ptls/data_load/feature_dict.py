@@ -36,12 +36,10 @@ class FeatureDict:
         -------
             True if value is iterable
         """
-        if isinstance(x, int):
-            x = str(x)
-            return True if x == 'event_time' else False
-        elif type(x) in (np.ndarray, torch.Tensor):
+        if isinstance(x, (np.ndarray, torch.Tensor)):
             return True
-        return False
+        else:
+            return False
 
     @staticmethod
     def seq_indexing(d, ix):
