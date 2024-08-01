@@ -26,14 +26,16 @@ class SeqLenFilter(IterableProcessingDataset):
             _ = len(seq_feature)
             min_len_check = _ > self._min_seq_len if self._min_seq_len is not None else True
             max_len_check = _ < self._max_seq_len if self._max_seq_len is not None else True
+        else:
+            min_len_check, max_len_check = False, False
         return all([min_len_check, max_len_check])
 
     def transform(self, features):
-        return features if self.get_len(features[list(features.keys())[0]]) else None
+        return features if self.get_len(features) else None
 
     def get_sequence_col(self, rec: dict):
-        #filter_func = list(filter(lambda x: 'CI' in rec.get(x), rec))
-        return all([self._valid_seq_len(feature) for feature in rec.values()])
+        # filter_func = list(filter(lambda x: 'CI' in rec.get(x), rec))
+        return all([self._valid_seq_len(feature) for feature in rec.values() if not isinstance(feature, int)])
 
     def get_len(self, rec):
         return rec[self._seq_len_col] if self._seq_len_col is not None else self.get_sequence_col(rec)

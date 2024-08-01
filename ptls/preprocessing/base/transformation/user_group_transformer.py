@@ -63,7 +63,8 @@ class UserGroupTransformer(ColTransformer):
             else:
                 v = torch.from_numpy(v.values)
             group[k] = v
-        return {group_name: group}
+        group[self.col_name_original] = group_name
+        return group
 
     def fit(self, x):
         self._event_time_exist(x)
@@ -78,7 +79,8 @@ class UserGroupTransformer(ColTransformer):
         return result_dict
 
     def transform(self, x: pd.DataFrame):
-        x = x.set_index([self.col_name_original, 'event_time']).sort_index().groupby(self.col_name_original)
+        x['et_index'] = x.loc[:, 'event_time']
+        x = x.set_index([self.col_name_original, 'et_index']).sort_index().groupby(self.col_name_original)
         x = self.df_to_feature_arrays(x)
         x = x if self.return_records else pd.Series(x)
         return x
