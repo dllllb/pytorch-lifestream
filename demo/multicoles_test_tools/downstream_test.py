@@ -54,6 +54,9 @@ def predict_on_dataloader(model, dataloader, gpu_n, nonseq_feats=None, debug=Fal
                     d = d.astype({k: v})
             data.append(d)
 
+        if debug:
+            break
+
     data = pd.concat(data, axis=0, ignore_index=True)
     return data
 

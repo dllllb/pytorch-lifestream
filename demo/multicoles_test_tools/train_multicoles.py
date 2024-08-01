@@ -38,10 +38,9 @@ def main():
         embed_coef = [embed_coef]
 
     for coef in embed_coef:
-        conf['embed_coef'] = coef
         # list of (fold_i, tb_name, model_save_path)
         path_to_model = train_multicoles_model(path_to_logs=path_to_logs, path_to_chkp=path_to_chkp,
-                                               fold_i=fold_i, first_model_path=first_model_path,
+                                               fold_i=fold_i, first_model_path=first_model_path, embed_coef=coef,
                                                gpu_n=gpu_n, conf_path=conf_path, debug=debug)
         task_info = {'first_model_path': first_model_path, 'second_model_path': path_to_model[2]}, fold_i
         # list of (fold_i, metric_scores)
@@ -54,7 +53,7 @@ def main():
             'scores': ','.join([str(np.round(float(x), 5)) for x in score[1]]),
             'mean_score': str(np.mean(score[1])),
             'net_type': nettype,
-            'coef': str(conf.get('embed_coef', 0.1)),
+            'coef': str(coef),
             'ddim': str(conf.get('clf_hsize', 64))
         }
         write_results(exp_name, result)

@@ -64,7 +64,7 @@ def train_coles_model(exp_name, path_to_chkp, path_to_logs,
     return paths_to_model
 
 
-def train_model_folder(fold_i, first_model_path, exp_name, dataf, trx_conf, input_size, hsize,
+def train_multicoles_model_folder(fold_i, first_model_path, exp_name, dataf, trx_conf, input_size, hsize,
                        clf_hsize, path_to_logs, path_to_chkp, embed_coef, gpu_n, max_epoch, debug):
     datamodule = dataf(fold_i)
     module = get_static_multicoles_module(trx_conf, input_size, embed_coef, hsize, clf_hsize, first_model_path)
@@ -86,7 +86,7 @@ def train_model_folder(fold_i, first_model_path, exp_name, dataf, trx_conf, inpu
     return fold_i, tb_name, model_save_path
 
 
-def train_multicoles_model(path_to_logs, path_to_chkp, fold_i, first_model_path, gpu_n,
+def train_multicoles_model(path_to_logs, path_to_chkp, fold_i, first_model_path, embed_coef, gpu_n,
                            conf_path='./config.hocon', debug=False):
     conf = ConfigFactory.parse_file(conf_path)
     dataset = conf.get('dataset')
@@ -106,8 +106,8 @@ def train_multicoles_model(path_to_logs, path_to_chkp, fold_i, first_model_path,
     hsize = int(conf.get('hsize')/2)
     clf_hsize = conf.get('clf_hsize', 64)
     max_epoch = conf.get('max_epoch', 50)
-    embed_coef = conf.get('embed_coef', 0.1)
 
-    paths_to_models = train_model_folder(fold_i, first_model_path, exp_name, dataf, trx_conf, input_size, hsize,
-                                         clf_hsize, path_to_logs, path_to_chkp, embed_coef, gpu_n, max_epoch, debug)
+    paths_to_models = train_multicoles_model_folder(fold_i, first_model_path, exp_name, dataf, trx_conf,
+                                                    input_size, hsize, clf_hsize, path_to_logs, path_to_chkp,
+                                                    embed_coef, gpu_n, max_epoch, debug)
     return paths_to_models
