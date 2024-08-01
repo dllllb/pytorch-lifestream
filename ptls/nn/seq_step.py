@@ -30,6 +30,9 @@ class LastStepEncoder(nn.Module):
     """
 
     def forward(self, x: PaddedBatch):
+        # prev_seq = [l - 1 for l in x.seq_lens]
+        # len_seq = range(len(x.payload))
+        # h = x.payload[len_seq, prev_seq]
         return x.payload[:, -1, :]
 
 
