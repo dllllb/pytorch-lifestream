@@ -1,3 +1,5 @@
+from functools import partial
+
 import numpy as np
 import torch
 from collections import defaultdict
@@ -16,7 +18,8 @@ def convert_dtype(np_arr):
 
 
 def detect_transform_func(dtype_list):
-    transform_func = [torch.nn.utils.rnn.pad_sequence, torch.stack, None, np.array, convert_dtype]
+    transform_func = [partial(torch.nn.utils.rnn.pad_sequence, batch_first=True), torch.stack, None, np.array,
+                      convert_dtype]
     return list(compress(transform_func, dtype_list))
 
 
