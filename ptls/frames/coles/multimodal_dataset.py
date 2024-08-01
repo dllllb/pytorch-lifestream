@@ -77,7 +77,8 @@ class MultiModalDataset(FeatureDict, torch.utils.data.Dataset):
         col_id:
             column name with user_id
         source_names:
-            column name with name sources
+            column name with name sources, must be specified in the same order as trx_encoders in 
+            ptls.frames.coles.multimodal_module.MultiModalSortTimeSeqEncoderContainer
         col_time:
             column name with event_time
         """
