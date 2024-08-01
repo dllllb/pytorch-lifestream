@@ -28,9 +28,12 @@ class LastStepEncoder(nn.Module):
     
     Example of usage: seq_encoder = RnnSeqEncoder(..., reducer='last_step')
     """
+
     def forward(self, x: PaddedBatch):
-        h = x.payload[range(len(x.payload)), [l - 1 for l in x.seq_lens]]
-        return h
+        # prev_seq = [l - 1 for l in x.seq_lens]
+        # len_seq = range(len(x.payload))
+        # h = x.payload[len_seq, prev_seq]
+        return x.payload[:, -1, :]
 
 
 class FirstStepEncoder(nn.Module):
@@ -45,10 +48,10 @@ class FirstStepEncoder(nn.Module):
     
     Example of usage: seq_encoder = RnnSeqEncoder(..., reducer='first_step')
     """
-    def forward(self, x: PaddedBatch):
-        h = x.payload[:, 0, :]  # [B, L, H] -> [B, H]
-        return h
-    
+
+    def forward(self, x: PaddedBatch):  # [B, L, H] -> [B, H]
+        return x.payload[:, 0, :]
+
 
 class LastMaxAvgEncoder(nn.Module):
     """
@@ -65,6 +68,7 @@ class LastMaxAvgEncoder(nn.Module):
         
     Example of usage: seq_encoder = RnnSeqEncoder(..., reducer='last_max_avg')
     """
+
     def forward(self, x: PaddedBatch):
         rnn_max_pool = x.payload.max(dim=1)[0]
         rnn_avg_pool = x.payload.sum(dim=1) / x.seq_lens.unsqueeze(-1)
@@ -72,7 +76,7 @@ class LastMaxAvgEncoder(nn.Module):
         h = torch.cat((h, rnn_max_pool, rnn_avg_pool), dim=-1)
         return h
 
-    
+
 class SkipStepEncoder(nn.Module):
     def __init__(self, step_size):
         super().__init__()
