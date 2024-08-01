@@ -76,7 +76,7 @@ def get_alpha_battle_coles_chunked_datamodule(fold_i, **kwargs):
             ),
         ),
         valid_data=ColesDataset(
-            data=MemoryMapDataset(
+            data=ParquetDataset(
                 df_trx_pretrain,
                 i_filters=[
                     ptls.data_load.iterable_processing.SeqLenFilter(min_seq_len=32, max_seq_len=2000),
