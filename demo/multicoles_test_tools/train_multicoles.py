@@ -32,25 +32,32 @@ def main():
         if not os.path.isfile(first_model_path) or remake_first_model:
             train_mono(monomodel=False)
 
-    # list of (fold_i, tb_name, model_save_path)
-    path_to_model = train_multicoles_model(path_to_logs=path_to_logs, path_to_chkp=path_to_chkp,
-                                           fold_i=fold_i, first_model_path=first_model_path,
-                                           gpu_n=gpu_n, conf_path=conf_path, debug=debug)
-    task_info = {'first_model_path': first_model_path, 'second_model_path': path_to_model[2]}, fold_i
-    # list of (fold_i, metric_scores)
-    score = inference(mode='multi', task_info=task_info, gpu_n=gpu_n, conf_path=conf_path, debug=debug)
+    embed_coef = conf.get('embed_coef', 0.1)
+    assert type(embed_coef) in [float, list, tuple]
+    if type(embed_coef) is float:
+        embed_coef = [embed_coef]
 
-    result = {
-        'fold_i': str(path_to_model[0]),
-        'tb_name': path_to_model[1],
-        'model_path': path_to_model[2],
-        'scores': ','.join([str(np.round(float(x), 5)) for x in score[1]]),
-        'mean_score': str(np.mean(score[1])),
-        'net_type': nettype,
-        'coef': str(conf.get('embed_coef', 0.1)),
-        'ddim': str(conf.get('clf_hsize', 64))
-    }
-    write_results(exp_name, result)
+    for coef in embed_coef:
+        conf['embed_coef'] = coef
+        # list of (fold_i, tb_name, model_save_path)
+        path_to_model = train_multicoles_model(path_to_logs=path_to_logs, path_to_chkp=path_to_chkp,
+                                               fold_i=fold_i, first_model_path=first_model_path,
+                                               gpu_n=gpu_n, conf_path=conf_path, debug=debug)
+        task_info = {'first_model_path': first_model_path, 'second_model_path': path_to_model[2]}, fold_i
+        # list of (fold_i, metric_scores)
+        score = inference(mode='multi', task_info=task_info, gpu_n=gpu_n, conf_path=conf_path, debug=debug)
+
+        result = {
+            'fold_i': str(path_to_model[0]),
+            'tb_name': path_to_model[1],
+            'model_path': path_to_model[2],
+            'scores': ','.join([str(np.round(float(x), 5)) for x in score[1]]),
+            'mean_score': str(np.mean(score[1])),
+            'net_type': nettype,
+            'coef': str(conf.get('embed_coef', 0.1)),
+            'ddim': str(conf.get('clf_hsize', 64))
+        }
+        write_results(exp_name, result)
 
 
 if __name__ == '__main__':

@@ -20,11 +20,10 @@ def get_alpha_battle_coles_datamodule(fold_i, **kwargs):
     coles_datamodule = PtlsDataModule(
         train_data=ColesDataset(
             data=MemoryMapDataset(
-                df_seq_pretrain_train.to_dict(orient='records'),# +
-                #df_trx_pretrain.to_dict(orient='records')
+                df_seq_pretrain_train.to_dict(orient='records') +
+                df_trx_pretrain.to_dict(orient='records'),
                 i_filters=[
                     ptls.data_load.iterable_processing.SeqLenFilter(min_seq_len=32, max_seq_len=2000),
-                    #ptls.data_load.iterable_processing.ISeqLenLimit(max_seq_len=2000),
                     ptls.data_load.iterable_processing.ToTorch()
                 ],
             ),
@@ -39,7 +38,6 @@ def get_alpha_battle_coles_datamodule(fold_i, **kwargs):
                 df_seq_pretrain_valid.to_dict(orient='records'),
                 i_filters=[
                     ptls.data_load.iterable_processing.SeqLenFilter(min_seq_len=32, max_seq_len=2000),
-                    #ptls.data_load.iterable_processing.ISeqLenLimit(max_seq_len=2000),
                     ptls.data_load.iterable_processing.ToTorch()
                 ],
             ),
@@ -52,6 +50,48 @@ def get_alpha_battle_coles_datamodule(fold_i, **kwargs):
         train_batch_size=256,
         train_num_workers=4,
         valid_batch_size=32,
+        valid_num_workers=4,
+    )
+
+    return coles_datamodule
+
+
+def get_alpha_battle_coles_chunked_datamodule(fold_i, **kwargs):
+    df_trx_pretrain = ParquetFiles(f'data/chunked_fold_{fold_i}/df_trx_pretrain.parquet')
+    df_seq_pretrain = ParquetFiles(f'data/chunked_fold_{fold_i}/df_seq_pretrain.parquet')
+
+    coles_datamodule = PtlsDataModule(
+        train_data=ColesDataset(
+            data=ParquetDataset(
+                df_seq_pretrain,
+                i_filters=[
+                    ptls.data_load.iterable_processing.SeqLenFilter(min_seq_len=32, max_seq_len=2000),
+                    ptls.data_load.iterable_processing.ToTorch()
+                ],
+            ),
+            splitter=SampleSlices(
+                split_count=5,
+                cnt_min=20,
+                cnt_max=60,
+            ),
+        ),
+        valid_data=ColesDataset(
+            data=MemoryMapDataset(
+                df_trx_pretrain,
+                i_filters=[
+                    ptls.data_load.iterable_processing.SeqLenFilter(min_seq_len=32, max_seq_len=2000),
+                    ptls.data_load.iterable_processing.ToTorch()
+                ],
+            ),
+            splitter=SampleSlices(
+                split_count=5,
+                cnt_min=20,
+                cnt_max=60,
+            ),
+        ),
+        train_batch_size=256,
+        train_num_workers=4,
+        valid_batch_size=256,
         valid_num_workers=4,
     )
 
@@ -151,6 +191,37 @@ def get_alpha_battle_sup_datamodule(fold_i, **kwargs):
         test_data=SeqToTargetIterableDataset(test_dataset, target_col_name='flag', target_dtype=torch.long),
         train_batch_size=512,
         test_batch_size=512,
+        train_num_workers=4,
+        test_num_workers=4,
+    )
+    return sup_datamodule
+
+
+def get_alpha_battle_sup_chunked_datamodule(fold_i, **kwargs):
+    df_gbm_train = ParquetFiles(f'chunked_data/fold_{fold_i}/df_gbm_train.parquet')
+    df_gbm_test = ParquetFiles(f'chunked_data/fold_{fold_i}/df_gbm_test.parquet')
+
+    test_dataset = ParquetDataset(
+        df_gbm_test,
+        i_filters=[
+            ptls.data_load.iterable_processing.ISeqLenLimit(max_seq_len=2000),
+            ptls.data_load.iterable_processing.ToTorch()
+        ],
+    )
+
+    train_dataset = ParquetDataset(
+        df_gbm_train,
+        i_filters=[
+            ptls.data_load.iterable_processing.ISeqLenLimit(max_seq_len=2000),
+            ptls.data_load.iterable_processing.ToTorch()
+        ],
+    )
+
+    sup_datamodule = PtlsDataModule(
+        train_data=SeqToTargetIterableDataset(train_dataset, target_col_name='flag', target_dtype=torch.long),
+        test_data=SeqToTargetIterableDataset(test_dataset, target_col_name='flag', target_dtype=torch.long),
+        train_batch_size=256,
+        test_batch_size=256,
         train_num_workers=4,
         test_num_workers=4,
     )

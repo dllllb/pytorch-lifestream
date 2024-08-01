@@ -2,7 +2,7 @@ import torch
 import numpy as np
 import pandas as pd
 from get_model import get_coles_module, get_static_multicoles_module
-from get_data import get_synthetic_sup_datamodule, get_age_pred_sup_datamodule, get_alpha_battle_sup_datamodule
+from get_data import get_synthetic_sup_datamodule, get_age_pred_sup_datamodule, get_alpha_battle_sup_chunked_datamodule
 from pyhocon import ConfigFactory
 from sklearn.metrics import accuracy_score, roc_auc_score
 from lightgbm import LGBMClassifier
@@ -107,7 +107,7 @@ def inference(mode, task_info, gpu_n, conf_path='./config.hocon', debug=False):
         dataf = get_age_pred_sup_datamodule
         metric = 'accuracy'
     elif dataset == 'alpha_battle':
-        dataf = get_alpha_battle_sup_datamodule
+        dataf = get_alpha_battle_sup_chunked_datamodule
         metric = 'rocauc'
 
     if mode == 'mono':
