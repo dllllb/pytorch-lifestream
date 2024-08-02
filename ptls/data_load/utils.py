@@ -4,7 +4,6 @@ import numpy as np
 import torch
 from collections import defaultdict
 from pymonad.maybe import Maybe
-
 from ptls.data_load.feature_dict import FeatureDict
 from ptls.data_load.padded_batch import PaddedBatch
 from itertools import compress
@@ -52,11 +51,20 @@ def collate_feature_dict(batch):
     -------
         PaddedBatch
     """
+
+    def _return_len(record, col_name):
+        return len(record[col_name])
+
+    def _update_dict(batch_tuple):
+        batch_iter = iter(batch_tuple[1].items())
+        for k, v in batch_iter:
+            new_x[k].append(v)
+
     new_x = defaultdict(list)
-    _ = list(map(lambda tup: [new_x[k].append(v) for k, v in tup[1].items()], enumerate(batch)))
+    _ = list(map(_update_dict, enumerate(batch)))
     del _
     seq_col = next(k for k, v in batch[0].items() if FeatureDict.is_seq_feature(v))
-    lengths = torch.LongTensor(list(map(lambda rec: len(rec[seq_col]), batch)))
+    lengths = torch.LongTensor(list(map(partial(_return_len, col_name=seq_col), batch)))
     list_of_transform_func = Maybe.insert(list(new_x.items())).then(
         function=lambda dict_tup: list(map(detect_dtype, dict_tup))). \
         then(function=lambda dtype_list: list(map(detect_transform_func, dtype_list))). \
