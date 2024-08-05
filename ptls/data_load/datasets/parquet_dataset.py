@@ -1,6 +1,7 @@
 import logging
 import os
 import warnings
+from functools import partial
 from glob import glob
 from itertools import chain
 from typing import Union, List
@@ -10,13 +11,14 @@ import torch
 import torch.distributed as dist
 import pyarrow.parquet as pq
 from omegaconf import ListConfig
-
+from pymonad.either import Either
 from ptls.data_load import read_pyarrow_file
 from ptls.data_load import IterableChain
-
+torch.utils.data.dataloader
 logger = logging.getLogger(__name__)
 
-def iter_with_max_num (iter, max_num = None):
+
+def iter_with_max_num(iter, max_num=None):
     num = 0
     for i in iter:
         yield i
@@ -46,6 +48,7 @@ class ParquetFiles:
         Be careful using `take_ixes` cause file list is unsorted
 
     """
+
     def __init__(self, file_path: Union[str, List[str], ListConfig], take_ixes=None):
         if type(file_path) not in (list, ListConfig):
             file_path = [file_path]
@@ -102,20 +105,13 @@ class ParquetDataset(torch.utils.data.IterableDataset):
         - random seed for shuffle_files
 
     """
+
     def __init__(self, data_files: Union[ParquetFiles, List[str]],
-                 post_processing=None,
                  i_filters: List = None,
                  shuffle_files=False, cache_schema=True, shuffle_seed=42):
-        if type(data_files) is ParquetFiles:
-            self.data_files = data_files.data_files
-        else:
-            self.data_files = data_files
-        if i_filters is not None:
-            self.post_processing = IterableChain(*i_filters)
-        else:
-            self.post_processing = post_processing
-        if post_processing is not None:
-            warnings.warn('`post_processing` parameter is deprecated, use `i_filters`')
+        is_parquet = isinstance(data_files, ParquetFiles)
+        self.data_files = data_files.data_files if is_parquet else data_files
+        self.postprocessing_func = i_filters
         self.shuffle_files = shuffle_files
         self.cache_schema = cache_schema
         self.shuffle_seed = shuffle_seed
@@ -144,19 +140,23 @@ class ParquetDataset(torch.utils.data.IterableDataset):
             self._shuffle_seed = worker_info.seed
         logger.debug(f'Started [{self._worker_id:02d}/{self._num_workers:02d}]')
 
+    def __apply_postproc(self, sample):
+        for func in self.postprocessing_func:
+            sample = func(sample)
+        return sample
+
     def __iter__(self):
         self._init_worker()
+        rs = np.random.RandomState(self._shuffle_seed % 2 ** 32)
+        my_files = rs.shuffle(self._get_my_files()) if self.shuffle_files else self._get_my_files()
+        dataset_generator = map(self.iter_file, my_files)
+        sample = Either(value=dataset_generator,
+                        monoid=[dataset_generator,
+                                self.postprocessing_func is not None]). \
+            either(left_function=lambda x: x,
+                   right_function=lambda x: self.__apply_postproc(x))
 
-        my_files = self._get_my_files()
-        if self.shuffle_files:
-            rs = np.random.RandomState(self._shuffle_seed % 2**32)
-            rs.shuffle(my_files)
-
-        logger.debug(f'Iter [{self._worker_id:02d}/{self._num_workers:02d}]: {my_files}')
-        gen = chain(*[self.iter_file(name) for name in my_files])
-        if self.post_processing is not None:
-            gen = self.post_processing(gen)
-        return gen
+        return sample
 
     def iter_file(self, file_name):
         """
@@ -164,16 +164,22 @@ class ParquetDataset(torch.utils.data.IterableDataset):
         :param file_name:
         :return: [(customer_id, features)]
         """
+
+        def _create_feature_dict(rec):
+            return {next(x) for x in map(self.to_torch, rec.items())}
+
         logger.debug(f'[{self._worker_id}/{self._num_workers}] Iter file "{file_name}"')
-        for rec in read_pyarrow_file(file_name, use_threads=True):
-            rec = {k: self.to_torch(v) for k, v in rec.items()}
-            yield rec
+        pyarrow_generator = map(partial(read_pyarrow_file, use_threads=True), file_name)
+        rec = map(_create_feature_dict, pyarrow_generator)
+        yield next(rec)
 
     @staticmethod
-    def to_torch(x):
-        if type(x) is np.ndarray and x.dtype.kind in ('i', 'f'):
-            return torch.from_numpy(x)
-        return x
+    def to_torch(key, val):
+        is_numpy = isinstance(val, np.ndarray)
+        is_int_or_float = val.dtype.kind in ('i', 'f')
+        val = torch.from_numpy(val) if all([is_numpy, is_int_or_float]) else val
+        return {key: val}
+
 
 class DistributedParquetDataset(ParquetDataset):
     """Modification of ParquetDataset for working with DDP
@@ -208,14 +214,15 @@ class DistributedParquetDataset(ParquetDataset):
         and as a result inability to yield the same number of items on different GPUs)
 
     """
+
     def __init__(self, data_files: Union[ParquetFiles, List[str]],
                  post_processing=None,
                  i_filters: List = None,
-                 shuffle_files=False, cache_schema=True, shuffle_seed=42, max_items_per_file = None, repeat_items = True):
-        super().__init__(data_files = data_files,
-                 post_processing=post_processing,
-                 i_filters = i_filters,
-                 shuffle_files=shuffle_files, cache_schema=cache_schema, shuffle_seed=shuffle_seed)
+                 shuffle_files=False, cache_schema=True, shuffle_seed=42, max_items_per_file=None, repeat_items=True):
+        super().__init__(data_files=data_files,
+                         post_processing=post_processing,
+                         i_filters=i_filters,
+                         shuffle_files=shuffle_files, cache_schema=cache_schema, shuffle_seed=shuffle_seed)
         self.max_items_per_file = max_items_per_file
         self.items_per_worker = None
         self.repeat_items = repeat_items
@@ -233,7 +240,8 @@ class DistributedParquetDataset(ParquetDataset):
         return min(nums) // self._num_workers
 
     def _get_my_files(self):
-        my_files = [name for i, name in enumerate(sorted(self.data_files)) if i % self.real_num_workers == self.real_worker_id]
+        my_files = [name for i, name in enumerate(sorted(self.data_files)) if
+                    i % self.real_num_workers == self.real_worker_id]
         return my_files
 
     def _init_worker(self):
@@ -263,7 +271,7 @@ class DistributedParquetDataset(ParquetDataset):
 
         my_files = self._get_my_files()
         if self.shuffle_files:
-            rs = np.random.RandomState(self._shuffle_seed % 2**32)
+            rs = np.random.RandomState(self._shuffle_seed % 2 ** 32)
             rs.shuffle(my_files)
 
         logger.debug(f'Iter [{self._worker_id:02d}/{self._num_workers:02d}]: {my_files}')
@@ -274,4 +282,4 @@ class DistributedParquetDataset(ParquetDataset):
 
         if self.post_processing is not None:
             gen = self.post_processing(gen)
-        return iter_with_max_num(gen, self.items_per_worker) 
+        return iter_with_max_num(gen, self.items_per_worker)
