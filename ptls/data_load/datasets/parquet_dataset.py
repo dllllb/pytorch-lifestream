@@ -7,21 +7,20 @@ from itertools import chain
 from typing import Union, List
 
 import numpy as np
-import pyarrow.parquet as pq
 import torch
 import torch.distributed as dist
+import pyarrow.parquet as pq
 from omegaconf import ListConfig
-
 from pymonad.either import Either
 from ptls.data_load import read_pyarrow_file
-from ptls.data_load.utils import init_worker
-
+from ptls.data_load import IterableChain
+torch.utils.data.dataloader
 logger = logging.getLogger(__name__)
 
 
-def iter_with_max_num(iterated, max_num: int = None):
+def iter_with_max_num(iter, max_num=None):
     num = 0
-    for i in iterated:
+    for i in iter:
         yield i
         num += 1
         if max_num is not None and num >= max_num:
@@ -77,33 +76,39 @@ class ParquetFiles:
 
 
 class ParquetDataset(torch.utils.data.IterableDataset):
-    """
-    Lazy (IterableDataset) load from parquet files.
-    File structure: *.parquet.
-    Each file is read sequentially.
+    """Lazy (IterableDataset) load from parquet files
+
+    File structure:
+    *.parquet
 
     File structure example:
-        data/
-            part1.parquet
-            part2.parquet
-            ...
+    data/
+        part1.parquet
+        part2.parquet
+        ...
 
-    Args:
-        data_files: ParquetFile object with list of files or just list of files
-        i_filters: list of `ptls.data_load.iterable_processing` filters
-        shuffle_files: shuffle data_files before reading when True.
-        cache_schema: dict schema (feature names) will be read once
-        shuffle_seed: random seed for shuffle_files
+    Each file is read sequentially
+
+    Parameters
+    ----------
+    data_files:
+        ParquetFile object with list of files or just list of files
+    post_processing:
+        - deprecated, use i_filters
+    i_filters:
+        - list of `ptls.data_load.iterable_processing` filters
+    shuffle_files:
+        - shuffle data_files before reading when True.
+    cache_schema:
+        - dict schema (feature names) will be read once
+    shuffle_seed:
+        - random seed for shuffle_files
 
     """
 
-    def __init__(self, 
-                 data_files: Union[ParquetFiles, List[str]],
+    def __init__(self, data_files: Union[ParquetFiles, List[str]],
                  i_filters: List = None,
-                 shuffle_files: bool = False, 
-                 cache_schema: bool =True, 
-                 shuffle_seed: int = 42
-                 ):
+                 shuffle_files=False, cache_schema=True, shuffle_seed=42):
         is_parquet = isinstance(data_files, ParquetFiles)
         self.data_files = data_files.data_files if is_parquet else data_files
         self.postprocessing_func = i_filters
@@ -123,13 +128,25 @@ class ParquetDataset(torch.utils.data.IterableDataset):
 
         return my_files
 
+    def _init_worker(self):
+        worker_info = torch.utils.data.get_worker_info()
+        if worker_info is None:  # single-process data loading, return the full iterator
+            self._worker_id = 0
+            self._num_workers = 1
+            self._shuffle_seed = self.shuffle_seed
+        else:  # in a worker process
+            self._worker_id = worker_info.id
+            self._num_workers = worker_info.num_workers
+            self._shuffle_seed = worker_info.seed
+        logger.debug(f'Started [{self._worker_id:02d}/{self._num_workers:02d}]')
+
     def __apply_postproc(self, sample):
         for func in self.postprocessing_func:
             sample = func(sample)
         return sample
 
     def __iter__(self):
-        init_worker(self)
+        self._init_worker()
         rs = np.random.RandomState(self._shuffle_seed % 2 ** 32)
         my_files = rs.shuffle(self._get_my_files()) if self.shuffle_files else self._get_my_files()
         dataset_generator = map(self.iter_file, my_files)
@@ -143,13 +160,9 @@ class ParquetDataset(torch.utils.data.IterableDataset):
 
     def iter_file(self, file_name):
         """
-        Iterates over parquet file
 
-        Args:
-            file_name: parquet file name
-
-        Returns:
-            [(customer_id, features)]
+        :param file_name:
+        :return: [(customer_id, features)]
         """
 
         def _create_feature_dict(rec):
@@ -169,65 +182,79 @@ class ParquetDataset(torch.utils.data.IterableDataset):
 
 
 class DistributedParquetDataset(ParquetDataset):
-    """
-    Modification of ParquetDataset for working with DDP. Each GPU processes has its own set of files.
+    """Modification of ParquetDataset for working with DDP
+    Each GPU processes its own set of files
     Make sure that number of parquet files > number of GPUs
 
-    Args:
-        data_files: ParquetFile object with list of files or just list of files
-        i_filters: list of `ptls.data_load.iterable_processing` filters
-        shuffle_files: shuffle data_files before reading when True.
-        cache_schema: dict schema (feature names) will be read once
-        shuffle_seed: random seed for shuffle_files
-        max_items_per_file: if passed, worker reads max_items_per_file rows from parquet file to ensure equal amount
-                            of examples for different GPUs, else this quantity is calculated before training which take
-                            significant amount of time. You should calculate it by yourself by counting minimal number
-                            of rows in all parquet files
-        repeat_items: whether to start reading same files again on the worker for preventing deadlocks (caused by
-                      inability to calculate exact number of yielded items per worker and as a result inability to
-                      yield the same number of items on different GPUs)
+    max_items_per_file is used to ensure that dataloader on different GPUs produce the same amount of batches
+    it's better to calculate it manually (minimal number of rows in parquet files) before training
+
+
+    Parameters
+    ----------
+    data_files:
+        ParquetFile object with list of files or just list of files
+    post_processing:
+        - deprecated, use i_filters
+    i_filters:
+        - list of `ptls.data_load.iterable_processing` filters
+    shuffle_files:
+        - shuffle data_files before reading when True.
+    cache_schema:
+        - dict schema (feature names) will be read once
+    shuffle_seed:
+        - random seed for shuffle_files
+    max_items_per_file:
+        - if passed, worker reads max_items_per_file rows from parquet file to ensure equal amount of examples for different GPUs, 
+        else this quantity is calculated before training which take significant amount of time. 
+        You should calculate it by yourself by counting minimal number of rows in all parquet files
+    repeat_items:
+        - whether to start reading same files again on the worker for preventing deadlocks 
+        (caused by inability to calculate exact number of yielded items per worker 
+        and as a result inability to yield the same number of items on different GPUs)
 
     """
 
-    def __init__(self, 
-                 data_files: Union[ParquetFiles, List[str]],
+    def __init__(self, data_files: Union[ParquetFiles, List[str]],
+                 post_processing=None,
                  i_filters: List = None,
-                 shuffle_files: bool = False, 
-                 cache_schema: bool = True, 
-                 shuffle_seed: int = 42, 
-                 max_items_per_file: int = None, 
-                 repeat_items: bool = True):
+                 shuffle_files=False, cache_schema=True, shuffle_seed=42, max_items_per_file=None, repeat_items=True):
         super().__init__(data_files=data_files,
+                         post_processing=post_processing,
                          i_filters=i_filters,
-                         shuffle_files=shuffle_files, 
-                         cache_schema=cache_schema, 
-                         shuffle_seed=shuffle_seed)
+                         shuffle_files=shuffle_files, cache_schema=cache_schema, shuffle_seed=shuffle_seed)
         self.max_items_per_file = max_items_per_file
         self.items_per_worker = None
         self.repeat_items = repeat_items
-        self.real_worker_id = None
-        self.real_num_workers = None
 
     def _calc_min_items_per_worker(self):
         nums = []
         for rank in range(dist.get_world_size()):
             per_gpu = 0
-            for filename in self.data_files[rank::dist.get_world_size()]:
+            for fname in self.data_files[rank::dist.get_world_size()]:
                 if self.max_items_per_file is not None:
                     per_gpu += self.max_items_per_file
                 else:
-                    per_gpu += pq.read_table(filename).shape[0]
+                    per_gpu += pq.read_table(fname).shape[0]
             nums.append(per_gpu)
         return min(nums) // self._num_workers
 
     def _get_my_files(self):
-        my_files = [name for i, name in enumerate(self.data_files) if
+        my_files = [name for i, name in enumerate(sorted(self.data_files)) if
                     i % self.real_num_workers == self.real_worker_id]
         return my_files
 
     def _init_worker(self):
+        worker_info = torch.utils.data.get_worker_info()
+        if worker_info is None:  # single-process data loading, return the full iterator
+            self._worker_id = 0
+            self._num_workers = 1
+            self._shuffle_seed = self.shuffle_seed
+        else:  # in a worker process
+            self._worker_id = worker_info.id
+            self._num_workers = worker_info.num_workers
+            self._shuffle_seed = worker_info.seed
 
-        init_worker(self)
         self.real_worker_id = self._worker_id
         self.real_num_workers = self._num_workers
         if dist.is_initialized():
@@ -253,45 +280,6 @@ class DistributedParquetDataset(ParquetDataset):
         else:
             gen = chain(*[self.iter_file(name) for name in my_files])
 
-        if self.i_filters is not None:
-            gen = self.i_filters(gen)
+        if self.post_processing is not None:
+            gen = self.post_processing(gen)
         return iter_with_max_num(gen, self.items_per_worker)
-
-
-def read_pyarrow_file(path, use_threads=True):
-    p_table = pq.read_table(
-        source=path,
-        use_threads=use_threads,
-    )
-
-    col_indexes = p_table.column_names
-
-    def get_records():
-        for rb in p_table.to_batches():
-            col_arrays = [rb.column(i) for i, _ in enumerate(col_indexes)]
-            col_arrays = [a.to_numpy(zero_copy_only=False) for a in col_arrays]  # Keep as NumPy arrays
-
-            # Pre-allocate dictionary
-            records = [{} for _ in range(len(col_arrays[0]))]
-
-            if 'trans_time' in col_indexes:
-                date_batch = col_arrays[col_indexes.index('trans_time')].astype('datetime64[s]')
-                records = [
-                    {
-                        'local_day': (date_batch[i].astype('datetime64[D]') - date_batch[i]).astype(
-                            'datetime64[M]').astype(np.int16) + 1,
-                        'local_month': date_batch[i].astype('datetime64[M]').astype(np.int16) / 12 + 1,
-                        'local_weekday': (date_batch[i].astype('datetime64[D]').astype(np.int16) + 3) / 7,
-                        'hour': ((date_batch[i] - date_batch[i].astype('datetime64[D]')).astype(
-                            np.int32) // 3600 + 1).astype(np.int16),
-                        **{n: a[i] for n, a in zip(col_indexes, col_arrays) if n != 'trans_time'}
-                    }
-                    for i in range(len(date_batch))
-                ]
-            else:
-                for i in range(len(col_arrays[0])):
-                    records[i] = {n: a[i] for n, a in zip(col_indexes, col_arrays)}
-
-            yield from records
-
-    return get_records()
