@@ -2,6 +2,7 @@ import torch
 import warnings
 from torch import nn as nn
 
+from ptls.constant_repository import TORCH_EMB_DTYPE
 from ptls.nn.seq_encoder.abs_seq_encoder import AbsSeqEncoder
 from ptls.nn.seq_step import LastStepEncoder, LastMaxAvgEncoder, FirstStepEncoder
 from ptls.data_load.padded_batch import PaddedBatch
@@ -110,6 +111,7 @@ class RnnEncoder(AbsSeqEncoder):
         else:
             have_init_state_for_predict = all([h_0 is not None, not self.training])
             h_0 = self.__create_default_init_state(shape) if h_0 is None else self.__update_init_state(h_0, shape)
+            h_0 = h_0.type(TORCH_EMB_DTYPE)
             return h_0
 
     def forward(self, x: PaddedBatch, h_0: torch.Tensor = None):
