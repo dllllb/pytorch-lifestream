@@ -142,9 +142,6 @@ class MultiCoLESSMLModule(ABSModule):
             ref_neg_preds = self.reference_discriminator(view_a.detach(), view_b.detach()[random_inds])
             ref_embed_loss, ref_embed_info = self.discriminator_loss.embed_loss_prob(ref_pos_preds, ref_neg_preds)
 
-        if self.adaptive_coef:
-            self.adjust_embed_coef()
-
         loss = self.coles_coef * coles_loss + self.embed_coef * embed_loss
         opt.zero_grad()
         self.manual_backward(loss)
