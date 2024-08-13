@@ -128,44 +128,43 @@ class MultiCoLESSMLModule(ABSModule):
         d_opt.step()
 
         # g opt
-        if batch_idx % self.g_step_every == 0 and self.total_step > self.disc_warmup:
-            #domain_a_pred = self.discriminator(domain_b)
-            #embed_loss, embed_info = self.discriminator_loss.embed_loss(domain_a, domain_a_pred)
+        #domain_a_pred = self.discriminator(domain_b)
+        #embed_loss, embed_info = self.discriminator_loss.embed_loss(domain_a, domain_a_pred)
 
-            coles_loss, coles_info = self._loss((view_a, view_b), y)
+        coles_loss, coles_info = self._loss((view_a, view_b), y)
 
-            pos_preds = self.discriminator(view_a, view_b)
-            neg_preds = self.discriminator(view_a, view_b[random_inds])
-            embed_loss, embed_info = self.discriminator_loss.embed_loss_prob(pos_preds, neg_preds)
+        pos_preds = self.discriminator(view_a, view_b)
+        neg_preds = self.discriminator(view_a, view_b[random_inds])
+        embed_loss, embed_info = self.discriminator_loss.embed_loss_prob(pos_preds, neg_preds)
 
-            with torch.no_grad():
-                ref_pos_preds = self.reference_discriminator(view_a.detach(), view_b.detach())
-                ref_neg_preds = self.reference_discriminator(view_a.detach(), view_b.detach()[random_inds])
-                ref_embed_loss, ref_embed_info = self.discriminator_loss.embed_loss_prob(ref_pos_preds, ref_neg_preds)
+        with torch.no_grad():
+            ref_pos_preds = self.reference_discriminator(view_a.detach(), view_b.detach())
+            ref_neg_preds = self.reference_discriminator(view_a.detach(), view_b.detach()[random_inds])
+            ref_embed_loss, ref_embed_info = self.discriminator_loss.embed_loss_prob(ref_pos_preds, ref_neg_preds)
 
-            if self.adaptive_coef:
-                self.adjust_embed_coef()
+        if self.adaptive_coef:
+            self.adjust_embed_coef()
 
-            loss = self.coles_coef * coles_loss + self.embed_coef * embed_loss
-            opt.zero_grad()
-            self.manual_backward(loss)
-            self.clip_gradients(opt, gradient_clip_val=0.5, gradient_clip_algorithm="norm")
-            opt.step()
+        loss = self.coles_coef * coles_loss + self.embed_coef * embed_loss
+        opt.zero_grad()
+        self.manual_backward(loss)
+        self.clip_gradients(opt, gradient_clip_val=0.5, gradient_clip_algorithm="norm")
+        opt.step()
 
-            for k, v in chain(ref_d_info.items(), ref_embed_info.items()):
-                self.log("ref_" + k, v)
-            for k, v in chain(d_info.items(), coles_info.items(), embed_info.items()):
-                self.log(k, v)
-            self.log("embed_coef", self.embed_coef)
+        for k, v in chain(ref_d_info.items(), ref_embed_info.items()):
+            self.log("ref_" + k, v)
+        for k, v in chain(d_info.items(), coles_info.items(), embed_info.items()):
+            self.log(k, v)
+        self.log("embed_coef", self.embed_coef)
 
-            if type(batch) is tuple:
-                x, y = batch
-                if isinstance(x, PaddedBatch):
-                    self.log('seq_len', x.seq_lens.float().mean(), prog_bar=True)
-            else:
-                # this code should not be reached
-                self.log('seq_len', -1, prog_bar=True)
-                raise AssertionError('batch is not a tuple')
+        if type(batch) is tuple:
+            x, y = batch
+            if isinstance(x, PaddedBatch):
+                self.log('seq_len', x.seq_lens.float().mean(), prog_bar=True)
+        else:
+            # this code should not be reached
+            self.log('seq_len', -1, prog_bar=True)
+            raise AssertionError('batch is not a tuple')
 
     def validation_step(self, batch, _):
         (view_a, view_b), y = self.shared_step(*batch)
