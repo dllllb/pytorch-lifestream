@@ -13,7 +13,7 @@ from copy import deepcopy
 from functools import partial
 
 
-class ParallelModels(torch.Module):
+class ParallelModels(torch.nn.Module):
     def __init__(self, model_costructor, head_costructor=None, n_models=2):
         super().__init__()
         assert n_models == 2

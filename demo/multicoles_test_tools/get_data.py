@@ -136,7 +136,9 @@ def get_age_pred_coles_datamodule(fold_i, **kwargs):
     return coles_datamodule
 
 
-def get_synthetic_coles_datamodule(path, **kwargs):
+def get_synthetic_coles_datamodule(fold_i, **kwargs):
+    path = "syndata/" + str(fold_i) + "/"
+
     train_files = ParquetFiles(os.path.join(path, "train"))
     train_dataset = ParquetDataset(train_files, shuffle_files=True)
     eval_files = ParquetFiles(os.path.join(path, "eval"))
