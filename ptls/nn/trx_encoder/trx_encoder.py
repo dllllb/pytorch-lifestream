@@ -155,7 +155,13 @@ class TrxEncoder(TrxEncoderBase):
                 if n == 'linear_projection_head.weight':
                     torch.nn.init.orthogonal_(p.data)
 
-    def forward(self, x: PaddedBatch):
+    def forward(self, x: PaddedBatch, names=None, seq_len=None):
+        if isinstance(x, PaddedBatch) is False:
+            pre_x = dict()
+            for i, field_name in enumerate(names):
+                pre_x[field_name] = x[i]
+            x = PaddedBatch(pre_x, seq_len)
+
         processed_embeddings = [self.get_category_embeddings(x, field_name)
                                 for field_name in self.embeddings.keys()]
         processed_custom_embeddings = [self.get_custom_embeddings(x, field_name)
