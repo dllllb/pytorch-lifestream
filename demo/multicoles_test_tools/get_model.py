@@ -2,9 +2,9 @@ import torch
 import ptls.frames
 import ptls.frames.coles
 from ptls.nn.normalization import L2NormEncoder
-from ptls.frames.coles.losses import ContrastiveLoss, CLUBLoss
+from ptls.frames.coles.losses import ContrastiveLoss, MultiContrastiveLoss, CLUBLoss
 from ptls.frames.coles.sampling_strategies import HardNegativePairSelector
-from ptls.frames.coles.metric import BatchRecallTopK
+from ptls.frames.coles.metric import BatchRecallTopK, MultiBatchRecallTopK
 from functools import partial
 
 
@@ -106,6 +106,37 @@ def get_static_multicoles_module(trx_conf, input_size, embed_coef, hsize, clf_hs
         optimizer_partial=partial(torch.optim.Adam, lr=0.001, weight_decay=0.0),
         d_optimizer_partial=partial(torch.optim.Adam, lr=0.001),
         trained_encoders=[first_model_name],
+        lr_scheduler_partial=partial(torch.optim.lr_scheduler.StepLR, step_size=30, gamma=0.9025),
+        coles_coef=1.,
+        embed_coef=embed_coef
+    )
+    return pl_module
+
+
+def get_multicoles_sml_module(trx_conf, input_size, embed_coef, hsize, clf_hsize):
+    coles_loss = MultiContrastiveLoss(margin=1., sampling_strategy=HardNegativePairSelector(neg_count=5))
+    club_loss = CLUBLoss(log_var=-2, emb_coef=1, prob_coef=1.)
+    discriminator_model = ClfDisc(inp1=hsize, inp2=hsize, h=clf_hsize)
+
+    seq_encoder_constructor = partial(ptls.nn.RnnSeqEncoder,
+                                      trx_encoder=ptls.nn.TrxEncoder(**trx_conf),
+                                      input_size=input_size,
+                                      type='gru',
+                                      hidden_size=hsize,
+                                      is_reduce_sequence=True
+                                      )
+    head_constructor = partial(ptls.nn.Head, use_norm_encoder=True)
+
+    pl_module = ptls.frames.coles.MultiCoLESSMLModule(
+        seq_encoder_constructor=seq_encoder_constructor,
+        head_constructor=head_constructor,
+        n_models=2,
+        discriminator=discriminator_model,
+        loss=coles_loss,
+        discriminator_loss=club_loss,
+        validation_metric=MultiBatchRecallTopK(n=2, K=4, metric='cosine'),
+        optimizer_partial=partial(torch.optim.Adam, lr=0.001, weight_decay=0.0),
+        d_optimizer_partial=partial(torch.optim.Adam, lr=0.001),
         lr_scheduler_partial=partial(torch.optim.lr_scheduler.StepLR, step_size=30, gamma=0.9025),
         coles_coef=1.,
         embed_coef=embed_coef

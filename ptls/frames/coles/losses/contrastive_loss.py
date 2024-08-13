@@ -20,22 +20,18 @@ class ContrastiveLoss(nn.Module):
         self.pair_selector = sampling_strategy
         self.loss_name = "coles"
 
-    def forward(self, embeddings, target, *argv):
+    def forward(self, embeddings, target, i=0, *argv):
         if type(target) is dict:
             target = target["coles_target"]
 
         positive_pairs, negative_pairs = self.pair_selector.get_pairs(embeddings, target)
         positive_loss = F.pairwise_distance(embeddings[positive_pairs[:, 0]], embeddings[positive_pairs[:, 1]]).pow(2)
-        #positive_loss = - (embeddings[positive_pairs[:, 0]] * embeddings[positive_pairs[:, 1]]).sum(axis=-1).mean()
 
         negative_loss = F.relu(
             self.margin - F.pairwise_distance(embeddings[negative_pairs[:, 0]], embeddings[negative_pairs[:, 1]])
         ).pow(2)
-        #negative_loss = F.relu(
-        #    1 + (embeddings[negative_pairs[:, 0]] * embeddings[negative_pairs[:, 1]]).sum(axis=-1) - self.margin
-        #).mean()
+
         loss = torch.cat([positive_loss, negative_loss], dim=0).mean()
-        #loss = positive_loss + negative_loss
 
         with torch.no_grad():
             rand_inds = torch.randperm(embeddings.shape[0])
@@ -44,48 +40,21 @@ class ContrastiveLoss(nn.Module):
             p_l = positive_loss.mean()
             n_l = negative_loss.mean()
 
-        return loss, {"COLES_loss_0": loss.item(),
-                      "COLES_pos_loss_0": p_l.item(),
-                      "COLES_neg_loss_0": n_l.item(),
-                      "COLES_cos_b2neg_b": rand_cos.item()}
+        return loss, {f'COLES_loss_{i}': loss.item(),
+                      f'COLES_pos_loss_{i}': p_l.item(),
+                      f'COLES_neg_loss_{i}': n_l.item(),
+                      f'COLES_cos_b2neg_{i}': rand_cos.item()}
 
 
-class MultiContrastiveLoss(nn.Module):
-    def __init__(self, margin, sampling_strategy):
-        super().__init__()
-        self.margin = margin
-        self.pair_selector = sampling_strategy
-        self.loss_name = "coles"
-
-    def forward(self, multi_embeddings, target, *argv):
-        if type(target) is dict:
-            target = target["coles_target"]
-
-        loss = 0
-        info = dict()
-        for i, embeddings in enumerate(multi_embeddings):
-            positive_pairs, negative_pairs = self.pair_selector.get_pairs(embeddings, target)
-            positive_loss = F.pairwise_distance(embeddings[positive_pairs[:, 0]],
-                                                embeddings[positive_pairs[:, 1]]).pow(2)
-            #positive_loss = - (embeddings[positive_pairs[:, 0]] * embeddings[positive_pairs[:, 1]]).sum(axis=-1)
-
-            negative_loss = F.relu(self.margin - F.pairwise_distance(embeddings[negative_pairs[:, 0]],
-                                                                     embeddings[negative_pairs[:, 1]])).pow(2)
-            #negative_loss = F.relu(
-            #    1 + (embeddings[negative_pairs[:, 0]] * embeddings[negative_pairs[:, 1]]).sum(axis=-1) - self.margin
-            #)
-            loss_i = torch.cat([positive_loss, negative_loss], dim=0).mean()
-            loss += loss_i
-            with torch.no_grad():
-                p_l = positive_loss.mean()
-                n_l = negative_loss.mean()
-
-            info["COLES_loss_" + str(i)] = loss_i.item()
-            info["COLES_pos_loss_" + str(i)] = p_l.item()
-            info["COLES_neg_loss_" + str(i)] = n_l.item()
-        loss = loss / len(multi_embeddings)
-        info["COLES_mean_loss"] = loss.item()
-        return loss, info
+class MultiContrastiveLoss(ContrastiveLoss):
+    def forward(self, list_embeddings, target, *argv):
+        all_info = dict()
+        total_loss = 0
+        for i, embs in enumerate(list_embeddings):
+            loss, info = super().forward(embs, target, i)
+            total_loss += loss
+            all_info.update(info)
+        return total_loss, all_info
 
 
 class CLUBLoss(nn.Module):

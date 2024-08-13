@@ -152,8 +152,8 @@ class MultiBatchRecallTopK:
         self.metrics = [BatchRecallTopK(K, metric) for _ in range(n)]
         self._multimetric = True
 
-    def __call__(self, multi_y_h, y):
-        for i, y_h in enumerate(multi_y_h):
+    def __call__(self, list_y_h, y):
+        for i, y_h in enumerate(list_y_h):
             self.metrics[i](y_h, y)
 
     def reset(self):

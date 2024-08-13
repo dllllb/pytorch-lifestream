@@ -1,7 +1,7 @@
 import sys
 import os
 import numpy as np
-from loops import train_multicoles_model
+from loops import train_multicoles_sml_model
 from downstream_test import inference
 from get_paths import write_results
 from pyhocon import ConfigFactory
@@ -26,33 +26,21 @@ def main():
     path_to_exp, path_to_chkp, path_to_logs = create_experiment_folder(exp_name)
     if fold_i == 0:
         save_config_copy(conf_path, exp_name)
-    first_model_path = conf.get('first_model_path', None)
-    remake_first_model = conf.get('remake_first_model', False)
-    first_only = conf.get('first_only', False)
-    indep = conf.get('indep_mode', False)
-    nettype = 'indep' if indep else 'multi'
-
-    if first_model_path is None:
-        first_model_path = os.path.join(path_to_chkp, '_'.join(['first_half', str(fold_i)])+'.pth')
-        if not os.path.isfile(first_model_path) or remake_first_model:
-            train_mono(monomodel=False)
+    nettype = 'multi_sml'
 
     embed_coef = conf.get('embed_coef', 0.1)
     assert type(embed_coef) in [float, list, tuple]
     if type(embed_coef) is float:
         embed_coef = [embed_coef]
 
-    if first_only:
-        return
-
     for coef in embed_coef:
         # list of (fold_i, tb_name, model_save_path)
-        path_to_model = train_multicoles_model(path_to_logs=path_to_logs, path_to_chkp=path_to_chkp,
-                                               fold_i=fold_i, first_model_path=first_model_path, embed_coef=coef,
-                                               gpu_n=gpu_n, conf_path=conf_path, debug=debug)
-        task_info = {'first_model_path': first_model_path, 'second_model_path': path_to_model[2]}, fold_i
+        path_to_model = train_multicoles_sml_model(path_to_logs=path_to_logs, path_to_chkp=path_to_chkp,
+                                                   fold_i=fold_i, embed_coef=coef,
+                                                   gpu_n=gpu_n, conf_path=conf_path, debug=debug)
+        task_info = {'model_path': path_to_model[2]}, fold_i
         # list of (fold_i, metric_scores)
-        score = inference(mode='multi', task_info=task_info, gpu_n=gpu_n, conf_path=conf_path, debug=debug)
+        score = inference(mode='multi_sml', task_info=task_info, gpu_n=gpu_n, conf_path=conf_path, debug=debug)
 
         result = {
             'fold_i': str(path_to_model[0]),

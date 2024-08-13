@@ -1,7 +1,7 @@
 import torch
 import numpy as np
 import pandas as pd
-from get_model import get_coles_module, get_static_multicoles_module
+from get_model import get_coles_module, get_static_multicoles_module, get_multicoles_sml_module
 from get_data import get_synthetic_sup_datamodule, get_age_pred_sup_datamodule, get_alpha_battle_sup_chunked_datamodule
 from pyhocon import ConfigFactory
 from sklearn.metrics import accuracy_score, roc_auc_score
@@ -28,6 +28,18 @@ def load_multimodel(first_model_path, second_model_path, gpu_n, conf_path='./con
     clf_hsize = conf.get('clf_hsize', 64)
     module = get_static_multicoles_module(trx_conf, input_size, 1., hsize, clf_hsize, first_model_path)
     module.seq_encoder.load_state_dict(torch.load(second_model_path))
+    module.to('cuda:' + str(gpu_n))
+    return module
+
+
+def load_sml(model_path, gpu_n, conf_path='./config.hocon'):
+    conf = ConfigFactory.parse_file(conf_path)
+    trx_conf = conf.get('trx_conf')
+    input_size = conf.get('input_size')
+    hsize = int(conf.get('hsize')/2)
+    clf_hsize = conf.get('clf_hsize', 64)
+    module = get_multicoles_sml_module(trx_conf, input_size, 1., hsize, clf_hsize)
+    module.seq_encoder.load_state_dict(torch.load(model_path))
     module.to('cuda:' + str(gpu_n))
     return module
 
@@ -115,8 +127,10 @@ def inference(mode, task_info, gpu_n, conf_path='./config.hocon', debug=False):
 
     if mode == 'mono':
         model_loader = partial(load_monomodel, gpu_n=gpu_n, conf_path=conf_path)
-    else:
+    elif mode == 'multi':
         model_loader = partial(load_multimodel, gpu_n=gpu_n, conf_path=conf_path)
+    elif mode == 'sml':
+        model_loader = partial(load_sml, gpu_n=gpu_n, conf_path=conf_path)
 
     score = predict_on_fold(task_info, dataf, model_loader, gpu_n, metric, conf_path, debug)
     return score

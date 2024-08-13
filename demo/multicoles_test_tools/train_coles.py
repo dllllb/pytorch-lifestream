@@ -17,6 +17,10 @@ def train_mono(monomodel=True):
         conf_path = './config.hocon'
 
     conf = ConfigFactory.parse_file(conf_path)
+
+    if fold_i != 0 and conf.get('dataset') == 'synthetic':
+        return
+
     exp_name = conf.get('exp_name', 'default_name')
     path_to_exp, path_to_chkp, path_to_logs = create_experiment_folder(exp_name)
     if fold_i == 0:
