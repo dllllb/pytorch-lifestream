@@ -15,3 +15,4 @@ from .target_extractor import TargetExtractor
 from .target_join import TargetJoin
 from .target_move import TargetMove
 from .to_torch_tensor import ToTorch
+from .numeric_fillna import NumericFillNa
