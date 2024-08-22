@@ -56,7 +56,6 @@ def main(conf: DictConfig):
         col_id = conf.collate_fn.col_id
     )
     model.model.is_reduce_sequence = True
-    model.model.is_inference = True
     dataset_inference = hydra.utils.instantiate(conf.inference.dataset)
     collate_fn = hydra.utils.instantiate(conf.collate_fn)
     inference_dl = DataLoader(
