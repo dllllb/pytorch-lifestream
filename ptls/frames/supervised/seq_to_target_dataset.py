@@ -37,6 +37,8 @@ class SeqToTargetDataset(torch.utils.data.Dataset):
         del padded_batch.payload[self.target_col_name]
         if self.target_dtype is not None:
             target = target.to(dtype=self.target_dtype)
+        if target.dim() == 2:
+            target = target.reshape(-1)
         return padded_batch, target
 
 

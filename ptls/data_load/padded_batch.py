@@ -139,10 +139,10 @@ class PaddedBatch:
         if k.startswith('target'):
             return False
         if type(x) is np.ndarray:
-                return False
+            return False
         if type(x) is torch.Tensor and len(x.shape) == 1:
             return False
-        return True 
+        return True
 
     def drop_seq_features(self):
         """Returns new dict without sequential features

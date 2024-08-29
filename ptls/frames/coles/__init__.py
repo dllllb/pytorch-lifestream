@@ -1,9 +1,12 @@
 from .coles_dataset import ColesDataset, ColesIterableDataset
+from .cluster_dataset import ClusterDataset, ClusterIterableDataset
 from .coles_supervised_dataset import ColesSupervisedDataset, ColesSupervisedIterableDataset
 from .coles_module import CoLESModule
+from .multi_coles_module import MultiCoLESModule
+from .multi_coles_module_sml import MultiCoLESSMLModule
+from .cluster_module import ClusterModule, ClusterCallback
 from .coles_supervised_module import ColesSupervisedModule
 from .multimodal_module import MultiModalSortTimeSeqEncoderContainer
 from .multimodal_dataset import MultiModalDataset, MultiModalIterableDataset
 from .multimodal_inference_dataset import MultiModalInferenceDataset, MultiModalInferenceIterableDataset
 from .multimodal_supervised_dataset import MultiModalSupervisedDataset, MultiModalSupervisedIterableDataset
-

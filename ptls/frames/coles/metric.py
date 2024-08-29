@@ -4,7 +4,6 @@ import torch
 import numpy as np
 import torchmetrics
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -33,7 +32,6 @@ def outer_pairwise_distance(A, B=None):
         ).reshape((n, m))
 
     else:
-
         batch_size = max(1, max_size // (n * d))
         batch_results = []
         for i in range((m - 1) // batch_size + 1):
@@ -119,6 +117,25 @@ def metric_recall_top_K(X, y, K, metric='cosine'):
     return np.sum(res) / len(y) / K
 
 
+def accuracy(out, tgt, topk=1):
+    """Computes the accuracy over the k top predictions for the specified values of k"""
+    with torch.no_grad():
+        batch_size = tgt.size(0)
+        _, pred = out.topk(topk, 1, True, True)
+        pred = pred.t()
+        corr = pred.eq(tgt.view(1, -1).expand_as(pred))
+        return corr.float().mean().item()
+
+
+class BatchAccuracy(torchmetrics.MeanMetric):
+    def __init__(self, k):
+        super().__init__()
+        self.k = k
+
+    def update(self, preds, target):
+        super().update(accuracy(preds, target, self.k))
+
+
 class BatchRecallTopK(torchmetrics.MeanMetric):
     def __init__(self, K, metric='cosine'):
         super().__init__()
@@ -128,3 +145,20 @@ class BatchRecallTopK(torchmetrics.MeanMetric):
 
     def update(self, preds, target):
         super().update(metric_recall_top_K(preds, target, self.k, self.metric))
+
+
+class MultiBatchRecallTopK:
+    def __init__(self, n, K, metric='cosine'):
+        self.metrics = [BatchRecallTopK(K, metric) for _ in range(n)]
+        self._multimetric = True
+
+    def __call__(self, list_y_h, y):
+        for i, y_h in enumerate(list_y_h):
+            self.metrics[i](y_h, y)
+
+    def reset(self):
+        for m in self.metrics:
+            m.reset()
+
+    def compute(self):
+        return [m.compute() for m in self.metrics]

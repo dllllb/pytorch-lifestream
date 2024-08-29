@@ -12,7 +12,7 @@ from .pb import PBDropout, PBLinear, PBL2Norm, PBLayerNorm, PBReLU
 
 from .pb_feature_extract import PBFeatureExtract
 
-from .head import Head
+from .head import Head, SphereHead
 
 from .normalization import L2NormEncoder
 
