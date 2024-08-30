@@ -1,11 +1,9 @@
-import numpy as np
 import torch
 from ptls.frames.abs_module import ABSModule
 from ptls.frames.coles.losses import MultiContrastiveLoss, CLUBLoss
 from ptls.frames.coles.metric import MultiBatchRecallTopK
 from ptls.frames.coles.sampling_strategies import HardNegativePairSelector
 from ptls.nn.head import Head
-from ptls.nn.seq_encoder.containers import SeqEncoderContainer
 from ptls.data_load.padded_batch import PaddedBatch
 from ptls.nn.seq_encoder.utils import reset_parameters
 from itertools import chain
@@ -53,7 +51,7 @@ class MultiCoLESSMLModule(ABSModule):
                  d_optimizer_partial=None,
                  lr_scheduler_partial=None,
                  coles_coef=1.,
-                 embed_coef=1.):
+                 embed_coef=0.1):
 
         assert discriminator is not None and d_optimizer_partial is not None
         self.coles_coef = coles_coef
@@ -76,7 +74,7 @@ class MultiCoLESSMLModule(ABSModule):
                          lr_scheduler_partial)
 
         if discriminator_loss is None:
-            self.discriminator_loss = CLUBLoss(emb_coef=1., prob_coef=1.)
+            self.discriminator_loss = CLUBLoss()
         else:
             self.discriminator_loss = discriminator_loss
 
@@ -112,6 +110,7 @@ class MultiCoLESSMLModule(ABSModule):
         opt, d_opt = self.optimizers()
         (view_a, view_b), y = self.shared_step(*batch)
 
+        # d opt
         random_inds = torch.randperm(view_b.shape[0])
         pos_preds = self.discriminator(view_a.detach(), view_b.detach())
         neg_preds = self.discriminator(view_a.detach(), view_b.detach()[random_inds])
@@ -128,9 +127,6 @@ class MultiCoLESSMLModule(ABSModule):
         d_opt.step()
 
         # g opt
-        #domain_a_pred = self.discriminator(domain_b)
-        #embed_loss, embed_info = self.discriminator_loss.embed_loss(domain_a, domain_a_pred)
-
         coles_loss, coles_info = self._loss((view_a, view_b), y)
 
         pos_preds = self.discriminator(view_a, view_b)

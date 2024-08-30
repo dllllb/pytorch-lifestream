@@ -226,7 +226,7 @@ class PlaneClassAssigner:
             if self.norm_before_saturation:
                 vector = norm_vector(self.backup_v[ch]) * saturation_vector
             else:
-                vector = norm_vector(self.backup_v[ch]* saturation_vector)
+                vector = norm_vector(self.backup_v[ch] * saturation_vector)
             self.v[ch] = vector.reshape((self.sampling_conf[ch]['n_h_states'],
                                          self.sampling_conf[ch]['n_states'],
                                          self.sampling_conf[ch]['n_states']))

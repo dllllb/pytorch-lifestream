@@ -1,4 +1,5 @@
-from .contrastive_loss import ContrastiveLoss, MultiContrastiveLoss, CLUBLoss
+from .contrastive_loss import ContrastiveLoss, MultiContrastiveLoss
+from .club_loss import CLUBLoss
 from .margin_loss import MarginLoss
 from .binomial_deviance_loss import BinomialDevianceLoss
 from .barlow_twins_loss import BarlowTwinsLoss

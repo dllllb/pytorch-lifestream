@@ -57,13 +57,13 @@ class ABSModule(pl.LightningModule):
 
     def training_step(self, batch, _):
         y_h, y = self.shared_step(*batch)
-        out = self._loss(y_h, y)
-        if type(out) is tuple:
-            loss, info = out
+        loss = self._loss(y_h, y)
+        if type(loss) is tuple:
+            loss, info = loss
             for k, v in info.items():
                 self.log(k, v)
         else:
-            self.log('loss', out)
+            self.log('loss', loss)
         if type(batch) is tuple:
             x, y = batch
             if isinstance(x, PaddedBatch):
@@ -76,13 +76,13 @@ class ABSModule(pl.LightningModule):
 
     def validation_step(self, batch, _):
         y_h, y = self.shared_step(*batch)
-        out = self._loss(y_h, y)
-        if type(out) is tuple:
-            loss, info = out
+        loss = self._loss(y_h, y)
+        if type(loss) is tuple:
+            loss, info = loss
             for k, v in info.items():
                 self.log("valid_" + k, v)
         else:
-            self.log('valid_loss', out)
+            self.log('valid_loss', loss)
         self._validation_metric(y_h, y)
 
     def on_validation_epoch_end(self):

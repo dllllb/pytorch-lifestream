@@ -5,8 +5,6 @@ import os
 from collections import defaultdict
 import pandas as pd
 from random import shuffle
-import multiprocessing as mp
-from functools import partial
 from tqdm import tqdm
 
 import numpy as np
@@ -95,24 +93,13 @@ class SyntheticDatasetWriter:
                     x, y = batch
                     x_d = x.payload
                     for k in x_d:
-                        df[k].extend(x_d[k].int().tolist())
+                        df[k].extend(list(x_d[k]))
                     df['class_label'].extend(y.int().tolist())
                 df = pd.DataFrame(df)
                 df.to_parquet(os.path.join(folder, mode + "_" + str(fn) + ".parquet"))
 
 
 class MonoTargetSyntheticDatasetWriter(SyntheticDatasetWriter):
-    '''
-    def get_clients(self, n):
-        per_class_n = int(n / 2)
-        pool = mp.Pool(self.n_procs)
-        sc = partial(SyntheticClient, config=self.config, schedule=self.schedule)
-        clients = pool.map(sc, [{0: 0} for _ in range(per_class_n)]+[{0: 1} for _ in range(per_class_n)])
-        pool.close()
-        pool.join()
-        shuffle(clients)
-        return clients
-    '''
     def get_clients(self, n):
         per_class_n = int(n / 2)
         clients = [SyntheticClient({0: 0}, self.config, self.schedule) for _ in range(per_class_n)] + \
