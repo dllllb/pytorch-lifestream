@@ -6,13 +6,18 @@ from ptls.nn.seq_encoder.containers import SeqEncoderContainer
 from ptls.data_load.padded_batch import PaddedBatch
 import torch
 from torch import nn
-import faiss
 import numpy as np
 from pytorch_lightning.callbacks import Callback
 import contextlib
 import sys
 from collections import defaultdict
 from functools import partial
+import warnings
+
+try:
+    import faiss
+except:
+    warnings.warn("Warning: faiss module import failed. Clustering modules are unavailable.")
 
 
 class DummyFile(object):
@@ -36,8 +41,7 @@ class ClusterModule(ABSModule):
                  validation_metric=None,
                  optimizer_partial=None,
                  lr_scheduler_partial=None,
-                 num_cluster=None,
-                 warmup_steps=0):
+                 num_cluster=None):
         if head is None:
             head = Head(use_norm_encoder=True)
 
@@ -57,7 +61,6 @@ class ClusterModule(ABSModule):
         self._head = head
         self.train_clusters = {'idx2cluster': [], 'centroids': [], 'density': []}
         self.val_clusters = {'idx2cluster': [], 'centroids': [], 'density': []}
-        self.warmup_steps = warmup_steps
 
         assert type(num_cluster) == list
         self._num_cluster = num_cluster
@@ -76,27 +79,11 @@ class ClusterModule(ABSModule):
             y_h = self._head(y_h)
         return y_h, y
 
-    def log_losses(self, name, info):
-        if info["name"] == "multi":
-            self.log(name, info['loss'], logger=True)
-            for surname, item in info.items():
-                if surname not in ["name", "loss"]:
-                    self.log_losses(" ".join([name, surname]), item)
-
-        elif info["name"] == "coles":
-            self.log(name, info["loss"], logger=True)
-
-        elif info["name"] == "cluster":
-            for n_clus, l in zip(info['num_cluster'], info['losses']):
-                self.log(" ".join([name, str(n_clus)]), l, logger=True)
-
     def training_step(self, batch, _):
         y_h, y = self.shared_step(*batch)
         loss, info = self._loss(y_h, y, self.train_clusters)
-        self.log_losses("loss", info)
-        self.warmup_steps -= 1
-        if self.warmup_steps <= 0:
-            self._loss.enable_all_losses()
+        for k, v in info.items():
+            self.log(k, v)
 
         if type(batch) is tuple:
             x, y = batch
@@ -109,18 +96,15 @@ class ClusterModule(ABSModule):
         return loss
 
     def log_metrics(self, info):
-        if info["name"] == "multi":
-            for surname, item in info.items():
-                if surname not in ["name", "loss"]:
-                    self.log_metrics(item)
-        elif info["name"] == "coles":
-            self._validation_metric["coles"](info['y_h'], info['y'])
-        elif info["name"] == "cluster":
-            for size, logs, labs in zip(info['num_cluster'], info['logits'], info['labels']):
+        for k, v in info.items():
+            if k.startswith('CLUSTER'):
+                size = k.split('_')[1]
+                logs, labs = v
                 self._validation_metric["cluster"][size](logs, labs)
 
     def validation_step(self, batch, _):
         y_h, y = self.shared_step(*batch)
+        self._validation_metric['coles'](y_h, y['coles_target'])
         _, info = self._loss(y_h, y, self.val_clusters)
         self.log_metrics(info)
 
@@ -133,7 +117,7 @@ class ClusterModule(ABSModule):
             m.reset()
 
     def on_validation_epoch_end(self):
-        self.write_metrics(self._validation_metric, "vm")
+        self.write_metrics(self._validation_metric, "")
 
 
 class ClusterCallback(Callback):
@@ -141,13 +125,14 @@ class ClusterCallback(Callback):
                  use_portion_to_train=None, run_each_n_train_steps=None):
         self.data = cluster_datamodule
 
+        assert type(device) is int
         assert type(num_cluster) in [list, int]
         if type(num_cluster) == int:
             num_cluster = [num_cluster]
         self.num_cluster = num_cluster
         self.temperature = temperature
         self.device = device
-        self.use_portion_to_train = use_portion_to_train
+        self.use_portion_to_train = use_portion_to_train if use_portion_to_train is not None else 1.
         self.run_each_n_train_steps = run_each_n_train_steps
 
     def on_train_batch_start(self, trainer, pl_module, batch, batch_idx):
@@ -174,14 +159,7 @@ class ClusterCallback(Callback):
     def on_validation_epoch_start(self, trainer, pl_module):
         with torch.no_grad():
             feats = self.compute_features(self.data.val_dataloader(), pl_module)
-            val_clusters = self.run_kmeans(feats)
-            for num_clus, prev, now in zip(self.num_cluster,
-                                           pl_module.val_clusters['idx2cluster'],
-                                           val_clusters['idx2cluster']):
-                cluster_switch_portion = 1 - ((prev == now).sum() / prev.shape[0])
-                pl_module.log("val_cluster_change_" + str(num_clus), cluster_switch_portion,
-                              prog_bar=True, logger=True)
-            pl_module.val_clusters = val_clusters
+            pl_module.val_clusters = self.run_kmeans(feats)
 
     def compute_features(self, loader, model):
         features, idx = list(), list()

@@ -28,14 +28,12 @@ class ClusterDataset(FeatureDict, torch.utils.data.Dataset):
                  col_time='event_time',
                  col_idx='inn',
                  idx_dict=None,
-                 non_sequential_features=None,
                  *args, **kwargs):
         super().__init__(*args, **kwargs)  # required for mixin class
 
         self.data = data
         self.splitter = splitter
         self.col_time = col_time
-        self.non_sequential_features = non_sequential_features
         self.col_idx = col_idx
         self.idx_dict = idx_dict
 

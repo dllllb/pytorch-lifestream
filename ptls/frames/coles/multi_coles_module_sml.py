@@ -93,14 +93,6 @@ class MultiCoLESSMLModule(ABSModule):
     def is_requires_reduced_sequence(self):
         return True
 
-    def lr_scheduler_step(
-            self,
-            scheduler,
-            optimizer_idx,
-            metric,
-    ) -> None:
-        scheduler.step()
-
     def shared_step(self, x, y):
         y_h = self.seq_encoder.get_indep_preds(x, use_head=True)
         return y_h, y

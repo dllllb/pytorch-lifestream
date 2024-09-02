@@ -48,6 +48,14 @@ class ABSModule(pl.LightningModule):
         self._optimizer_partial = optimizer_partial
         self._lr_scheduler_partial = lr_scheduler_partial
 
+    def lr_scheduler_step(
+            self,
+            scheduler,
+            optimizer_idx,
+            metric,
+    ) -> None:
+        scheduler.step()
+
     @property
     def seq_encoder(self):
         return self._seq_encoder

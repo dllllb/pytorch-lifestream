@@ -80,14 +80,6 @@ class MultiCoLESModule(ABSModule):
     def is_requires_reduced_sequence(self):
         return True
 
-    def lr_scheduler_step(
-            self,
-            scheduler,
-            optimizer_idx,
-            metric,
-    ) -> None:
-        scheduler.step()
-
     def shared_step(self, x, y):
         if self.trained_models is not None:
             out_h = list()

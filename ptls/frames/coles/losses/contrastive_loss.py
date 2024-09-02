@@ -54,3 +54,16 @@ class MultiContrastiveLoss(ContrastiveLoss):
             total_loss += loss
             all_info.update(info)
         return total_loss, all_info
+
+
+class IMContrastiveLoss(nn.Module):
+    def __init__(self, margin):
+        super().__init__()
+        self.margin = margin
+
+    def forward(self, pos_chains, pos_slices, neg_chains, neg_slices):
+        positive_loss = (torch.sum((pos_chains - pos_slices) ** 2, dim=-1))
+        negative_loss = nn.functional.relu(
+            self.margin - torch.sqrt(torch.sum((neg_chains - neg_slices) ** 2, dim=-1))).pow(2)
+        loss = torch.cat([positive_loss, negative_loss], dim=0)
+        return loss.mean()
