@@ -1,7 +1,9 @@
+from typing import Dict
 import torch
-import torch.nn as nn
 
 from ptls.data_load.padded_batch import PaddedBatch
+from ptls.nn.trx_encoder import TrxEncoder
+from ptls.nn.seq_encoder.abs_seq_encoder import AbsSeqEncoder
 
 class MultiModalSortTimeSeqEncoderContainer(torch.nn.Module):
     """Container for multimodal event sequences
@@ -28,16 +30,18 @@ class MultiModalSortTimeSeqEncoderContainer(torch.nn.Module):
     https://github.com/dllllb/pytorch-lifestream/blob/main/ptls_tests/test_frames/test_coles/test_multimodal_coles_module.py
     """
 
-    def __init__(self,
-                 trx_encoders,
-                 seq_encoder_cls, 
-                 input_size,
-                 is_reduce_sequence=True,
-                 col_time='event_time',
-                 **seq_encoder_params
-                ):
+    def __init__(
+        self,
+        trx_encoders: Dict[str, TrxEncoder],
+        seq_encoder_cls: AbsSeqEncoder,
+        input_size: int,
+        is_reduce_sequence: bool = True,
+        col_time: str = 'event_time',
+        device: torch.device = torch.device('cpu'),
+        **seq_encoder_params
+    ):
         super().__init__()
-        
+        self.device = device
         self.trx_encoders = torch.nn.ModuleDict(trx_encoders)
         self.seq_encoder = seq_encoder_cls(
             input_size=input_size,
@@ -61,8 +65,7 @@ class MultiModalSortTimeSeqEncoderContainer(torch.nn.Module):
         return self.seq_encoder.embedding_size
         
     def merge_by_time(self, x):
-        device = list(x.values())[1][0].device
-        batch, batch_time = torch.tensor([], device=device), torch.tensor([], device=device)
+        batch, batch_time = torch.tensor([], device=self.device), torch.tensor([], device=self.device)
         for source_batch in x.values():
             if source_batch[0] != 'None':
                 batch = torch.cat((batch, source_batch[1].payload), dim=1)
@@ -84,7 +87,7 @@ class MultiModalSortTimeSeqEncoderContainer(torch.nn.Module):
         tmp_el = list(x.values())[0]
         
         batch_size = tmp_el.payload[self.col_time].shape[0]
-        length = torch.zeros(batch_size, device=tmp_el.device).int()
+        length = torch.zeros(batch_size, device=self.device).int()
         
         for source, trx_encoder in self.trx_encoders.items():
             enc_res = self.trx_encoder_wrapper(x[source], trx_encoder, self.col_time)
@@ -92,9 +95,9 @@ class MultiModalSortTimeSeqEncoderContainer(torch.nn.Module):
             length = length + source_length
         return res, length
             
-    def forward(self, x):
+    def forward(self, x, **kwargs):
         x, length = self.multimodal_trx_encoder(x)
         x = self.merge_by_time(x)
         padded_x = PaddedBatch(payload=x, length=length)
-        x = self.seq_encoder(padded_x)
+        x = self.seq_encoder(padded_x, **kwargs)
         return x
