@@ -27,7 +27,7 @@ class IterableShuffle(IterableProcessingDataset):
             new_buffer_list = list(islice(source, new_buffer_size))
             new_buffer = np.empty(len(new_buffer_list), dtype=object)
             new_buffer[:] = new_buffer_list
-            # print(f'Buffer shape: {buffer.shape}, {new_buffer.shape}')
+            
             buffer = np.concatenate([buffer, new_buffer])
             if len(buffer) == 0:
                 break
