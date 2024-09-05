@@ -8,12 +8,16 @@ logger = logging.getLogger(__name__)
 
 
 class IterableShuffle(IterableProcessingDataset):
-    def __init__(self, buffer_size):
-        """
+    """
+    Shuffle records in the buffer and yield them in random order. Buffer is filled with records from the source
+    iterator. When buffer is empty, the iterator is exhausted. Buffer is refilled with records from the source iterator
+    and the process is repeated.
 
-        Args:
-            buffer_size: buffer size in records
-        """
+    Args:
+        buffer_size: buffer size in records
+
+    """
+    def __init__(self, buffer_size: int):
         super().__init__()
 
         assert buffer_size > 1  # we will split buffer into two parts
