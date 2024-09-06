@@ -1,9 +1,10 @@
 import torch
+
 from ptls.data_load import AugmentationChain
 
 
 class AugmentationDataset(torch.utils.data.Dataset):
-    def __init__(self, data, f_augmentations=None):
+    def __init__(self, data, f_augmentations: list = None):
         self.data = data
         self.f_augmentations = AugmentationChain(f_augmentations)
 
@@ -16,8 +17,13 @@ class AugmentationDataset(torch.utils.data.Dataset):
     
 
 class AugmentationIterableDataset(torch.utils.data.IterableDataset):
-    def __init__(self, data, f_augmentations=None):
-        assert isinstance(data, torch.utils.data.IterableDataset), " 'data' argument must be torch.utils.data.IterableDataset"
+    """
+    AugmentationDataset for IterableDataset.
+    'data' argument must be `torch.utils.data.IterableDataset`
+
+    """
+    def __init__(self, data, f_augmentations: list = None):
+        assert isinstance(data, torch.utils.data.IterableDataset)
         self.data = data
         self.f_augmentations = AugmentationChain(f_augmentations)
     

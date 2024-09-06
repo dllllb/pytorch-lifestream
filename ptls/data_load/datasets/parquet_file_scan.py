@@ -2,6 +2,7 @@ import os
 import warnings
 from glob import glob
 from typing import Union, List
+
 from omegaconf import ListConfig
 from sklearn.model_selection import train_test_split
 
@@ -18,29 +19,27 @@ def _scan_path(path):
 def train_valid_split(
         data,
         valid_rate: Union[float, int] = None,
-        is_sorted: bool =True,
+        is_sorted: bool = True,
         return_part: str = 'train',
         shuffle_seed: int = 42,
 ):
     """
+    Split data into train-valid parts. If `valid_rate` is None or 0.0, return all data.
+    If `valid_rate` is set, split data into train-valid parts.
 
-    Parameters
-    ----------
-    data
-        objects for split
-    valid_rate:
-        if set split found files into train-test
-        int means valid objects count, float means valid objects rate
-    is_sorted:
-        sort or not found files. Should be True when `valid_rate` split used
-    return_part: one of ['train', 'valid']
-        Which part will be returned when `valid_rate` split used
-    shuffle_seed:
-        random seed for train_test_split
-    Returns
-    -------
+    Args:
+        data: objects for split
+        valid_rate: if set split found files into train-test
+            int means valid objects count, float means valid objects rate
+        is_sorted: sort or not found files. Should be True when `valid_rate` split used
+        return_part: one of ['train', 'valid']
+            Which part will be returned when `valid_rate` split used
+        shuffle_seed: random seed for train_test_split
+
+    Returns:
         object list which are the same as `data` when `valid_rate` aren't used or part of `data` if `valid_rate` used
     """
+
     if is_sorted:
         data = sorted(data)
 
@@ -63,7 +62,7 @@ def train_valid_split(
 def parquet_file_scan(
         file_path: Union[str, List[str], ListConfig],
         valid_rate: Union[float, int] = None,
-        is_sorted: bool =True,
+        is_sorted: bool = True,
         return_part: str = 'train',
         shuffle_seed: int = 42,
 ):
@@ -71,6 +70,19 @@ def parquet_file_scan(
 
     Split should be reproducible with same results when `is_sorted=True` and other parameters don't change.
     This means that you can split files into synchronised train-valid parts with two calls.
+
+    Args:
+        file_path: path for scan. Can be single file, directory or list of them.
+        valid_rate: if set split found files into train-test
+            int means valid objects count, float means valid objects rate
+        is_sorted: sort or not found files. Should be True when `valid_rate` split used
+        return_part: one of ['train', 'valid']
+            Which part will be returned when `valid_rate` split used
+        shuffle_seed: random seed for train_test_split
+
+    Returns:
+        File list which are all found files when `valid_rate` aren't used or part of files if `valid_rate` used
+
 
     Example:
     >>> files = [1, 2, 3, 4, 6, 5, 9, 8]
@@ -80,23 +92,6 @@ def parquet_file_scan(
     >>>     assert i not in valid_files
     >>> for i in valid_files:
     >>>     assert i not in train_files
-
-    Parameters
-    ----------
-    file_path:
-        path for scan. Can be single file, directory or list of them.
-    valid_rate:
-        if set split found files into train-test
-        int means valid objects count, float means valid objects rate
-    is_sorted:
-        sort or not found files. Should be True when `valid_rate` split used
-    return_part: one of ['train', 'valid']
-        Which part will be returned when `valid_rate` split used
-    shuffle_seed:
-        random seed for train_test_split
-    Returns
-    -------
-        File list which are all found files when `valid_rate` aren't used or part of files if `valid_rate` used
 
     """
     assert return_part in ('train', 'valid')
