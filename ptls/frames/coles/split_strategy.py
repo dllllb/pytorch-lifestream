@@ -1,7 +1,3 @@
-# coding: utf-8
-"""
-
-"""
 import numpy as np
 
 
@@ -80,16 +76,23 @@ class SplitByWeeks(AbsSplit):
         n_weeks_idxes = [np.append(x, i) for i, x in enumerate(n_weeks_idxes)]
 
         # select indexes correspond to each part of weeks
-        # x_ij == 1 <=>  j-th elenemt of sequence correspond to n_weeks_unique[i]
-        x = n_weeks.reshape(1, -1).repeat(n_weeks_nunique, axis=0) == n_weeks_unique.reshape(-1, 1).repeat(seq_len,
-                                                                                                           axis=1)
+        # x_ij == 1 <=>  j-th element of sequence correspond to n_weeks_unique[i]
+        x = n_weeks.reshape(1, -1).repeat(n_weeks_nunique,
+                                          axis=0) == n_weeks_unique.reshape(-1, 1).repeat(seq_len,
+                                                                                          axis=1)
         n_byweeks_idxes = [x[one_week_idxes].sum(axis=0).nonzero()[0] for one_week_idxes in n_weeks_idxes]
         n_byweeks_idxes = [x[-self.cnt_max:] if len(x) > self.cnt_max else x for x in n_byweeks_idxes]
         return n_byweeks_idxes
 
 
 class SampleSlices(AbsSplit):
-    def __init__(self, split_count, cnt_min, cnt_max, short_seq_crop_rate=1.0, is_sorted=False):
+    def __init__(self,
+                 split_count: int,
+                 cnt_min: int,
+                 cnt_max: int,
+                 short_seq_crop_rate: float = 1.0,
+                 is_sorted: bool = False
+                 ):
         self.split_count = split_count
         self.cnt_min = cnt_min
         self.cnt_max = cnt_max
@@ -145,7 +148,9 @@ class SampleUniform(AbsSplit):
         if date_len <= self.seq_len + self.split_count:
             return [date_range for _ in range(self.split_count)]
 
-        start_pos = np.linspace(0, date_len - self.seq_len, self.split_count).round().astype(int)
+        start_pos = np.linspace(0,
+                                date_len - self.seq_len,
+                                self.split_count).round().astype(int)
         return [date_range[s:s + self.seq_len] for s in start_pos]
 
 
@@ -156,7 +161,7 @@ class SampleUniformBySplitCount(AbsSplit):
     |------|              |        sub seq 1
     |       |------|      |        sub seq 2
     |              |------|        sub seq 3
-    There is no random factor in this splitter, so sub sequences are the same every time
+    There is no random factor in this splitter, so subsequences are the same every time
     Can be used during inference as test time augmentation
     """
 
