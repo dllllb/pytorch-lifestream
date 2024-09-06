@@ -1,8 +1,9 @@
+from collections import defaultdict
 from functools import partial
 
 import numpy as np
 import torch
-from collections import defaultdict
+
 from pymonad.maybe import Maybe
 from ptls.data_load.feature_dict import FeatureDict
 from ptls.data_load.padded_batch import PaddedBatch
@@ -22,17 +23,13 @@ def detect_transform_func(dict_tup):
 
 
 def collate_feature_dict(batch):
-    """Collate feature with arrays to padded batch
-
+    """Collate feature with arrays to padded batch.
     Check feature consistency. Keys for all batch samples should be the same.
-    Convert scalar value to tensors like target col
+    Convert scalar value to tensors like target col.
 
-    Parameters
-    ----------
-    batch:
-        list with feature dicts
-    Returns
-    -------
+    Args:
+        batch: list with feature dicts
+    Returns:
         PaddedBatch
     """
 
@@ -74,3 +71,15 @@ def collate_target(x, num=1):
         return vec[:abs(num)]
     else:
         return np.hstack((vec[:num - 1], vec[num - 1:].sum()))[:len(vec)]
+
+
+def init_worker(cls):
+    worker_info = torch.utils.data.get_worker_info()
+    if worker_info is None:  # single-process data loading, return the full iterator
+        cls._worker_id = 0
+        cls._num_workers = 1
+        cls._shuffle_seed = cls.shuffle_seed
+    else:  # in a worker process
+        cls._worker_id = worker_info.id
+        cls._num_workers = worker_info.num_workers
+        cls._shuffle_seed = worker_info.seed

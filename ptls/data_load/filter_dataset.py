@@ -36,6 +36,7 @@ class FilterDataset(torch.utils.data.IterableDataset):
             yield rec
 
     def __iter__(self):
+        # self._init_worker()
         init_worker(self)
 
         my_ids = self._get_my_ids()
