@@ -13,20 +13,21 @@ def inference_data_loader(
     num_workers: int = 0,
     batch_size: int = 512,
 ):
-    r"""Generate an inference data loader
-
-    Parameters
-    ----------
-    data: List[Dict]
-        The dataset
-    max_seq_len:
-        Only `max_seq_len` transaction will taken from tail of sequence.
-        Unlimited sequence length lead to out of memory error
-    num_workers: int. Default: 0.
-        The number of workers for the dataloader. 0 = single-process loader
-    batch_size: int. Default: 512.
-        The number of samples (before splitting to subsequences) in each batch
     """
+    Generate an inference data loader. The data loader will return a batch of sequences.
+
+    Args:
+        data: the dataset
+        max_seq_len: the maximum sequence length. Only `max_seq_len` transaction will be taken from tail of sequence.
+            Unlimited sequence length lead to out of memory error
+        num_workers: the number of workers for the dataloader. Default: 0 - single-process loader.
+        batch_size: the batch size. Default: 512. The number of samples (before splitting to subsequences) in
+            each batch.
+
+    Returns:
+        DataLoader
+    """
+
     dataset = FilterDataset(
         data,
         post_processing=IterableChain(
