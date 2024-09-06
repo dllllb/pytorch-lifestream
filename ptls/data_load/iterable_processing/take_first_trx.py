@@ -1,12 +1,11 @@
-import numpy as np
-import torch
-
 from ptls.data_load import IterableProcessingDataset
 
 
 class TakeFirstTrx(IterableProcessingDataset):
     def __init__(self, take_first_fraction=0.5, seq_len_col=None, sequence_col=None):
         """
+        Filter sequences by length. Drop sequences shorter than `min_seq_len` and longer than `max_seq_len`.
+
         Args:
             take_first_fraction: control the fraction of transactions to keep
                                  EXAMPLE: take_first_fraction=0.75 -> the last 0.25 of all user
@@ -32,14 +31,6 @@ class TakeFirstTrx(IterableProcessingDataset):
                     features[key] = val[:take_first_n]
             rec = (features, rec[1]) if type(rec) is tuple else features
             yield rec
-
-    def get_sequence_col(self, rec):
-        if self._sequence_col is None:
-            arrays = [k for k, v in rec.items() if self.is_seq_feature(k, v)]
-            if len(arrays) == 0:
-                raise ValueError(f'Can not find field with sequence from record: {rec}')
-            self._sequence_col = arrays[0]
-        return self._sequence_col
 
     def get_len(self, rec):
         if self._seq_len_col is not None:
