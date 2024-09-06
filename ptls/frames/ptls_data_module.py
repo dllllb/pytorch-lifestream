@@ -1,27 +1,18 @@
-import torch
-import pytorch_lightning as pl
 from functools import partial
+
+import pytorch_lightning as pl
+import torch
 
 
 class PtlsDataModule(pl.LightningDataModule):
     def __init__(self,
                  train_data=None,
-                 train_batch_size=1,
-                 train_num_workers=0,
-                 train_drop_last=False,
                  valid_data=None,
-                 valid_batch_size=None,
-                 valid_num_workers=None,
-                 valid_drop_last=False,
                  test_data=None,
-                 test_batch_size=None,
-                 test_num_workers=None,
-                 test_drop_last=False,
                  ):
 
         super().__init__()
         self.save_hyperparameters(ignore=['train_data', 'valid_data', 'test_data'])
-        
         if self.hparams.valid_num_workers is None:
             self.hparams.valid_num_workers = self.hparams.train_num_workers
         if self.hparams.test_num_workers is None:
@@ -38,7 +29,7 @@ class PtlsDataModule(pl.LightningDataModule):
             self.val_dataloader = partial(self.val_dl, valid_data)
         if test_data is not None:
             self.test_dataloader = partial(self.test_dl, test_data)
-            
+
     def train_dl(self, train_data):
         return torch.utils.data.DataLoader(
             dataset=train_data,
