@@ -1,19 +1,23 @@
-import logging
 from ptls.data_load import IterableProcessingDataset
-
-logger = logging.getLogger(__name__)
 
 
 class SeqLenFilter(IterableProcessingDataset):
-    def __init__(self, min_seq_len=None, max_seq_len=None, seq_len_col=None, sequence_col=None):
-        """
+    """
+    Filter sequences by length. Drop sequences shorter than `min_seq_len` and longer than `max_seq_len`.
 
-        Args:
-            min_seq_len: if set than drop sequences shorter than `min_seq_len`
-            max_seq_len: if set than drop sequences longer than `max_seq_len`
-            seq_len_col: field where sequence length stored, if None, `target_col` used
-            sequence_col: field for sequence length detection, if None, any iterable field will be used
-        """
+
+    Args:
+        min_seq_len: if set than drop sequences shorter than `min_seq_len`
+        max_seq_len: if set than drop sequences longer than `max_seq_len`
+        seq_len_col: field where sequence length stored, if None, `target_col` used
+        sequence_col: field for sequence length detection, if None, any iterable field will be used
+    """
+    def __init__(self,
+                 min_seq_len: int = None,
+                 max_seq_len: int = None,
+                 seq_len_col: int = None,
+                 sequence_col=None
+                 ):
         super().__init__()
 
         self._min_seq_len = min_seq_len
