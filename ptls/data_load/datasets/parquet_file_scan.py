@@ -37,9 +37,7 @@ def train_valid_split(
         shuffle_seed: random seed for train_test_split
 
     Returns:
-        object list which are the same as `data` when `valid_rate` aren't used or part
-        of `data` if `valid_rate` used.
-
+        object list which are the same as `data` when `valid_rate` aren't used or part of `data` if `valid_rate` used
     """
 
     if is_sorted:
@@ -68,12 +66,10 @@ def parquet_file_scan(
         return_part: str = 'train',
         shuffle_seed: int = 42,
 ):
-    """Scan folder with parquet files and returns file names.
-    Train-valid split possible
+    """Scan folder with parquet files and returns file names. Train-valid split possible
 
-    Split should be reproducible with same results when `is_sorted=True` and
-    other parameters don't change. This means that you can split files into
-    synchronised train-valid parts with two calls.
+    Split should be reproducible with same results when `is_sorted=True` and other parameters don't change.
+    This means that you can split files into synchronised train-valid parts with two calls.
 
     Args:
         file_path: path for scan. Can be single file, directory or list of them.
@@ -85,28 +81,20 @@ def parquet_file_scan(
         shuffle_seed: random seed for train_test_split
 
     Returns:
-        File list which are all found files when `valid_rate` aren't used or part of files
-        if `valid_rate` used
+        File list which are all found files when `valid_rate` aren't used or part of files if `valid_rate` used
 
-    Examples:
-        Code:
-            files = [1, 2, 3, 4, 6, 5, 9, 8]
-            train_files = parquet_file_scan(files,
-                                            valid_rate=0.3,
-                                            return_part='train',
-                                            shuffle_seed=123)
-            valid_files = parquet_file_scan(files,
-                                            valid_rate=0.3,
-                                            return_part='valid',
-                                            shuffle_seed=123)
-            for i in train_files:
-                assert i not in valid_files
-            for i in valid_files:
-                assert i not in train_files
+
+    Example:
+    >>> files = [1, 2, 3, 4, 6, 5, 9, 8]
+    >>> train_files = train_valid_split(files, valid_rate=0.3, return_part='train', shuffle_seed=123)
+    >>> valid_files = train_valid_split(files, valid_rate=0.3, return_part='valid', shuffle_seed=123)
+    >>> for i in train_files:
+    >>>     assert i not in valid_files
+    >>> for i in valid_files:
+    >>>     assert i not in train_files
 
     """
-    if return_part not in ('train', 'valid'):
-        raise ValueError(f"Invalid value for return_part: '{return_part}'. Expected one of ['train', 'valid'].")
+    assert return_part in ('train', 'valid')
 
     if type(file_path) not in (list, ListConfig):
         file_path = [file_path]
