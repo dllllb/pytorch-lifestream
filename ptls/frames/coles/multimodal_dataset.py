@@ -4,6 +4,8 @@ from functools import reduce
 from collections import defaultdict
 from ptls.data_load.feature_dict import FeatureDict
 from ptls.data_load.padded_batch import PaddedBatch
+from ptls.data_load.utils import new_features
+from ptls.frames.coles import MultiModalSortTimeSeqEncoderContainer
 
 def collate_feature_dict(batch):
     new_x_ = defaultdict(list)
@@ -23,15 +25,7 @@ def collate_feature_dict(batch):
         elif type(v[0]) is np.ndarray:
             new_x[k] = v  # list of arrays[object]
         else:
-            v = np.array(v)
-            if v.dtype.kind == 'i':
-                new_x[k] = torch.from_numpy(v).long()
-            elif v.dtype.kind == 'f':
-                new_x[k] = torch.from_numpy(v).float()
-            elif v.dtype.kind == 'b':
-                new_x[k] = torch.from_numpy(v).bool()
-            else:
-                new_x[k] = v
+            new_x = new_features(k, new_x, v)
     return PaddedBatch(new_x, lengths)
 
     
