@@ -2,14 +2,14 @@ import logging
 import os
 from collections import defaultdict, Counter
 from itertools import chain
+from pydoc import locate
 
 import numpy as np
 import torch
 from torch.utils.data import DataLoader
 
 from ptls.data_load import read_pyarrow_file
-
-from pydoc import locate
+from ptls.data_load.utils import init_worker
 
 logger = logging.getLogger(__name__)
 
@@ -159,21 +159,8 @@ class PartitionedDataset(torch.utils.data.IterableDataset):
 
         return my_files
 
-    def _init_worker(self):
-        worker_info = torch.utils.data.get_worker_info()
-        if worker_info is None:  # single-process data loading, return the full iterator
-            self._worker_id = 0
-            self._num_workers = 1
-            self._shuffle_seed = self.shuffle_seed
-        else:  # in a worker process
-            self._worker_id = worker_info.id
-            self._num_workers = worker_info.num_workers
-            self._shuffle_seed = worker_info.seed
-        logger.debug(f'Started [{self._worker_id:02d}/{self._num_workers:02d}]')
-
     def __iter__(self):
-        self._init_worker()
-
+        init_worker(self)
         my_hashes = self._get_my_hashes()
 
         if self.shuffle_files:
