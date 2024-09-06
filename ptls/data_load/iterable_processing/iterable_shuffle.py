@@ -5,9 +5,9 @@ from ptls.data_load.iterable_processing_dataset import IterableProcessingDataset
 
 class IterableShuffle(IterableProcessingDataset):
     """
-    Shuffle records in the buffer and yield them in random order. Buffer is filled with records from the source
-    iterator. When buffer is empty, the iterator is exhausted. Buffer is refilled with records from the source iterator
-    and the process is repeated.
+    Shuffle records in the buffer and yield them in random order. Buffer is filled with records
+    from the source iterator. When buffer is empty, the iterator is exhausted. Buffer is refilled
+    with records from the source iterator and the process is repeated.
 
     Args:
         buffer_size: buffer size in records
@@ -27,7 +27,6 @@ class IterableShuffle(IterableProcessingDataset):
             new_buffer_list = list(islice(source, new_buffer_size))
             new_buffer = np.empty(len(new_buffer_list), dtype=object)
             new_buffer[:] = new_buffer_list
-            
             buffer = np.concatenate([buffer, new_buffer])
             if len(buffer) == 0:
                 break
@@ -35,8 +34,8 @@ class IterableShuffle(IterableProcessingDataset):
             window_size = min(len(buffer), self._buffer_size // 2)
             ix_for_choice = np.random.choice(len(buffer), window_size, replace=False)
 
-            for ix in ix_for_choice:
-                yield buffer[ix]
+            for idx in ix_for_choice:
+                yield buffer[idx]
 
             mask_selected = np.zeros(len(buffer), dtype=bool)
             mask_selected[ix_for_choice] = True
