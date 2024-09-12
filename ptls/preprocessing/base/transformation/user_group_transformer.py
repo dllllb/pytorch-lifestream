@@ -24,12 +24,17 @@ class UserGroupTransformer(ColTransformer):
     return_records:
         False: Result is a dataframe. Use `.to_dict(orient='records')` to transform it to `ptls` format.
         True: Result is a list of dicts - `ptls` format
+    n_jobs:
+        Number of workers requested by the callers. 
+        Passing n_jobs=-1 means requesting all available workers for instance matching the number of
+        CPU cores on the worker host(s).
     """
 
     def __init__(self,
                  col_name_original: str,
                  cols_first_item: List[str] = None,
                  return_records: bool = False,
+                 n_jobs: int = -1,
                  ):
         super().__init__(
             col_name_original=col_name_original,
@@ -38,6 +43,7 @@ class UserGroupTransformer(ColTransformer):
         )
         self.cols_first_item = cols_first_item if cols_first_item is not None else []
         self.return_records = return_records
+        self.n_jobs = n_jobs
 
     def __repr__(self):
         return 'Aggregate transformation'
@@ -71,7 +77,7 @@ class UserGroupTransformer(ColTransformer):
         return self
 
     def df_to_feature_arrays(self, df):
-        with joblib.parallel_backend(backend='threading'):
+        with joblib.parallel_backend(backend='threading', n_jobs=self.n_jobs):
             parallel = Parallel(verbose=1)
             result_dict = parallel(delayed(self._convert_type)(group_name, df_group)
                                    for group_name, df_group in df)

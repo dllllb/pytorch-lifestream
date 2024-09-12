@@ -55,7 +55,10 @@ class PandasDataPreprocessor(DataPreprocessor):
             - join any additional information like user-level features of target
             - convert it to `ptls` format using `.to_dict(orient='records')`
         True: Result is a list of dicts - `ptls` format
-
+    n_jobs:
+        Number of workers requested by the callers. 
+        Passing n_jobs=-1 means requesting all available workers for instance matching the number of
+        CPU cores on the worker host(s).
     """
 
     def __init__(self,
@@ -68,16 +71,19 @@ class PandasDataPreprocessor(DataPreprocessor):
                  cols_identity: List[str] = None,
                  cols_first_item: List[str] = None,
                  return_records: bool = True,
+                 n_jobs: int = -1,
                  ):
         self.category_transformation = category_transformation
         self.return_records = return_records
         self.cols_first_item = cols_first_item
         self.event_time_transformation = event_time_transformation
+        self.n_jobs = n_jobs
         super().__init__(col_id=col_id,
                          col_event_time=col_event_time,
                          cols_category=cols_category,
                          cols_identity=cols_identity,
-                         cols_numerical=cols_numerical
+                         cols_numerical=cols_numerical,
+                         n_jobs=n_jobs
                          )
 
     @staticmethod

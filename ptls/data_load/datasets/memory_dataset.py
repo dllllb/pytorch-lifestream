@@ -20,12 +20,16 @@ class MemoryMapDataset(torch.utils.data.Dataset):
     Args:
         data: iterable data
         i_filters: list of iterable filters
-
+        n_jobs: number of workers requested by the callers
     """
     def __repr__(self):
         return 'In-Memory Dataset'
     
-    def __init__(self, data, i_filters: List[Iterable] = None):
+    def __init__(self, 
+                 data, 
+                 i_filters: List[Iterable] = None, 
+                 n_jobs: int = -1):
+        self.n_jobs = n_jobs
         self.processed_data = Either(data, monoid=[i_filters, i_filters is None]).either(
             left_function=lambda filters: self.__apply_filters(data, filters),
             right_function=lambda x: [rec for rec in x])
@@ -37,7 +41,7 @@ class MemoryMapDataset(torch.utils.data.Dataset):
                 sample = f.transform(sample)
             return sample
 
-        with joblib.parallel_backend(backend='threading'):
+        with joblib.parallel_backend(backend='threading', n_jobs=self.n_jobs):
             parallel = Parallel(verbose=1)
             processed_data = parallel(delayed(_iterable_filtration)(row, i_filters)
                                       for row in data)
