@@ -56,7 +56,7 @@ class FeatureDict:
         -------
 
         """
-        return {k: v[ix] if FeatureDict.is_seq_feature(k, v) else v for k, v in d.items()}
+        return {k: v[ix] if FeatureDict.is_seq_feature(v) else v for k, v in d.items()}
 
     @staticmethod
     def get_seq_len(d):
@@ -70,4 +70,4 @@ class FeatureDict:
         """
         if 'event_time' in d:
             return len(d['event_time'])
-        return len(next(v for k, v in d.items() if FeatureDict.is_seq_feature(k, v)))
+        return len(next(v for k, v in d.items() if FeatureDict.is_seq_feature(v)))
