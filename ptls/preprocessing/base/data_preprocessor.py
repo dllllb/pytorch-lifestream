@@ -27,6 +27,7 @@ class DataPreprocessor(BaseEstimator, TransformerMixin):
                  cols_numerical: List[str] = None,
                  cols_identity: List[str] = None,
                  t_user_group: ColTransformer = None,
+                 n_jobs: int = -1,
                  ):
         self.cl_id = col_id
         self.ct_event_time = col_event_time
@@ -34,6 +35,7 @@ class DataPreprocessor(BaseEstimator, TransformerMixin):
         self.cts_numerical = cols_numerical
         self.cols_identity = cols_identity
         self.t_user_group = t_user_group
+        self.n_jobs = n_jobs
         self._init_transform_function()
 
         self._all_col_transformers = [
@@ -50,7 +52,7 @@ class DataPreprocessor(BaseEstimator, TransformerMixin):
     def _init_transform_function(self):
         self.cts_numerical = [ColIdentityEncoder(col_name_original=col) for col in self.cts_numerical]
         self.t_user_group = UserGroupTransformer(col_name_original=self.cl_id, cols_first_item=self.cols_first_item,
-                                                 return_records=self.return_records)
+                                                 return_records=self.return_records, n_jobs=self.n_jobs)
         if isinstance(self.ct_event_time, str):  # use as is
             self.ct_event_time = Either(value=self.ct_event_time,
                                         monoid=['event_time',

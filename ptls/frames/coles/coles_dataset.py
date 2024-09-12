@@ -18,13 +18,16 @@ class ColesDataset(FeatureDict, torch.utils.data.Dataset):
         splitter: object from `ptls.frames.coles.split_strategy`.
             Used to split original sequence into subsequences which are samples from one client.
         col_time: column name with event_time
-
+        n_jobs: number of workers requested by the callers. 
+            Passing n_jobs=-1 means requesting all available workers for instance matching the number of
+            CPU cores on the worker host(s).
     """
 
     def __init__(self,
                  data,
                  splitter: AbsSplit,
                  col_time: str = 'event_time',
+                 n_jobs: int = -1,
                  *args,
                  **kwargs
                  ):
@@ -33,6 +36,7 @@ class ColesDataset(FeatureDict, torch.utils.data.Dataset):
         self.data = data
         self.splitter = splitter
         self.col_time = col_time
+        self.n_jobs = n_jobs
 
     def __len__(self):
         return len(self.data)
@@ -51,7 +55,7 @@ class ColesDataset(FeatureDict, torch.utils.data.Dataset):
     def get_splits(self, feature_arrays: dict):
         local_date = feature_arrays[self.col_time]
         indexes = self.splitter.split(local_date)
-        with joblib.parallel_backend(backend='threading'):
+        with joblib.parallel_backend(backend='threading', n_jobs=self.n_jobs):
             parallel = Parallel()
             result_dict = parallel(delayed(self._create_split_subset)(idx, feature_arrays)
                                    for idx in indexes)
