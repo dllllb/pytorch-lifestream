@@ -13,7 +13,7 @@ class PtlsDataModule(pl.LightningDataModule):
             The dataset
         batch_size: int. Default: 64.
             The number of samples (before splitting to subsequences) in each batch
-        num_workers: int. Default: 16.
+        num_workers: int. Default: 0.
             The number of workers for the dataloader. 0 = single-process loader
         drop_last: bool. Default: False.
             Drop the last incomplete batch, if the dataset size is not divisible by the batch size
@@ -24,15 +24,15 @@ class PtlsDataModule(pl.LightningDataModule):
     def __init__(self,
                  train_data: List[Dict] = None,
                  train_batch_size: int = 64,
-                 train_num_workers: int = 16,
+                 train_num_workers: int = 0,
                  train_drop_last: bool = False,
                  valid_data: List[Dict] = None,
                  valid_batch_size: int = 64,
-                 valid_num_workers: int = 16,
+                 valid_num_workers: int = 0,
                  valid_drop_last: bool = False,
                  test_data: List[Dict] = None, 
                  test_batch_size: int = 64,
-                 test_num_workers: int = 16,
+                 test_num_workers: int = 0,
                  test_drop_last: bool = False,
                  ):
 
