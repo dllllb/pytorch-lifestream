@@ -4,25 +4,9 @@ from functools import reduce
 from collections import defaultdict
 from ptls.data_load.feature_dict import FeatureDict
 from ptls.data_load.padded_batch import PaddedBatch
-from ptls.data_load.utils import collate_feature_dict
+from ptls.data_load.utils import collate_multimodal_feature_dict, get_dict_class_labels
 from ptls.frames.coles import MultiModalSortTimeSeqEncoderContainer
-
-def collate_multimodal_feature_dict(batch):
-    res = {}
-    for source, source_batch in batch.items():
-        res[source] = collate_feature_dict(source_batch)
-    return res
-    
-def get_dict_class_labels(batch):
-    res = defaultdict(list)
-    for i, samples in enumerate(batch):
-        for source, values in samples.items():
-            for _ in values:
-                res[source].append(i)
-    for source in res:
-        res[source] = torch.LongTensor(res[source])
-    return dict(res)
-            
+ 
 
 class MultiModalDataset(FeatureDict, torch.utils.data.Dataset):
     def __init__(

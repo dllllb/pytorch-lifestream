@@ -73,6 +73,24 @@ def collate_target(x, num=1):
         return np.hstack((vec[:num - 1], vec[num - 1:].sum()))[:len(vec)]
 
 
+def collate_multimodal_feature_dict(batch):
+    res = {}
+    for source, source_batch in batch.items():
+        res[source] = collate_feature_dict(source_batch)
+    return res
+    
+    
+def get_dict_class_labels(batch):
+    res = defaultdict(list)
+    for i, samples in enumerate(batch):
+        for source, values in samples.items():
+            for _ in values:
+                res[source].append(i)
+    for source in res:
+        res[source] = torch.LongTensor(res[source])
+    return dict(res)
+
+
 def init_worker(cls):
     worker_info = torch.utils.data.get_worker_info()
     if worker_info is None:  # single-process data loading, return the full iterator
