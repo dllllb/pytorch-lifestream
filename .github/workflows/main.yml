@@ -15,7 +15,7 @@ jobs:
       run: |
         python -m pip install "pip==24.0"
         pip install pipenv
-        pipenv --python python3.10 sync --dev
+        pipenv --python python3.10 --pip 24.0 sync --dev
     - name: Test with pytest
       run: |
         pipenv run coverage run
