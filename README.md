@@ -57,11 +57,11 @@ We have collected a set of topics related to the processing of event sequences. 
 | ix   |  Topic                                  | Description                             | Demo  |
 | ---- | --------------------------------------- | --------------------------------------- | ----- |
 | 1.   | Prerequisites                           |                                         |       |
-| 1.1. | PyTorch                                   | Deep Learning framework                 | https://pytorch.org/       |
+| 1.1. | PyTorch                                 | Deep Learning framework                 | https://pytorch.org/       |
 | 1.2. | PyTorch-Lightning                       | NN training framework                   | https://lightning.ai/      |
 | 1.3. | (optional) Hydra                        | Configuration framework                 | https://hydra.cc/ and [demo/Hydra CoLES Training.ipynb](./demo/Hydra CoLES Training.ipynb)         | 
 | 1.4. | pandas                                  | Data preprocessing                      | https://pandas.pydata.org/ |
-| 1.5. | (optional) PySpark                        | Big Data preprocessing                  | [https://spark.apache.org/](https://spark.apache.org/docs/latest/api/python/index.html) |
+| 1.5. | (optional) PySpark                      | Big Data preprocessing                  | [https://spark.apache.org/](https://spark.apache.org/docs/latest/api/python/index.html) |
 | 2.   | Event sequences                         | Problem statement and classical methods |     |
 | 2.1. | Event sequence for global problems      | e.g. event sequence classification      | TBD |
 | 2.2. | Event sequence for local problems       | e.g. next event prediction              | TBD |
