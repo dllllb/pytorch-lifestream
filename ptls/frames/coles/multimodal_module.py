@@ -37,11 +37,9 @@ class MultiModalSortTimeSeqEncoderContainer(torch.nn.Module):
         input_size: int,
         is_reduce_sequence: bool = True,
         col_time: str = 'event_time',
-        device: torch.device = torch.device('cpu'),
         **seq_encoder_params
     ):
         super().__init__()
-        self.device = device
         self.trx_encoders = torch.nn.ModuleDict(trx_encoders)
         self.seq_encoder = seq_encoder_cls(
             input_size=input_size,
@@ -64,8 +62,9 @@ class MultiModalSortTimeSeqEncoderContainer(torch.nn.Module):
     def embedding_size(self):
         return self.seq_encoder.embedding_size
         
-    def merge_by_time(self, x):
-        batch, batch_time = torch.tensor([], device=self.device), torch.tensor([], device=self.device)
+    def merge_by_time(self, x: Dict[str, torch.Tensor]):
+        device = list(x.values())[1][0].device
+        batch, batch_time = torch.tensor([], device=device), torch.tensor([], device=device)
         for source_batch in x.values():
             if source_batch[0] != 'None':
                 batch = torch.cat((batch, source_batch[1].payload), dim=1)
@@ -87,7 +86,7 @@ class MultiModalSortTimeSeqEncoderContainer(torch.nn.Module):
         tmp_el = list(x.values())[0]
         
         batch_size = tmp_el.payload[self.col_time].shape[0]
-        length = torch.zeros(batch_size, device=self.device).int()
+        length = torch.zeros(batch_size, device=tmp_el.device).int()
         
         for source, trx_encoder in self.trx_encoders.items():
             enc_res = self.trx_encoder_wrapper(x[source], trx_encoder, self.col_time)
