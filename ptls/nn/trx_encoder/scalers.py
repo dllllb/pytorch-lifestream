@@ -32,6 +32,36 @@ class YearScaler(IdentityScaler):
         return 1
 
 
+class YearWScaler(IdentityScaler):
+    def forward(self, x):
+        x = super().forward(x)
+        return x/52
+
+    @property
+    def output_size(self):
+        return 1
+
+
+class WeekScaler(IdentityScaler):
+    def forward(self, x):
+        x = super().forward(x)
+        return x/7
+
+    @property
+    def output_size(self):
+        return 1
+
+
+class DayScaler(IdentityScaler):
+    def forward(self, x):
+        x = super().forward(x)
+        return x/24
+
+    @property
+    def output_size(self):
+        return 1
+
+
 class NumToVector(IdentityScaler):
     def __init__(self, embeddings_size):
         super().__init__()
@@ -68,6 +98,9 @@ def scaler_by_name(name):
         'sigmoid': torch.nn.Sigmoid,
         'log': LogScaler,
         'year': YearScaler,
+        'week': WeekScaler,
+        'day': DayScaler,
+        'year_w': YearWScaler
     }.get(name, None)
 
     if scaler is None:

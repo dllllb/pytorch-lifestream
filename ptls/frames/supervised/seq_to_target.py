@@ -193,6 +193,15 @@ class SequenceToTarget(pl.LightningModule):
         scheduler = self.lr_scheduler_partial(optimizer)
         return [optimizer], [scheduler]
 
+    def lr_scheduler_step(
+            self,
+            scheduler,
+            optimizer_idx,
+            metric,
+    ) -> None:
+        scheduler.step()
+
+
     @staticmethod
     def to_pandas(x):
         expand_cols = []

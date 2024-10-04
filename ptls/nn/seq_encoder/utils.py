@@ -163,6 +163,13 @@ def scoring_head(input_size, params):
     return nn.Sequential(*layers)
 
 
+def reset_parameters(model):
+    for layer in model.children():
+        reset_parameters(layer)
+        if hasattr(layer, 'reset_parameters'):
+            layer.reset_parameters()
+
+
 def transform(x):
     return np.sign(x) * np.log(np.abs(x) + 1)
 

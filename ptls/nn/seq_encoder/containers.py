@@ -1,9 +1,12 @@
 import torch
+from copy import deepcopy
 
 from ptls.nn.seq_encoder.rnn_encoder import RnnEncoder
 from ptls.nn.seq_encoder.transformer_encoder import TransformerEncoder
 from ptls.nn.seq_encoder.longformer_encoder import LongformerEncoder
 from ptls.nn.seq_encoder.custom_encoder import Encoder
+from ptls.nn.seq_encoder.utils import reset_parameters
+
 
 class SeqEncoderContainer(torch.nn.Module):
     """Base container class for Sequence encoder.
@@ -31,15 +34,31 @@ class SeqEncoderContainer(torch.nn.Module):
                  input_size,
                  seq_encoder_params,
                  is_reduce_sequence=True,  # most frequent default behavior
+                 n_encoders=1,
                  ):
         super().__init__()
 
-        self.trx_encoder = trx_encoder
-        self.seq_encoder = seq_encoder_cls(
-            input_size=input_size if input_size is not None else trx_encoder.output_size,
-            is_reduce_sequence=is_reduce_sequence,
-            **seq_encoder_params,
-        )
+        self.n_encoders = n_encoders
+        if self.n_encoders == 1:
+            self.trx_encoder = trx_encoder
+            self.seq_encoder = seq_encoder_cls(
+                input_size=input_size if input_size is not None else trx_encoder.output_size,
+                is_reduce_sequence=is_reduce_sequence,
+                **seq_encoder_params,
+            )
+        elif self.n_encoders > 1:
+            seq_encoder = seq_encoder_cls(
+                input_size=input_size if input_size is not None else trx_encoder.output_size,
+                is_reduce_sequence=is_reduce_sequence,
+                **seq_encoder_params,
+            )
+            self.trx_encoder = torch.nn.ModuleList([deepcopy(trx_encoder) for _ in range(self.n_encoders)])
+            self.seq_encoder = torch.nn.ModuleList([deepcopy(seq_encoder) for _ in range(self.n_encoders)])
+            for i in range(self.n_encoders):
+                reset_parameters(self.trx_encoder[i])
+                reset_parameters(self.seq_encoder[i])
+        else:
+            raise NotImplemented
 
     @property
     def is_reduce_sequence(self):
@@ -62,9 +81,16 @@ class SeqEncoderContainer(torch.nn.Module):
         return self.seq_encoder.embedding_size
 
     def forward(self, x):
-        x = self.trx_encoder(x)
-        x = self.seq_encoder(x)
-        return x
+        if self.n_encoders == 1:
+            x = self.trx_encoder(x)
+            y_h = self.seq_encoder(x)
+        elif self.n_encoders > 1:
+            y_h = list()
+            for trx, seq in zip(self.trx_encoder, self.seq_encoder):
+                y_h.append(seq(trx(x)))
+        else:
+            raise NotImplemented
+        return y_h
 
 
 class RnnSeqEncoder(SeqEncoderContainer):
@@ -110,6 +136,7 @@ class RnnSeqEncoder(SeqEncoderContainer):
                  trx_encoder=None,
                  input_size=None,
                  is_reduce_sequence=True,
+                 n_encoders=1,
                  **seq_encoder_params,
                  ):
         super().__init__(
@@ -118,12 +145,22 @@ class RnnSeqEncoder(SeqEncoderContainer):
             input_size=input_size,
             seq_encoder_params=seq_encoder_params,
             is_reduce_sequence=is_reduce_sequence,
+            n_encoders=n_encoders,
         )
 
     def forward(self, x, h_0=None):
-        x = self.trx_encoder(x)
-        x = self.seq_encoder(x, h_0)
-        return x
+        if self.n_encoders == 1:
+            x = self.trx_encoder(x)
+            y_h = self.seq_encoder(x, h_0)
+        elif self.n_encoders > 1:
+            y_h = list()
+            for trx, seq in zip(self.trx_encoder, self.seq_encoder):
+                x_ = trx(x)
+                y_ = seq(x_, h_0)
+                y_h.append(y_)
+        else:
+            raise NotImplemented
+        return y_h
 
 
 class TransformerSeqEncoder(SeqEncoderContainer):
