@@ -105,7 +105,8 @@ def parquet_file_scan(
                 assert i not in train_files
 
     """
-    assert return_part in ('train', 'valid')
+    if return_part not in ('train', 'valid'):
+        raise ValueError(f"Invalid value for return_part: '{return_part}'. Expected one of ['train', 'valid'].")
 
     if type(file_path) not in (list, ListConfig):
         file_path = [file_path]
