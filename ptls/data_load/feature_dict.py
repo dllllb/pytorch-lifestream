@@ -14,7 +14,7 @@ class FeatureDict:
         super().__init__(*args, **kwargs)
 
     @staticmethod
-    def is_seq_feature(x):
+    def is_seq_feature(k: str=None, x=None):
         """Check is value sequential feature
         Synchronized with ptls.data_load.padded_batch.PaddedBatch.is_seq_feature
 
@@ -36,10 +36,16 @@ class FeatureDict:
         -------
             True if value is iterable
         """
+        # Обработка случая с 'k', для старого кода
+        if k == 'event_time':
+            return True
+        if k and k.startswith('target'):
+            return False
+
+        # Основная логика для нового кода
         if isinstance(x, (np.ndarray, torch.Tensor)):
             return True
-        else:
-            return False
+        return False
 
     @staticmethod
     def seq_indexing(d, ix):
