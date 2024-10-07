@@ -1,5 +1,6 @@
 import logging
 from typing import Iterable, List
+from abc import ABC, abstractmethod
 
 import joblib
 import pandas as pd
@@ -54,14 +55,13 @@ class MemoryMapDataset(torch.utils.data.Dataset):
         return self.processed_data[item]
 
 
-class MemoryIterableDataset(torch.utils.data.IterableDataset):
+class MemoryIterableDataset(torch.utils.data.IterableDataset, ABC):
     def __init__(self, data, i_filters=None):
-        raise NotImplementedError()
-        # if i_filters is None:
-        #     i_filters = []
-        # self.data = data
-        # self.post_processor_filter = IterableChain(ToTorch(), *i_filters)
+        super().__init__()
+        self.data = data
+        self.i_filters = i_filters
 
+    @abstractmethod
     def __iter__(self):
-        for rec in self.post_processor_filter(self.data):
-            yield rec
+        """This method must be implemented in subclasses"""
+        pass
