@@ -35,13 +35,15 @@ def collate_feature_dict(batch):
     lengths = torch.LongTensor([len(rec[seq_col]) for rec in batch])
     new_x = {}
     for k, v in new_x_.items():
-        if type(v[0]) is torch.Tensor:
+        if isinstance(v[0], torch.Tensor):
             if k.startswith('target'):
                 new_x[k] = torch.stack(v, dim=0)
             else:
                 new_x[k] = torch.nn.utils.rnn.pad_sequence(v, batch_first=True)
-        elif type(v[0]) is np.ndarray:
+        elif isinstance(v[0], np.ndarray):
             new_x[k] = v  # list of arrays[object]
+        elif isinstance(v[0], list):
+            new_x[k] = np.array(v, dtype=object)
         else:
             v = np.array(v)
             if v.dtype.kind == 'i':

@@ -4,8 +4,6 @@ from functools import reduce
 from collections import defaultdict
 from ptls.data_load.feature_dict import FeatureDict
 from ptls.data_load.padded_batch import PaddedBatch
-from ptls.frames.coles import MultiModalSortTimeSeqEncoderContainer
-
 
 def collate_feature_dict(batch):
     new_x_ = defaultdict(list)
@@ -79,7 +77,8 @@ class MultiModalDataset(FeatureDict, torch.utils.data.Dataset):
         col_id:
             column name with user_id
         source_names:
-            column name with name sources
+            column name with name sources, must be specified in the same order as trx_encoders in 
+            ptls.frames.coles.multimodal_module.MultiModalSortTimeSeqEncoderContainer
         col_time:
             column name with event_time
         """

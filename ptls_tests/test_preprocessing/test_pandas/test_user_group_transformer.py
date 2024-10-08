@@ -12,7 +12,7 @@ def test_group():
         'amount':     [10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 16.0, 17.0, 18.0],
     })
     t = UserGroupTransformer(col_name_original='user_id')
-    records = t.fit_transform(df).to_dict(orient='record')
+    records = t.fit_transform(df).to_dict(orient='records')
     rec = records[1]
     assert rec['user_id'] == 1
     torch.testing.assert_close(rec['event_time'], torch.LongTensor([0, 1, 2, 3]))
@@ -28,7 +28,7 @@ def test_group_with_target():
         'target':     [10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 16.0, 17.0, 18.0],
     })
     t = UserGroupTransformer(col_name_original='user_id', cols_first_item=['target'])
-    records = t.fit_transform(df).to_dict(orient='record')
+    records = t.fit_transform(df).to_dict(orient='records')
     rec = records[1]
     assert rec['user_id'] == 1
     torch.testing.assert_close(rec['event_time'], torch.LongTensor([-1, 0, 1, 3]))

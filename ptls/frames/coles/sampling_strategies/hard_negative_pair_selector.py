@@ -11,7 +11,7 @@ class HardNegativePairSelector(PairSelector):
     """
 
     def __init__(self, neg_count=1):
-        super(HardNegativePairSelector, self).__init__()
+        super().__init__()
         self.neg_count = neg_count
 
     def get_pairs(self, embeddings, labels):

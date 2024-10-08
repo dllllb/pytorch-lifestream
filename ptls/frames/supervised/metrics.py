@@ -155,7 +155,11 @@ class BucketAccuracy(torchmetrics.Metric):
         b = torch.quantile(y, q, interpolation="nearest")
         y1 = torch.bucketize(y1, b1, out_int32=True)
         y = torch.bucketize(y, b, out_int32=True)
-        return torchmetrics.functional.accuracy(y1, y)
+        num_classes = y.max().item() + 1
+        if hasattr(torchmetrics.functional.classification, "multiclass_accuracy"):
+            return torchmetrics.functional.classification.multiclass_accuracy(y1, y, num_classes=num_classes)
+        else:
+            return torchmetrics.functional.classification.accuracy(y1, y, num_classes=num_classes)
 
 
 class JSDiv(torchmetrics.Metric):

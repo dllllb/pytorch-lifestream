@@ -13,6 +13,25 @@ from ptls.nn import PBLinear, RnnSeqEncoder, TransformerSeqEncoder, TrxEncoder
 from ptls_tests.test_data_load import RandomEventData
 
 
+def accuracy_metric(*args, **kwargs):
+    kwargs["task"] = kwargs.get("task", "multiclass")
+    try:
+        return torchmetrics.classification.Accuracy(*args, **kwargs)
+    except TypeError:
+        if kwargs.pop("task", None) == "binary":
+            kwargs["num_classes"] = 2
+        return torchmetrics.classification.Accuracy(*args, **kwargs)
+
+def auroc_metric(*args, **kwargs):
+    kwargs["task"] = kwargs.get("task", "multiclass")
+    try:
+        return torchmetrics.classification.AUROC(*args, **kwargs)
+    except TypeError:
+        if kwargs.pop("task", None) == "binary":
+            kwargs["num_classes"] = 2
+        return torchmetrics.classification.AUROC(*args, **kwargs)
+
+
 def get_rnn_params():
     return dict(
         seq_encoder=RnnSeqEncoder(
@@ -83,11 +102,11 @@ def test_train_loop_rnn_binary_classification():
             torch.nn.Flatten(start_dim=0),
         ),
         loss=BCELoss(),
-        metric_list=torchmetrics.AUROC(num_classes=2),
+        metric_list=auroc_metric(task="binary"),
         **get_rnn_params(),
     )
     dl = RandomEventData(tst_params_data(), target_type='bin_cls')
-    trainer = pl.Trainer(max_epochs=1, logger=None, checkpoint_callback=False)
+    trainer = pl.Trainer(max_epochs=1, logger=None, enable_checkpointing=False)
     trainer.fit(model, dl)
     print(trainer.logged_metrics)
 
@@ -100,13 +119,13 @@ def test_train_loop_rnn_milti_classification():
         ),
         loss=torch.nn.NLLLoss(),
         metric_list={
-            'auroc': torchmetrics.AUROC(num_classes=4),
-            'accuracy': torchmetrics.Accuracy(),
+            'auroc': auroc_metric(num_classes=4),
+            'accuracy': accuracy_metric(num_classes=4),
         },
         **get_rnn_params(),
     )
     dl = RandomEventData(tst_params_data(), target_type='multi_cls')
-    trainer = pl.Trainer(max_epochs=1, logger=None, checkpoint_callback=False)
+    trainer = pl.Trainer(max_epochs=1, logger=None, enable_checkpointing=False)
     trainer.fit(model, dl)
     print(trainer.logged_metrics)
 
@@ -118,11 +137,11 @@ def test_train_loop_rnn_regression():
             torch.nn.Flatten(start_dim=0),
         ),
         loss=torch.nn.MSELoss(),
-        metric_list=torchmetrics.MeanSquaredError(compute_on_step=False, squared=False),
+        metric_list=torchmetrics.MeanSquaredError(squared=False),
         **get_rnn_params(),
     )
     dl = RandomEventData(tst_params_data(), target_type='regression')
-    trainer = pl.Trainer(max_epochs=1, logger=None, checkpoint_callback=False)
+    trainer = pl.Trainer(max_epochs=1, logger=None, enable_checkpointing=False)
     trainer.fit(model, dl)
     print(trainer.logged_metrics)
 
@@ -151,33 +170,33 @@ def test_train_loop_transf():
             torch.nn.Flatten(start_dim=0),
         ),
         loss=BCELoss(),
-        metric_list=torchmetrics.AUROC(num_classes=2),
+        metric_list=auroc_metric(task="binary"),
         optimizer_partial=partial(torch.optim.Adam, lr=0.004),
         lr_scheduler_partial=partial(torch.optim.lr_scheduler.StepLR, step_size=10, gamma=0.8),
     )
     dl = RandomEventData(tst_params_data())
-    trainer = pl.Trainer(max_epochs=1, logger=None, checkpoint_callback=False)
+    trainer = pl.Trainer(max_epochs=1, logger=None, enable_checkpointing=False)
     trainer.fit(model, dl)
 
 # SequenceToTarget.metric_list
 def test_seq_to_target_metric_list_single_metric():
-    model = SequenceToTarget(metric_list=torchmetrics.Accuracy(), seq_encoder=None)
+    model = SequenceToTarget(metric_list=accuracy_metric(num_classes=2), seq_encoder=None)
     metric_name = next(iter(model.valid_metrics.keys()))
-    assert metric_name == 'Accuracy'
+    assert metric_name in {'Accuracy', 'MulticlassAccuracy'}
 
 
 def test_seq_to_target_metric_list_list_with_metric():
     model = SequenceToTarget(metric_list=[
-        torchmetrics.Accuracy(),
-        torchmetrics.AUROC(num_classes=2),
+        accuracy_metric(num_classes=2),
+        auroc_metric(num_classes=2),
     ], seq_encoder=None)
-    assert 'Accuracy' in model.valid_metrics
-    assert 'AUROC' in model.valid_metrics
+    assert 'Accuracy' in model.valid_metrics or 'MulticlassAccuracy' in model.valid_metrics
+    assert 'AUROC' in model.valid_metrics or 'MulticlassAUROC' in model.valid_metrics
 
 
 def test_seq_to_target_metric_list_dict_with_single_metric():
     model = SequenceToTarget(metric_list={
-        'acc': torchmetrics.Accuracy(),
+        'acc': accuracy_metric(num_classes=2),
     }, seq_encoder=None)
     metric_name = next(iter(model.valid_metrics.keys()))
     assert metric_name == 'acc'
@@ -185,20 +204,21 @@ def test_seq_to_target_metric_list_dict_with_single_metric():
 
 def test_seq_to_target_metric_list_dict_with_metric():
     model = SequenceToTarget(metric_list={
-        'acc': torchmetrics.Accuracy(),
-        'auroc': torchmetrics.AUROC(num_classes=2),
+        'acc': accuracy_metric(num_classes=2),
+        'auroc': auroc_metric(num_classes=2),
     }, seq_encoder=None)
     assert 'acc' in model.valid_metrics
     assert 'auroc' in model.valid_metrics
 
 
 def test_seq_to_target_metric_list_dict_config_with_metric():
-    conf = omegaconf.OmegaConf.create("""
+    conf = omegaconf.OmegaConf.create(f"""
         auroc:
-            _target_: torchmetrics.AUROC
+            _target_: torchmetrics.classification.{'MulticlassAUROC' if hasattr(torchmetrics.classification, 'MulticlassAUROC') else 'AUROC'}
             num_classes: 2
         acc:
-            _target_: torchmetrics.Accuracy
+            _target_: torchmetrics.classification.{'MulticlassAccuracy' if hasattr(torchmetrics.classification, 'MulticlassAccuracy') else 'Accuracy'}
+            num_classes: 2
     """)
     model = SequenceToTarget(metric_list=hydra.utils.instantiate(conf), seq_encoder=None)
     assert 'acc' in model.valid_metrics

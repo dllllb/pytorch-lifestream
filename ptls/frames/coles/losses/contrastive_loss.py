@@ -14,7 +14,7 @@ class ContrastiveLoss(nn.Module):
     """
 
     def __init__(self, margin, sampling_strategy, distributed_mode = False, do_loss_mult = False):
-        super(ContrastiveLoss, self).__init__()
+        super().__init__()
         self.margin = margin
         self.pair_selector = sampling_strategy
         self.distributed_mode = distributed_mode

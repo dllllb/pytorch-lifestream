@@ -13,7 +13,7 @@ class MarginLoss(torch.nn.Module):
     """
 
     def __init__(self, pair_selector, margin=1, beta=1.2):
-        super(MarginLoss, self).__init__()
+        super().__init__()
         self.margin = margin
         self.beta = beta
         self.pair_selector = pair_selector

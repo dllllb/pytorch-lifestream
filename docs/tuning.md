@@ -1,17 +1,17 @@
 # Hyperparameters tuning
 
 We propose a demo for hyperparameters tuning with `hydra`, `optuna` and `tensorboard`.
-This is console application located in `demo/hparam_tuning`.
+This is a console application located in `demo/hparam_tuning`.
 
 # Intro
 
 After we build a network architecture we should tune hyperparameters.
-Automated tuning have a benefits:
+Automated tuning have benefits:
 
 - Automated iterations over hparam set is faster than manual choice
 - Automated iterations requires less operational costs
 - All results logged and can be inspected together
-- Iteration count limit allow measure quality improvement with fixed resources.
+- Iteration count limit allows measuring the quality improvement with fixed resources.
 - hparam optimisation tools implement effective strategy of parameter choice
 
 Keep in mind that is just a tool for hparam iteration.
