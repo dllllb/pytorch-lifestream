@@ -52,7 +52,7 @@ pytest
 
 We have a demo notebooks here, some of them:
 
-- Supervised model training [notebook](demo/supervised-sequence-to-target.ipynb) [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/dllllb/pytorch-lifestream/blob/master/demo/coles-emb.ipynb)
+- Supervised model training [notebook](tutorials/notebooks/supervised-sequence-to-target.ipynb) [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/dllllb/pytorch-lifestream/blob/master/demo/coles-emb.ipynb)
 - Self-supervided training and embeddings for downstream task [notebook](demo/coles-emb.ipynb) [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/dllllb/pytorch-lifestream/blob/master/demo/coles-emb.ipynb)
 - Self-supervided embeddings in CatBoost [notebook](demo/coles-catboost.ipynb)
 - Self-supervided training and fine-tuning [notebook](demo/coles-finetune.ipynb) [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1Xu5hjYJRtSvu12haMnbR4KtGsNkk4cnv#scrollTo=WyOYsMF2SEZ3)
