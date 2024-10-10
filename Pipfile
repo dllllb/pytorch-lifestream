@@ -21,6 +21,7 @@ PyYAML = "~=6.0.2"
 pyhocon = "*"
 pylint = "*"
 pyspark = ">=2"
+pytest = "*"
 scikit-learn = ">=0.21.2"
 scipy = "~=1.10.1"
 setuptools = ">=59.5.0"
@@ -30,10 +31,6 @@ torchmetrics = "~=1.4.1"
 transformers = "*"
 tqdm = ">=4.32.2"
 twine = "*"
-pymonad = "*"
-distributed = "*"
-sparkpickle = "*"
-dask = "*"
 
 [packages]
 pytorch-lifestream = {editable = true, path = "."}
