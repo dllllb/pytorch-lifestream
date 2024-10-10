@@ -24,22 +24,42 @@ class SeqLenFilter(IterableProcessingDataset):
         self._max_seq_len = max_seq_len
         self._sequence_col = sequence_col
         self._seq_len_col = seq_len_col
+    
+    def __iter__(self):
+        for rec in self._src:
+            features = rec[0] if isinstance(rec, tuple) else rec
+            seq_len = self.get_len(features)
+            if self.is_len_valid(seq_len):
+                continue
+            yield rec
 
-    def _valid_seq_len(self, seq_feature):
-        if self.is_seq_feature(seq_feature):
-            _ = len(seq_feature)
-            min_len_check = _ > self._min_seq_len if self._min_seq_len is not None else True
-            max_len_check = _ < self._max_seq_len if self._max_seq_len is not None else True
-        else:
-            min_len_check, max_len_check = False, False
-        return all([min_len_check, max_len_check])
+    def get_len(self, rec: dict) -> int:
+        if self._seq_len_col is not None:
+            return rec[self._seq_len_col]
+        return len(rec[self.get_sequence_col(rec)])    
+    
+    def is_len_valid(self, sequence_len: int) -> bool:
+        if self._min_seq_len is not None and sequence_len < self._min_seq_len:
+            return True
+        if self._max_seq_len is not None and sequence_len > self._max_seq_len:
+            return True
+    
+    def get_sequence_col(self, rec: dict) -> str:
+        """Finds and returns the column in the record containing the sequence data.
 
-    def transform(self, features):
-        return features if self.get_len(features) else None
+        Args:
+            rec: The record containing the sequence data.
 
-    def get_sequence_col(self, rec: dict):
-        # filter_func = list(filter(lambda x: 'CI' in rec.get(x), rec))
-        return all([self._valid_seq_len(feature) for feature in rec.values() if not isinstance(feature, int)])
+        Returns:
+            str: The name of the column containing the sequence data.
 
-    def get_len(self, rec):
-        return rec[self._seq_len_col] if self._seq_len_col is not None else self.get_sequence_col(rec)
+        Raises:
+            ValueError: If no column containing sequence data is found.
+        """
+
+        try:
+            sequence_col = next(k for k, v in rec.items() if self.is_seq_feature(k, v))
+        except StopIteration:
+            raise ValueError(f"Can not find field with sequence from record: {rec}")
+
+        return sequence_col

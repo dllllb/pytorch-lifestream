@@ -4,9 +4,12 @@ import torch
 
 class FeatureDict:
     """Tools for feature-dict format
-    Feature dict:
-        keys are feature names
-        values are feature values, sequential, scalar or arrays
+
+    Args:
+        Feature dict:
+            keys are feature names
+            values are feature values, sequential, scalar or arrays
+
     """
     def __init__(self, *args, **kwargs):
         """Mixin constructor
@@ -14,64 +17,53 @@ class FeatureDict:
         super().__init__(*args, **kwargs)
 
     @staticmethod
-    def is_seq_feature(k: str=None, x=None):
+    def is_seq_feature(k: str=None, x=None) -> bool:
         """Check is value sequential feature
         Synchronized with ptls.data_load.padded_batch.PaddedBatch.is_seq_feature
 
-        Iterables are:
-            np.array
-            torch.Tensor
+        Args:
+            k: feature_name - `np.array` or `torch.Tensor`. `list` is Not iterable:
+                - dont supports indexing
+            x: value for check
 
-        Not iterable:
-            list    - dont supports indexing
-
-        Parameters
-        ----------
-        k:
-            feature_name
-        x:
-            value for check
-
-        Returns
-        -------
+        Returns:
             True if value is iterable
+        
         """
-        # Обработка случая с 'k', для старого кода
+        
         if k == 'event_time':
             return True
-        if k and k.startswith('target'):
+        
+        if k.startswith('target'):
             return False
 
-        # Основная логика для нового кода
         if isinstance(x, (np.ndarray, torch.Tensor)):
             return True
         return False
 
     @staticmethod
-    def seq_indexing(d, ix):
+    def seq_indexing(d: dict, ix: int) -> dict:
         """Apply indexing for seq_features only
 
-        Parameters
-        ----------
-        d:
-            feature dict
-        ix:
-            indexes
-
-        Returns
-        -------
+        Args:
+            d: feature dict
+            ix: indexes
+        
+        Returns:
+            dict
 
         """
-        return {k: v[ix] if FeatureDict.is_seq_feature(v) else v for k, v in d.items()}
+        return {k: v[ix] if FeatureDict.is_seq_feature(k, v) else v for k, v in d.items()}
 
     @staticmethod
-    def get_seq_len(d):
+    def get_seq_len(d) -> int:
         """Finds a sequence column and return its length
 
-        Parameters
-        ----------
-        d:
-            feature-dict
+        Args:
+            d: feature-dict
+        
+        Returns:
+            int
 
         """
         if 'event_time' in d:
