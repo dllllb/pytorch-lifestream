@@ -17,7 +17,7 @@ class IterableProcessingDataset(FeatureDict, IterableDataset):
         For record transformation. Redefine __iter__ for filter
         """
         for rec in self._src:
-            if type(rec) is tuple:
+            if isinstance(rec, tuple):
                 features = rec[0]
                 new_features = self.process(features)
                 yield tuple([new_features, *rec[1:]])
