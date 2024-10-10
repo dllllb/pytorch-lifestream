@@ -1,7 +1,6 @@
 from typing import Optional, Set, Union
-
 from ptls.data_load.iterable_processing_dataset import IterableProcessingDataset
-from collections import defaultdict
+
 
 class FeatureFilter(IterableProcessingDataset):
     """

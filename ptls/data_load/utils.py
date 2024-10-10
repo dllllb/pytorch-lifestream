@@ -11,7 +11,8 @@ from ptls.constant_repository import TORCH_EMB_DTYPE, TORCH_DATETIME_DTYPE, TORC
 
 torch_to_numpy = torch.from_numpy
 
-transform_func = {'seq_tensor': partial(torch.nn.utils.rnn.pad_sequence, batch_first=True),
+transform_func = {'seq_tensor': partial(torch.nn.utils.rnn.pad_sequence, 
+                                        batch_first=True),
                   'target_tensor': torch.stack}
 
 
@@ -51,7 +52,7 @@ def collate_feature_dict(batch):
     new_x = defaultdict(list)
     _ = list(map(_update_dict, enumerate(batch)))
     del _
-    seq_col = next(k for k, v in batch[0].items() if FeatureDict.is_seq_feature(v))
+    seq_col = next(k for k, v in batch[0].items() if FeatureDict.is_seq_feature(k, v))
     lengths = torch.LongTensor(list(map(partial(_return_len, col_name=seq_col), batch)))
     list_of_transform_func = Maybe.insert(iter(new_x.items())). \
         maybe(default_value=None, extraction_function=lambda dict_tup: list(map(detect_transform_func, dict_tup)))
