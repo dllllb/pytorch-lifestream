@@ -4,41 +4,34 @@ from ptls.data_load.padded_batch import PaddedBatch
 
 
 class ABSModule(pl.LightningModule):
-    @property
-    def metric_name(self):
-        raise NotImplementedError()
+    """Abstract class for all modules in the project.
+    Defines shared logic for training and validation steps.
+    
+    Args:
+        validation_metric:
+            Metric for validation step. It is used to calculate the quality of the model.
+        seq_encoder:
+            Model which calculate embeddings for original raw transaction sequences
+            `seq_encoder` is trained by `CoLESModule` to get better representations of input sequences
+        loss:
+            loss object from `ptls.frames.coles.losses`.
+            There are paired and triplet loss. They are required sampling strategy
+            from `ptls.frames.coles.sampling_strategies`. Sampling strategy takes a relevant pairs or triplets from
+            pairwise distance matrix.
+        optimizer_partial:
+            optimizer init partial. Network parameters are missed.
+        lr_scheduler_partial:
+            scheduler init partial. Optimizer are missed.
 
-    @property
-    def is_requires_reduced_sequence(self):
-        raise NotImplementedError()
+    """
 
-    def shared_step(self, x, y):
-        """
-
-        Args:
-            x:
-            y:
-
-        Returns: y_h, y
-
-        """
-        raise NotImplementedError()
-
-    def __init__(self, validation_metric=None,
-                       seq_encoder=None,
-                       loss=None,
-                       optimizer_partial=None,
-                       lr_scheduler_partial=None):
-        """
-        Parameters
-        ----------
-        params : dict
-            params for creating an encoder
-        seq_encoder : torch.nn.Module
-            sequence encoder, if not provided, will be constructed from params
-        """
+    def __init__(self, 
+                 validation_metric=None,
+                 seq_encoder=None,
+                 loss=None,
+                 optimizer_partial=None,
+                 lr_scheduler_partial=None):
         super().__init__()
-        # self.save_hyperparameters()
 
         self._loss = loss
         self._seq_encoder = seq_encoder
@@ -47,6 +40,27 @@ class ABSModule(pl.LightningModule):
 
         self._optimizer_partial = optimizer_partial
         self._lr_scheduler_partial = lr_scheduler_partial
+ 
+    @property
+    def metric_name(self):
+        raise NotImplementedError()
+
+    @property
+    def is_requires_reduced_sequence(self):
+        raise NotImplementedError()
+
+    def shared_step(self, x: PaddedBatch, y: torch.Tensor) -> tuple:
+        """Method for shared logic between training and validation steps
+
+        Args:
+            x: features
+            y: target
+
+        Returns: y_h, y
+
+        """
+        raise NotImplementedError()
+
 
     @property
     def seq_encoder(self):
@@ -70,7 +84,8 @@ class ABSModule(pl.LightningModule):
         return loss
 
     def validation_step(self, batch, _):
-        self._validation_metric(self.shared_step(*batch))
+        y_h, y = self.shared_step(*batch)
+        self._validation_metric(y_h, y)
 
     def on_validation_epoch_end(self):
         self.log(f'valid/{self.metric_name}', self._validation_metric.compute(), prog_bar=True)
