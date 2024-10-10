@@ -4,26 +4,33 @@ url = "https://pypi.org/simple"
 verify_ssl = true
 
 [dev-packages]
-pytest = "*"
-pylint = "*"
-jupyter = "*"
-coverage = "*"
-twine = "*"
-setuptools = ">=59.5.0"
 catboost = "*"
-mkdocs = "*"
-matplotlib = ">=3.1.1"
-pandas = "==1.4.*"
-scikit-learn = ">=0.21.2"
-pyspark = ">=2"
-tqdm = ">=4.32.2"
-tensorboard = ">=2.1.0"
-pyhocon = "*"
-hydra-optuna-sweeper = '>=1.2.0'
-duckdb = "*"
-pyarrow = '>=7.0'
-transformers = '*'
+coverage = "*"
+duckdb = "~=0.8.0"
 hydra-core = '>=1.1.2'
+hydra-optuna-sweeper = '>=1.2.0'
+joblib = "~=1.4.2"
+jupyter = "*"
+matplotlib = ">=3.1.1"
+mkdocs = "*"
+numpy = "~=1.24.4"
+omegaconf = "~=2.3.0"
+pandas = "~=1.4.4"
+pyarrow = '>=7.0'
+PyYAML = "~=6.0.2"
+pyhocon = "*"
+pylint = "*"
+pyspark = ">=2"
+pytest = "*"
+scikit-learn = ">=0.21.2"
+scipy = "~=1.10.1"
+setuptools = ">=59.5.0"
+tensorboard = ">=2.1.0"
+torch = "~=2.4.0"
+torchmetrics = "~=1.4.1"
+transformers = "*"
+tqdm = ">=4.32.2"
+twine = "*"
 
 [packages]
 pytorch-lifestream = {editable = true, path = "."}
