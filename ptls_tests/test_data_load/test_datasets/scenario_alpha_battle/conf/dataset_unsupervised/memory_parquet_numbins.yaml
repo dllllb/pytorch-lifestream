@@ -1,0 +1,57 @@
+train:
+  _target_: ptls.data_load.datasets.AugmentationDataset
+  f_augmentations:
+    - _target_: ptls.data_load.augmentations.DropoutTrx
+      trx_dropout: 0.01
+  data:
+    _target_: ptls.data_load.datasets.MemoryMapDataset
+    data:
+      _target_: ptls.data_load.datasets.parquet_dataset.ParquetDataset
+      shuffle_files: true
+      i_filters:
+        - _target_: ptls.data_load.iterable_processing.SeqLenFilter
+          min_seq_len: 32
+        - _target_: ptls.data_load.iterable_processing.FeatureFilter
+          drop_feature_names:
+            - app_id
+            - product
+            - flag
+            - country
+            - city
+        - _target_: ptls.data_load.iterable_processing.FeatureBinScaler
+          feature_bins:
+            amnt: [0.1783,0.2350,0.2589,0.3590,0.5132,0.5557,0.6401]
+            hour_diff: [0.0,5.0,18.0,50.0,103.0,388.0]
+        - _target_: ptls.data_load.iterable_processing.IterableShuffle
+          buffer_size: 10000
+      data_files:
+        _target_: ptls.data_load.datasets.parquet_file_scan
+        file_path: data/train_trx.parquet
+        # file_path: data/train_trx.parquet/test_part_000_1063620_to_1074462.parquet
+        valid_rate: 0.05
+        return_part: train
+
+valid:
+  _target_: ptls.data_load.datasets.MemoryMapDataset
+  data:
+    _target_: ptls.data_load.datasets.parquet_dataset.ParquetDataset
+    i_filters:
+      - _target_: ptls.data_load.iterable_processing.SeqLenFilter
+        min_seq_len: 32
+      - _target_: ptls.data_load.iterable_processing.FeatureFilter
+        drop_feature_names:
+          - app_id
+          - product
+          - flag
+          - country
+          - city
+      - _target_: ptls.data_load.iterable_processing.FeatureBinScaler
+        feature_bins:
+          amnt: [0.1783,0.2350,0.2589,0.3590,0.5132,0.5557,0.6401]
+          hour_diff: [0.0,5.0,18.0,50.0,103.0,388.0]
+    data_files:
+      _target_: ptls.data_load.datasets.parquet_file_scan
+      file_path: data/test_trx.parquet
+      # file_path: data/test_trx.parquet/train_part_000_0_to_23646.parquet
+      valid_rate: 0.05
+      return_part: valid

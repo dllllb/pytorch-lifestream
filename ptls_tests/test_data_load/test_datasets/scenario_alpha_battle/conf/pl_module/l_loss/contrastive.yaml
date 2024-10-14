@@ -1,0 +1,5 @@
+_target_: ptls.frames.coles.losses.ContrastiveLoss
+margin: 0.5
+sampling_strategy:
+  _target_: ptls.frames.coles.sampling_strategies.HardNegativePairSelector
+  neg_count: 9
