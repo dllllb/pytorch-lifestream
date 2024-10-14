@@ -1,0 +1,117 @@
+defaults:
+  - _self_
+  - dataset_unsupervised/parquet
+  - inference/default
+  - inference/seq_encoder/pretrained
+
+seed_everything: 42
+logger_name: mles_model
+model_path: models/mles_model.p
+embed_file_name: mles_embeddings
+
+data_module:
+  _target_: ptls.frames.PtlsDataModule
+  train_data:
+    _target_: ptls.frames.coles.ColesIterableDataset
+    splitter:
+      _target_: ptls.frames.coles.split_strategy.SampleSlices
+      split_count: 5
+      cnt_min: 20
+      cnt_max: 60
+    data: ${dataset_unsupervised.train}
+  valid_data:
+    _target_: ptls.frames.coles.ColesIterableDataset
+    splitter:
+      _target_: ptls.frames.coles.split_strategy.SampleSlices
+      split_count: 5
+      cnt_min: 20
+      cnt_max: 60
+    data: ${dataset_unsupervised.valid}
+  train_batch_size: 128
+  train_num_workers: 8
+  valid_batch_size: 128
+  valid_num_workers: 16
+
+pl_module:
+  _target_: ptls.frames.coles.CoLESModule
+  validation_metric:
+    _target_: ptls.frames.coles.metric.BatchRecallTopK
+    K: 4
+    metric: cosine
+  seq_encoder:
+    _target_: ptls.nn.RnnSeqEncoder
+    trx_encoder: 
+      _target_: ptls.nn.TrxEncoder
+      norm_embeddings: false
+      embeddings_noise: 0.003
+      embeddings: 
+        currency: 
+          in: 13
+          out: 2
+        operation_kind: 
+          in: 9
+          out: 2
+        card_type: 
+          in: 177
+          out: 0
+        operation_type: 
+          in: 24
+          out: 4
+        operation_type_group: 
+          in: 6
+          out: 32
+        ecommerce_flag: 
+          in: 5
+          out: 1
+        payment_system: 
+          in: 9
+          out: 4
+        income_flag: 
+          in: 5
+          out: 1
+        mcc: 
+          in: 110
+          out: 32
+        country: 
+          in: 26
+          out: 0
+        city: 
+          in: 163
+          out: 0
+        mcc_category: 
+          in: 30
+          out: 16
+        day_of_week: 
+          in: 9
+          out: 2
+        hour: 
+          in: 25
+          out: 4
+        weekofyear: 
+          in: 55
+          out: 4
+      numeric_values: 
+        amnt: identity
+        hour_diff: log
+    type: gru
+    hidden_size: 1024
+    bidir: false
+    trainable_starter: static
+  head:
+    _target_: ptls.nn.L2NormEncoder
+  loss:
+    _target_: ptls.frames.coles.losses.ContrastiveLoss
+    margin: 0.5
+    sampling_strategy:
+      _target_: ptls.frames.coles.sampling_strategies.HardNegativePairSelector
+      neg_count: 5
+  optimizer_partial:
+    _partial_: true
+    _target_: torch.optim.Adam
+    lr: 0.001
+    weight_decay: 0.0
+  lr_scheduler_partial:
+    _partial_: true
+    _target_: torch.optim.lr_scheduler.StepLR
+    step_size: 1
+    gamma: 0.8

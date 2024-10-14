@@ -1,0 +1,58 @@
+_target_: ptls.nn.RnnSeqEncoder
+trx_encoder:
+  _target_: ptls.nn.TrxEncoder
+  norm_embeddings: false
+  embeddings_noise: 0.003
+  embeddings:
+    currency:
+      in: 13
+      out: 2
+    operation_kind:
+      in: 9
+      out: 2
+    card_type:
+      in: 177
+      out: 2
+    operation_type:
+      in: 24
+      out: 2
+    operation_type_group:
+      in: 6
+      out: 2
+    ecommerce_flag:
+      in: 5
+      out: 1
+    payment_system:
+      in: 9
+      out: 2
+    income_flag:
+      in: 5
+      out: 1
+    mcc:
+      in: 110
+      out: 16
+    country:
+      in: 26
+      out: 1
+    city:
+      in: 163
+      out: 1
+    mcc_category:
+      in: 30
+      out: 16
+    day_of_week:
+      in: 9
+      out: 2
+    hour:
+      in: 25
+      out: 2
+    weekofyear:
+      in: 55
+      out: 2
+  numeric_values:
+    amnt: identity
+    hour_diff: log
+type: gru
+hidden_size: 1024
+bidir: false
+trainable_starter: static
