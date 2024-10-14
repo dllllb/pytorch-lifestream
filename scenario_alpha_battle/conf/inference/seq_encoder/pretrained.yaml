@@ -1,0 +1,2 @@
+load_from_checkpoint: true
+f: ${model_path}

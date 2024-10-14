@@ -1,0 +1,3 @@
+_target_: ptls.frames.coles.losses.CentroidSoftmaxLoss
+class_num: 2
+temperature: 10

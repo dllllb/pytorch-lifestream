@@ -1,0 +1,31 @@
+_target_: ptls.nn.AggFeatureSeqEncoder
+embeddings:
+  currency:
+    in: 13
+  operation_kind:
+    in: 9
+  operation_type:
+    in: 24
+  operation_type_group:
+    in: 6
+  ecommerce_flag:
+    in: 5
+  payment_system:
+    in: 9
+  income_flag:
+    in: 5
+  mcc:
+    in: 110
+  mcc_category:
+    in: 30
+  day_of_week:
+    in: 9
+  hour:
+    in: 25
+  weekofyear:
+    in: 55
+numeric_values:
+  amnt: identity
+  hour_diff: log
+was_logified: false
+log_scale_factor: 1
