@@ -1,0 +1,49 @@
+train:
+  _target_: ptls.data_load.datasets.augmentation_dataset.AugmentationIterableDataset
+  f_augmentations:
+    - _target_: ptls.data_load.augmentations.DropoutTrx
+      trx_dropout: 0.01
+  data:
+    _target_: ptls.data_load.datasets.parquet_dataset.ParquetDataset
+    shuffle_files: true
+    i_filters:
+      - _target_: ptls.data_load.iterable_processing.SeqLenFilter
+        min_seq_len: 30
+      - _target_: ptls.data_load.iterable_processing.FeatureFilter
+        drop_feature_names:
+          - app_id
+          - product
+          - flag
+#      - _target_: ptls.data_load.iterable_processing.feature_type_cast.FeatureTypeCast
+#        feature_types:
+#          flag:
+#            _target_: builtins.float
+#            _partial_: true
+      - _target_: ptls.data_load.iterable_processing.IterableShuffle
+        buffer_size: 10000
+    data_files:
+      _target_: ptls.data_load.datasets.parquet_file_scan
+      file_path: data/train_trx.parquet
+      valid_rate: 0.05
+      return_part: train
+
+valid:
+  _target_: ptls.data_load.datasets.parquet_dataset.ParquetDataset
+  i_filters:
+    - _target_: ptls.data_load.iterable_processing.SeqLenFilter
+      min_seq_len: 30
+    - _target_: ptls.data_load.iterable_processing.FeatureFilter
+      drop_feature_names:
+        - app_id
+        - product
+        - flag
+#    - _target_: ptls.data_load.iterable_processing.feature_type_cast.FeatureTypeCast
+#      feature_types:
+#        flag:
+#          _target_: builtins.float
+#          _partial_: true
+  data_files:
+    _target_: ptls.data_load.datasets.parquet_file_scan
+    file_path: data/train_trx.parquet
+    valid_rate: 0.05
+    return_part: valid
