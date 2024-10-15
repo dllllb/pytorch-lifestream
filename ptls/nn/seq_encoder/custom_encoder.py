@@ -1,6 +1,6 @@
 import torch
 from torch.nn import MultiheadAttention
-from torch.nn.functional import relu, gelu
+from torch.nn.functional import gelu
 
 from ptls.data_load.padded_batch import PaddedBatch
 from ptls.nn.seq_encoder.abs_seq_encoder import AbsSeqEncoder
@@ -37,24 +37,24 @@ class Encoder(AbsSeqEncoder):
         True - returns Tensor with all transactions embeddings after aggregation step
     """
 
-    def __init__(self, 
-                input_size: int,
-                intermediate_size: int = 2048, 
-                num_hidden_layers: int = 8,
-                num_attention_heads: int = 8,
-                attn_block_mode: str = 'rezero', 
-                self_attn_mode: str = 'quadratic', 
-                aggregation_mode: str = 'mean',
-                layer_norm=None,
-                is_reduce_sequence=True):
+    def __init__(self,
+                 input_size: int,
+                 intermediate_size: int = 2048,
+                 num_hidden_layers: int = 8,
+                 num_attention_heads: int = 8,
+                 attn_block_mode: str = 'rezero',
+                 self_attn_mode: str = 'quadratic',
+                 aggregation_mode: str = 'mean',
+                 layer_norm=None,
+                 is_reduce_sequence=True):
         super().__init__(is_reduce_sequence=is_reduce_sequence)
-        
+
         self.transformer = torch.nn.Sequential(
             *[AttentionBlock(
                 input_size, intermediate_size, attn_block_mode, self_attn_mode, layer_norm, num_attention_heads
             ) for _ in range(num_hidden_layers)]
         )
-        
+
         self.aggregation = Aggregation(reduction=aggregation_mode)
         self.is_reduce_sequence = is_reduce_sequence
 
@@ -82,7 +82,7 @@ class FlowAttention(torch.nn.Module):
         self.num_heads = num_heads
         self.head_dim = embed_dim // num_heads
 
-        self.qkv_proj = torch.nn.Linear(input_dim, 3*embed_dim)
+        self.qkv_proj = torch.nn.Linear(input_dim, 3 * embed_dim)
         self.out_proj = torch.nn.Linear(embed_dim, input_dim)
 
         self._reset_parameters()
@@ -100,7 +100,7 @@ class FlowAttention(torch.nn.Module):
 
         # Separate Q, K, V from linear output
         qkv = qkv.reshape(batch_size, seq_length, self.num_heads, 3 * self.head_dim)
-        q, k, v = qkv.chunk(3, dim=-1)   # [Batch, SeqLen, Head, Dims]
+        q, k, v = qkv.chunk(3, dim=-1)  # [Batch, SeqLen, Head, Dims]
 
         q = torch.sigmoid(q)
         k = torch.sigmoid(k)
@@ -111,15 +111,17 @@ class FlowAttention(torch.nn.Module):
         i_hat = torch.sum(q * torch.sum(k / o, dim=1, keepdim=True), dim=3, keepdim=True)
         o_hat = torch.sum(k * torch.sum(q / i, dim=1, keepdim=True), dim=3, keepdim=True)
 
-        r = torch.matmul(q / i, torch.matmul(k.transpose(-2, -1), v * torch.softmax(o_hat, dim=1))) * torch.sigmoid(i_hat)
+        r = torch.matmul(q / i, torch.matmul(k.transpose(-2, -1), v * torch.softmax(o_hat, dim=1))) * torch.sigmoid(
+            i_hat)
 
         values = r.reshape(batch_size, seq_length, embed_dim)
         out = self.out_proj(values)
-        
+
         return out
 
+
 class MLP(torch.nn.Module):
-    
+
     def __init__(self, n_in, n_hidden, n_out, depth=2):
         super().__init__()
         self.mlp = torch.nn.Sequential(
@@ -128,56 +130,58 @@ class MLP(torch.nn.Module):
             *[torch.nn.Sequential(
                 torch.nn.Linear(n_hidden, n_hidden),
                 torch.nn.GELU(),
-            ) for _ in range(depth-1)],
+            ) for _ in range(depth - 1)],
             torch.nn.Linear(n_hidden, n_out)
         )
-        
+
     def forward(self, X):
         return self.mlp(X)
-    
+
+
 class Attention(torch.nn.Module):
-    
+
     def __init__(self, embed_dim, num_heads, self_attn):
         super().__init__()
-        
+
         self.self_attn = self_attn
-        if self_attn=="quadratic":
+        if self_attn == "quadratic":
             self.attn = MultiheadAttention(embed_dim, num_heads, batch_first=True)
-        elif self_attn=="linear-flow":
+        elif self_attn == "linear-flow":
             self.attn = FlowAttention(embed_dim, num_heads)
-        elif self_attn=="linear-cross":
-            pass # TODO
-        
+        elif self_attn == "linear-cross":
+            pass  # TODO
+
     def forward(self, X):
-        
-        if self.self_attn=="quadratic":
+
+        if self.self_attn == "quadratic":
             X, _ = self.attn(X, X, X)
-        elif self.self_attn=="linear-flow":
+        elif self.self_attn == "linear-flow":
             X = self.attn(X)
-        elif self.self_attn=="linear-cross":
+        elif self.self_attn == "linear-cross":
             pass
-        
+
         return X
-    
+
+
 class AttentionBlock(torch.nn.Module):
-    
+
     def __init__(self, embed_dim, mlp_hidden_dim, attn_block, self_attn, layer_norm, num_heads=4):
         super().__init__()
-        
+
         self.attn_block = attn_block
         self.layer_norm = layer_norm
-        
-        if self.attn_block=="rezero":
-            self.alpha_attn = torch.nn.Parameter(torch.normal(torch.tensor(0.), torch.tensor(1e-6))) 
+
+        if self.attn_block == "rezero":
+            self.alpha_attn = torch.nn.Parameter(torch.normal(torch.tensor(0.), torch.tensor(1e-6)))
             self.alpha_mlp = torch.nn.Parameter(torch.normal(torch.tensor(0.), torch.tensor(1e-6)))
-        
+
         self.attn = Attention(embed_dim, num_heads, self_attn)
         self.linear1 = torch.nn.Linear(embed_dim, mlp_hidden_dim)
         self.linear2 = torch.nn.Linear(mlp_hidden_dim, embed_dim)
-        
+
     def forward(self, X):
-        
-        if self.attn_block=="rezero":
+
+        if self.attn_block == "rezero":
             if self.layer_norm == 'pre':
                 X = X / (X.pow(2).sum(dim=-1, keepdim=True) + 1e-9).pow(0.5)
             Z = X + self.alpha_attn * self.attn(X)
@@ -186,9 +190,9 @@ class AttentionBlock(torch.nn.Module):
             Z = Z + self.alpha_mlp * self.linear2(gelu(self.linear1(Z)))
             if self.layer_norm == 'post':
                 Z = Z / (Z.pow(2).sum(dim=-1, keepdim=True) + 1e-9).pow(0.5)
-            X = X + Z # double residual
-        
-        else: # no-ln
+            X = X + Z  # double residual
+
+        else:  # no-ln
             if self.layer_norm == 'pre':
                 X = X / (X.pow(2).sum(dim=-1, keepdim=True) + 1e-9).pow(0.5)
             Z = X + self.attn(X)
@@ -197,23 +201,24 @@ class AttentionBlock(torch.nn.Module):
             Z = Z + self.linear2(gelu(self.linear1(Z)))
             if self.layer_norm == 'post':
                 Z = Z / (Z.pow(2).sum(dim=-1, keepdim=True) + 1e-9).pow(0.5)
-            X = X + Z # double residual
-    
+            X = X + Z  # double residual
+
         return X
-    
+
+
 class Aggregation(torch.nn.Module):
-    
+
     def __init__(self, reduction="mean"):
         super().__init__()
         self.reduction = reduction
-        
+
     def forward(self, X):
-        
-        if self.reduction=="mean":
+
+        if self.reduction == "mean":
             x = X.mean(dim=1)
-        elif self.reduction=="sum":
+        elif self.reduction == "sum":
             x = X.sum(dim=1)
-        elif self.reduction=="max":
+        elif self.reduction == "max":
             x, _ = torch.max(x, dim=1)
         else:
             x = X[:, 0]

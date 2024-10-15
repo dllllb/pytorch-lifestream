@@ -1,6 +1,6 @@
 import pyspark.sql.functions as F
 
-from ptls.preprocessing.base import ColTransformer
+from ptls.preprocessing.base.transformation.col_numerical_transformer import ColTransformer
 from ptls.preprocessing.pyspark.col_transformer import ColTransformerPysparkMixin
 
 

@@ -1,7 +1,7 @@
 import pandas as pd
 import pytest
 
-from ptls.preprocessing.pandas.category_identity_encoder import CategoryIdentityEncoder
+from ptls.preprocessing.pandas.pandas_transformation.category_identity_encoder import CategoryIdentityEncoder
 
 
 def test_fit():
@@ -28,6 +28,7 @@ def test_fit_transform():
     out = t.fit_transform(df)
     assert (out['cat'] == out['cat_new']).all()
 
+
 def test_fit_negative_error():
     df = pd.DataFrame({
         'uid': [0, 0, 0, 1, 1, 1, 1],
@@ -41,6 +42,7 @@ def test_fit_negative_error():
     with pytest.raises(AttributeError):
         out = t.fit_transform(df)
 
+
 def test_fit_zero_warn():
     df = pd.DataFrame({
         'uid': [0, 0, 0, 1, 1, 1, 1],
@@ -53,6 +55,7 @@ def test_fit_zero_warn():
     )
     with pytest.warns(UserWarning):
         out = t.fit_transform(df)
+
 
 def test_transform_out_of_fit():
     df_train = pd.DataFrame({
