@@ -31,6 +31,9 @@ torchmetrics = "~=1.4.1"
 transformers = "*"
 tqdm = ">=4.32.2"
 twine = "*"
+pymonad = "*"
+distributed = "*"
+sparkpickle = "*"
 
 [packages]
 pytorch-lifestream = {editable = true, path = "."}

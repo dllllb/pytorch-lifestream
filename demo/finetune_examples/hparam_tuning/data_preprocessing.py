@@ -6,8 +6,9 @@ import pyspark.sql.functions as F
 from pyspark.sql import SparkSession
 from pyspark.sql import Window
 
-from ptls.preprocessing import PysparkDataPreprocessor
 import logging
+
+from ptls.preprocessing.pyspark.pyspark_preprocessor import PysparkDataPreprocessor
 
 logger = logging.getLogger(__name__)
 
