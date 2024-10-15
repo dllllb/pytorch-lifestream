@@ -1,13 +1,12 @@
 from functools import reduce
-from itertools import chain
 from operator import iadd
 from typing import List, Union, Callable, Dict
 
+import dask.dataframe as dd
 import pandas as pd
 from pymonad.either import Either
 from pymonad.maybe import Maybe
 from sklearn.base import BaseEstimator, TransformerMixin
-import dask.dataframe as dd
 
 from ptls.preprocessing.base.transformation.col_category_transformer import ColCategoryTransformer
 from ptls.preprocessing.base.transformation.col_event_time_transformer import DatetimeToTimestamp
@@ -16,7 +15,6 @@ from ptls.preprocessing.base.transformation.col_numerical_transformer import Col
 from ptls.preprocessing.base.transformation.user_group_transformer import UserGroupTransformer
 from ptls.preprocessing.multithread_dispatcher import DaskDispatcher
 from ptls.preprocessing.pandas.pandas_transformation.category_identity_encoder import CategoryIdentityEncoder
-from ptls.preprocessing.pandas.pandas_transformation.pandas_freq_transformer import FrequencyEncoder
 
 
 class DataPreprocessor(BaseEstimator, TransformerMixin):

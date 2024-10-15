@@ -3,8 +3,8 @@ import os
 import pickle
 import random
 import warnings
-from functools import partial
 from collections import defaultdict
+from functools import partial
 from multiprocessing.pool import Pool
 
 import numpy as np

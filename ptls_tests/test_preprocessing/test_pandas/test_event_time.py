@@ -1,6 +1,7 @@
 import pandas as pd
 
-from ptls.preprocessing.pandas.event_time import dt_to_timestamp, timestamp_to_dt, DatetimeToTimestamp
+from ptls.preprocessing.dask.dask_transformation.event_time import DatetimeToTimestamp
+from ptls.preprocessing.util import dt_to_timestamp, timestamp_to_dt
 
 
 def test_dt_to_timestamp():
