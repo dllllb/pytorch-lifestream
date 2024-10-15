@@ -5,6 +5,13 @@ from typing import List, Dict, Union
 import dask.dataframe as dd
 
 from ptls.preprocessing.base import DataPreprocessor
+from ptls.preprocessing.base.transformation.col_category_transformer import ColCategoryTransformer
+from ptls.preprocessing.base.transformation.col_identity_transformer import ColIdentityEncoder
+from ptls.preprocessing.base.transformation.col_numerical_transformer import ColTransformer
+from ptls.preprocessing.dask.dask_transformation.category_identity_encoder import CategoryIdentityEncoder
+from ptls.preprocessing.dask.dask_transformation.event_time import DatetimeToTimestamp
+from ptls.preprocessing.dask.dask_transformation.frequency_encoder import FrequencyEncoder
+from ptls.preprocessing.dask.dask_transformation.user_group_transformer import UserGroupTransformer
 
 logger = logging.getLogger(__name__)
 
@@ -110,9 +117,9 @@ class DaskDataPreprocessor(DataPreprocessor):
             col_name_original=col_id, cols_last_item=cols_last_item, max_trx_count=max_trx_count)
 
         super().__init__(
-            ct_event_time=ct_event_time,
-            cts_category=cts_category,
-            cts_numerical=cts_numerical,
+            col_event_time=ct_event_time,
+            cols_category=cts_category,
+            cols_numerical=cts_numerical,
             cols_identity=cols_identity,
             t_user_group=t_user_group,
         )
@@ -160,6 +167,7 @@ class DaskDataPreprocessor(DataPreprocessor):
         :param col_event_time:
         :return:
         """
+
         logger.info('Gender-dataset-like time transformation begins...')
         df = df.withColumn('_et_day', F.substring(F.lpad(F.col(col_event_time), 15, '0'), 1, 6).cast('float'))
 

@@ -1,8 +1,9 @@
 import warnings
+
 import pandas as pd
 
 from ptls.preprocessing.base.transformation.col_category_transformer import ColCategoryTransformer
-from ptls.preprocessing.pandas.pandas_transformation.pandas_numerical_transformer import ColTransformerPandasMixin
+from ptls.preprocessing.dask.dask_transformation.col_transformer import ColTransformerPandasMixin
 
 
 class CategoryIdentityEncoder(ColTransformerPandasMixin, ColCategoryTransformer):

@@ -1,23 +1,20 @@
 import logging
-import pandas as pd
+from typing import List, Dict, Union
+
 import numpy as np
-from functools import reduce
-from operator import iadd
+import pandas as pd
 from pyspark.sql import functions as F
 from pyspark.sql import types as T
 from pyspark.sql.window import Window
-from itertools import chain
-from typing import List, Dict, Union
 
-from .base import DataPreprocessor, ColTransformer
-
-from .base.col_category_transformer import ColCategoryTransformer
-from .pyspark.category_identity_encoder import CategoryIdentityEncoder
-from .pyspark.col_identity_transformer import ColIdentityEncoder
-from .pyspark.event_time import DatetimeToTimestamp
-from .pyspark.frequency_encoder import FrequencyEncoder
-from .pyspark.user_group_transformer import UserGroupTransformer
-
+from ptls.preprocessing.base import DataPreprocessor
+from ptls.preprocessing.base.transformation.col_category_transformer import ColCategoryTransformer
+from ptls.preprocessing.base.transformation.col_numerical_transformer import ColTransformer
+from ptls.preprocessing.pyspark.category_identity_encoder import CategoryIdentityEncoder
+from ptls.preprocessing.pyspark.col_identity_transformer import ColIdentityEncoder
+from ptls.preprocessing.pyspark.event_time import DatetimeToTimestamp
+from ptls.preprocessing.pyspark.frequency_encoder import FrequencyEncoder
+from ptls.preprocessing.pyspark.user_group_transformer import UserGroupTransformer
 
 logger = logging.getLogger(__name__)
 
@@ -25,7 +22,7 @@ logger = logging.getLogger(__name__)
 class PysparkDataPreprocessor(DataPreprocessor):
     """Data preprocessor based on pyspark.sql.DataFrame
 
-    During preprocessing it
+    During preprocess it
         * transforms `cols_event_time` column with date and time
         * encodes category columns `cols_category` into ints;
         * apply logarithm transformation to `cols_log_norm' columns;
@@ -115,9 +112,9 @@ class PysparkDataPreprocessor(DataPreprocessor):
             col_name_original=col_id, cols_last_item=cols_last_item, max_trx_count=max_trx_count)
 
         super().__init__(
-            ct_event_time=ct_event_time,
-            cts_category=cts_category,
-            cts_numerical=cts_numerical,
+            col_event_time=ct_event_time,
+            cols_category=cts_category,
+            cols_numerical=cts_numerical,
             cols_identity=cols_identity,
             t_user_group=t_user_group,
         )
@@ -203,4 +200,3 @@ class PysparkDataPreprocessor(DataPreprocessor):
         df = df.to_frame().assign(cnt=1).groupby(name)[['cnt']].sum()
         df['% of total'] = df['cnt'] / df['cnt'].sum()
         return df
-

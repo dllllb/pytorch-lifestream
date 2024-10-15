@@ -4,7 +4,7 @@ import pyspark
 import pyspark.sql.functions as F
 from pyspark.sql import Window
 
-from ptls.preprocessing.base.col_category_transformer import ColCategoryTransformer
+from ptls.preprocessing.base.transformation.col_category_transformer import ColCategoryTransformer
 from ptls.preprocessing.pyspark.col_transformer import ColTransformerPysparkMixin
 
 
