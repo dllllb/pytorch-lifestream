@@ -1,5 +1,0 @@
-_target_: ptls.frames.coles.losses.CentroidSoftmaxMemoryLoss
-class_num: 2
-hidden_size: ${pl_module.seq_encoder.hidden_size}
-temperature: 10
-alpha: 0.50
