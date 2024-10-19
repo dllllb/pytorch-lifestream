@@ -75,35 +75,24 @@ Library description [index](docs/index.md)
 `pytorch-lifestream` usage experiments on several public event datasets are available in the separate [repo](https://github.com/dllllb/ptls-experiments)
 
 ## PyTorch-LifeStream in ML Competitions
+- **Data Fusion Contest 2022**  
+  [![Habr](https://img.shields.io/badge/Habr-Articles-orange?style=flat&logo=habr&logoColor=white)](https://habr.com/ru/companies/vtb/articles/673666)  
+  [Sber AI Lab Report](https://habr.com/ru/companies/ods/articles/670572) | [GitHub Repository](https://github.com/warofgam/Sber-AI-Lab---datafusion)
 
-### 1. Data Fusion Contest 2022
-[![Habr](https://img.shields.io/badge/Habr-Articles-orange?style=flat&logo=habr&logoColor=white)](https://habr.com/ru/companies/vtb/articles/673666)  
-- 🏆 [Habr Report](https://habr.com/ru/companies/vtb/articles/673666) (in Russian)  
-- 🏆 [Sber AI Lab Team Report](https://habr.com/ru/companies/ods/articles/670572) (in Russian)  
-- 💻 [GitHub Repository](https://github.com/warofgam/Sber-AI-Lab---datafusion)  
+- **VK.com Graph ML Hackathon**  
+  [![Habr](https://img.shields.io/badge/Habr-Articles-orange?style=flat&logo=habr&logoColor=white)](https://habr.com/ru/companies/vk/articles/703484)  
+  [AlfaBank Report](https://habr.com/ru/companies/alfa/articles/698660)
 
-### 2. VK.com Graph ML Hackathon
-[![Habr](https://img.shields.io/badge/Habr-Articles-orange?style=flat&logo=habr&logoColor=white)](https://habr.com/ru/companies/vk/articles/703484)  
-- 🏆 [VK.com Hackathon Report](https://habr.com/ru/companies/vk/articles/703484) (in Russian)  
-- 🏆 [AlfaBank Team Report](https://habr.com/ru/companies/alfa/articles/698660) (in Russian)
+- **American Express - Default Prediction**  
+  [![Kaggle](https://img.shields.io/badge/Kaggle-Competition-blue?style=flat&logo=kaggle&logoColor=white)](https://www.kaggle.com/competitions/amex-default-prediction)  
+  [RNN Training](https://www.kaggle.com/code/ivkireev/amex-ptls-baseline-supervised-neural-network) | [Transformer Training](https://www.kaggle.com/code/ivkireev/amex-transformer-network-train-with-ptls) | [CoLES Embeddings](https://www.kaggle.com/code/ivkireev/amex-contrastive-embeddings-with-ptls-coles)
 
-### 3. American Express - Default Prediction Kaggle Competition
-[![Kaggle](https://img.shields.io/badge/Kaggle-Competition-blue?style=flat&logo=kaggle&logoColor=white)](https://www.kaggle.com/competitions/amex-default-prediction)  
-- 🏆 [Kaggle Competition Page](https://www.kaggle.com/competitions/amex-default-prediction)  
-- 💻 [Supervised Training with RNN](https://www.kaggle.com/code/ivkireev/amex-ptls-baseline-supervised-neural-network)  
-- 💻 [Supervised Training with Transformer](https://www.kaggle.com/code/ivkireev/amex-transformer-network-train-with-ptls)  
-- 💻 [CoLES Embedding Preparation](https://www.kaggle.com/code/ivkireev/amex-contrastive-embeddings-with-ptls-coles)  
-- 💻 [Using CoLES Embeddings in CatBoost](https://www.kaggle.com/code/ivkireev/catboost-classifier-with-coles-embeddings)  
+- **Data Fusion Contest 2024**  
+  [![GitHub](https://img.shields.io/badge/GitHub-Repository-black?style=flat&logo=github&logoColor=white)](https://github.com/warofgam/Sber-AI-Lab---datafusion)  
+  [Ivan Alexandrov Repo](https://github.com/Ivanich-spb/datafusion_2024_churn)
 
-### 4. Data Fusion Contest 2024
-[![GitHub](https://img.shields.io/badge/GitHub-Repository-black?style=flat&logo=github&logoColor=white)](https://github.com/warofgam/Sber-AI-Lab---datafusion)  
-- 💻 [Sber AI Lab Team GitHub Repository](https://github.com/warofgam/Sber-AI-Lab---datafusion)  
-- 💻 [Ivan Alexandrov's GitHub Repository](https://github.com/Ivanich-spb/datafusion_2024_churn)  
-
-### 5. COTIC - Continuous-time Event Sequence Model
-[![GitHub](https://img.shields.io/badge/GitHub-Repository-black?style=flat&logo=github&logoColor=white)](https://github.com/VladislavZh/COTIC)  
-- 💻 [COTIC GitHub Repository](https://github.com/VladislavZh/COTIC)  
-
+- **COTIC: Continuous-time Event Sequence Model**  
+  [![GitHub](https://img.shields.io/badge/GitHub-Repository-black?style=flat&logo=github&logoColor=white)](https://github.com/VladislavZh/COTIC)
 ## How to contribute
 
 1. Make your chages via Fork and Pull request.
