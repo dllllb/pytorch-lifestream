@@ -75,26 +75,26 @@ Library description [index](docs/index.md)
 `pytorch-lifestream` usage experiments on several public event datasets are available in the separate [repo](https://github.com/dllllb/ptls-experiments)
 
 ## PyTorch-LifeStream in ML Competitions
-
-
 ### 📄 Data Fusion Contest 2022:
-- [![Habr](https://img.shields.io/badge/Habr-Data%20Fusion%20VTB%20Report-blue)](https://habr.com/ru/companies/vtb/articles/673666/) | [![Habr](https://img.shields.io/badge/Habr-Sber%20AI%20Lab%20Report-blue)](https://habr.com/ru/companies/ods/articles/670572/)
+- [Habr: Data Fusion VTB Report](https://habr.com/ru/companies/vtb/articles/673666/) | [Habr: Sber AI Lab Report](https://habr.com/ru/companies/ods/articles/670572/)
 
 ### 💻 Data Fusion Contest 2024:
-- [![GitHub](https://img.shields.io/badge/GitHub-Sber%20AI%20Lab-green)](https://github.com/warofgam/Sber-AI-Lab---datafusion) | [![GitHub](https://img.shields.io/badge/GitHub-Ivan%20Alexandrov-green)](https://github.com/Ivanich-spb/datafusion_2024_churn)
+- [GitHub: Sber AI Lab](https://github.com/warofgam/Sber-AI-Lab---datafusion) | [GitHub: Ivan Alexandrov](https://github.com/Ivanich-spb/datafusion_2024_churn)
 
 ### 📄 VK.com Graph ML Hackathon:
-- [![Habr](https://img.shields.io/badge/Habr-VK.com%20Report-blue)](https://habr.com/ru/companies/vk/articles/703484/) | [![Habr](https://img.shields.io/badge/Habr-AlfaBank%20Report-blue)](https://habr.com/ru/companies/alfa/articles/698660/)
+- [Habr: VK.com Report](https://habr.com/ru/companies/vk/articles/703484/) | [Habr: AlfaBank Report](https://habr.com/ru/companies/alfa/articles/698660/)
 
 ### 📄 American Express Kaggle Contest:
-- [![Habr](https://img.shields.io/badge/Habr-Contest%20Report-blue)](https://habr.com/ru/articles/704440/)
+- [Habr: Contest Report](https://habr.com/ru/articles/704440/)
 
 ### 💻 American Express Kaggle Contest:
-- [![Kaggle](https://img.shields.io/badge/Kaggle-RNN%20Supervised%20Training-blue)](https://www.kaggle.com/code/ivkireev/amex-ptls-baseline-supervised-neural-network) | [![Kaggle](https://img.shields.io/badge/Kaggle-Transformer%20Supervised%20Training-blue)](https://www.kaggle.com/code/ivkireev/amex-transformer-network-train-with-ptls)  
-- [![Kaggle](https://img.shields.io/badge/Kaggle-CoLES%20Embedding%20Preparation-blue)](https://www.kaggle.com/code/ivkireev/amex-contrastive-embeddings-with-ptls-coles) | [![Kaggle](https://img.shields.io/badge/Kaggle-CatBoost%20with%20CoLES-blue)](https://www.kaggle.com/code/ivkireev/catboost-classifier-with-coles-embeddings)
+- [Kaggle: RNN Supervised Training](https://www.kaggle.com/code/ivkireev/amex-ptls-baseline-supervised-neural-network) | [Kaggle: Transformer Supervised Training](https://www.kaggle.com/code/ivkireev/amex-transformer-network-train-with-ptls)
+- [Kaggle: CoLES Embedding Preparation](https://www.kaggle.com/code/ivkireev/amex-contrastive-embeddings-with-ptls-coles) | [Kaggle: CatBoost with CoLES](https://www.kaggle.com/code/ivkireev/catboost-classifier-with-coles-embeddings)
 
 ### 💻 COTIC (Continuous-Time Convolutions):
-- [![GitHub](https://img.shields.io/badge/GitHub-COTIC-green)](https://github.com/VladislavZh/COTIC)
+- [GitHub: COTIC](https://github.com/VladislavZh/COTIC)
+
+
 ## How to contribute
 
 1. Make your chages via Fork and Pull request.
