@@ -75,24 +75,24 @@ Library description [index](docs/index.md)
 `pytorch-lifestream` usage experiments on several public event datasets are available in the separate [repo](https://github.com/dllllb/ptls-experiments)
 
 ## PyTorch-LifeStream in ML Competitions
-### Data Fusion Contest 2022:
-- [Habr: Data Fusion VTB Report](https://habr.com/ru/companies/vtb/articles/673666/) | [Habr: Sber AI Lab Report](https://habr.com/ru/companies/ods/articles/670572/)
+- ### Data Fusion Contest 2022:
+  [Habr: Data Fusion VTB Report](https://habr.com/ru/companies/vtb/articles/673666/) | [Habr: Sber AI Lab Report](https://habr.com/ru/companies/ods/articles/670572/)
 
-### Data Fusion Contest 2024:
-- [GitHub: Sber AI Lab](https://github.com/warofgam/Sber-AI-Lab---datafusion) | [GitHub: Ivan Alexandrov](https://github.com/Ivanich-spb/datafusion_2024_churn)
+- ### Data Fusion Contest 2024:
+  [GitHub: Sber AI Lab](https://github.com/warofgam/Sber-AI-Lab---datafusion) | [GitHub: Ivan Alexandrov](https://github.com/Ivanich-spb/datafusion_2024_churn)
 
-### VK.com Graph ML Hackathon:
-- [Habr: VK.com Report](https://habr.com/ru/companies/vk/articles/703484/) | [Habr: AlfaBank Report](https://habr.com/ru/companies/alfa/articles/698660/)
+- ### VK.com Graph ML Hackathon:
+  [Habr: VK.com Report](https://habr.com/ru/companies/vk/articles/703484/) | [Habr: AlfaBank Report](https://habr.com/ru/companies/alfa/articles/698660/)
 
-### American Express Kaggle Contest:
-- [Habr: Contest Report](https://habr.com/ru/articles/704440/)
+- ### American Express Kaggle Contest:
+  [Habr: Contest Report](https://habr.com/ru/articles/704440/)
 
-### American Express Kaggle Contest:
-- [Kaggle: RNN Supervised Training](https://www.kaggle.com/code/ivkireev/amex-ptls-baseline-supervised-neural-network) | [Kaggle: Transformer Supervised Training](https://www.kaggle.com/code/ivkireev/amex-transformer-network-train-with-ptls)
-- [Kaggle: CoLES Embedding Preparation](https://www.kaggle.com/code/ivkireev/amex-contrastive-embeddings-with-ptls-coles) | [Kaggle: CatBoost with CoLES](https://www.kaggle.com/code/ivkireev/catboost-classifier-with-coles-embeddings)
+- ### American Express Kaggle Contest:
+  [Kaggle: RNN Supervised Training](https://www.kaggle.com/code/ivkireev/amex-ptls-baseline-supervised-neural-network) | [Kaggle: Transformer Supervised Training](https://www.kaggle.com/code/ivkireev/amex-transformer-network-train-with-ptls)
+  [Kaggle: CoLES Embedding Preparation](https://www.kaggle.com/code/ivkireev/amex-contrastive-embeddings-with-ptls-coles) | [Kaggle: CatBoost with CoLES](https://www.kaggle.com/code/ivkireev/catboost-classifier-with-coles-embeddings)
 
-### COTIC (Continuous-Time Convolutions):
-- [GitHub: COTIC](https://github.com/VladislavZh/COTIC)
+- ### COTIC (Continuous-Time Convolutions):
+  [GitHub: COTIC](https://github.com/VladislavZh/COTIC)
 
 
 ## How to contribute
