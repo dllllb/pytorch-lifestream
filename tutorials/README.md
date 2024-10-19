@@ -1,45 +1,177 @@
-Learn event sequence deep learning analysis with Pytorch-Lifestream.
-We have collected a set of topics related to the processing of event sequences. Most themes are supported by demo code using the ptls library. We recommend studying the topics sequentially. However, if you are familiar in some areas, you can skip them and take only the relevant topics.
+# **Mastering Event Sequence Analysis with PyTorch-Lifestream**
 
-| ix     | Topic                                     | Description                                                         | Tutorial                                                                                                                                                                                                                                                                                                                    |     |
-| ------ | ----------------------------------------- | ------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --- |
-| 1.     | Prerequisites                             |                                                                     |                                                                                                                                                                                                                                                                                                                             |     |
-| 1.1.   | PyTorch                                   | Deep Learning framework                                             | https://www.youtube.com/watch?v=Z_ikDlimN6A                                                                                                                                                                                                                                                                                 |     |
-| 1.2.   | PyTorch-Lightning                         | NN training framework                                               | https://www.youtube.com/playlist?list=PLhhyoLH6IjfyL740PTuXef4TstxAK6nGP                                                                                                                                                                                                                                                    |     |
-| 1.3.   | (optional) Hydra                          | Configuration framework                                             | https://hydra.cc/ and [demo/Hydra CoLES Training.ipynb](./demo/Hydra CoLES Training.ipynb)                                                                                                                                                                                                                                  |     |
-| 1.4.   | pandas                                    | Data preprocessing                                                  | https://pandas.pydata.org/                                                                                                                                                                                                                                                                                                  |     |
-| 1.5.   | (optional) PySpark                        | Big Data preprocessing                                              | [https://spark.apache.org/](https://spark.apache.org/docs/latest/api/python/index.html)                                                                                                                                                                                                                                     |     |
-| 2.     | Event sequences                           | Problem statement and classical methods                             |                                                                                                                                                                                                                                                                                                                             |     |
-| 2.1.   | Event sequence for global problems        | e.g. event sequence classification                                  | TBD                                                                                                                                                                                                                                                                                                                         |     |
-| 2.2.   | Event sequence for local problems         | e.g. next event prediction                                          | TBD                                                                                                                                                                                                                                                                                                                         |     |
-| 3.     | Supervised neural networks                | Supervised learning for event sequence classification               | [demo/supervised-sequence-to-target.ipynb](./demo/su3ervised-sequence-to-target.ipynb)                                                                                                                                                                                                                                      |     |
-| 3.1.   | Network Types                             | Different networks for sequences                                    |                                                                                                                                                                                                                                                                                                                             |     |
-| 3.1.1. | Recurrent neural networks                 |                                                                     | TBD based on `supervised-sequence-to-target.ipynb`                                                                                                                                                                                                                                                                          |     |
-| 3.1.2. | (optional) Convolutional neural networks  |                                                                     | TBD based on `supervised-sequence-to-target.ipynb`                                                                                                                                                                                                                                                                          |     |
-| 3.1.3. | Transformers                              |                                                                     | [tutorials/notebooks/supervised-sequence-to-target-transformer.ipynb](demo/supervised-sequence-to-target-transformer.ipynb)                                                                                                                                                                                                                |     |
-| 3.2.   | Problem types                             | Different problems types for sequences                              |                                                                                                                                                                                                                                                                                                                             |     |
-| 3.2.1. | Global problems                           | Binary, multilabel, regression, ...                                 | TBD based on [tutorials/notebooks/multilabel-classification.ipynb](demo/multilabel-classification.ipynb)                                                                                                                                                                                                                                   |     |
-| 3.2.2. | Local problems                            | Next event prediction                                               | [tutorials/notebooks/event-sequence-local-embeddings.ipynb](demo/event-sequence-local-embeddings.ipynb)                                                                                                                                                                                                                                    |     |
-| 4.     | Unsupervised learning                     | Pretrain self-supervised model with some proxy task                 | TBD based on [tutorials/notebooks/coles-emb.ipynb](./demo/coles-emb.ipynb)  [![O4en In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/dllllb/pytorch-lifestream/blob/master/demo/co4es-emb.ipynb)                                                                              |     |
-| 4.1.   | (optional) Word2vec                       | Context based methods                                               |                                                                                                                                                                                                                                                                                                                             |     |
-| 4.2.   | MLM, RTD, GPT                             | Event bases methods                                                 | Self-supervided training and embeddings for clients' transactions [notebook](event-sequence-local-embeddings.ipynb) [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/dllllb/pytorch-lifestream/blob/master/demo/event-sequence-local-embeddings.ipynb) |     |
-| 4.3.   | NSP, SOP                                  | Sequence based methods                                              | [tutorials/notebooks/nsp-sop-emb.ipynb](tutorials/notebooks/nsp-sop-emb.ipynb)                                                                                                                                                                                                                                                                            |     |
-| 5.     | Contrastive and non-contrastive learning  | Latent representation-based losses                                  | TBD based on [tutorials/notebooks/coles-emb.ipynb](./demo/coles-emb.ipynb)                                                                                                                                                                                                                                                                 |     |
-| 5.1.   | CoLES                                     |                                                                     | [demo/coles-emb.ipynb](./demo/coles-emb.ipynb)                                                                                                                                                                                                                                                                              |     |
-| 5.2.   | VICReg                                    |                                                                     | TBD based on [demo/coles-emb.ipynb](./demo/coles-emb.ipynb)                                                                                                                                                                                                                                                                 |     |
-| 5.3.   | CPC                                       |                                                                     | TBD based on [demo/coles-emb.ipynb](./demo/coles-emb.ipynb)                                                                                                                                                                                                                                                                 |     |
-| 5.4.   | MLM, TabFormer and others                 | Self-supervised TrxEncoder only training with Masked Language Model | [demo/mlm-emb.ipynb](./demo/mlm-emb.ipynb) [demo/tabformer-emb.ipynb](demo/tabformer-emb.ipynb)                                                                                                                                                                                                                             |     |
-| 6.     | Pretrained model usage                    |                                                                     |                                                                                                                                                                                                                                                                                                                             |     |
-| 6.1.   | Downstream model on frozen embeddings     |                                                                     | TBD based on [demo/coles-emb.ipynb](./demo/coles-emb.ipynb)                                                                                                                                                                                                                                                                 |     |
-| 6.2.   | CatBoost embeddings features              |                                                                     | [demo/coles-catboost.ipynb](demo/coles-catboost.ipynb)                                                                                                                                                                                                                                                                      |     |
-| 6.3.   | Model finetuning                          |                                                                     | [demo/coles-finetune.ipynb](./demo/coles-finetune.ipynb)                                                                                                                                                                                                                                                                    |     |
-| 7.     | Preprocessing options                     | Data preparation demos                                              | [demo/preprocessing-demo.ipynb](demo/preprocessing-demo.ipynb)                                                                                                                                                                                                                                                              |     |
-| 7.1    | ptls-format parquet data loading          | PySpark and Parquet for data preprocessing                          | [demo/pyspark-parquet.ipynb](demo/pyspark-parquet.ipynb)                                                                                                                                                                                                                                                                    |     |
-| 7.2.   | Fast inference for big dataset            |                                                                     | [demo/extended_inference.ipynb](demo/extended_inference.ipynb)                                                                                                                                                                                                                                                              |     |
-| 8.     | Features special types                    |                                                                     |                                                                                                                                                                                                                                                                                                                             |     |
-| 8.1.   | Using pretrained encoder to text features |                                                                     | [demo/coles-pretrained-embeddings.ipynb](demo/coles-pretrained-embeddings.ipynb)                                                                                                                                                                                                                                            |     |
-| 8.2    | Multi source models                       |                                                                     | [demo/CoLES-demo-multimodal-unsupervised.ipynb](demo/CoLES-demo-multimodal-unsupervised.ipynb)                                                                                                                                                                                                                              |     |
-| 9.     | Trx Encoding options                      |                                                                     |                                                                                                                                                                                                                                                                                                                             |     |
-| 9.1.   | Basic options                             |                                                                     | TBD                                                                                                                                                                                                                                                                                                                         |     |
-| 9.2.   | Transaction Quantization                  |                                                                     | TBD                                                                                                                                                                                                                                                                                                                         |     |
-| 9.3.   | Transaction BPE                           |                                                                     | TBD                                                                                                                                                                                                                                                                                                                         |     |
+Welcome to your comprehensive guide to **Event Sequence Deep Learning** analysis using the **ptls** (PyTorch-Lifestream) library! Whether you're a beginner or an advanced machine learning enthusiast, this structured path will guide you through the essential topics of processing event sequences. With a mix of tutorials and hands-on examples, you’ll learn to implement everything from sequence classification to unsupervised learning methods for event-based data.
+
+Here’s a breakdown of the key topics:
+
+---
+
+## **Section 1: Prerequisites**
+Before diving into event sequence analysis, let’s make sure you’re equipped with some basic knowledge:
+
+### 1.1 [**PyTorch**](https://www.youtube.com/watch?v=Z_ikDlimN6A)
+Learn the basics of PyTorch, the most popular deep learning framework.  
+🔗 *Video Tutorial: [Link](https://www.youtube.com/watch?v=Z_ikDlimN6A)*
+
+### 1.2 [**PyTorch-Lightning**](https://www.youtube.com/playlist?list=PLhhyoLH6IjfyL740PTuXef4TstxAK6nGP)
+Make your PyTorch code cleaner and more organized using PyTorch Lightning.  
+🔗 *Video Tutorial Playlist: [Link](https://www.youtube.com/playlist?list=PLhhyoLH6IjfyL740PTuXef4TstxAK6nGP)*
+
+### 1.3 (Optional) [**Hydra**](https://hydra.cc/)
+Streamline your configurations with the Hydra framework.  
+🔗 *Demo Code: [Hydra CoLES Training](./demo/Hydra%20CoLES%20Training.ipynb)*
+
+### 1.4 [**pandas**](https://pandas.pydata.org/)
+Master data preprocessing with pandas, the go-to library for manipulating datasets.
+
+### 1.5 (Optional) [**PySpark**](https://spark.apache.org/docs/latest/api/python/index.html)
+Handle large datasets with PySpark for efficient big data preprocessing.
+
+---
+
+## **Section 2: Event Sequences**
+Now let’s explore the core of event sequence analysis. These sections will cover both **global** and **local** problems.
+
+### 2.1 **Event Sequence for Global Problems**
+Understand global tasks such as event sequence classification.  
+*TBD*
+
+### 2.2 **Event Sequence for Local Problems**
+Delve into local tasks like next event prediction.  
+*TBD*
+
+---
+
+## **Section 3: Supervised Neural Networks**
+Build supervised models for classifying event sequences.
+
+### 3.1 **Network Types**
+Explore different types of networks for event sequence processing.
+
+#### 3.1.1 **Recurrent Neural Networks (RNNs)**
+Classic networks designed to handle sequence data.  
+*TBD*
+
+#### 3.1.2 (Optional) **Convolutional Neural Networks (CNNs)**
+Use CNNs for specific sequence modeling tasks.  
+*TBD*
+
+#### 3.1.3 **[Transformers](demo/supervised-sequence-to-target-transformer.ipynb)**
+Leverage the power of transformers for sequence classification.  
+🔗 *Demo Code: [Transformer Notebook](demo/supervised-sequence-to-target-transformer.ipynb)*
+
+### 3.2 **Problem Types**
+Understand the variety of problems you can solve with sequences.
+
+#### 3.2.1 **Global Problems**
+From binary classification to multi-label regression.  
+*TBD*  
+🔗 *Demo Code: [Multilabel Classification](demo/multilabel-classification.ipynb)*
+
+#### 3.2.2 **Local Problems**
+Next event prediction tasks using embeddings.  
+🔗 *Demo Code: [Local Embeddings](demo/event-sequence-local-embeddings.ipynb)*
+
+---
+
+## **Section 4: Unsupervised Learning**
+Learn how to pretrain self-supervised models using proxy tasks.
+
+### 4.1 (Optional) **Word2vec**
+Use context-based methods for unsupervised learning.  
+*TBD*
+
+### 4.2 **MLM, RTD, GPT**
+Train self-supervised models with Masked Language Model (MLM) and others.  
+🔗 *Demo Code: [MLM Embeddings](demo/mlm-emb.ipynb)*  
+🔗 *Demo Code: [Event Sequence Local Embeddings](demo/event-sequence-local-embeddings.ipynb)*
+
+### 4.3 **NSP, SOP**
+Implement sequence-based methods like Next Sentence Prediction (NSP) and Sentence Order Prediction (SOP).  
+🔗 *Demo Code: [NSP/SOP Embeddings](tutorials/notebooks/nsp-sop-emb.ipynb)*
+
+---
+
+## **Section 5: Contrastive Learning**
+Learn about contrastive and non-contrastive learning for latent representations.
+
+### 5.1 **CoLES**
+Train contrastive learning models with CoLES.  
+🔗 *Demo Code: [CoLES Embeddings](./demo/coles-emb.ipynb)*
+
+### 5.2 **VICReg**
+Explore VICReg for representation learning.  
+*TBD*
+
+### 5.3 **CPC**
+Learn about CPC for contrastive learning.  
+*TBD*
+
+### 5.4 **MLM, TabFormer, and Others**
+Self-supervised training using MLM for transaction data.  
+🔗 *Demo Code: [MLM Embeddings](./demo/mlm-emb.ipynb)*  
+🔗 *Demo Code: [TabFormer Embeddings](demo/tabformer-emb.ipynb)*
+
+---
+
+## **Section 6: Pretrained Model Usage**
+Use pretrained models for downstream tasks or fine-tune them.
+
+### 6.1 **Downstream Model on Frozen Embeddings**
+Apply frozen embeddings to new models.  
+*TBD*
+
+### 6.2 **CatBoost with Embeddings**
+Train CatBoost models on embeddings.  
+🔗 *Demo Code: [CatBoost with Embeddings](demo/coles-catboost.ipynb)*
+
+### 6.3 **Model Finetuning**
+Fine-tune pretrained models for better performance.  
+🔗 *Demo Code: [Finetuning](./demo/coles-finetune.ipynb)*
+
+---
+
+## **Section 7: Preprocessing Options**
+Learn various preprocessing techniques for event sequences.
+
+### 7.1 **ptls-format Parquet Data Loading**
+Use PySpark and Parquet for efficient data processing.  
+🔗 *Demo Code: [Parquet Data Loading](demo/pyspark-parquet.ipynb)*
+
+### 7.2 **Fast Inference for Large Datasets**
+Optimizing inference for large-scale datasets.  
+🔗 *Demo Code: [Extended Inference](demo/extended_inference.ipynb)*
+
+---
+
+## **Section 8: Special Feature Types**
+Explore different feature types with pretrained encoders.
+
+### 8.1 **Pretrained Encoder for Text Features**
+Use pretrained encoders for text-based features.  
+🔗 *Demo Code: [Pretrained Embeddings](demo/coles-pretrained-embeddings.ipynb)*
+
+### 8.2 **Multi-source Models**
+Implement models that use data from multiple sources.  
+🔗 *Demo Code: [Multimodal Unsupervised Learning](demo/CoLES-demo-multimodal-unsupervised.ipynb)*
+
+---
+
+## **Section 9: Transaction Encoding Options**
+Dive into encoding strategies for transactions.
+
+### 9.1 **Basic Encoding Options**
+Learn the fundamentals of transaction encoding.  
+*TBD*
+
+### 9.2 **Transaction Quantization**
+Quantization techniques for transactions.  
+*TBD*
+
+### 9.3 **Transaction BPE**
+Using Byte Pair Encoding (BPE) for transactions.  
+*TBD*
+
+---
+
+Explore these topics, experiment with the demo code, and master the art of event sequence deep learning with PyTorch-Lifestream!
