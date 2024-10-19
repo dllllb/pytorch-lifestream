@@ -76,23 +76,25 @@ Library description [index](docs/index.md)
 
 ## PyTorch-LifeStream in ML Competitions
 
-### 📄 Reports (Habr):
-- [![Habr](https://img.shields.io/badge/Habr-Data%20Fusion%20Contest%202022-blue)](https://habr.com/ru/companies/vtb/articles/673666/)
-- [![Habr](https://img.shields.io/badge/Habr-Sber%20AI%20Lab%20team%20Data%20Fusion%202022-blue)](https://habr.com/ru/companies/ods/articles/670572/)
-- [![Habr](https://img.shields.io/badge/Habr-VK.com%20Graph%20ML%20Hackathon-blue)](https://habr.com/ru/companies/vk/articles/703484/)
-- [![Habr](https://img.shields.io/badge/Habr-AlfaBank%20VK.com%20Graph%20ML%20Hackathon-blue)](https://habr.com/ru/companies/alfa/articles/698660/)
-- [![Habr](https://img.shields.io/badge/Habr-American%20Express%20Kaggle%20Contest-blue)](https://habr.com/ru/articles/704440/)
 
-### 💻 Code (GitHub/Kaggle):
-- [![GitHub](https://img.shields.io/badge/GitHub-Sber%20AI%20Lab%20Data%20Fusion%202024-green)](https://github.com/warofgam/Sber-AI-Lab---datafusion)
-- [![GitHub](https://img.shields.io/badge/GitHub-Ivan%20Alexandrov%20Data%20Fusion%202024-green)](https://github.com/Ivanich-spb/datafusion_2024_churn)
-- [![Kaggle](https://img.shields.io/badge/Kaggle-American%20Express%20Kaggle%20Contest-blue)](https://www.kaggle.com/competitions/amex-default-prediction)
-  - [![Kaggle](https://img.shields.io/badge/Kaggle-RNN%20Supervised%20Training-blue)](https://www.kaggle.com/code/ivkireev/amex-ptls-baseline-supervised-neural-network)
-  - [![Kaggle](https://img.shields.io/badge/Kaggle-Transformer%20Supervised%20Training-blue)](https://www.kaggle.com/code/ivkireev/amex-transformer-network-train-with-ptls)
-  - [![Kaggle](https://img.shields.io/badge/Kaggle-CoLES%20Embedding%20Preparation-blue)](https://www.kaggle.com/code/ivkireev/amex-contrastive-embeddings-with-ptls-coles)
-  - [![Kaggle](https://img.shields.io/badge/Kaggle-CatBoost%20with%20CoLES%20Embeddings-blue)](https://www.kaggle.com/code/ivkireev/catboost-classifier-with-coles-embeddings)
-- [![GitHub](https://img.shields.io/badge/GitHub-COTIC%20Event%20Sequences%20Model-green)](https://github.com/VladislavZh/COTIC)
-  
+### 📄 Data Fusion Contest 2022:
+- [![Habr](https://img.shields.io/badge/Habr-Data%20Fusion%20VTB%20Report-blue)](https://habr.com/ru/companies/vtb/articles/673666/) | [![Habr](https://img.shields.io/badge/Habr-Sber%20AI%20Lab%20Report-blue)](https://habr.com/ru/companies/ods/articles/670572/)
+
+### 💻 Data Fusion Contest 2024:
+- [![GitHub](https://img.shields.io/badge/GitHub-Sber%20AI%20Lab-green)](https://github.com/warofgam/Sber-AI-Lab---datafusion) | [![GitHub](https://img.shields.io/badge/GitHub-Ivan%20Alexandrov-green)](https://github.com/Ivanich-spb/datafusion_2024_churn)
+
+### 📄 VK.com Graph ML Hackathon:
+- [![Habr](https://img.shields.io/badge/Habr-VK.com%20Report-blue)](https://habr.com/ru/companies/vk/articles/703484/) | [![Habr](https://img.shields.io/badge/Habr-AlfaBank%20Report-blue)](https://habr.com/ru/companies/alfa/articles/698660/)
+
+### 📄 American Express Kaggle Contest:
+- [![Habr](https://img.shields.io/badge/Habr-Contest%20Report-blue)](https://habr.com/ru/articles/704440/)
+
+### 💻 American Express Kaggle Contest:
+- [![Kaggle](https://img.shields.io/badge/Kaggle-RNN%20Supervised%20Training-blue)](https://www.kaggle.com/code/ivkireev/amex-ptls-baseline-supervised-neural-network) | [![Kaggle](https://img.shields.io/badge/Kaggle-Transformer%20Supervised%20Training-blue)](https://www.kaggle.com/code/ivkireev/amex-transformer-network-train-with-ptls)  
+- [![Kaggle](https://img.shields.io/badge/Kaggle-CoLES%20Embedding%20Preparation-blue)](https://www.kaggle.com/code/ivkireev/amex-contrastive-embeddings-with-ptls-coles) | [![Kaggle](https://img.shields.io/badge/Kaggle-CatBoost%20with%20CoLES-blue)](https://www.kaggle.com/code/ivkireev/catboost-classifier-with-coles-embeddings)
+
+### 💻 COTIC (Continuous-Time Convolutions):
+- [![GitHub](https://img.shields.io/badge/GitHub-COTIC-green)](https://github.com/VladislavZh/COTIC)
 ## How to contribute
 
 1. Make your chages via Fork and Pull request.
