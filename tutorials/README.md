@@ -19,7 +19,7 @@ Make your PyTorch code cleaner and more organized using PyTorch Lightning.
 
 ### 1.3 (Optional) [**Hydra**](https://hydra.cc/)
 Streamline your configurations with the Hydra framework.  
-🔗 *Demo Code: [Hydra CoLES Training](./demo/Hydra%20CoLES%20Training.ipynb)*
+🔗 *Demo Code: [Hydra CoLES Training](./notebooks/Hydra%20CoLES%20Training.ipynb)*
 
 ### 1.4 [**pandas**](https://pandas.pydata.org/)
 Master data preprocessing with pandas, the go-to library for manipulating datasets.
@@ -58,7 +58,7 @@ Use CNNs for specific sequence modeling tasks.
 
 #### 3.1.3 **[Transformers](demo/supervised-sequence-to-target-transformer.ipynb)**
 Leverage the power of transformers for sequence classification.  
-🔗 *Demo Code: [Transformer Notebook](demo/supervised-sequence-to-target-transformer.ipynb)*
+🔗 *Demo Code: [Transformer Notebook](./notebooks/supervised-sequence-to-target-transformer.ipynb)*
 
 ### 3.2 **Problem Types**
 Understand the variety of problems you can solve with sequences.
@@ -66,11 +66,11 @@ Understand the variety of problems you can solve with sequences.
 #### 3.2.1 **Global Problems**
 From binary classification to multi-label regression.  
 *TBD*  
-🔗 *Demo Code: [Multilabel Classification](demo/multilabel-classification.ipynb)*
+🔗 *Demo Code: [Multilabel Classification](./notebooks/multilabel-classification.ipynb)*
 
 #### 3.2.2 **Local Problems**
 Next event prediction tasks using embeddings.  
-🔗 *Demo Code: [Local Embeddings](demo/event-sequence-local-embeddings.ipynb)*
+🔗 *Demo Code: [Local Embeddings](./notebooks/event-sequence-local-embeddings.ipynb)*
 
 ---
 
@@ -83,12 +83,12 @@ Use context-based methods for unsupervised learning.
 
 ### 4.2 **MLM, RTD, GPT**
 Train self-supervised models with Masked Language Model (MLM) and others.  
-🔗 *Demo Code: [MLM Embeddings](demo/mlm-emb.ipynb)*  
-🔗 *Demo Code: [Event Sequence Local Embeddings](demo/event-sequence-local-embeddings.ipynb)*
+🔗 *Demo Code: [MLM Embeddings](./notebooks/mlm-emb.ipynb)*  
+🔗 *Demo Code: [Event Sequence Local Embeddings](./notebooks/event-sequence-local-embeddings.ipynb)*
 
 ### 4.3 **NSP, SOP**
 Implement sequence-based methods like Next Sentence Prediction (NSP) and Sentence Order Prediction (SOP).  
-🔗 *Demo Code: [NSP/SOP Embeddings](tutorials/notebooks/nsp-sop-emb.ipynb)*
+🔗 *Demo Code: [NSP/SOP Embeddings](./notebooks/notebooks/nsp-sop-emb.ipynb)*
 
 ---
 
@@ -97,7 +97,7 @@ Learn about contrastive and non-contrastive learning for latent representations.
 
 ### 5.1 **CoLES**
 Train contrastive learning models with CoLES.  
-🔗 *Demo Code: [CoLES Embeddings](./demo/coles-emb.ipynb)*
+🔗 *Demo Code: [CoLES Embeddings](./notebooks/coles-emb.ipynb)*
 
 ### 5.2 **VICReg**
 Explore VICReg for representation learning.  
@@ -109,8 +109,8 @@ Learn about CPC for contrastive learning.
 
 ### 5.4 **MLM, TabFormer, and Others**
 Self-supervised training using MLM for transaction data.  
-🔗 *Demo Code: [MLM Embeddings](./demo/mlm-emb.ipynb)*  
-🔗 *Demo Code: [TabFormer Embeddings](demo/tabformer-emb.ipynb)*
+🔗 *Demo Code: [MLM Embeddings](./notebooks/mlm-emb.ipynb)*  
+🔗 *Demo Code: [TabFormer Embeddings](./notebooks/tabformer-emb.ipynb)*
 
 ---
 
@@ -127,7 +127,7 @@ Train CatBoost models on embeddings.
 
 ### 6.3 **Model Finetuning**
 Fine-tune pretrained models for better performance.  
-🔗 *Demo Code: [Finetuning](./demo/coles-finetune.ipynb)*
+🔗 *Demo Code: [Finetuning](./notebooks/coles-finetune.ipynb)*
 
 ---
 
@@ -136,11 +136,11 @@ Learn various preprocessing techniques for event sequences.
 
 ### 7.1 **ptls-format Parquet Data Loading**
 Use PySpark and Parquet for efficient data processing.  
-🔗 *Demo Code: [Parquet Data Loading](demo/pyspark-parquet.ipynb)*
+🔗 *Demo Code: [Parquet Data Loading](./notebooks/pyspark-parquet.ipynb)*
 
 ### 7.2 **Fast Inference for Large Datasets**
 Optimizing inference for large-scale datasets.  
-🔗 *Demo Code: [Extended Inference](demo/extended_inference.ipynb)*
+🔗 *Demo Code: [Extended Inference](./notebooks/extended_inference.ipynb)*
 
 ---
 
@@ -149,11 +149,11 @@ Explore different feature types with pretrained encoders.
 
 ### 8.1 **Pretrained Encoder for Text Features**
 Use pretrained encoders for text-based features.  
-🔗 *Demo Code: [Pretrained Embeddings](demo/coles-pretrained-embeddings.ipynb)*
+🔗 *Demo Code: [Pretrained Embeddings](./notebooks/coles-pretrained-embeddings.ipynb)*
 
 ### 8.2 **Multi-source Models**
 Implement models that use data from multiple sources.  
-🔗 *Demo Code: [Multimodal Unsupervised Learning](demo/CoLES-demo-multimodal-unsupervised.ipynb)*
+🔗 *Demo Code: [Multimodal Unsupervised Learning](./notebooks/CoLES-demo-multimodal-unsupervised.ipynb)*
 
 ---
 
