@@ -1,4 +1,4 @@
-# **Learn Event Sequence Analysis with PyTorch-Lifestream**
+# **Learn Event Sequence Analysis with pytorch-lifestream**
 
 Welcome to your comprehensive guide to **Event Sequence Deep Learning** analysis using the **ptls** (PyTorch-Lifestream) library! Whether you're a beginner or an advanced machine learning enthusiast, this structured path will guide you through the essential topics of processing event sequences. With a mix of tutorials and hands-on examples, you’ll learn to implement everything from sequence classification to unsupervised learning methods for event-based data.
 
