@@ -75,19 +75,19 @@ Library description [index](docs/index.md)
 `pytorch-lifestream` usage experiments on several public event datasets are available in the separate [repo](https://github.com/dllllb/ptls-experiments)
 
 ## PyTorch-LifeStream in ML Competitions
-- [![Habr](https://habrastorage.org/getpro/habr/upload_files/cbb/405/bb6/cbb405bb6b4420607c37f97877b7aab9.png)](https://habr.com/ru/companies/vtb/articles/673666/) [Data Fusion Contest 2022 report](https://habr.com/ru/companies/vtb/articles/673666/)  
-- [![Habr](https://habrastorage.org/getpro/habr/upload_files/cbb/405/bb6/cbb405bb6b4420607c37f97877b7aab9.png)](https://habr.com/ru/companies/ods/articles/670572/) [Data Fusion Contest 2022 report, Sber AI Lab team](https://habr.com/ru/companies/ods/articles/670572/)  
-- [![Habr](https://habrastorage.org/getpro/habr/upload_files/cbb/405/bb6/cbb405bb6b4420607c37f97877b7aab9.png)](https://habr.com/ru/companies/vk/articles/703484/) [VK.com Graph ML Hackaton report](https://habr.com/ru/companies/vk/articles/703484/)  
-- [![Habr](https://habrastorage.org/getpro/habr/upload_files/cbb/405/bb6/cbb405bb6b4420607c37f97877b7aab9.png)](https://habr.com/ru/companies/alfa/articles/698660/) [VK.com Graph ML Hackaton report, AlfaBank team](https://habr.com/ru/companies/alfa/articles/698660/)  
-- [![Habr](https://habrastorage.org/getpro/habr/upload_files/cbb/405/bb6/cbb405bb6b4420607c37f97877b7aab9.png)](https://habr.com/ru/articles/704440/) [American Express - Default Prediction Kaggle contest report](https://habr.com/ru/articles/704440/)  
-- [![GitHub](https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png)](https://github.com/warofgam/Sber-AI-Lab---datafusion) [Data Fusion Contest 2024, Sber AI Lab team](https://github.com/warofgam/Sber-AI-Lab---datafusion)  
-- [![GitHub](https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png)](https://github.com/Ivanich-spb/datafusion_2024_churn) [Data Fusion Contest 2024, Ivan Alexandrov](https://github.com/Ivanich-spb/datafusion_2024_churn)  
-- [![Kaggle](https://upload.wikimedia.org/wikipedia/commons/7/7c/Kaggle_logo.png)](https://www.kaggle.com/competitions/amex-default-prediction) [American Express - Default Prediction](https://www.kaggle.com/competitions/amex-default-prediction)  
+- [Data Fusion Contest 2022 report](https://habr.com/ru/companies/vtb/articles/673666/) (in Russian)
+- [Data Fusion Contest 2022 report, Sber AI Lab team](https://habr.com/ru/companies/ods/articles/670572/) (in Russian)
+- [VK.com Graph ML Hackaton report](https://habr.com/ru/companies/vk/articles/703484/) (in Russian)
+- [VK.com Graph ML Hackaton report, AlfaBank team](https://habr.com/ru/companies/alfa/articles/698660/) (in Russian)
+- [American Express - Default Prediction Kaggle contest report](https://habr.com/ru/articles/704440/) (in Russian)
+- [Data Fusion Contest 2024, Sber AI Lab team](https://github.com/warofgam/Sber-AI-Lab---datafusion)
+- [Data Fusion Contest 2024, Ivan Alexandrov](https://github.com/Ivanich-spb/datafusion_2024_churn) 
+- [American Express - Default Prediction](https://www.kaggle.com/competitions/amex-default-prediction)
     - [Supervised training with RNN](https://www.kaggle.com/code/ivkireev/amex-ptls-baseline-supervised-neural-network)
     - [Supervised training with Transformer](https://www.kaggle.com/code/ivkireev/amex-transformer-network-train-with-ptls)
     - [CoLES Embedding preparation](https://www.kaggle.com/code/ivkireev/amex-contrastive-embeddings-with-ptls-coles)
     - [CoLES Embedding usage as extra features for catboost](https://www.kaggle.com/code/ivkireev/catboost-classifier-with-coles-embeddings)
-- [![GitHub](https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png)](https://github.com/VladislavZh/COTIC) [COTIC](https://github.com/VladislavZh/COTIC) - pytorch-lifestream is used in experiment for Continuous-time convolutions model of event sequences 
+- [COTIC](https://github.com/VladislavZh/COTIC) - `pytorch-lifestream` is used in experiment for Continuous-time convolutions model of event sequences
 
 ## How to contribute
 
