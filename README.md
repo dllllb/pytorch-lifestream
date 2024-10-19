@@ -75,39 +75,23 @@ Library description [index](docs/index.md)
 `pytorch-lifestream` usage experiments on several public event datasets are available in the separate [repo](https://github.com/dllllb/ptls-experiments)
 
 ## PyTorch-LifeStream in ML Competitions
-### **1. Data Fusion Contest 2022**
-- [VTB Report (Habr)](https://habr.com/ru/companies/vtb/articles/673666)
-- [Sber AI Lab Report (Habr)](https://habr.com/ru/companies/ods/articles/670572)  
-  [![GitHub](https://img.shields.io/badge/GitHub-Repository-black?style=flat&logo=github&logoColor=white)](https://github.com/warofgam/Sber-AI-Lab---datafusion)
 
----
+### 📄 Reports (Habr):
+- [![Habr](https://img.shields.io/badge/Habr-Data%20Fusion%20Contest%202022-blue)](https://habr.com/ru/companies/vtb/articles/673666/)
+- [![Habr](https://img.shields.io/badge/Habr-Sber%20AI%20Lab%20team%20Data%20Fusion%202022-blue)](https://habr.com/ru/companies/ods/articles/670572/)
+- [![Habr](https://img.shields.io/badge/Habr-VK.com%20Graph%20ML%20Hackathon-blue)](https://habr.com/ru/companies/vk/articles/703484/)
+- [![Habr](https://img.shields.io/badge/Habr-AlfaBank%20VK.com%20Graph%20ML%20Hackathon-blue)](https://habr.com/ru/companies/alfa/articles/698660/)
+- [![Habr](https://img.shields.io/badge/Habr-American%20Express%20Kaggle%20Contest-blue)](https://habr.com/ru/articles/704440/)
 
-### **2. VK.com Graph ML Hackathon**
-- [VK Report (Habr)](https://habr.com/ru/companies/vk/articles/703484)
-- [AlfaBank Team Report (Habr)](https://habr.com/ru/companies/alfa/articles/698660)
-
----
-
-### **3. American Express - Default Prediction**
-- [Kaggle Competition](https://www.kaggle.com/competitions/amex-default-prediction)
-- [RNN Training (Kaggle)](https://www.kaggle.com/code/ivkireev/amex-ptls-baseline-supervised-neural-network)
-- [Transformer Training (Kaggle)](https://www.kaggle.com/code/ivkireev/amex-transformer-network-train-with-ptls)
-- [CoLES Embedding Preparation (Kaggle)](https://www.kaggle.com/code/ivkireev/amex-contrastive-embeddings-with-ptls-coles)
-- [CatBoost with CoLES (Kaggle)](https://www.kaggle.com/code/ivkireev/catboost-classifier-with-coles-embeddings)  
-  [![Kaggle](https://img.shields.io/badge/Kaggle-Competition-blue?style=flat&logo=kaggle&logoColor=white)](https://www.kaggle.com/competitions/amex-default-prediction)
-
----
-
-### **4. Data Fusion Contest 2024**
-- [Sber AI Lab Team Repo (GitHub)](https://github.com/warofgam/Sber-AI-Lab---datafusion)
-- [Ivan Alexandrov Repo (GitHub)](https://github.com/Ivanich-spb/datafusion_2024_churn)  
-  [![GitHub](https://img.shields.io/badge/GitHub-Repository-black?style=flat&logo=github&logoColor=white)](https://github.com/warofgam/Sber-AI-Lab---datafusion)
-
----
-
-### **5. COTIC: Continuous-time Event Sequence Model**
-- [COTIC GitHub Repository](https://github.com/VladislavZh/COTIC)  
-  [![GitHub](https://img.shields.io/badge/GitHub-Repository-black?style=flat&logo=github&logoColor=white)](https://github.com/VladislavZh/COTIC)
+### 💻 Code (GitHub/Kaggle):
+- [![GitHub](https://img.shields.io/badge/GitHub-Sber%20AI%20Lab%20Data%20Fusion%202024-green)](https://github.com/warofgam/Sber-AI-Lab---datafusion)
+- [![GitHub](https://img.shields.io/badge/GitHub-Ivan%20Alexandrov%20Data%20Fusion%202024-green)](https://github.com/Ivanich-spb/datafusion_2024_churn)
+- [![Kaggle](https://img.shields.io/badge/Kaggle-American%20Express%20Kaggle%20Contest-blue)](https://www.kaggle.com/competitions/amex-default-prediction)
+  - [![Kaggle](https://img.shields.io/badge/Kaggle-RNN%20Supervised%20Training-blue)](https://www.kaggle.com/code/ivkireev/amex-ptls-baseline-supervised-neural-network)
+  - [![Kaggle](https://img.shields.io/badge/Kaggle-Transformer%20Supervised%20Training-blue)](https://www.kaggle.com/code/ivkireev/amex-transformer-network-train-with-ptls)
+  - [![Kaggle](https://img.shields.io/badge/Kaggle-CoLES%20Embedding%20Preparation-blue)](https://www.kaggle.com/code/ivkireev/amex-contrastive-embeddings-with-ptls-coles)
+  - [![Kaggle](https://img.shields.io/badge/Kaggle-CatBoost%20with%20CoLES%20Embeddings-blue)](https://www.kaggle.com/code/ivkireev/catboost-classifier-with-coles-embeddings)
+- [![GitHub](https://img.shields.io/badge/GitHub-COTIC%20Event%20Sequences%20Model-green)](https://github.com/VladislavZh/COTIC)
   
 ## How to contribute
 
