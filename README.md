@@ -75,24 +75,40 @@ Library description [index](docs/index.md)
 `pytorch-lifestream` usage experiments on several public event datasets are available in the separate [repo](https://github.com/dllllb/ptls-experiments)
 
 ## PyTorch-LifeStream in ML Competitions
-- **Data Fusion Contest 2022**  
-  [![Habr](https://img.shields.io/badge/Habr-Articles-orange?style=flat&logo=habr&logoColor=white)](https://habr.com/ru/companies/vtb/articles/673666)  
-  [Sber AI Lab Report](https://habr.com/ru/companies/ods/articles/670572) | [GitHub Repository](https://github.com/warofgam/Sber-AI-Lab---datafusion)
+### **1. Data Fusion Contest 2022**
+- [VTB Report (Habr)](https://habr.com/ru/companies/vtb/articles/673666)
+- [Sber AI Lab Report (Habr)](https://habr.com/ru/companies/ods/articles/670572)  
+  [![GitHub](https://img.shields.io/badge/GitHub-Repository-black?style=flat&logo=github&logoColor=white)](https://github.com/warofgam/Sber-AI-Lab---datafusion)
 
-- **VK.com Graph ML Hackathon**  
-  [![Habr](https://img.shields.io/badge/Habr-Articles-orange?style=flat&logo=habr&logoColor=white)](https://habr.com/ru/companies/vk/articles/703484)  
-  [AlfaBank Report](https://habr.com/ru/companies/alfa/articles/698660)
+---
 
-- **American Express - Default Prediction**  
-  [![Kaggle](https://img.shields.io/badge/Kaggle-Competition-blue?style=flat&logo=kaggle&logoColor=white)](https://www.kaggle.com/competitions/amex-default-prediction)  
-  [RNN Training](https://www.kaggle.com/code/ivkireev/amex-ptls-baseline-supervised-neural-network) | [Transformer Training](https://www.kaggle.com/code/ivkireev/amex-transformer-network-train-with-ptls) | [CoLES Embeddings](https://www.kaggle.com/code/ivkireev/amex-contrastive-embeddings-with-ptls-coles)
+### **2. VK.com Graph ML Hackathon**
+- [VK Report (Habr)](https://habr.com/ru/companies/vk/articles/703484)
+- [AlfaBank Team Report (Habr)](https://habr.com/ru/companies/alfa/articles/698660)
 
-- **Data Fusion Contest 2024**  
-  [![GitHub](https://img.shields.io/badge/GitHub-Repository-black?style=flat&logo=github&logoColor=white)](https://github.com/warofgam/Sber-AI-Lab---datafusion)  
-  [Ivan Alexandrov Repo](https://github.com/Ivanich-spb/datafusion_2024_churn)
+---
 
-- **COTIC: Continuous-time Event Sequence Model**  
+### **3. American Express - Default Prediction**
+- [Kaggle Competition](https://www.kaggle.com/competitions/amex-default-prediction)
+- [RNN Training (Kaggle)](https://www.kaggle.com/code/ivkireev/amex-ptls-baseline-supervised-neural-network)
+- [Transformer Training (Kaggle)](https://www.kaggle.com/code/ivkireev/amex-transformer-network-train-with-ptls)
+- [CoLES Embedding Preparation (Kaggle)](https://www.kaggle.com/code/ivkireev/amex-contrastive-embeddings-with-ptls-coles)
+- [CatBoost with CoLES (Kaggle)](https://www.kaggle.com/code/ivkireev/catboost-classifier-with-coles-embeddings)  
+  [![Kaggle](https://img.shields.io/badge/Kaggle-Competition-blue?style=flat&logo=kaggle&logoColor=white)](https://www.kaggle.com/competitions/amex-default-prediction)
+
+---
+
+### **4. Data Fusion Contest 2024**
+- [Sber AI Lab Team Repo (GitHub)](https://github.com/warofgam/Sber-AI-Lab---datafusion)
+- [Ivan Alexandrov Repo (GitHub)](https://github.com/Ivanich-spb/datafusion_2024_churn)  
+  [![GitHub](https://img.shields.io/badge/GitHub-Repository-black?style=flat&logo=github&logoColor=white)](https://github.com/warofgam/Sber-AI-Lab---datafusion)
+
+---
+
+### **5. COTIC: Continuous-time Event Sequence Model**
+- [COTIC GitHub Repository](https://github.com/VladislavZh/COTIC)  
   [![GitHub](https://img.shields.io/badge/GitHub-Repository-black?style=flat&logo=github&logoColor=white)](https://github.com/VladislavZh/COTIC)
+  
 ## How to contribute
 
 1. Make your chages via Fork and Pull request.
