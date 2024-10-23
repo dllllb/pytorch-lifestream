@@ -54,7 +54,8 @@ class RnnEncoder(AbsSeqEncoder):
                  dropout=0,
                  trainable_starter='static',
                  is_reduce_sequence=False,  # previous default behavior RnnEncoder
-                 reducer='last_step'
+                 reducer='last_step',
+                 n_rnns = 5
                  ):
         super().__init__(is_reduce_sequence=is_reduce_sequence)
 

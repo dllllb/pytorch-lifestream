@@ -25,10 +25,10 @@ class ABSModule(pl.LightningModule):
         raise NotImplementedError()
 
     def __init__(self, validation_metric=None,
-                       seq_encoder=None,
-                       loss=None,
-                       optimizer_partial=None,
-                       lr_scheduler_partial=None):
+                 seq_encoder=None,
+                 loss=None,
+                 optimizer_partial=None,
+                 lr_scheduler_partial=None):
         """
         Parameters
         ----------
@@ -48,6 +48,14 @@ class ABSModule(pl.LightningModule):
         self._optimizer_partial = optimizer_partial
         self._lr_scheduler_partial = lr_scheduler_partial
 
+    def lr_scheduler_step(
+            self,
+            scheduler,
+            optimizer_idx,
+            metric,
+    ) -> None:
+        scheduler.step()
+
     @property
     def seq_encoder(self):
         return self._seq_encoder
@@ -58,7 +66,12 @@ class ABSModule(pl.LightningModule):
     def training_step(self, batch, _):
         y_h, y = self.shared_step(*batch)
         loss = self._loss(y_h, y)
-        self.log('loss', loss)
+        if type(loss) is tuple:
+            loss, info = loss
+            for k, v in info.items():
+                self.log(k, v)
+        else:
+            self.log('loss', loss)
         if type(batch) is tuple:
             x, y = batch
             if isinstance(x, PaddedBatch):
@@ -71,16 +84,28 @@ class ABSModule(pl.LightningModule):
 
     def validation_step(self, batch, _):
         y_h, y = self.shared_step(*batch)
+        loss = self._loss(y_h, y)
+        if type(loss) is tuple:
+            loss, info = loss
+            for k, v in info.items():
+                self.log("valid_" + k, v)
+        else:
+            self.log('valid_loss', loss)
         self._validation_metric(y_h, y)
 
     def on_validation_epoch_end(self):
-        self.log(f'valid/{self.metric_name}', self._validation_metric.compute(), prog_bar=True)
+        metric = self._validation_metric.compute()
+        if hasattr(self._validation_metric, "_multimetric"):
+            for i, m in enumerate(metric):
+                self.log(f'valid/{self.metric_name}'+"_"+str(i), m, prog_bar=True)
+        else:
+            self.log(f'valid/{self.metric_name}', metric, prog_bar=True)
         self._validation_metric.reset()
 
     def configure_optimizers(self):
         optimizer = self._optimizer_partial(self.parameters())
         scheduler = self._lr_scheduler_partial(optimizer)
-        
+
         if isinstance(scheduler, torch.optim.lr_scheduler.ReduceLROnPlateau):
             scheduler = {
                 'scheduler': scheduler,
