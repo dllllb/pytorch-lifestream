@@ -6,16 +6,16 @@ import pytorch_lightning as pl
 import torch
 from sklearn.model_selection import train_test_split
 
+from ptls.data_load import padded_collate_wo_target
 from ptls.data_load.datasets import MemoryMapDataset
 from ptls.data_load.datasets.dataloaders import inference_data_loader
-from ptls.data_load.iterable_processing import ISeqLenLimit, SeqLenFilter
-from ptls.frames.coles.split_strategy import SampleSlices
-from ptls.preprocessing.pandas_preprocessor import PandasDataPreprocessor
+from ptls.data_load.iterable_processing import FilterNonArray, ISeqLenLimit
+from ptls.data_load.iterable_processing import SeqLenFilter
 from ptls.frames.coles import CoLESModule, ColesDataset
+from ptls.frames.coles.split_strategy import SampleSlices
 from ptls.nn.seq_encoder import RnnSeqEncoder
 from ptls.nn.trx_encoder import TrxEncoder
-from ptls.data_load import padded_collate_wo_target
-from ptls.data_load.iterable_processing import FilterNonArray, ISeqLenLimit
+from ptls.preprocessing.pandas.pandas_preprocessor import PandasDataPreprocessor
 
 
 def test_train_inference():
