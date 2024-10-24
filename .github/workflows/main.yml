@@ -17,13 +17,6 @@ jobs:
         pip install pipenv
         pipenv sync --dev
 
-    - name: cuda-toolkit
-      uses: Jimver/cuda-toolkit@v0.2.18
-
-      #    - name: Install cuda
-#      run: |
-#        apt-get update
-#        apt-get install nvidia-cuda-toolkit nvidia-cuda-toolkit-gcc
     - name: Test with pytest
       run: |
         pipenv run coverage run
