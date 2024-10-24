@@ -1,7 +1,7 @@
 import pandas as pd
 import torch
 
-from ptls.preprocessing.pandas.user_group_transformer import UserGroupTransformer
+from ptls.preprocessing.base.transformation.user_group_transformer import UserGroupTransformer
 
 
 def test_group():
