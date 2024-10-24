@@ -3,17 +3,23 @@ from copy import deepcopy
 import torch
 
 from ptls.data_load.augmentations.random_slice import RandomSlice
-from ptls.data_load.utils import collate_feature_dict
 from ptls.data_load.feature_dict import FeatureDict
 from ptls.data_load.padded_batch import PaddedBatch
+from ptls.data_load.utils import collate_feature_dict
 
 
 class RtdDataset(torch.utils.data.Dataset):
-    def __init__(self, data,
-                 min_len, max_len, rate_for_min: float = 1.0,
-                 replace_prob=0.15,
-                 skip_first=1,
-                 *args, **kwargs):
+    def __init__(
+        self,
+        data,
+        min_len,
+        max_len,
+        rate_for_min: float = 1.0,
+        replace_prob=0.15,
+        skip_first=1,
+        *args,
+        **kwargs
+    ):
         super().__init__(*args, **kwargs)  # required for mixin class
 
         self.data = data
@@ -34,16 +40,22 @@ class RtdDataset(torch.utils.data.Dataset):
             yield self.process(feature_arrays)
 
     def process(self, feature_arrays):
-        feature_arrays = {k: v for k, v in feature_arrays.items() if FeatureDict.is_seq_feature(k, v)}
+        feature_arrays = {
+            k: v for k, v in feature_arrays.items() if FeatureDict.is_seq_feature(k, v)
+        }
         return self.r_slice(feature_arrays)
 
     def collate_fn(self, batch):
         padded_batch = collate_feature_dict(batch)
 
-        new_x, lengths, mask = padded_batch.payload, padded_batch.seq_lens, padded_batch.seq_len_mask
+        new_x, lengths, mask = (
+            padded_batch.payload,
+            padded_batch.seq_lens,
+            padded_batch.seq_len_mask,
+        )
 
         to_replace = torch.bernoulli(mask * self.replace_prob).bool()
-        to_replace[:, :self.skip_first] = False
+        to_replace[:, : self.skip_first] = False
 
         sampled_trx_ids = torch.multinomial(
             mask.flatten().float(),
@@ -57,7 +69,10 @@ class RtdDataset(torch.utils.data.Dataset):
             if FeatureDict.is_seq_feature(k, v):
                 v.flatten()[to_replace_flatten] = v.flatten()[sampled_trx_ids]
 
-        return PaddedBatch(new_x, lengths), to_replace.long().flatten()[mask.flatten().bool()]
+        return (
+            PaddedBatch(new_x, lengths),
+            to_replace.long().flatten()[mask.flatten().bool()],
+        )
 
 
 class RtdIterableDataset(RtdDataset, torch.utils.data.IterableDataset):
