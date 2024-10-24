@@ -32,7 +32,7 @@ jobs:
     - name: Upgrade pandas-dask, torch
       run: |
         pip install --upgrade pandas "dask[complete]"
-        pip install --upgrade torch
+        pip install torch==2.1.0+cu121 torchvision==0.16.0+cu121 torchaudio==2.1.0 torchtext==0.16.0+cpu torchdata==0.7.0 --index-url https://download.pytorch.org/whl/cu121
 
     - name: Test with pytest
       run: |
