@@ -33,13 +33,6 @@ jobs:
       run: |
         pip install --upgrade pandas "dask[complete]"
 
-#    - name: Install java for pyspark
-#      run: |
-#        apt-get update
-#        add-apt-repository ppa:openjdk-r/ppa
-#        apt-get install openjdk-8-jdk
-#        java -version
-
     - name: Test with pytest
       run: |
 #        pytest --cov=ptls -s ptls_tests
