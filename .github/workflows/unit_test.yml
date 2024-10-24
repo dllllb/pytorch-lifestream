@@ -34,9 +34,10 @@ jobs:
 
     - name: Test with pytest
       run: |
+        pytest --cov=ptls -s ptls_tests
 #        pipenv run coverage run
 #        pipenv run coverage report
-         pytest --cov=ptls -s ptls_tests
+
 #    TODO: add this later
 #    - name: Codecov-coverage
 #      uses: codecov/codecov-action@v4
