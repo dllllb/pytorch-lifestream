@@ -35,8 +35,8 @@ jobs:
 
     - name: Test with pytest
       run: |
-#        pytest --cov=ptls -s ptls_tests
         pipenv run coverage run
+#        pytest --cov=ptls -s ptls_tests
 #        pipenv run coverage report
 
 #    TODO: add this later
