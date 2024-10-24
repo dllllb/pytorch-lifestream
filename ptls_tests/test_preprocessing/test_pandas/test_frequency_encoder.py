@@ -1,5 +1,7 @@
 import pandas as pd
-from ptls.preprocessing.pandas.frequency_encoder import FrequencyEncoder
+
+# TODO: check if this is the correct import
+from ptls.preprocessing.pyspark.frequency_encoder import FrequencyEncoder
 
 
 def test_fit():
