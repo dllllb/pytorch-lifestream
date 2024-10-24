@@ -29,9 +29,10 @@ jobs:
         pipenv sync --dev
         pip install pytest pytest-cov
 
-    - name: Upgrade pandas-dask
+    - name: Upgrade pandas-dask, torch
       run: |
         pip install --upgrade pandas "dask[complete]"
+        pip install --upgrade torch
 
     - name: Test with pytest
       run: |
