@@ -28,15 +28,15 @@ jobs:
         pip install pipenv
         pipenv sync --dev
 
-    - name: Reinstall torch
+    - name: Upgrade pandas-dask
       run: |
         pip install --upgrade pandas "dask[complete]"
 
     - name: Test with pytest
       run: |
-        pipenv run coverage run
-        pipenv run coverage report
-
+#        pipenv run coverage run
+#        pipenv run coverage report
+         pytest --cov=ptls -s ptls_tests
 #    TODO: add this later
 #    - name: Codecov-coverage
 #      uses: codecov/codecov-action@v4
