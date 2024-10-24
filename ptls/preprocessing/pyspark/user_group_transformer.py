@@ -2,9 +2,9 @@ from typing import List
 
 import pyspark
 import pyspark.sql.functions as F
+from ptls.preprocessing.pandas.col_transformer import ColTransformerPandasMixin
 
-from ptls.preprocessing.base.transformation.col_numerical_transformer import ColTransformer
-from ptls.preprocessing.dask.dask_transformation.col_transformer import ColTransformerPandasMixin
+from ptls.preprocessing.base import ColTransformer
 
 
 class UserGroupTransformer(ColTransformerPandasMixin, ColTransformer):

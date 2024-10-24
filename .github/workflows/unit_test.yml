@@ -12,7 +12,7 @@ jobs:
 
     strategy:
       matrix:
-        python-version: [ 3.8 ]
+        python-version: [ 3.8, 3.9 ]
 
     runs-on: ubuntu-latest
     steps:
@@ -27,24 +27,10 @@ jobs:
         python -m pip install --upgrade pip
         pip install pipenv
         pipenv sync --dev
-        pip install pytest pytest-cov
-
-    - name: Upgrade pandas-dask
-      run: |
-        pip install --upgrade pandas "dask[complete]"
-
-    - name: Install java for pyspark
-      run: |
-        apt-get update
-        add-apt-repository ppa:openjdk-r/ppa
-        apt-get install openjdk-8-jdk
-        java -version
-
     - name: Test with pytest
       run: |
-        pytest --cov=ptls -s ptls_tests
-#        pipenv run coverage run
-#        pipenv run coverage report
+        pipenv run coverage run
+        pipenv run coverage report
 
 #    TODO: add this later
 #    - name: Codecov-coverage

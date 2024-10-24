@@ -1,11 +1,12 @@
-import numpy as np
-import torch
 import random
 
+import numpy as np
+import torch
+
 from ptls.data_load import padded_collate_wo_target
-from ptls.data_load.utils import collate_feature_dict
-from ptls.data_load.feature_dict import FeatureDict
 from ptls.data_load.augmentations import sequence_pair_augmentation
+from ptls.data_load.feature_dict import FeatureDict
+from ptls.data_load.utils import collate_feature_dict
 
 
 class MlmIndexedDataset(torch.utils.data.Dataset):
@@ -27,13 +28,15 @@ class MlmIndexedDataset(torch.utils.data.Dataset):
     random_crop:
         Reduce lenght of sampled sequence in (0, random_crop) interval randomly
     """
-    def __init__(self,
-                 data,
-                 seq_len: int,
-                 step_rate: float = 1.0,
-                 random_shift: int = 0,
-                 random_crop: int = 0,
-                 ):
+
+    def __init__(
+        self,
+        data,
+        seq_len: int,
+        step_rate: float = 1.0,
+        random_shift: int = 0,
+        random_crop: int = 0,
+    ):
         self.data = data
         self.seq_len = seq_len
         self.step = int(seq_len * step_rate)
@@ -58,18 +61,23 @@ class MlmIndexedDataset(torch.utils.data.Dataset):
         seq_len = FeatureDict.get_seq_len(v)
 
         if self.random_shift > 0:
-            start_pos = start_pos + random.randint(-self.random_shift, self.random_shift)
+            start_pos = start_pos + random.randint(
+                -self.random_shift, self.random_shift
+            )
         start_pos = max(start_pos, 0)
         start_pos = min(start_pos, seq_len - self.step)
         len_reduce = 0 if self.random_crop == 0 else random.randint(0, self.random_crop)
 
-        return {k: v[start_pos: start_pos + self.seq_len - len_reduce]
-                for k, v in v.items()
-                if FeatureDict.is_seq_feature(k, v)}
+        return {
+            k: v[start_pos : start_pos + self.seq_len - len_reduce]
+            for k, v in v.items()
+            if FeatureDict.is_seq_feature(k, v)
+        }
 
     @staticmethod
     def collate_fn(batch):
         return collate_feature_dict(batch)
+
 
 class MLMNSPIndexedDataset(MlmIndexedDataset):
     def __init__(self, *args, **kwargs):
@@ -84,19 +92,24 @@ class MLMNSPIndexedDataset(MlmIndexedDataset):
             left, right = sequence_pair_augmentation(rec, max_lenght=max_lenght)
             lefts.append(left)
             rights.append(right)
-        
+
         #
         lefts = lefts * 2
         rights_ = rights[:]
         random.shuffle(rights_)
         rights += rights_
 
-        targets = torch.cat([
-            torch.ones(len(batch), dtype=torch.int64),
-            torch.zeros(len(batch), dtype=torch.int64),
-        ])
-        
-        concated = [{k: torch.cat([l[k], r[k]]) for k in l.keys()} for l, r in zip(lefts, rights)]
-        
-        augmented_batch =  padded_collate_wo_target(concated)
+        targets = torch.cat(
+            [
+                torch.ones(len(batch), dtype=torch.int64),
+                torch.zeros(len(batch), dtype=torch.int64),
+            ]
+        )
+
+        concated = [
+            {k: torch.cat([l[k], r[k]]) for k in l.keys()}
+            for l, r in zip(lefts, rights)
+        ]
+
+        augmented_batch = padded_collate_wo_target(concated)
         return augmented_batch, targets.float()
