@@ -24,22 +24,20 @@ class FrequencyEncoder(ColCategoryTransformer):
 
     `dictionary_size` will be 6
 
-    Parameters
-    ----------
-    col_name_original:
-        Source column name
-    col_name_target:
-        Target column name. Transformed column will be placed here
-        If `col_name_target is None` then original column will be replaced by transformed values.
-    is_drop_original_col:
-        When target and original columns are different manage original col deletion.
+    Args:
+        col_name_original: Source column name
+        col_name_target: Target column name. Transformed column will be placed here
+            If `col_name_target is None` then original column will be replaced by transformed values.
+        is_drop_original_col: When target and original columns are different manage original col deletion.
+
     """
 
-    def __init__(self,
-                 col_name_original: str,
-                 col_name_target: str = None,
-                 is_drop_original_col: bool = True,
-                 ):
+    def __init__(
+        self,
+        col_name_original: str,
+        col_name_target: str = None,
+        is_drop_original_col: bool = True,
+    ):
         super().__init__(
             col_name_original=col_name_original,
             col_name_target=col_name_target,
@@ -50,7 +48,7 @@ class FrequencyEncoder(ColCategoryTransformer):
         self.other_values_code = None
 
     def __repr__(self):
-        return 'Unitary transformation'
+        return "Unitary transformation"
 
     def fit(self, x: pd.Series):
         super().fit(x)
@@ -65,6 +63,9 @@ class FrequencyEncoder(ColCategoryTransformer):
 
     def transform(self, x: pd.Series):
         pd_col = x.astype(str)
-        x = self.attach_column(x, pd_col.map(self.mapping).fillna(self.other_values_code).rename(self.col_name_target))
+        x = self.attach_column(
+            x,
+            pd_col.map(self.mapping).fillna(self.other_values_code).rename(self.col_name_target),
+        )
         x = super().transform(x)
         return x

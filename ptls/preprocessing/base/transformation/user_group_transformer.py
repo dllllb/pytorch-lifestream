@@ -1,41 +1,35 @@
-from functools import reduce
 from typing import List
 
 import joblib
-import torch
 import pandas as pd
+import torch
 from joblib import delayed, Parallel
-from collections import ChainMap
+
 from ptls.preprocessing.base.transformation.col_numerical_transformer import ColTransformer
 
 
 class UserGroupTransformer(ColTransformer):
     """Groups transactions by user. Splits it by features.
-
     'event_time' column should be in dataset. We use it to order transactions
 
-    Parameters
-    ----------
-    col_name_original:
-        Column name with user_id - key for grouping
-    cols_first_item:
-        Only first value will be taken for these columns.
-        All values as tensor will be taken for other columns
-    return_records:
-        False: Result is a dataframe. Use `.to_dict(orient='records')` to transform it to `ptls` format.
-        True: Result is a list of dicts - `ptls` format
-    n_jobs:
-        Number of workers requested by the callers. 
-        Passing n_jobs=-1 means requesting all available workers for instance matching the number of
-        CPU cores on the worker host(s).
+    Args:
+        col_name_original: Column name with user_id - key for grouping
+        cols_first_item: Only first value will be taken for these columns.
+                All values as tensor will be taken for other columns
+        return_records: False: Result is a dataframe. Use `.to_dict(orient='records')` to transform
+            it to `ptls` format. True: Result is a list of dicts - `ptls` format
+        n_jobs: Number of workers requested by the callers. Passing n_jobs=-1 means requesting all
+            available workers for instance matching the number of CPU cores on the worker host(s).
+
     """
 
-    def __init__(self,
-                 col_name_original: str,
-                 cols_first_item: List[str] = None,
-                 return_records: bool = False,
-                 n_jobs: int = -1,
-                 ):
+    def __init__(
+        self,
+        col_name_original: str,
+        cols_first_item: List[str] = None,
+        return_records: bool = False,
+        n_jobs: int = -1,
+    ):
         super().__init__(
             col_name_original=col_name_original,
             col_name_target=None,
@@ -46,25 +40,28 @@ class UserGroupTransformer(ColTransformer):
         self.n_jobs = n_jobs
 
     def __repr__(self):
-        return 'Aggregate transformation'
+        return "Aggregate transformation"
 
     def _event_time_exist(self, x):
         if self.col_name_original not in x.columns:
-            raise AttributeError(f'col_name_original="{self.col_name_original}" not in source dataframe. '
-                                 f'Found {x.columns}')
-        if 'event_time' not in x.columns:
-            raise AttributeError(f'"event_time" not in source dataframe. '
-                                 f'Found {x.columns}')
+            raise AttributeError(
+                f'col_name_original="{self.col_name_original}" not in source dataframe. '
+                f"Found {x.columns}"
+            )
+        if "event_time" not in x.columns:
+            raise AttributeError(
+                f'"event_time" not in source dataframe. ' f"Found {x.columns}"
+            )
 
     def _convert_type(self, group_name, group_df):
         group = {}
 
-        for k, v in group_df.to_dict(orient='series').items():
+        for k, v in group_df.to_dict(orient="series").items():
             if k in self.cols_first_item:
                 v = v.iloc[0]
             elif isinstance(v.iloc[0], torch.Tensor):
                 v = torch.vstack(tuple(v))
-            elif v.dtype == 'object':
+            elif v.dtype == "object":
                 v = v.values
             else:
                 v = torch.from_numpy(v.values)
@@ -77,16 +74,22 @@ class UserGroupTransformer(ColTransformer):
         return self
 
     def df_to_feature_arrays(self, df):
-        with joblib.parallel_backend(backend='threading', n_jobs=self.n_jobs):
+        with joblib.parallel_backend(backend="threading", n_jobs=self.n_jobs):
             parallel = Parallel(verbose=1)
-            result_dict = parallel(delayed(self._convert_type)(group_name, df_group)
-                                   for group_name, df_group in df)
+            result_dict = parallel(
+                delayed(self._convert_type)(group_name, df_group)
+                for group_name, df_group in df
+            )
 
         return result_dict
 
     def transform(self, x: pd.DataFrame):
-        x['et_index'] = x.loc[:, 'event_time']
-        x = x.set_index([self.col_name_original, 'et_index']).sort_index().groupby(self.col_name_original)
+        x["et_index"] = x.loc[:, "event_time"]
+        x = (
+            x.set_index([self.col_name_original, "et_index"])
+            .sort_index()
+            .groupby(self.col_name_original)
+        )
         x = self.df_to_feature_arrays(x)
         x = x if self.return_records else pd.Series(x)
         return x
