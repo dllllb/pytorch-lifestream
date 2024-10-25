@@ -106,7 +106,12 @@ def test_train_loop_rnn_binary_classification():
         **get_rnn_params(),
     )
     dl = RandomEventData(tst_params_data(), target_type='bin_cls')
-    trainer = pl.Trainer(max_epochs=1, logger=None, enable_checkpointing=False)
+    trainer = pl.Trainer(
+        max_epochs=1,
+        logger=None,
+        enable_checkpointing=False,
+        accelerator='cpu'
+    )
     trainer.fit(model, dl)
     print(trainer.logged_metrics)
 
@@ -125,7 +130,12 @@ def test_train_loop_rnn_milti_classification():
         **get_rnn_params(),
     )
     dl = RandomEventData(tst_params_data(), target_type='multi_cls')
-    trainer = pl.Trainer(max_epochs=1, logger=None, enable_checkpointing=False)
+    trainer = pl.Trainer(
+        max_epochs=1,
+        logger=None,
+        enable_checkpointing=False,
+        accelerator='cpu'
+    )
     trainer.fit(model, dl)
     print(trainer.logged_metrics)
 
@@ -175,7 +185,12 @@ def test_train_loop_transf():
         lr_scheduler_partial=partial(torch.optim.lr_scheduler.StepLR, step_size=10, gamma=0.8),
     )
     dl = RandomEventData(tst_params_data())
-    trainer = pl.Trainer(max_epochs=1, logger=None, enable_checkpointing=False)
+    trainer = pl.Trainer(
+        max_epochs=1,
+        logger=None,
+        enable_checkpointing=False,
+        accelerator='cpu'
+    )
     trainer.fit(model, dl)
 
 # SequenceToTarget.metric_list

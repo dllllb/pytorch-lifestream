@@ -4,7 +4,7 @@ from typing import List, Union
 import numpy as np
 import pandas as pd
 
-from ptls.preprocessing.base import DataPreprocessor
+from ptls.preprocessing.base.data_preprocessor import DataPreprocessor
 from ptls.preprocessing.base.transformation.col_category_transformer import ColCategoryTransformer
 from ptls.preprocessing.base.transformation.col_numerical_transformer import ColTransformer
 

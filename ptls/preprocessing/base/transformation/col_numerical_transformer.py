@@ -41,14 +41,21 @@ class ColTransformer(BaseEstimator, TransformerMixin):
             x = x.drop(columns=self.col_name_original)
         return x
 
-    def attach_column(self, df: pd.Series):
-        return {self.col_name_target: df}
+    # def _attach_column(self, df: pd.Series):
+    #     return {self.col_name_target: df}
+
+    @staticmethod
+    def attach_column(df: pd.DataFrame, s: pd.Series):
+        new_col_name = s.name
+        cols = [col for col in df.columns if col != new_col_name]
+        return pd.concat([df[cols], s], axis=1)
 
     def fit(self, x):
         self.check_is_col_exists(x)
         return self
 
     def transform(self, x):
-        new_col = self.attach_column(x)
-        del x
-        return new_col
+        # new_col = self.attach_column(x)
+        # del x
+        # return new_col
+        return self.drop_original_col(x)

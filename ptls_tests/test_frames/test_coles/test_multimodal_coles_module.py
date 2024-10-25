@@ -143,5 +143,10 @@ def test_train_loop():
         lr_scheduler_partial=partial(torch.optim.lr_scheduler.StepLR, step_size=1, gamma=1.0),
     )
     dl = RandomMultimodalEventData(params['data_module'])
-    trainer = pl.Trainer(max_epochs=1, logger=None, enable_checkpointing=False)
+    trainer = pl.Trainer(
+        max_epochs=1,
+        logger=None,
+        enable_checkpointing=False,
+        accelerator='cpu'
+    )
     trainer.fit(model, dl)
