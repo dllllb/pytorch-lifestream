@@ -68,4 +68,4 @@ class FeatureDict:
         """
         if 'event_time' in d:
             return len(d['event_time'])
-        return len(next(v for k, v in d.items() if FeatureDict.is_seq_feature(v)))
+        return len(next(v for k, v in d.items() if FeatureDict.is_seq_feature(k, v)))
