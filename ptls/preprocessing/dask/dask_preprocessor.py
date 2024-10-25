@@ -4,7 +4,7 @@ import numpy as np
 from typing import List, Dict, Union
 import dask.dataframe as dd
 
-from ptls.preprocessing.base import DataPreprocessor
+from ptls.preprocessing.base.data_preprocessor import DataPreprocessor
 from ptls.preprocessing.base.transformation.col_category_transformer import ColCategoryTransformer
 from ptls.preprocessing.base.transformation.col_identity_transformer import ColIdentityEncoder
 from ptls.preprocessing.base.transformation.col_numerical_transformer import ColTransformer

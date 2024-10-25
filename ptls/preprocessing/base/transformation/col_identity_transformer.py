@@ -15,8 +15,10 @@ class ColIdentityEncoder(ColTransformer):
 
     def __init__(
         self,
-        col_name_original: str = "event_time",
-        col_name_target: str = "trans_date",
+        col_name_original: str = None,
+        # col_name_original: str = "event_time",
+        col_name_target: str = None,
+        # col_name_target: str = "trans_date",
         is_drop_original_col: bool = False,
     ):
         super().__init__(
@@ -28,8 +30,14 @@ class ColIdentityEncoder(ColTransformer):
     def __repr__(self):
         return "Unitary transformation"
 
-    def transform(self, x):
+    def _transform(self, x):
         new_x = self.attach_column(x)
         if not self.is_drop_original_col:
             new_x.update({self.col_name_original: x})
         return new_x
+
+    def transform(self, x):
+        x = self.attach_column(x, x[self.col_name_original].rename(self.col_name_target))
+
+        x = super().transform(x)
+        return x
