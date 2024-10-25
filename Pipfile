@@ -24,7 +24,7 @@ duckdb = "*"
 pyarrow = '>=7.0'
 transformers = "*"
 hydra-core = '>=1.1.2'
-
+torch = "==1.12.1"
 joblib = "~=1.4.2"
 numpy = "~=1.24.4"
 omegaconf = "~=2.3.0"
@@ -39,6 +39,7 @@ dask = "*"
 
 [packages]
 pytorch-lifestream = {editable = true, path = "."}
+torch = "==1.12.1"
 
 [requires]
 python_version = "3.8"
