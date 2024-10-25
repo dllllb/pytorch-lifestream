@@ -1,6 +1,8 @@
-from ptls.data_load.datasets import DuckDbDataset
 import pandas as pd
 import torch
+
+from ptls.data_load.datasets import DuckDbDataset
+
 
 def test_simple_processing():
     test_df = pd.DataFrame([
@@ -29,12 +31,12 @@ def test_simple_processing():
             'category': 3
         },
     ])
-    
+
     ds = DuckDbDataset(
-        data_read_func = 'test_df',
-        col_id = 'id',
-        col_event_time = 'dt',
-        col_event_fields = ['sum', 'category']
+        data_read_func='test_df',
+        col_id='id',
+        col_event_time='dt',
+        col_event_fields=['sum', 'category']
     )
 
     expected = str([
