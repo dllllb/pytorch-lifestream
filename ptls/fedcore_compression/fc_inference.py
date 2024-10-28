@@ -1,20 +1,19 @@
+"""Module for embeddings obtaining or/and computational metrics evaluation."""
 import logging
-import torch.utils
-import torch.utils.data
 import os
+from pathlib import Path
+
 import hydra
+from omegaconf import DictConfig
 import pandas as pd
 import pytorch_lightning as pl
 import torch
-import torch.multiprocessing
-from omegaconf import DictConfig
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 
 from ptls.data_load.utils import collate_feature_dict
+from ptls.fedcore_compression.fc_utils import eval_computational_metrics
 from ptls.frames.inference_module import InferenceModule
-from pathlib import Path
-from fc_utils import eval_computational_metrics
 
 logger = logging.getLogger(__name__)
 
