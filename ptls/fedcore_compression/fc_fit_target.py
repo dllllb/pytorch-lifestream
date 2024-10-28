@@ -1,14 +1,15 @@
 import json
 import logging
+from pathlib import Path
 
 import hydra
 import numpy as np
-import pytorch_lightning as pl
 from omegaconf import DictConfig
-from pathlib import Path
+import pytorch_lightning as pl
+from torch import load
 from pytorch_lightning.loggers import TensorBoardLogger
 
-from fc_utils import fedcore_fit, extract_loss, get_experimental_setup
+from ptls.fedcore_compression.fc_utils import fedcore_fit, extract_loss, get_experimental_setup
 
 logger = logging.getLogger(__name__)
 
@@ -18,7 +19,8 @@ def fold_fit_test(conf, fold_id):
     # model instantiation
     model = hydra.utils.instantiate(conf.pl_module)
     model.seq_encoder.is_reduce_sequence = True
-    
+    if 'pretrained' in conf and conf.pretrained:
+        model.seq_encoder = load(conf.pretrained)
     loss = extract_loss(model, conf)
 
     # data module instantiation
@@ -29,12 +31,11 @@ def fold_fit_test(conf, fold_id):
     save_path = f'composition_results/{setup_name}'
     Path(save_path).mkdir(parents=True, exist_ok=True)
     experiment_setup['output_folder'] = save_path
-    if hasattr(conf, 'limit_train_batches'):
-        experiment_setup['common']['max_train_batch'] = conf.limit_train_batches
-    if hasattr(conf, 'limit_valid_batches'):
-        experiment_setup['common']['max_calib_batch'] = conf.limit_valid_batches
-    if hasattr(conf, 'need_pretrain'):
-        experiment_setup['need_pretrain'] = conf.need_pretrain
+    experiment_setup['common']['batch_limit'] = conf.get('limit_train_batches', None)
+    experiment_setup['common']['calib_batch_limit'] = conf.get('limit_valid_batches', None)
+    experiment_setup['need_fedot_pretrain'] = conf.get('need_fedot_pretrain', False)
+    experiment_setup['need_evo_opt'] = conf.get('need_evo_opt', False)
+    experiment_setup['distributed_compression'] = conf.get('distributed_compression', False)
     
     # training
     fedcore_compressor = fedcore_fit(model, dm, experiment_setup, loss)
