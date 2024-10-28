@@ -149,9 +149,9 @@ class DataPreprocessor(BaseEstimator, TransformerMixin):
                 x = ct.fit_transform(x)
         return self
 
-    def fit_transform(self, X, y=None, **fit_params):
+    def fit_transform(self, x, y=None, **fit_params):
         transformed_cols = Maybe.insert(
-            self._chunk_data(dataset=X, func_to_transform=self._all_col_transformers)
+            self._chunk_data(dataset=x, func_to_transform=self._all_col_transformers)
         ).maybe(
             default_value=None,
             extraction_function=lambda chunked_data: self.multithread_dispatcher.evaluate(
@@ -159,7 +159,7 @@ class DataPreprocessor(BaseEstimator, TransformerMixin):
             ),
         )
         transformed_features = self._apply_aggregation(
-            individuals=transformed_cols, input_data=X
+            individuals=transformed_cols, input_data=x
         )
         self.multithread_dispatcher.shutdown()
         return transformed_features
