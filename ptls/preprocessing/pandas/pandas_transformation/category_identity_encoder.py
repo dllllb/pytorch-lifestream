@@ -82,8 +82,9 @@ class CategoryIdentityEncoder(ColCategoryTransformer):
                 UserWarning,
             )
 
-    def fit(self, x: pd.Series):
-        super().fit(x)
+    def fit(self, x: pd.DataFrame):
+        self.check_is_col_exists(x)
+        x = x[self.col_name_original].astype(int)
         self._detect_low_boundary(x)
         return self
 

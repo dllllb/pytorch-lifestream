@@ -15,6 +15,7 @@ from ptls.preprocessing.base.transformation.col_numerical_transformer import Col
 from ptls.preprocessing.base.transformation.user_group_transformer import UserGroupTransformer
 from ptls.preprocessing.multithread_dispatcher import DaskDispatcher
 from ptls.preprocessing.pandas.pandas_transformation.category_identity_encoder import CategoryIdentityEncoder
+from ptls.preprocessing.pandas.pandas_transformation.pandas_freq_transformer import FrequencyEncoder
 
 
 class DataPreprocessor(BaseEstimator, TransformerMixin):
@@ -50,6 +51,7 @@ class DataPreprocessor(BaseEstimator, TransformerMixin):
         self.cols_identity = cols_identity
         self.t_user_group = t_user_group
         self.n_jobs = n_jobs
+        self.category_transformation = None
         self._init_transform_function()
 
         self._all_col_transformers = [
@@ -100,8 +102,7 @@ class DataPreprocessor(BaseEstimator, TransformerMixin):
                     FrequencyEncoder(col_name_original=col) for col in self.cts_category
                 ],
                 right_function=lambda x: [
-                    CategoryIdentityEncoder(col_name_original=col)
-                    for col in self.cts_category
+                    CategoryIdentityEncoder(col_name_original=col) for col in self.cts_category
                 ],
             )
 
@@ -154,9 +155,8 @@ class DataPreprocessor(BaseEstimator, TransformerMixin):
             self._chunk_data(dataset=x, func_to_transform=self._all_col_transformers)
         ).maybe(
             default_value=None,
-            extraction_function=lambda chunked_data: self.multithread_dispatcher.evaluate(
-                individuals=chunked_data, objective_func=self.unitary_func
-            ),
+            extraction_function=lambda chunked_data: self.multithread_dispatcher.evaluate(individuals=chunked_data,
+                                                                                          objective_func=self.unitary_func)
         )
         transformed_features = self._apply_aggregation(
             individuals=transformed_cols, input_data=x
@@ -164,8 +164,8 @@ class DataPreprocessor(BaseEstimator, TransformerMixin):
         self.multithread_dispatcher.shutdown()
         return transformed_features
 
-    def transform(self, X):
-        self.fit_transform(X)
+    def transform(self, x):
+        return self.fit_transform(x)
 
     def get_category_dictionary_sizes(self):
         """Gets a dict of mapping to integers lengths for categories"""

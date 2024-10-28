@@ -61,11 +61,13 @@ class FrequencyEncoder(ColCategoryTransformer):
     def dictionary_size(self):
         return self.other_values_code + 1
 
-    def transform(self, x: pd.Series):
+    def transform(self, x: pd.DataFrame):
         pd_col = x.astype(str)
         x = self.attach_column(
             x,
-            pd_col.map(self.mapping).fillna(self.other_values_code).rename(self.col_name_target),
+            pd_col.copy().replace(self.mapping).fillna(self.other_values_code)[self.col_name_target],
+            # pd_col.copy().replace(self.mapping).fillna(self.other_values_code).rename(columns={self.col_name_target: self.col_name_target})[self.col_name_target],
+            # pd_col.map(self.mapping).fillna(self.other_values_code).rename(self.col_name_target),
         )
         x = super().transform(x)
         return x
