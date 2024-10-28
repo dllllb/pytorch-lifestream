@@ -7,7 +7,7 @@ from pyspark.sql import functions as F
 from pyspark.sql import types as T
 from pyspark.sql.window import Window
 
-from ptls.preprocessing.base import DataPreprocessor
+from ptls.preprocessing.base.data_preprocessor import DataPreprocessor
 from ptls.preprocessing.base.transformation.col_category_transformer import ColCategoryTransformer
 from ptls.preprocessing.base.transformation.col_numerical_transformer import ColTransformer
 from ptls.preprocessing.pyspark.category_identity_encoder import CategoryIdentityEncoder
