@@ -111,6 +111,7 @@ class PysparkDataPreprocessor(DataPreprocessor):
         )
 
         super().__init__(
+            col_id=col_id,
             col_event_time=ct_event_time,
             cols_category=cts_category,
             cols_numerical=cts_numerical,
