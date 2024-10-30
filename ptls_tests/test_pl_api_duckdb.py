@@ -1,20 +1,18 @@
 from functools import partial
 from pathlib import Path
 
-import pandas as pd
 import pytorch_lightning as pl
 import torch
 
+from ptls.data_load import padded_collate_wo_target
 from ptls.data_load.datasets import DuckDbDataset
-from ptls.frames.coles.split_strategy import SampleSlices
+from ptls.data_load.iterable_processing import FilterNonArray, ISeqLenLimit
 from ptls.frames.coles import CoLESModule, ColesIterableDataset
+from ptls.frames.coles.losses import ContrastiveLoss
+from ptls.frames.coles.sampling_strategies import HardNegativePairSelector
+from ptls.frames.coles.split_strategy import SampleSlices
 from ptls.nn.seq_encoder import RnnSeqEncoder
 from ptls.nn.trx_encoder import TrxEncoder
-from ptls.data_load.datasets.dataloaders import inference_data_loader
-from ptls.frames.coles.sampling_strategies import HardNegativePairSelector
-from ptls.frames.coles.losses import ContrastiveLoss
-from ptls.data_load import padded_collate_wo_target
-from ptls.data_load.iterable_processing import FilterNonArray, ISeqLenLimit
 
 
 def test_train_inference():
@@ -24,10 +22,10 @@ def test_train_inference():
         """
 
     train_ds = DuckDbDataset(
-        data_read_func = train_data,
-        col_id = 'client_id',
-        col_event_time = 'trans_date',
-        col_event_fields = ['amount_rur', 'small_group']
+        data_read_func=train_data,
+        col_id='client_id',
+        col_event_time='trans_date',
+        col_event_fields=['amount_rur', 'small_group']
     )
 
     c_train_ds = ColesIterableDataset(
@@ -81,10 +79,10 @@ def test_train_inference():
         """
 
     test_ds = DuckDbDataset(
-        data_read_func = test_data,
-        col_id = 'client_id',
-        col_event_time = 'trans_date',
-        col_event_fields = ['amount_rur', 'small_group'],
+        data_read_func=test_data,
+        col_id='client_id',
+        col_event_time='trans_date',
+        col_event_fields=['amount_rur', 'small_group'],
         i_filters=[
             FilterNonArray(),
             ISeqLenLimit(max_seq_len=100),
