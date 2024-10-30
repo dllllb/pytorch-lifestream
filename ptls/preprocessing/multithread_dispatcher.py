@@ -20,9 +20,9 @@ class DaskDispatcher:
         del self.dask_client
 
     def _multithread_eval(
-        self,
-        individuals_to_evaluate: Union[Dict, pd.DataFrame],
-        objective_func: Union[Callable, Dict],
+            self,
+            individuals_to_evaluate: Union[Dict, pd.DataFrame],
+            objective_func: Union[Callable, Dict],
     ):
 
         if isinstance(objective_func, dict):
@@ -34,7 +34,8 @@ class DaskDispatcher:
                 evaluation_results = [
                     self.evaluate_single(
                         self,
-                        data=individuals_to_evaluate[func_name],
+                        # data=individuals_to_evaluate[func_name],
+                        data=pd.DataFrame(individuals_to_evaluate[func_name]),
                         eval_func=func_impl,
                     )
                     for func_name, func_impl in objective_func.items()
@@ -45,10 +46,36 @@ class DaskDispatcher:
             )
         return evaluation_results
 
+    # def __multithread_eval(
+    # """
+    # Eval with dask for debugging
+    # """
+    #         self,
+    #         individuals_to_evaluate: Union[Dict, pd.DataFrame],
+    #         objective_func: Union[Callable, Dict],
+    # ):
+    #     #     without dask
+    #
+    #     if isinstance(objective_func, dict):
+    #         evaluation_results = [
+    #             self.evaluate_single(
+    #                 self,
+    #                 # data=individuals_to_evaluate[func_name],
+    #                 data=pd.DataFrame(individuals_to_evaluate[func_name]),
+    #                 eval_func=func_impl,
+    #             )
+    #             for func_name, func_impl in objective_func.items()
+    #         ]
+    #     else:
+    #         evaluation_results = self.evaluate_single(
+    #             self, data=individuals_to_evaluate, eval_func=objective_func
+    #         )
+    #     return evaluation_results
+
     def evaluate(
-        self,
-        individuals: Union[List, Dict],
-        objective_func: Union[Callable, List[Callable]],
+            self,
+            individuals: Union[List, Dict],
+            objective_func: Union[Callable, List[Callable]],
     ):
         individuals_evaluated = Maybe.insert(individuals).maybe(
             default_value=None,
@@ -60,7 +87,7 @@ class DaskDispatcher:
 
     @wrap_non_picklable_objects
     def evaluate_single(
-        self, data: Union[pd.DataFrame, pd.Series], eval_func: Callable
+            self, data: Union[pd.DataFrame, pd.Series], eval_func: Callable
     ):
         if self.transformation_func == "fit_transform":
             eval_res = eval_func.fit_transform(data)
