@@ -21,11 +21,14 @@ from ptls.preprocessing.pandas.pandas_preprocessor import PandasDataPreprocessor
 def test_train_inference():
     source_data = pd.read_csv(Path(__file__).parent / "age-transactions.csv")
 
+    source_data = source_data.rename(mapper={'trans_date': 'event_time'},
+                                     axis=1)
+
     preprocessor = PandasDataPreprocessor(
         col_id='client_id',
-        col_event_time='trans_date',
+        col_event_time='event_time',
         event_time_transformation='none',
-        cols_category=["trans_date", "small_group"],
+        cols_category=["event_time", "small_group"],
         cols_numerical=["amount_rur"],
     )
 

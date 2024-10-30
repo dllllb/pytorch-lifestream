@@ -73,15 +73,29 @@ class UserGroupTransformer(ColTransformer):
         self._event_time_exist(x)
         return self
 
-    def df_to_feature_arrays(self, df):
-        with joblib.parallel_backend(backend="threading", n_jobs=self.n_jobs):
-            parallel = Parallel(verbose=1)
-            result_dict = parallel(
-                delayed(self._convert_type)(group_name, df_group)
-                for group_name, df_group in df
-            )
+    # def df_to_feature_arrays(self, df):
+    #     with joblib.parallel_backend(backend="threading", n_jobs=self.n_jobs):
+    #         parallel = Parallel(verbose=1)
+    #         result_dict = parallel(
+    #             delayed(self._convert_type)(group_name, df_group)
+    #             for group_name, df_group in df
+    #         )
+    #
+    #     return result_dict
 
-        return result_dict
+    def df_to_feature_arrays(self, df):
+        def decide(k, v):
+            if k in self.cols_first_item:
+                return v.iloc[0]
+            elif isinstance(v.iloc[0], torch.Tensor):
+                return torch.vstack(tuple(v))
+            elif v.dtype == 'object':
+                return v.values
+            else:
+                return torch.from_numpy(v.values)
+
+        return pd.Series({k: decide(k, v)
+                          for k, v in df.to_dict(orient='series').items()})
 
     def transform(self, x: pd.DataFrame):
         x["et_index"] = x.loc[:, "event_time"]
@@ -90,6 +104,8 @@ class UserGroupTransformer(ColTransformer):
             .sort_index()
             .groupby(self.col_name_original)
         )
-        x = self.df_to_feature_arrays(x)
-        x = x if self.return_records else pd.Series(x)
-        return x
+        # x = self.df_to_feature_arrays(x)
+        x = x.apply(self.df_to_feature_arrays).reset_index()
+
+        # x = x if self.return_records else pd.Series(x)
+        return x.to_dict(orient="records") if self.return_records else x

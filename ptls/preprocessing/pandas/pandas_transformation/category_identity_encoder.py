@@ -60,7 +60,7 @@ class CategoryIdentityEncoder(ColCategoryTransformer):
         return "Unitary transformation"
 
     def _detect_low_boundary(self, x):
-        self.min_fit_index, self.max_fit_index = x.astype(int).agg(self.filter_boundary)
+        self.min_fit_index, self.max_fit_index = x.agg(self.filter_boundary)
         if self.min_fit_index < 0:
             raise AttributeError(f"Negative values found in {self.col_name_original}")
         if self.min_fit_index == 0:
@@ -83,6 +83,7 @@ class CategoryIdentityEncoder(ColCategoryTransformer):
             )
 
     def fit(self, x: pd.DataFrame):
+        super().fit(x)
         self.check_is_col_exists(x)
         x = x[self.col_name_original].astype(int)
         self._detect_low_boundary(x)
@@ -92,7 +93,9 @@ class CategoryIdentityEncoder(ColCategoryTransformer):
     def dictionary_size(self):
         return self.max_fit_index + 1
 
-    def transform(self, x: pd.Series):
-        self._detect_all_boundaries(x)
+    def transform(self, x: pd.DataFrame):
+        selected_col = x[self.col_name_original].astype(int)
+        x = self.attach_column(x, selected_col.rename(self.col_name_target))
+        self._detect_all_boundaries(selected_col)
         x = super().transform(x)
         return x

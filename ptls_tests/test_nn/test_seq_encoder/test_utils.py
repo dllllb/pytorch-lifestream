@@ -319,7 +319,7 @@ def test_rnn_iterative_no_starter():
     x_a_1          -> out_1
     x_a_1 + x_b_2  -> out_2
 
-    Also we run an other kind os splits, for `a` and `b` groups
+    Also, we run other kind os splits, for `a` and `b` groups
     x_a   -> out_a
     x_b_2 -> out_b
 
