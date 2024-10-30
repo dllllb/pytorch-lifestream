@@ -7,6 +7,8 @@ import torch
 from joblib import delayed, Parallel
 from pymonad.either import Either
 
+from ptls.data_load import IterableChain
+
 logger = logging.getLogger(__name__)
 
 
@@ -27,16 +29,19 @@ class MemoryMapDataset(torch.utils.data.Dataset):
                  i_filters: List[Iterable] = None, 
                  n_jobs: int = -1):
         self.n_jobs = n_jobs
-        self.processed_data = Either(data, monoid=[i_filters, i_filters is None]).either(
-            left_function=lambda filters: self.__apply_filters(data, filters),
-            right_function=lambda x: [rec for rec in x])
+        
+        if i_filters is None:
+            self.processed_data = [rec for rec in data]
+        else:
+            post_processor_filter = IterableChain(*i_filters)
+            self.processed_data = [rec for rec in post_processor_filter(data)]
+        
         logger.info(f'Loaded {len(self.processed_data)} records')
 
     def __apply_filters(self, data, i_filters):
         def _iterable_filtration(sample, i_filters):
             for f in i_filters:
                 sample = f(sample)
-                # sample = f.transform(sample)
             return sample
 
         with joblib.parallel_backend(backend='threading', n_jobs=self.n_jobs):
@@ -57,7 +62,9 @@ class MemoryIterableDataset(torch.utils.data.IterableDataset, ABC):
         super().__init__()
         self.data = data
         self.i_filters = i_filters
-
+        self.processed_data = Either(data, monoid=[i_filters, i_filters is None]).either(
+            left_function=lambda filters: IterableChain(*filters)(data),
+            right_function=lambda x: [rec for rec in x])
     @abstractmethod
     def __iter__(self):
         """This method must be implemented in subclasses"""
