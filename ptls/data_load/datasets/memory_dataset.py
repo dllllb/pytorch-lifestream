@@ -1,15 +1,11 @@
 import logging
-from typing import Iterable, List
 from abc import ABC, abstractmethod
+from typing import Iterable, List
 
 import joblib
-import pandas as pd
 import torch
+from joblib import delayed, Parallel
 from pymonad.either import Either
-from joblib import parallel_backend, parallel_config, delayed, Parallel
-from ptls.data_load import IterableChain
-from ptls.data_load.iterable_processing.to_torch_tensor import ToTorch
-from ptls.preprocessing.dask.dask_client import DaskServer
 
 logger = logging.getLogger(__name__)
 
@@ -39,7 +35,8 @@ class MemoryMapDataset(torch.utils.data.Dataset):
     def __apply_filters(self, data, i_filters):
         def _iterable_filtration(sample, i_filters):
             for f in i_filters:
-                sample = f.transform(sample)
+                sample = f(sample)
+                # sample = f.transform(sample)
             return sample
 
         with joblib.parallel_backend(backend='threading', n_jobs=self.n_jobs):

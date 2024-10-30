@@ -15,7 +15,7 @@ mkdocs = "*"
 matplotlib = ">=3.1.1"
 pandas = "==1.4.*"
 scikit-learn = ">=0.21.2"
-pyspark = ">=2"
+pyspark = "==3.4.0"
 tqdm = ">=4.32.2"
 tensorboard = ">=2.1.0"
 pyhocon = "*"
@@ -32,14 +32,13 @@ scipy = "~=1.10.1"
 pymonad = "*"
 distributed = "*"
 dask = "*"
-    #torch = "*"
-    #torchmetrics = "~=1.4.1"
-    #PyYAML = "~=6.0.2"
-    #sparkpickle = "*"
+torch = "==1.12.1"
+duckdb = "==0.8.0"
 
 [packages]
 pytorch-lifestream = {editable = true, path = "."}
-torch = "==1.12.1"
+
+
 
 [requires]
 python_version = "3.8"

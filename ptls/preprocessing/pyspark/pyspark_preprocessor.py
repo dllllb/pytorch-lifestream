@@ -63,7 +63,7 @@ class PysparkDataPreprocessor(DataPreprocessor):
         if cols_last_item is None:
             cols_last_item = []
 
-        if type(col_event_time) is not str:
+        if not isinstance(col_event_time, str):
             ct_event_time = col_event_time  # use as is
         elif event_time_transformation == "dt_to_timestamp":
             ct_event_time = DatetimeToTimestamp(col_name_original=col_event_time)
@@ -82,10 +82,10 @@ class PysparkDataPreprocessor(DataPreprocessor):
 
         cts_category = []
         for col in cols_category:
-            if type(col) is not str:
+            if not isinstance(col, str):
                 cts_category.append(col)  # use as is
             elif category_transformation == "frequency":
-                if type(max_cat_num) is dict:
+                if isinstance(max_cat_num, dict):
                     mc = max_cat_num.get(col)
                 else:
                     mc = max_cat_num
@@ -218,3 +218,13 @@ class PysparkDataPreprocessor(DataPreprocessor):
         df = df.to_frame().assign(cnt=1).groupby(name)[["cnt"]].sum()
         df["% of total"] = df["cnt"] / df["cnt"].sum()
         return df
+
+    def fit_transform(self, X):
+        for ct in self._all_col_transformers:
+            X = ct.fit_transform(X)
+        return X
+
+    def transform(self, x):
+        for ct in self._all_col_transformers:
+            x = ct.transform(x)
+        return x

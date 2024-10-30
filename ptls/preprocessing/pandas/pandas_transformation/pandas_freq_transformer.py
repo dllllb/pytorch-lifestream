@@ -50,11 +50,11 @@ class FrequencyEncoder(ColCategoryTransformer):
     def __repr__(self):
         return "Unitary transformation"
 
-    def fit(self, x: pd.Series):
+    def fit(self, x: pd.DataFrame):
         super().fit(x)
-        val_count = x.astype(str).value_counts()
-        self.mapping = {k: i + 1 for i, k in enumerate(val_count.index)}
-        self.other_values_code = len(val_count) + 1
+        value_counts = x[self.col_name_original].astype(str).value_counts()
+        self.mapping = {k: i + 1 for i, k in enumerate(value_counts.index)}
+        self.other_values_code = len(value_counts) + 1
         return self
 
     @property
@@ -62,12 +62,10 @@ class FrequencyEncoder(ColCategoryTransformer):
         return self.other_values_code + 1
 
     def transform(self, x: pd.DataFrame):
-        pd_col = x.astype(str)
+        pd_col = x[self.col_name_original].astype(str)
         x = self.attach_column(
             x,
-            pd_col.copy().replace(self.mapping).fillna(self.other_values_code)[self.col_name_target],
-            # pd_col.copy().replace(self.mapping).fillna(self.other_values_code).rename(columns={self.col_name_target: self.col_name_target})[self.col_name_target],
-            # pd_col.map(self.mapping).fillna(self.other_values_code).rename(self.col_name_target),
+            pd_col.map(self.mapping).fillna(self.other_values_code).rename(self.col_name_target),
         )
         x = super().transform(x)
         return x

@@ -34,15 +34,18 @@ class DataPreprocessor(BaseEstimator, TransformerMixin):
         n_jobs: The number of jobs to run in parallel
 
     """
+
     def __init__(
-        self,
-        col_id: str,
-        col_event_time: Union[str, ColTransformer],
-        cols_category: List[Union[str, ColCategoryTransformer]] = None,
-        cols_numerical: List[str] = None,
-        cols_identity: List[str] = None,
-        t_user_group: ColTransformer = None,
-        n_jobs: int = -1,
+            self,
+            col_id: str,
+            col_event_time: ColTransformer,
+            cols_category: List[ColCategoryTransformer] = None,
+            cols_numerical: List[ColTransformer] = None,
+            cols_identity: List[str] = None,
+            cols_first_item: List[str] = None,
+            return_records: bool = True,
+            t_user_group: ColTransformer = None,
+            n_jobs: int = -1,
     ):
         self.cl_id = col_id
         self.ct_event_time = col_event_time
@@ -52,6 +55,9 @@ class DataPreprocessor(BaseEstimator, TransformerMixin):
         self.t_user_group = t_user_group
         self.n_jobs = n_jobs
         self.category_transformation = None
+        self.cols_first_item = cols_first_item
+        self.return_records = return_records
+
         self._init_transform_function()
 
         self._all_col_transformers = [
@@ -66,15 +72,21 @@ class DataPreprocessor(BaseEstimator, TransformerMixin):
         self.multithread_dispatcher = DaskDispatcher()
 
     def _init_transform_function(self):
-        self.cts_numerical = [
-            ColIdentityEncoder(col_name_original=col) for col in self.cts_numerical
-        ]
+        cts_numerical = []
+        for col in self.cts_numerical:
+            if isinstance(col, str):
+                cts_numerical.append(ColIdentityEncoder(col_name_original=col))
+            else:
+                cts_numerical.append(col)
+        self.cts_numerical = cts_numerical
+
         self.t_user_group = UserGroupTransformer(
             col_name_original=self.cl_id,
             cols_first_item=self.cols_first_item,
             return_records=self.return_records,
             n_jobs=self.n_jobs,
-        )
+        ) if isinstance(self.t_user_group, str) or self.t_user_group is None else self.t_user_group
+
         if isinstance(self.ct_event_time, str):  # use as is
             self.ct_event_time = Either(
                 value=self.ct_event_time,
@@ -102,16 +114,17 @@ class DataPreprocessor(BaseEstimator, TransformerMixin):
                     FrequencyEncoder(col_name_original=col) for col in self.cts_category
                 ],
                 right_function=lambda x: [
-                    CategoryIdentityEncoder(col_name_original=col) for col in self.cts_category
+                    CategoryIdentityEncoder(col_name_original=col)
+                    for col in self.cts_category
                 ],
             )
 
         return
 
     def _chunk_data(
-        self,
-        dataset: Union[pd.DataFrame, dd.DataFrame],
-        func_to_transform: List[Callable],
+            self,
+            dataset: Union[pd.DataFrame, dd.DataFrame],
+            func_to_transform: List[Callable],
     ):
         col_dict, self.func_dict = {}, {}
         for func_name in func_to_transform:
@@ -155,8 +168,9 @@ class DataPreprocessor(BaseEstimator, TransformerMixin):
             self._chunk_data(dataset=x, func_to_transform=self._all_col_transformers)
         ).maybe(
             default_value=None,
-            extraction_function=lambda chunked_data: self.multithread_dispatcher.evaluate(individuals=chunked_data,
-                                                                                          objective_func=self.unitary_func)
+            extraction_function=lambda chunked_data: self.multithread_dispatcher.evaluate(
+                individuals=chunked_data, objective_func=self.unitary_func
+            ),
         )
         transformed_features = self._apply_aggregation(
             individuals=transformed_cols, input_data=x
