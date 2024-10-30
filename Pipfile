@@ -20,7 +20,7 @@ tqdm = ">=4.32.2"
 tensorboard = ">=2.1.0"
 pyhocon = "*"
 hydra-optuna-sweeper = '>=1.2.0'
-duckdb = "==0.8.0"
+duckdb = "*"
 pyarrow = '>=7.0'
 transformers = "*"
 hydra-core = '>=1.1.2'
