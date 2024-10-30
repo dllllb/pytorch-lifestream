@@ -81,6 +81,7 @@ def extract_loss(model: Module, conf: Optional[dict] = None) -> Optional[Callabl
         loss = lambda : instantiate(conf.loss)
     else:
         loss = None
+    print('LOSS', loss)
     return loss
 
 def eval_computational_metrics(model: Module, 

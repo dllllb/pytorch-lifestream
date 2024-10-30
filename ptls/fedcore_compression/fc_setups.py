@@ -103,12 +103,20 @@ TEST = {'compression_task': 'composite_compression',
                                                              ),
                                          training_model=dict(
                                              epochs=1,
-                                         )                    
-                                         ),  
+                                         ),
+                                         training_aware_quant=dict(
+                                             epochs=1
+                                         ),
+                                         post_training_quant=dict(
+                                             epochs=1
+                                         )                      
+                                    ),  
                     'initial_assumption': [
-                        'training_model',
-                        'low_rank_model',
-                        'pruning_model',
+                        # 'training_model',
+                        # 'low_rank_model',
+                        # 'pruning_model',
+                        # 'training_aware_quant',
+                        'post_training_quant'
                     ]
 }
 

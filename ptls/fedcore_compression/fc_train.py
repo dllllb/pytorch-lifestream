@@ -7,7 +7,7 @@ from pathlib import Path
 import pytorch_lightning as pl
 import torch
 
-from ptls.fedcore_compression.fc_utils import fedcore_fit, get_experimental_setup
+from ptls.fedcore_compression.fc_utils import fedcore_fit, get_experimental_setup, extract_loss
 
 
 logger = logging.getLogger(__name__)
@@ -38,7 +38,7 @@ def main(conf: DictConfig):
     dm = hydra.utils.instantiate(conf.data_module)
 
     # fitting
-    fedcore_compressor = fedcore_fit(model, dm, experiment_setup)
+    fedcore_compressor = fedcore_fit(model, dm, experiment_setup, loss=extract_loss(model, conf))
     
     if 'save_encoder' in conf:
         torch.save(fedcore_compressor.optimised_model.seq_encoder, conf.save_encoder)
