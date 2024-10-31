@@ -1,5 +1,32 @@
+# PyTorch-Lifestream: Deep Learning for Event Sequence Analysis
+
 Learn event sequence deep learning analysis with Pytorch-Lifestream.
-We have collected a set of topics related to the processing of event sequences. Most themes are supported by demo code using the ptls library. We recommend studying the topics sequentially. However, if you are familiar in some areas, you can skip them and take only the relevant topics.
+We have collected a set of topics related to the processing of event sequences. Most themes are supported by demo code using the ptls library. We recommend following the topics sequentially, though experienced users are free to dive into specific sections. Explore demos, test code, and start applying these powerful techniques to your data!
+
+---
+
+## Table of Contents
+
+1. **Prerequisites**  
+   - Essential tools for working with deep learning and data processing.
+2. **Event Sequence Analysis**  
+   - Problem definitions and classic approaches to global and local event sequence issues.
+3. **Supervised Neural Networks**  
+   - Sequence analysis with various network types and problem-solving techniques.
+4. **Unsupervised Learning**  
+   - Self-supervised training for embeddings and representation learning.
+5. **Contrastive and Non-Contrastive Learning**  
+   - Methods for creating effective latent representations through contrastive learning.
+6. **Using Pretrained Models**  
+   - Techniques for leveraging pretrained models in downstream tasks and fine-tuning.
+7. **Data Preprocessing**  
+   - Efficient data loading and preprocessing with demos.
+8. **Feature Engineering**  
+   - Special feature types, including text encoding and multimodal sources.
+9. **Transaction Encoding**  
+   - Options for encoding and quantizing transaction data.
+
+---
 
 | ix     | Topic                                     | Description                                                         | Tutorial                                                                                                                                                                                                                                                                                                                    |     |
 | ------ | ----------------------------------------- | ------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --- |
