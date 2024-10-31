@@ -46,31 +46,31 @@ class DaskDispatcher:
             )
         return evaluation_results
 
-    # def __multithread_eval(
-    # """
-    # Eval with dask for debugging
-    # """
-    #         self,
-    #         individuals_to_evaluate: Union[Dict, pd.DataFrame],
-    #         objective_func: Union[Callable, Dict],
-    # ):
-    #     #     without dask
-    #
-    #     if isinstance(objective_func, dict):
-    #         evaluation_results = [
-    #             self.evaluate_single(
-    #                 self,
-    #                 # data=individuals_to_evaluate[func_name],
-    #                 data=pd.DataFrame(individuals_to_evaluate[func_name]),
-    #                 eval_func=func_impl,
-    #             )
-    #             for func_name, func_impl in objective_func.items()
-    #         ]
-    #     else:
-    #         evaluation_results = self.evaluate_single(
-    #             self, data=individuals_to_evaluate, eval_func=objective_func
-    #         )
-    #     return evaluation_results
+    def __multithread_eval(
+            self,
+            individuals_to_evaluate: Union[Dict, pd.DataFrame],
+            objective_func: Union[Callable, Dict],
+    ):
+        """
+        Evaluate individuals in parallel without using dask
+        """
+        #     without dask
+
+        if isinstance(objective_func, dict):
+            evaluation_results = [
+                self.evaluate_single(
+                    self,
+                    # data=individuals_to_evaluate[func_name],
+                    data=pd.DataFrame(individuals_to_evaluate[func_name]),
+                    eval_func=func_impl,
+                )
+                for func_name, func_impl in objective_func.items()
+            ]
+        else:
+            evaluation_results = self.evaluate_single(
+                self, data=individuals_to_evaluate, eval_func=objective_func
+            )
+        return evaluation_results
 
     def evaluate(
             self,

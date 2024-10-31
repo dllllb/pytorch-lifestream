@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "3f6b9f4011f18da3d91f90e8ef4824946f3c91268f2ff2a02d5b4f2f0d7085f3"
+            "sha256": "4aae4876c179cbb5600a3c91f3012529585ce5fffecc87f9d04021f469f65868"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -2587,7 +2587,7 @@
                 "sha256:45e54197d28b7a7f1559e60b95e7c567032b602131fbd588f1497f47880aa68b",
                 "sha256:71522656f0abace1d072b9e5481a48f07c138e00f079c38c8f883823f9c26bd7"
             ],
-            "markers": "python_version >= '3.8'",
+            "markers": "python_version < '3.10'",
             "version": "==8.5.0"
         },
         "importlib-resources": {
@@ -3782,7 +3782,7 @@
                 "sha256:a6a7ee4235a3f944aa1fa2249307708f893fe5717dc603503c6c7969c070fb7c",
                 "sha256:f86ec8d1a83f11977c9a6ea7598e8c27fc5cddfa5b07ea2241edbbde1d7bc032"
             ],
-            "markers": "python_full_version >= '3.6.8'",
+            "markers": "python_version >= '3.0'",
             "version": "==3.1.4"
         },
         "pyperclip": {
@@ -4880,6 +4880,14 @@
             ],
             "markers": "python_version >= '3.8'",
             "version": "==4.12.2"
+        },
+        "tzdata": {
+            "hashes": [
+                "sha256:7d85cc416e9382e69095b7bdf4afd9e3880418a2413feec7069d533d6b4e31cc",
+                "sha256:a48093786cdcde33cad18c2555e8532f34422074448fbc874186f0abd79565cd"
+            ],
+            "markers": "python_version >= '2'",
+            "version": "==2024.2"
         },
         "uri-template": {
             "hashes": [

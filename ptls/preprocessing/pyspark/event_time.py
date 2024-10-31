@@ -10,7 +10,8 @@ def dt_to_timestamp(col: str):
 
 
 def timestamp_to_dt(col: str):
-    return F.from_unixtime(col).cast("timestamp")
+    # return F.from_unixtime(col).cast("timestamp")
+    return F.from_unixtime(col)
 
 
 class DatetimeToTimestamp(ColTransformerPysparkMixin, ColTransformer):
