@@ -16,8 +16,9 @@ class DaskDispatcher:
         self.n_jobs = determine_n_jobs(-1)
 
     def shutdown(self):
-        self.dask_client.close()
-        del self.dask_client
+        # self.dask_client.close()
+        # del self.dask_client
+        del self
 
     def _multithread_eval(
             self,
@@ -29,7 +30,6 @@ class DaskDispatcher:
             with parallel_backend(
                 backend="dask",
                 n_jobs=self.n_jobs,
-                scatter=list(individuals_to_evaluate.values()),
             ):
                 evaluation_results = [
                     self.evaluate_single(

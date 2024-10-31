@@ -1,5 +1,5 @@
 from weakref import WeakValueDictionary
-from distributed import Client, LocalCluster
+from dask.distributed import Client, LocalCluster
 
 class Singleton(type):
     _instances = WeakValueDictionary()
@@ -15,8 +15,8 @@ class DaskServer(metaclass=Singleton):
     def __init__(self):
         print('Creating Dask Server')
         cluster = LocalCluster(processes=False,
-                               # n_workers=4,
-                               # threads_per_worker=4,
+                               n_workers=4,
+                               threads_per_worker=4,
                                memory_limit='auto'
                                )
         # connect client to your cluster
