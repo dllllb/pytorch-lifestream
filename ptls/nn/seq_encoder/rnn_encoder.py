@@ -1,11 +1,11 @@
-import torch
 import warnings
+
+import torch
 from torch import nn as nn
 
-from ptls.constant_repository import TORCH_EMB_DTYPE
-from ptls.nn.seq_encoder.abs_seq_encoder import AbsSeqEncoder
-from ptls.nn.seq_step import LastStepEncoder, LastMaxAvgEncoder, FirstStepEncoder
 from ptls.data_load.padded_batch import PaddedBatch
+from ptls.nn.seq_encoder.abs_seq_encoder import AbsSeqEncoder
+from ptls.nn.seq_step import LastStepEncoder, LastMaxAvgEncoder
 
 REDUCE_DICT = {'last_step': LastStepEncoder,
                'first_step': LastStepEncoder,
@@ -39,18 +39,20 @@ class RnnEncoder(AbsSeqEncoder):
             False - returns PaddedBatch with all transactions embeddings
             True - returns one embedding for sequence based on CLS token
 
-    Example:
-    >>> model = RnnEncoder(
-    >>>     input_size=5,
-    >>>     hidden_size=6,
-    >>>     is_reduce_sequence=False,
-    >>> )
-    >>> x = PaddedBatch(
-    >>>     payload=torch.arange(4*5*8).view(4, 8, 5).float(),
-    >>>     length=torch.tensor([4, 2, 6, 8])
-    >>> )
-    >>> out = model(x)
-    >>> assert out.payload.shape == (4, 8, 6)
+    Examples:
+        Used as:
+            model = RnnEncoder(
+                input_size=5,
+                hidden_size=6,
+                is_reduce_sequence=False,
+                type='gru'
+                )
+            x = PaddedBatch(
+                payload=torch.arange(4*5*8).view(4, 8, 5).float(),
+                length=torch.tensor([4, 2, 6, 8])
+                )
+            out = model(x)
+            assert out.payload.shape == (4, 8, 6)
 
     """
 
@@ -95,38 +97,43 @@ class RnnEncoder(AbsSeqEncoder):
     def embedding_size(self):
         return self.hidden_size
 
-    def __create_default_init_state(self, shape):
-        num_dir = 2 if self.bidirectional else 1
-        return torch.tanh(self.starter_h.expand(self.num_layers * num_dir, shape[0], -1).contiguous())
-
-    def __update_init_state(self, h_0, shape):
-        return torch.where((h_0.squeeze(0).abs().sum(dim=1) == 0.0)
-                           .unsqueeze(0).unsqueeze(2).expand(*self.__create_default_init_state(shape).size()),
-                           *self.__create_default_init_state(shape), h_0, )
-
-    def _eval_init_state(self, shape, h_0):
-        # prepare initial state
-        if not self.trainable_starter == 'static':
-            return None
-        else:
-            have_init_state_for_predict = all([h_0 is not None, not self.training])
-            h_0 = self.__create_default_init_state(shape) if h_0 is None else self.__update_init_state(h_0, shape)
-            h_0 = h_0.type(TORCH_EMB_DTYPE)
-            return h_0
+    def _init_static_state(self, h_0, shape) -> torch.Tensor:
+        if self.trainable_starter == 'static':
+            num_dir = 2 if self.bidirectional else 1
+            starter_h = torch.tanh(self.starter_h.expand(self.num_layers * num_dir, shape[0], -1).contiguous())
+            if h_0 is None:
+                h_0 = starter_h
+            elif h_0 is not None and not self.training:
+                h_0 = torch.where(
+                    (h_0.squeeze(0).abs().sum(dim=1) == 0.0).unsqueeze(0).unsqueeze(2).expand(*starter_h.size()),
+                    starter_h,
+                    h_0,
+                )
+            else:
+                raise NotImplementedError('Unsupported mode: cannot mix fixed X and learning Starter')
+        return h_0
 
     def forward(self, x: PaddedBatch, h_0: torch.Tensor = None):
         """
+        Forward pass for RNN encoder.
 
-        :param x:
-        :param h_0: None or [1, B, H] float tensor
-                    0.0 values in all components of hidden state of specific client means no-previous state and
-                    use starter for this client
-                    h_0 = None means no-previous state for all clients in batch
-        :return:
+        Args:
+            x: PaddedBatch. Batch of transactions
+            h_0: None or [1, B, H] float tensor
+                0.0 values in all components of hidden state of specific client means no-previous state and
+                use starter for this client
+                h_0 = None means no-previous state for all clients in batch
+        Returns:
+            PaddedBatch or torch.Tensor
         """
 
         assert x.payload.size()[1] > 0, "Batch can'not have 0 transactions"
-        h_0 = self._eval_init_state(x.payload.size(), h_0)
+
+        # prepare initial state
+        if self.trainable_starter == 'static':
+            h_0 = self._init_static_state(shape=x.payload.size(), h_0=h_0)
+
+        # pass-through rnn
         out, _ = self.rnn(x.payload, h_0) if self.rnn_type == 'gru' else self.rnn(x.payload)
         out = PaddedBatch(out, x.seq_lens)
         return self.reducer(out) if self.is_reduce_sequence else out
