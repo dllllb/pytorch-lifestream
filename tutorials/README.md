@@ -1,4 +1,4 @@
-# PyTorch-Lifestream: Deep Learning for Event Sequence Analysis
+# pytorch-lifestream: Deep Learning for Event Sequence Analysis
 
 Learn event sequence deep learning analysis with Pytorch-Lifestream.
 We have collected a set of topics related to the processing of event sequences. Most themes are supported by demo code using the ptls library. We recommend following the topics sequentially, though experienced users are free to dive into specific sections. Explore demos, test code, and start applying these powerful techniques to your data!
