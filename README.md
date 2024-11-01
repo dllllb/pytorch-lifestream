@@ -52,16 +52,16 @@ pytest
 
 We have a demo notebooks here, some of them:
 
-- Supervised model training [notebook](tutorials/notebooks/supervised-sequence-to-target.ipynb) [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/dllllb/pytorch-lifestream/blob/master/demo/coles-emb.ipynb)
+- Supervised model training [notebook](tutorials/notebooks/supervised-sequence-to-target.ipynb) [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/tsebaka/pytorch-lifestream/blob/ptls-readme/tutorials/notebooks/supervised-sequence-to-target.ipynb)
 - Self-supervided training and embeddings for downstream task [notebook](tutorials/notebooks/coles-emb.ipynb) [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/dllllb/pytorch-lifestream/blob/master/demo/coles-emb.ipynb)
 - Self-supervided embeddings in CatBoost [notebook](tutorials/notebooks/coles-catboost.ipynb)
-- Self-supervided training and fine-tuning [notebook](tutorials/notebooks/coles-finetune.ipynb) [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1Xu5hjYJRtSvu12haMnbR4KtGsNkk4cnv#scrollTo=WyOYsMF2SEZ3)
+- Self-supervided training and fine-tuning [notebook](tutorials/notebooks/coles-finetune.ipynb) [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/tsebaka/pytorch-lifestream/blob/ptls-readme/tutorials/notebooks/coles-finetune.ipynb)
 - Self-supervised TrxEncoder only training with Masked Language Model task and fine-tuning [notebook](tutorials/notebooks/mlm-emb.ipynb)
-- Pandas data preprocessing options [notebook](tutorials/notebooks/preprocessing-demo.ipynb) [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1wwWl5hhdCdOTa6aBS4sSpTD8kF0NZQzA?usp=sharing)
+- Pandas data preprocessing options [notebook](tutorials/notebooks/preprocessing-demo.ipynb) [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/tsebaka/pytorch-lifestream/blob/ptls-readme/tutorials/notebooks/preprocessing-demo.ipynb)
 - PySpark and Parquet for data preprocessing [notebook](tutorials/notebooks/pyspark-parquet.ipynb)
 - Fast inference on large dataset [notebook](tutorials/notebooks/extended_inference.ipynb)
-- Supervised multilabel classification [notebook](tutorials/notebooks/coles-emb.ipynb) [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1bj5pDXd-XHJUKSqWz4bmwPsAi9M8L5wq)
-- CoLES multimodal [notebook](tutorials/notebooks/coles-emb.ipynb) [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1oV18ehvyPhhPjtolx8qrWw5ojreVJL_c)
+- Supervised multilabel classification [notebook](tutorials/notebooks/multilabel-classification.ipynb) [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/tsebaka/pytorch-lifestream/blob/ptls-readme/tutorials/notebooks/multilabel-classification.ipynb)
+- CoLES multimodal [notebook](tutorials/notebooks/coles-emb.ipynb) [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/tsebaka/pytorch-lifestream/blob/ptls-readme/tutorials/notebooks/CoLES-multimodal.ipynb)
 
 And we have a tutorials [here](tutorials)
 ## Docs
