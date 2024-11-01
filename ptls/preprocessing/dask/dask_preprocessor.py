@@ -1,8 +1,10 @@
 import logging
 import pandas as pd
 import numpy as np
-from typing import List, Dict, Union
+from typing import List, Dict, Union, Optional
 import dask.dataframe as dd
+from pandas.core.window import Window
+from pymonad.either import Either
 
 from ptls.preprocessing.base.data_preprocessor import DataPreprocessor
 from ptls.preprocessing.base.transformation.col_category_transformer import ColCategoryTransformer
@@ -12,6 +14,7 @@ from ptls.preprocessing.dask.dask_transformation.category_identity_encoder impor
 from ptls.preprocessing.dask.dask_transformation.event_time import DatetimeToTimestamp
 from ptls.preprocessing.dask.dask_transformation.frequency_encoder import FrequencyEncoder
 from ptls.preprocessing.dask.dask_transformation.user_group_transformer import UserGroupTransformer
+from ptls.util import OperationParameters
 
 logger = logging.getLogger(__name__)
 
@@ -52,76 +55,63 @@ class DaskDataPreprocessor(DataPreprocessor):
     """
 
     def __init__(self,
-                 path: str,
-                 col_id: str,
-                 col_event_time: Union[str, ColTransformer],
-                 event_time_transformation: str = 'dt_to_timestamp',
-                 cols_category: List[Union[str, ColCategoryTransformer]] = None,
-                 category_transformation: str = 'frequency',
-                 cols_numerical: List[str] = None,
-                 cols_identity: List[str] = None,
-                 cols_last_item: List[str] = None,
-                 max_trx_count: int = None,
-                 max_cat_num: Union[Dict[str, int], int] = 10000,
+                 params: Optional[OperationParameters] = None
                  ):
-
+        ###############################################
+        # Create dask backend
         self.dask_load_func = {'parquet': dd.read_parquet,
                                'csv': dd.read_csv,
                                'json': dd.read_json}
+        self.dask_df = self._create_dask_dataset(params.get('path', None))
 
-        self.dask_df = self._create_dask_dataset(path)
-
-        if cols_category is None:
-            cols_category = []
-        if cols_numerical is None:
-            cols_numerical = []
-        if cols_identity is None:
-            cols_identity = []
-        if cols_last_item is None:
-            cols_last_item = []
-
-        if type(col_event_time) is not str:
-            ct_event_time = col_event_time  # use as is
-        elif event_time_transformation == 'dt_to_timestamp':
-            ct_event_time = DatetimeToTimestamp(col_name_original=col_event_time)
-        elif event_time_transformation == 'none':
-            ct_event_time = ColIdentityEncoder(
-                col_name_original=col_event_time,
-                col_name_target='event_time',
-                is_drop_original_col=False,
-            )
-        else:
-            raise AttributeError(f'incorrect event_time parameters combination: '
-                                 f'`ct_event_time` = "{col_event_time}" '
-                                 f'`event_time_transformation` = "{event_time_transformation}"')
-
-        cts_category = []
-        for col in cols_category:
-            if type(col) is not str:
-                cts_category.append(col)  # use as is
-            elif category_transformation == 'frequency':
-                if type(max_cat_num) is dict:
-                    mc = max_cat_num.get(col)
-                else:
-                    mc = max_cat_num
-                cts_category.append(FrequencyEncoder(col_name_original=col, max_cat_num=mc))
-            elif category_transformation == 'none':
-                cts_category.append(CategoryIdentityEncoder(col_name_original=col))
-            else:
-                raise AttributeError(f'incorrect category parameters combination: '
-                                     f'`cols_category[i]` = "{col}" '
-                                     f'`category_transformation` = "{category_transformation}"')
-
+        ###############################################
+        # Init class attributes
+        col_id = params.get('col_id', None)
+        cols_category = params.get('cols_category', [])
+        cts_category = params.get('cts_category', [])
+        cols_numerical = params.get('cols_numerical', [])
+        cols_last_item = params.get('cols_identity', [])
+        cols_identity = params.get('cols_identity', [])
+        ct_event_time = params.get('col_event_time', None)
+        evetn_transform = params.get('event_time_transformation', 'dt_to_timestamp')
+        category_transformation = params.get('category_transformation', 'frequency')
+        max_trx_count = params.get('max_trx_count', None)
+        max_cat_num = params.get('max_cat_num', 10000)
+        cts_category = params.get('cts_category', [])
+        return_records = params.get('return_records',True)
+        ###############################################
+        # Apply transformation to init columns
         cts_numerical = [ColIdentityEncoder(col_name_original=col) for col in cols_numerical]
-        t_user_group = UserGroupTransformer(
-            col_name_original=col_id, cols_last_item=cols_last_item, max_trx_count=max_trx_count)
+        ct_event_time = Either(ct_event_time,
+                               monoid=[ct_event_time, evetn_transform == 'dt_to_timestamp']).either(
+            left_function=lambda x: ColIdentityEncoder(col_name_original=ct_event_time,
+                                                       col_name_target='event_time',
+                                                       is_drop_original_col=False),
+            right_function=lambda x: DatetimeToTimestamp(col_name_original=params.get('col_event_time', None)))
+        t_user_group = UserGroupTransformer(col_name_original=col_id,
+                                            cols_last_item=cols_last_item,
+                                            max_trx_count=max_trx_count)
+        cts_category = []
+        cts_category_func = lambda col: Either(col,
+                               monoid=[col, category_transformation == 'frequency']).either(
+            left_function=lambda x: cts_category.append(x) if type(x) is not str
+            else cts_category.append(CategoryIdentityEncoder(col_name_original=x)),
+            right_function=lambda x :cts_category.append(FrequencyEncoder(col_name_original=x,
+                                                                         max_cat_num=max_cat_num.get(x) if type(max_cat_num) is dict else max_cat_num)))
+        cts_category_eval = list(map(cts_category_func,cols_category))
 
+
+
+
+        ###############################################
+        # Overload parent class
         super().__init__(
             col_event_time=ct_event_time,
             cols_category=cts_category,
             cols_numerical=cts_numerical,
             cols_identity=cols_identity,
             t_user_group=t_user_group,
+            return_records=return_records
         )
 
     def _create_dask_dataset(self, path):

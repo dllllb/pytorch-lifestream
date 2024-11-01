@@ -1,5 +1,6 @@
 from typing import Union, List, Dict, Callable
 
+import dask
 import pandas as pd
 from joblib import wrap_non_picklable_objects, parallel_backend
 from pymonad.maybe import Maybe
@@ -25,25 +26,16 @@ class DaskDispatcher:
             individuals_to_evaluate: Union[Dict, pd.DataFrame],
             objective_func: Union[Callable, Dict],
     ):
-
         if isinstance(objective_func, dict):
-            with parallel_backend(
-                backend="dask",
-                n_jobs=self.n_jobs,
-            ):
-                evaluation_results = [
-                    self.evaluate_single(
-                        self,
-                        # data=individuals_to_evaluate[func_name],
-                        data=pd.DataFrame(individuals_to_evaluate[func_name]),
-                        eval_func=func_impl,
-                    )
-                    for func_name, func_impl in objective_func.items()
-                ]
+            evaluation_results = list(map(lambda func_name, func_impl:
+                                          self.evaluate_single(
+                                              self,
+                                              data=pd.DataFrame(individuals_to_evaluate[func_name]),
+                                              eval_func=func_impl),
+                                          objective_func.items()))
+            evaluation_results = dask.compute(*evaluation_results)
         else:
-            evaluation_results = self.evaluate_single(
-                self, data=individuals_to_evaluate, eval_func=objective_func
-            )
+            evaluation_results = self.evaluate_single(self, data=individuals_to_evaluate, eval_func=objective_func)
         return evaluation_results
 
     def __multithread_eval(
