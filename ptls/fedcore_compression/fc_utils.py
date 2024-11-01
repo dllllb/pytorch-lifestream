@@ -54,6 +54,7 @@ def fedcore_fit(model: Module, dm, experiment_setup: dict, loss: Optional[Callab
         )
     fedcore_compressor = FedCore(**experiment_setup)
     fedcore_compressor.fit((comp_inp, model), manually_done=True)
+    assert fedcore_compressor is not None
     return fedcore_compressor
 
 def extract_loss(model: Module, conf: Optional[dict] = None) -> Optional[Callable]:
@@ -81,7 +82,6 @@ def extract_loss(model: Module, conf: Optional[dict] = None) -> Optional[Callabl
         loss = lambda : instantiate(conf.loss)
     else:
         loss = None
-    print('LOSS', loss)
     return loss
 
 def eval_computational_metrics(model: Module, 
@@ -140,4 +140,7 @@ def get_experimental_setup(name: Union[str, Path]):
         return SETUPS[name], name
     if not isinstance(name, Path):
         name = Path(name)
-    return OmegaConf.to_container(OmegaConf.load(name)), name.name.split('.')[-2]
+    d = OmegaConf.to_container(OmegaConf.load(name))
+    if not 'common' in d:
+        d['common'] = {}
+    return d, name.name.split('.')[-2]
