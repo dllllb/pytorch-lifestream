@@ -61,7 +61,7 @@ We have a demo notebooks here, some of them:
 - PySpark and Parquet for data preprocessing [notebook](tutorials/notebooks/pyspark-parquet.ipynb)
 - Fast inference on large dataset [notebook](tutorials/notebooks/extended_inference.ipynb)
 - Supervised multilabel classification [notebook](tutorials/notebooks/multilabel-classification.ipynb) [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/dllllb/pytorch-lifestream/blob/master/tutorials/notebooks/multilabel-classification.ipynb)
-- CoLES multimodal [notebook](tutorials/notebooks/coles-emb.ipynb) [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/dllllb/pytorch-lifestream/blob/master/tutorials/notebooks/CoLES-multimodal.ipynb)
+- CoLES multimodal [notebook](tutorials/notebooks/CoLES-multimodal.ipynb) [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/dllllb/pytorch-lifestream/blob/master/tutorials/notebooks/CoLES-multimodal.ipynb)
 
 And we have a tutorials [here](tutorials)
 ## Docs
