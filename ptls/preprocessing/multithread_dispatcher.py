@@ -10,8 +10,8 @@ from ptls.preprocessing.util import determine_n_jobs
 
 
 class DaskDispatcher:
-    def __init__(self):
-        self.dask_client = DaskServer().client
+    def __init__(self, n_jobs: int = -1):
+        self.dask_client = DaskServer(n_jobs=n_jobs).client
         print(f"Link Dask Server - {self.dask_client.dashboard_link}")
         self.transformation_func = "fit_transform"
         self.n_jobs = determine_n_jobs(-1)
@@ -31,8 +31,11 @@ class DaskDispatcher:
                                           self.evaluate_single(
                                               self,
                                               data=pd.DataFrame(individuals_to_evaluate[func_name]),
-                                              eval_func=func_impl),
-                                          objective_func.items()))
+                                              eval_func=func_impl
+                                          ),
+                                          objective_func.keys(), objective_func.values() 
+                                          )
+                                      )
             evaluation_results = dask.compute(*evaluation_results)
         else:
             evaluation_results = self.evaluate_single(self, data=individuals_to_evaluate, eval_func=objective_func)
