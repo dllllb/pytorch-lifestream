@@ -28,8 +28,8 @@ from ptls.data_load import IterableChain, augmentation_chain, padded_collate_wo_
 from ptls.data_load.augmentations.build_augmentations import build_augmentations
 from ptls.data_load.augmentations.sequence_pair_augmentation import sequence_pair_augmentation
 from ptls.data_load.datasets.parquet_dataset import ParquetDataset, ParquetFiles
-from ptls.data_load.iterable_processing.feature_filter import FeatureFilter
-from ptls.data_load.iterable_processing.filter_collection import CategorySizeClip, SeqLenFilter
+from ptls.data_load.iterable_processing import FeatureFilter
+from ptls.data_load.iterable_processing import CategorySizeClip, SeqLenFilter
 from ptls.data_load.iterable_processing.iterable_shuffle import IterableShuffle
 from ptls.data_load.list_splitter import ListSplitter
 from ptls.data_load.partitioned_dataset import PartitionedDataset, PartitionedDataFiles

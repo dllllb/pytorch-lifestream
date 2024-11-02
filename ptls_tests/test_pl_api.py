@@ -9,7 +9,7 @@ from sklearn.model_selection import train_test_split
 from ptls.data_load import padded_collate_wo_target
 from ptls.data_load.datasets import MemoryMapDataset
 from ptls.data_load.datasets.dataloaders import inference_data_loader
-from ptls.data_load.iterable_processing.filter_collection import SeqLenFilter, FilterNonArray, ISeqLenLimit
+from ptls.data_load.iterable_processing import SeqLenFilter, FilterNonArray, ISeqLenLimit
 from ptls.frames.coles import CoLESModule, ColesDataset
 from ptls.frames.coles.split_strategy import SampleSlices
 from ptls.nn.seq_encoder import RnnSeqEncoder

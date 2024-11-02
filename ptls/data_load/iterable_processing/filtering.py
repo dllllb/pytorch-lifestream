@@ -34,12 +34,14 @@ class Filtering(IterableProcessingDataset):
                 yield rec
 
             elif self.mode == 'IdFilter':
+                # Required to have id_col and relevant_ids
                 _id = features[self._id_col]
                 if not self._is_in_relevant_ids_with_type(_id):
                     continue
                 yield rec
 
             elif self.mode == 'CategorySizeClip':
+                # Required to have category_max_size
                 for name, max_size in self._category_max_size.items():
                     features[name] = self._smart_clip(features[name], max_size)
                 yield rec

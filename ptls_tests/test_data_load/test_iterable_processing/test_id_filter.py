@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from ptls.data_load.iterable_processing.filter_collection import IdFilter
+from ptls.data_load.iterable_processing import IdFilter
 
 
 def get_data(id_type):

@@ -1,4 +1,4 @@
-from ptls.data_load.iterable_processing.filter_collection import SeqLenFilter
+from ptls.data_load.iterable_processing import SeqLenFilter
 import numpy as np
 
 

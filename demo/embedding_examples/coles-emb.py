@@ -8,7 +8,7 @@ from pyinstrument import Profiler
 from sklearn.model_selection import train_test_split
 
 from ptls.data_load.datasets import MemoryMapDataset
-from ptls.data_load.iterable_processing.filtering import Filtering
+from ptls.data_load.iterable_processing import SeqLenFilter
 from ptls.frames import PtlsDataModule
 from ptls.frames.coles import CoLESModule
 from ptls.frames.coles import ColesDataset
@@ -57,8 +57,7 @@ if __name__ == "__main__":
     profiler.start()
     dataset = preprocessor.fit_transform(source_data)
     train, test = train_test_split(dataset, test_size=0.2, random_state=42)
-    len_filter = Filtering(mode='SeqLenFilter', min_seq_len=25)
-    # len_filter = SeqLenFilter(min_seq_len=25)
+    len_filter = SeqLenFilter(min_seq_len=25)
     in_memory_dataset = MemoryMapDataset(data=train, i_filters=[len_filter])
     data_splitter = SampleSlices(split_count=5, cnt_min=25, cnt_max=200)
     coles_df = ColesDataset(data=in_memory_dataset, splitter=data_splitter)

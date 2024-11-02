@@ -8,8 +8,8 @@ from torch.utils.data import DataLoader
 from ptls.data_load.augmentations.build_augmentations import build_augmentations
 from ptls.data_load.data_module.coles_data_module import coles_collate_fn
 from ptls.data_load.datasets import MemoryMapDataset
-from ptls.data_load.iterable_processing.feature_filter import FeatureFilter
-from ptls.data_load.iterable_processing.filter_collection import FilterNonArray, SeqLenFilter
+from ptls.data_load.iterable_processing import FeatureFilter
+from ptls.data_load.iterable_processing import FilterNonArray, SeqLenFilter
 from ptls.data_load.iterable_processing.to_torch_tensor import ToTorch
 from ptls.frames.coles import split_strategy
 from ptls.metric_learn.dataset.splitting_dataset import MapSplittingDataset

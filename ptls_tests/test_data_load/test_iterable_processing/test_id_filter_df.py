@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 
-from ptls.data_load.iterable_processing.filter_collection import IdFilterDf
+from ptls.data_load.iterable_processing import IdFilterDf
 
 
 def test_df_filter_one_col():

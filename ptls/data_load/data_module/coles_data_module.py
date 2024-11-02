@@ -24,8 +24,8 @@ from tqdm.auto import tqdm
 from ptls.data_load import IterableChain, padded_collate_wo_target
 from ptls.data_load.augmentations.build_augmentations import build_augmentations
 from ptls.data_load.datasets.parquet_dataset import ParquetDataset, ParquetFiles
-from ptls.data_load.iterable_processing.feature_filter import FeatureFilter
-from ptls.data_load.iterable_processing.filter_collection import SeqLenFilter, CategorySizeClip
+from ptls.data_load.iterable_processing import FeatureFilter
+from ptls.data_load.iterable_processing import SeqLenFilter, CategorySizeClip
 from ptls.data_load.iterable_processing.iterable_shuffle import IterableShuffle
 from ptls.data_load.list_splitter import ListSplitter
 from ptls.data_load.partitioned_dataset import PartitionedDataset, PartitionedDataFiles

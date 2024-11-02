@@ -17,9 +17,9 @@ from ptls.data_load import padded_collate, padded_collate_distribution_target, I
 from ptls.data_load.augmentations.build_augmentations import build_augmentations
 from ptls.data_load.data_module.map_augmentation_dataset import MapAugmentationDataset
 from ptls.data_load.datasets.parquet_dataset import ParquetFiles, ParquetDataset
-from ptls.data_load.iterable_processing import FeatureFilter, FeatureTypeCast, IterableShuffle, TargetJoin, \
-    TargetExtractor
-from ptls.data_load.iterable_processing.filter_collection import SeqLenFilter, IdFilter
+from ptls.data_load.iterable_processing import IterableShuffle, TargetJoin, TargetExtractor
+from ptls.data_load.iterable_processing import FeatureFilter, FeatureTypeCast
+from ptls.data_load.iterable_processing import SeqLenFilter, IdFilter
 from ptls.data_load.utils import collate_target
 
 logger = logging.getLogger(__name__)
@@ -172,7 +172,7 @@ class ClsDataModuleTrain(pl.LightningDataModule):
             logger.info(f'Reduced train amount from {_len_orig} to {len(self._train_targets)}')
 
     def build_iterable_processing(self, part):
-        yield FeatureTypeCast({self.col_id: self.col_id_dtype})
+        yield FeatureTypeCast(feature_types={self.col_id: self.col_id_dtype})
 
         if 'dataset_files' in self.setup_conf and self.setup_conf.split_by == 'embeddings_validation':
             if part == 'train':
