@@ -23,6 +23,8 @@ def main(conf: DictConfig):
     save_path = f'composition_results/{setup_name}'
     Path(save_path).mkdir(parents=True, exist_ok=True)
     experiment_setup['output_folder'] = save_path
+    if 'common' not in experiment_setup:
+        experiment_setup['common'] = {}
     experiment_setup['common']['batch_limit'] = conf.get('limit_train_batches', None)
     experiment_setup['common']['calib_batch_limit'] = conf.get('limit_valid_batches', None)
     experiment_setup['need_fedot_pretrain'] = conf.get('need_fedot_pretrain', False)
@@ -41,7 +43,10 @@ def main(conf: DictConfig):
     fedcore_compressor = fedcore_fit(model, dm, experiment_setup, loss=extract_loss(model, conf))
     
     if 'save_encoder' in conf:
-        torch.save(fedcore_compressor.optimised_model.seq_encoder, conf.save_encoder)
+        torch.save((fedcore_compressor.optimised_model.seq_encoder
+                        if hasattr(fedcore_compressor.optimised_model, 'seq_encoder')
+                        else fedcore_compressor.optimised_model),
+                    conf.save_encoder)
     return fedcore_compressor
         
 if __name__ == '__main__':

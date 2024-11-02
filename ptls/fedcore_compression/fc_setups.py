@@ -78,9 +78,51 @@ COMPOSITE_2 = {'compression_task': 'composite_compression',
                         'low_rank_model'
                     ]
 }
-TEST = {'compression_task': 'composite_compression',
+
+COMPOSITE_QUANT_AWARE = {'compression_task': 'composite_compression',
         'need_pretrain': False,
                     'common': dict(save_each=-1),
+                    'model_params': dict(pruning_model=dict(epochs=1,
+                                                            pruning_iterations=3,
+                                                            learning_rate=0.001,
+                                                            importance='MagnitudeImportance',
+                                                            pruner_name='magnitude_pruner',
+                                                            importance_norm=1,
+                                                            pruning_ratio=0.75,
+                                                            finetune_params={'epochs': 1,
+                                                                             'custom_loss': None}
+                                                            ),
+                                         low_rank_model=dict(epochs=20,
+                                                             learning_rate=0.001,
+                                                             hoyer_loss=0.2,
+                                                             energy_thresholds=[0.9],
+                                                             orthogonal_loss=5,
+                                                             decomposing_mode='channel',
+                                                             spectrum_pruning_strategy='energy',
+                                                             finetune_params={'epochs': 20,
+                                                                              'custom_loss': None}
+                                                             ),
+                                         training_model=dict(
+                                             epochs=50,
+                                         ),
+                                         training_aware_quant=dict(
+                                             epochs=10
+                                         ),
+                                         post_training_quant=dict(
+                                             epochs=10
+                                         )                      
+                                    ),  
+                    'initial_assumption': [
+                        'training_model',
+                        'low_rank_model',
+                        'training_aware_quant',
+                    ]
+}
+
+TEST = {'compression_task': 'composite_compression',
+        'need_pretrain': False,
+        'common': dict(save_each=-1,
+                       p=1),
                     'model_params': dict(pruning_model=dict(epochs=1,
                                                             pruning_iterations=3,
                                                             learning_rate=0.001,
@@ -112,11 +154,10 @@ TEST = {'compression_task': 'composite_compression',
                                          )                      
                                     ),  
                     'initial_assumption': [
-                        # 'training_model',
-                        # 'low_rank_model',
-                        # 'pruning_model',
-                        # 'training_aware_quant',
-                        'post_training_quant'
+                        'training_model',
+                        'pruning_model',
+                        'low_rank_model',
+                        'training_aware_quant',
                     ]
 }
 
@@ -124,5 +165,6 @@ SETUPS = {
     'raw': RAW,
     'test': TEST,
     'composite_1': COMPOSITE_1,
-    'composite_2': COMPOSITE_2
+    'composite_2': COMPOSITE_2,
+    'quant_aware': COMPOSITE_QUANT_AWARE
 }

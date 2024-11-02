@@ -28,9 +28,12 @@ def fold_fit_test(conf, fold_id):
 
     # experiment setup
     experiment_setup, setup_name = get_experimental_setup(conf.get('setup', None))
-    save_path = f'composition_results/{setup_name}'
+    model_name = conf.get('model_name', '')
+    save_path = f'composition_results/{setup_name}{f"_{model_name}" if model_name else ""}'
     Path(save_path).mkdir(parents=True, exist_ok=True)
     experiment_setup['output_folder'] = save_path
+    if not 'common' in experiment_setup:
+        experiment_setup['common'] = {}
     experiment_setup['common']['batch_limit'] = conf.get('limit_train_batches', None)
     experiment_setup['common']['calib_batch_limit'] = conf.get('limit_valid_batches', None)
     experiment_setup['need_fedot_pretrain'] = conf.get('need_fedot_pretrain', False)
