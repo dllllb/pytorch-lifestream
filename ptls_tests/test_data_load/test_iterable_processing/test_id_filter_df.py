@@ -1,11 +1,11 @@
 import numpy as np
 import pandas as pd
 
-from ptls.data_load.iterable_processing.id_filter_df import IdFilterDf
+from ptls.data_load.iterable_processing.filter_collection import IdFilterDf
 
 
 def test_df_filter_one_col():
-    i_filter = IdFilterDf(pd.DataFrame({
+    i_filter = IdFilterDf(df_relevant_ids=pd.DataFrame({
         'col1': [8, 9, 1, 2, 3],
     }))
 
@@ -16,7 +16,7 @@ def test_df_filter_one_col():
 
 
 def test_df_filter_two_col():
-    i_filter = IdFilterDf(pd.DataFrame({
+    i_filter = IdFilterDf(df_relevant_ids=pd.DataFrame({
         'col1': [8, 9, 1, 2, 3],
         'col2': [1, 1, 1, 2, 2],
     }))
@@ -28,7 +28,7 @@ def test_df_filter_two_col():
 
 
 def test_df_filter_two_col_type_cast_to_int():
-    i_filter = IdFilterDf(pd.DataFrame({
+    i_filter = IdFilterDf(df_relevant_ids=pd.DataFrame({
         'col1': [8, 9, 1, 2, 3],
         'col2': [1, 1, 1, 2, 2],
     }))
@@ -40,7 +40,7 @@ def test_df_filter_two_col_type_cast_to_int():
 
 
 def test_df_filter_two_col_type_cast_to_datetime():
-    i_filter = IdFilterDf(pd.DataFrame({
+    i_filter = IdFilterDf(df_relevant_ids=pd.DataFrame({
         'col1': [8, 9, 1, 2, 3],
         'col2': pd.to_datetime([
             '2012-01-08 00:00:00',
@@ -58,7 +58,7 @@ def test_df_filter_two_col_type_cast_to_datetime():
 
 
 def test_df_filter_no_relevant():
-    i_filter = IdFilterDf(pd.DataFrame({
+    i_filter = IdFilterDf(df_relevant_ids=pd.DataFrame({
         'col1': [8, 9, 1, 2, 3],
         'col2': pd.to_datetime([
             '2012-01-08 00:00:00',
