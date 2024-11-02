@@ -1,3 +1,0 @@
-defaults:
-  - data_preprocessing: default
-  - _self_
