@@ -1,19 +1,25 @@
-import ast, glob, json, random, warnings
+import ast
+import glob
+import json
 import logging
+import random
+import warnings
 
-import pytorch_lightning as pl
 import numpy as np
 import pandas as pd
+import pytorch_lightning as pl
 from embeddings_validation.file_reader import TargetFile
+from sklearn.model_selection import train_test_split
 from torch.utils.data import DataLoader
 from tqdm.auto import tqdm
-from sklearn.model_selection import train_test_split
 
 from ptls.data_load import padded_collate, padded_collate_distribution_target, IterableChain, IterableAugmentations
 from ptls.data_load.augmentations.build_augmentations import build_augmentations
 from ptls.data_load.data_module.map_augmentation_dataset import MapAugmentationDataset
-from ptls.data_load.iterable_processing import FeatureFilter, FeatureTypeCast, IdFilter, IterableShuffle, SeqLenFilter, TargetJoin, TargetExtractor
 from ptls.data_load.datasets.parquet_dataset import ParquetFiles, ParquetDataset
+from ptls.data_load.iterable_processing import FeatureFilter, FeatureTypeCast, IterableShuffle, TargetJoin, \
+    TargetExtractor
+from ptls.data_load.iterable_processing.filter_collection import SeqLenFilter, IdFilter
 from ptls.data_load.utils import collate_target
 
 logger = logging.getLogger(__name__)
@@ -98,7 +104,9 @@ class ClsDataModuleTrain(pl.LightningDataModule):
             if (self.setup_conf.get('use_files_partially', None)):
                 n_train = len(glob.glob(self.setup_conf.dataset_files.train_data_path + "/*.parquet"))
                 ixes = list(range(n_train))
-                train_ixes, test_ixes = train_test_split(ixes, test_size=int(n_train * (1 - self.setup_conf.train_part)), shuffle=True)
+                train_ixes, test_ixes = train_test_split(ixes,
+                                                         test_size=int(n_train * (1 - self.setup_conf.train_part)),
+                                                         shuffle=True)
                 train_data_files = ParquetFiles(self.setup_conf.dataset_files.train_data_path, train_ixes).data_files
                 if self.setup_conf.same_file_for_test:
                     test_ixes = random.sample(test_ixes, int(n_train * self.setup_conf.test_part))
@@ -109,7 +117,8 @@ class ClsDataModuleTrain(pl.LightningDataModule):
                     test_data_files = ParquetFiles(self.setup_conf.dataset_files.test_data_path, test_ixes).data_files
             else:
                 train_data_files = ParquetFiles(self.setup_conf.dataset_files.train_data_path).data_files
-                test_data_files = ParquetFiles(self.setup_conf.dataset_files.test_data_path).data_files if self.do_test else []
+                test_data_files = ParquetFiles(
+                    self.setup_conf.dataset_files.test_data_path).data_files if self.do_test else []
 
             self.read_external_splits()
             self.train_dataset = ParquetDataset(
@@ -167,13 +176,17 @@ class ClsDataModuleTrain(pl.LightningDataModule):
 
         if 'dataset_files' in self.setup_conf and self.setup_conf.split_by == 'embeddings_validation':
             if part == 'train':
-                yield IdFilter(id_col=self.col_id, relevant_ids=self._train_targets[self.col_id].values.tolist())
+                yield IdFilter(id_col=self.col_id,
+                               relevant_ids=self._train_targets[self.col_id].values.tolist())
             elif part == 'valid':
-                yield IdFilter(id_col=self.col_id, relevant_ids=self._valid_targets[self.col_id].values.tolist())
+                yield IdFilter(id_col=self.col_id,
+                               relevant_ids=self._valid_targets[self.col_id].values.tolist())
             elif part == 'test':
-                yield IdFilter(id_col=self.col_id, relevant_ids=self._test_targets[self.col_id].values.tolist())
+                yield IdFilter(id_col=self.col_id,
+                               relevant_ids=self._test_targets[self.col_id].values.tolist())
             elif part == 'predict':
-                yield IdFilter(id_col=self.col_id, relevant_ids=self._predict_targets[self.col_id].values.tolist())
+                yield IdFilter(id_col=self.col_id,
+                               relevant_ids=self._predict_targets[self.col_id].values.tolist())
             else:
                 raise AttributeError(f'Unknown part: {part}')
 
@@ -181,11 +194,14 @@ class ClsDataModuleTrain(pl.LightningDataModule):
             yield SeqLenFilter(min_seq_len=self.train_conf.min_seq_len)
 
         if part == 'train':
-            yield TargetJoin(self.col_id, self._train_targets.set_index(self.col_id)[self.col_target].to_dict(), self.y_function)
+            yield TargetJoin(self.col_id, self._train_targets.set_index(self.col_id)[self.col_target].to_dict(),
+                             self.y_function)
         elif part == 'valid':
-            yield TargetJoin(self.col_id, self._valid_targets.set_index(self.col_id)[self.col_target].to_dict(), self.y_function)
+            yield TargetJoin(self.col_id, self._valid_targets.set_index(self.col_id)[self.col_target].to_dict(),
+                             self.y_function)
         elif part == 'test':
-            yield TargetJoin(self.col_id, self._test_targets.set_index(self.col_id)[self.col_target].to_dict(), self.y_function)
+            yield TargetJoin(self.col_id, self._test_targets.set_index(self.col_id)[self.col_target].to_dict(),
+                             self.y_function)
         elif part == 'predict':
             yield TargetExtractor(self.col_id, drop_from_features=False)
         else:

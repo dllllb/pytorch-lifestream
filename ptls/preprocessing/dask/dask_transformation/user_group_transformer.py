@@ -3,8 +3,8 @@ from typing import List
 import torch
 import pandas as pd
 
-from ptls.preprocessing.base import ColTransformer
-from ptls.preprocessing.pandas.col_transformer import ColTransformerPandasMixin
+from ptls.preprocessing.base.transformation.col_numerical_transformer import ColTransformer
+from ptls.preprocessing.dask.dask_transformation.col_transformer import ColTransformerPandasMixin
 
 
 class UserGroupTransformer(ColTransformerPandasMixin, ColTransformer):

@@ -219,7 +219,7 @@ class Aggregation(torch.nn.Module):
         elif self.reduction == "sum":
             x = X.sum(dim=1)
         elif self.reduction == "max":
-            x, _ = torch.max(x, dim=1)
+            x, _ = torch.max(X, dim=1)
         else:
             x = X[:, 0]
         return x

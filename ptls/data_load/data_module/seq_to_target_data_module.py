@@ -1,15 +1,16 @@
 import warnings
+from typing import List, Dict
 
 import pytorch_lightning as pl
-from ptls.data_load.iterable_processing.seq_len_filter import SeqLenFilter
+from sklearn.model_selection import train_test_split
+from torch.utils.data import DataLoader
+
+from ptls.data_load import IterableChain
+from ptls.data_load import padded_collate
 from ptls.data_load.iterable_processing.feature_filter import FeatureFilter
+from ptls.data_load.iterable_processing.filtering import Filtering
 from ptls.data_load.iterable_processing.target_move import TargetMove
 from ptls.data_load.iterable_processing.to_torch_tensor import ToTorch
-from ptls.data_load import IterableChain
-from torch.utils.data import DataLoader
-from ptls.data_load import padded_collate
-from typing import List, Dict
-from sklearn.model_selection import train_test_split
 
 
 class SeqToTargetDatamodule(pl.LightningDataModule):
@@ -69,7 +70,8 @@ class SeqToTargetDatamodule(pl.LightningDataModule):
         self.dataset_valid = list(self.post_proc(iter(self.dataset_valid)))
 
     def build_iterable_processing(self):
-        yield SeqLenFilter(min_seq_len=self.min_seq_len)
+        yield Filtering(mode='SeqLenFilter', min_seq_len=self.min_seq_len)
+        # yield SeqLenFilter(min_seq_len=self.min_seq_len)
         yield ToTorch()
         yield TargetMove(self.target_col)
         yield FeatureFilter(drop_non_iterable=True)
