@@ -17,7 +17,6 @@ jobs:
         pip install pipenv
         pipenv sync --dev
         pipenv install torch==1.12.1
-        pip freeze
 
     - name: Test with pytest
       run: |
