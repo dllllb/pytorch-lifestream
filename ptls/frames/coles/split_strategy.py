@@ -1,7 +1,3 @@
-# coding: utf-8
-"""
-
-"""
 import numpy as np
 
 
@@ -80,37 +76,44 @@ class SplitByWeeks(AbsSplit):
         n_weeks_idxes = [np.append(x, i) for i, x in enumerate(n_weeks_idxes)]
 
         # select indexes correspond to each part of weeks
-        # x_ij == 1 <=>  j-th elenemt of sequence correspond to n_weeks_unique[i]
-        x = n_weeks.reshape(1, -1).repeat(n_weeks_nunique, axis=0) == n_weeks_unique.reshape(-1, 1).repeat(seq_len,
-                                                                                                           axis=1)
+        # x_ij == 1 <=>  j-th element of sequence correspond to n_weeks_unique[i]
+        x = n_weeks.reshape(1, -1).repeat(n_weeks_nunique,
+                                          axis=0) == n_weeks_unique.reshape(-1, 1).repeat(seq_len,
+                                                                                          axis=1)
         n_byweeks_idxes = [x[one_week_idxes].sum(axis=0).nonzero()[0] for one_week_idxes in n_weeks_idxes]
         n_byweeks_idxes = [x[-self.cnt_max:] if len(x) > self.cnt_max else x for x in n_byweeks_idxes]
         return n_byweeks_idxes
 
 
 class SampleSlices(AbsSplit):
-    def __init__(self, split_count, cnt_min, cnt_max, short_seq_crop_rate=1.0, is_sorted=False):
+    def __init__(self,
+                 split_count: int,
+                 cnt_min: int,
+                 cnt_max: int,
+                 short_seq_crop_rate: float = 1.0,
+                 is_sorted: bool = False
+                 ):
         self.split_count = split_count
         self.cnt_min = cnt_min
         self.cnt_max = cnt_max
         self.short_seq_crop_rate = short_seq_crop_rate
         self.is_sorted = is_sorted
 
-    def split(self, dates):
-        date_len = dates.shape[0]
-        date_range = np.arange(date_len)
+    def _validate_split_range(self, date_len):
+        only_one_fold = date_len <= self.cnt_min and self.short_seq_crop_rate >= 1.0
+        several_fold = int(date_len * self.short_seq_crop_rate) <= self.cnt_min and self.short_seq_crop_rate < 1.0
+        return only_one_fold, several_fold
 
-        if date_len <= self.cnt_min and self.short_seq_crop_rate >= 1.0:
+    def split(self, dates):
+        date_len, date_range = dates.shape[0], np.arange(dates.shape[0])
+        only_one_fold, several_fold = self._validate_split_range(date_len)
+        if only_one_fold:
             return [date_range for _ in range(self.split_count)]
 
-        if int(date_len * self.short_seq_crop_rate) <= self.cnt_min and self.short_seq_crop_rate < 1.0:
-            cnt_min = int(date_len * self.short_seq_crop_rate)
-        else:
-            cnt_min = self.cnt_min
-
+        cnt_min = self.cnt_min if not several_fold else int(date_len * self.short_seq_crop_rate)
         cnt_max = self.cnt_max if date_len > self.cnt_max else date_len
 
-        lengths = np.random.randint(cnt_min, cnt_max+1, self.split_count)
+        lengths = np.random.randint(cnt_min, cnt_max + 1, self.split_count)
         available_start_pos = (date_len - lengths).clip(0, None)
         start_pos = (np.random.rand(self.split_count) * (available_start_pos + 1 - 1e-9)).astype(int)
         if not self.is_sorted:
@@ -133,6 +136,7 @@ class SampleUniform(AbsSplit):
     There is no random factor in this splitter, so sub sequences are the same every time
     Can be used during inference as test time augmentation
     """
+
     def __init__(self, split_count, seq_len, **_):
         self.split_count = split_count
         self.seq_len = seq_len
@@ -144,8 +148,11 @@ class SampleUniform(AbsSplit):
         if date_len <= self.seq_len + self.split_count:
             return [date_range for _ in range(self.split_count)]
 
-        start_pos = np.linspace(0, date_len - self.seq_len, self.split_count).round().astype(int)
+        start_pos = np.linspace(0,
+                                date_len - self.seq_len,
+                                self.split_count).round().astype(int)
         return [date_range[s:s + self.seq_len] for s in start_pos]
+
 
 class SampleUniformBySplitCount(AbsSplit):
     """
@@ -154,9 +161,10 @@ class SampleUniformBySplitCount(AbsSplit):
     |------|              |        sub seq 1
     |       |------|      |        sub seq 2
     |              |------|        sub seq 3
-    There is no random factor in this splitter, so sub sequences are the same every time
+    There is no random factor in this splitter, so subsequences are the same every time
     Can be used during inference as test time augmentation
     """
+
     def __init__(self, split_count, **_):
         self.split_count = split_count
 
@@ -164,20 +172,22 @@ class SampleUniformBySplitCount(AbsSplit):
         date_range = np.arange(dates.shape[0])
         return np.array_split(date_range, self.split_count)
 
+
 class SplitByNextNearestTime(AbsSplit):
     """
     Split into subsequences so that each next one is close in time to the previous one.
     """
+
     def __init__(self, split_count, cnt_min, cnt_max, margin=0):
         self.split_count = split_count
         self.cnt_min = cnt_min
         self.cnt_max = cnt_max
         self.margin = margin
-    
+
     def split(self, dates):
         date_len = dates.shape[0]
         date_range = np.arange(date_len)
-        
+
         cnt_max = min(self.cnt_max, date_len)
         cnt_min = self.cnt_min
 
@@ -198,26 +208,28 @@ class SplitByNextNearestTime(AbsSplit):
             splits.append(date_range[curr_pos: curr_pos + curr_len])
 
             prev_pos, prev_len = curr_pos, curr_len
-        
+
         return splits
+
 
 class SplitByNearestTime(AbsSplit):
     """
     Split into subsequences close in time.
     """
+
     def __init__(self, split_count, cnt_min, cnt_max, margin=0):
         self.split_count = split_count
         self.cnt_min = cnt_min
         self.cnt_max = cnt_max
         self.margin = margin
-    
+
     def split(self, dates):
         date_len = dates.shape[0]
         date_range = np.arange(date_len)
-        
+
         cnt_max = min(date_len, self.cnt_max)
         cnt_min = self.cnt_min
-        
+
         lengths = np.random.randint(cnt_min, cnt_max, self.split_count)
 
         len_start = lengths[0]
@@ -225,7 +237,6 @@ class SplitByNearestTime(AbsSplit):
         splits = [date_range[pos_start: pos_start + len_start]]
 
         for i in range(self.split_count - 1):
-
             curr_len = lengths[i]
             curr_start = max(0, pos_start - curr_len - self.margin)
             curr_end = min(pos_start + len_start + self.margin, date_len - curr_len)
@@ -233,12 +244,13 @@ class SplitByNearestTime(AbsSplit):
             curr_pos = np.random.randint(curr_start, curr_end)
 
             splits.append(date_range[curr_pos: curr_pos + curr_len])
-        
+
         return splits
-        
+
+
 class CutByDays(AbsSplit):
     def __init__(self, first_date, last_date):
-        self.days_arange = np.arange(first_date, last_date+1)
+        self.days_arange = np.arange(first_date, last_date + 1)
 
     def split(self, dates):
         all_indexes = np.arange(len(dates))

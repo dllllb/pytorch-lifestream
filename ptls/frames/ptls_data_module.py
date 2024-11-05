@@ -1,27 +1,53 @@
-import torch
-import pytorch_lightning as pl
+from typing import List, Dict
 from functools import partial
+
+import pytorch_lightning as pl
+import torch
 
 
 class PtlsDataModule(pl.LightningDataModule):
+    """
+    Generate an data loader. The data loader will return a batch of sequences.
+    Args:
+        data: List[Dict]
+            The dataset
+        batch_size: int. Default: 64.
+            The number of samples (before splitting to subsequences) in each batch
+        num_workers: int. Default: 0.
+            The number of workers for the dataloader. 0 = single-process loader
+        drop_last: bool. Default: False.
+            Drop the last incomplete batch, if the dataset size is not divisible by the batch size
+
+    Returns:
+        DataLoader
+    """
     def __init__(self,
-                 train_data=None,
-                 train_batch_size=1,
-                 train_num_workers=0,
-                 train_drop_last=False,
-                 valid_data=None,
-                 valid_batch_size=None,
-                 valid_num_workers=None,
-                 valid_drop_last=False,
-                 test_data=None,
-                 test_batch_size=None,
-                 test_num_workers=None,
-                 test_drop_last=False,
+                 train_data: List[Dict] = None,
+                 train_batch_size: int = 64,
+                 train_num_workers: int = 0,
+                 train_drop_last: bool = False,
+                 valid_data: List[Dict] = None,
+                 valid_batch_size: int = 64,
+                 valid_num_workers: int = 0,
+                 valid_drop_last: bool = False,
+                 test_data: List[Dict] = None, 
+                 test_batch_size: int = 64,
+                 test_num_workers: int = 0,
+                 test_drop_last: bool = False,
                  ):
 
         super().__init__()
-        self.save_hyperparameters(ignore=['train_data', 'valid_data', 'test_data'])
+        self.train_batch_size = train_batch_size
+        self.train_num_workers = train_num_workers
+        self.train_drop_last = train_drop_last
+        self.valid_batch_size = valid_batch_size
+        self.valid_num_workers = valid_num_workers
+        self.valid_drop_last = valid_drop_last
+        self.test_batch_size = test_batch_size
+        self.test_num_workers = test_num_workers
+        self.test_drop_last = test_drop_last
         
+        self.save_hyperparameters(ignore=['train_data', 'valid_data', 'test_data'])
         if self.hparams.valid_num_workers is None:
             self.hparams.valid_num_workers = self.hparams.train_num_workers
         if self.hparams.test_num_workers is None:
@@ -38,7 +64,7 @@ class PtlsDataModule(pl.LightningDataModule):
             self.val_dataloader = partial(self.val_dl, valid_data)
         if test_data is not None:
             self.test_dataloader = partial(self.test_dl, test_data)
-            
+
     def train_dl(self, train_data):
         return torch.utils.data.DataLoader(
             dataset=train_data,

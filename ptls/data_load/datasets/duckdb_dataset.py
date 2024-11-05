@@ -1,5 +1,4 @@
 from typing import Iterable, List
-import warnings
 
 import duckdb
 import torch
@@ -53,7 +52,7 @@ class DuckDbDataset(torch.utils.data.IterableDataset):
     
         rel = duckdb.sql(query)
 
-        while(True):
+        while True:
             recs = rel.fetchmany(1000)
             if not recs:
                 break

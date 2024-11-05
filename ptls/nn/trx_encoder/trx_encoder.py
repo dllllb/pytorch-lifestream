@@ -1,6 +1,8 @@
 import warnings
 
 import torch
+
+from ptls.constant_repository import TORCH_EMB_DTYPE
 from ptls.data_load.padded_batch import PaddedBatch
 from ptls.nn.trx_encoder.batch_norm import RBatchNorm, RBatchNormWithLens
 from ptls.nn.trx_encoder.noisy_embedding import NoisyEmbedding
@@ -86,7 +88,7 @@ class TrxEncoder(TrxEncoderBase):
                  custom_embeddings=None,
                  embeddings_noise: float = 0,
                  norm_embeddings=None,
-                 use_batch_norm=True,
+                 use_batch_norm=False,
                  use_batch_norm_with_lens=False,
                  clip_replace_value=None,
                  positions=None,
@@ -154,15 +156,10 @@ class TrxEncoder(TrxEncoderBase):
                     torch.nn.init.orthogonal_(p.data)
 
     def forward(self, x: PaddedBatch):
-        processed_embeddings = []
-        processed_custom_embeddings = []
-
-        for field_name in self.embeddings.keys():
-            processed_embeddings.append(self.get_category_embeddings(x, field_name))
-        
-        for field_name in self.custom_embeddings.keys():
-            processed_custom_embeddings.append(self.get_custom_embeddings(x, field_name))
-
+        processed_embeddings = [self.get_category_embeddings(x, field_name)
+                                for field_name in self.embeddings.keys()]
+        processed_custom_embeddings = [self.get_custom_embeddings(x, field_name)
+                                       for field_name in self.custom_embeddings.keys()]
         if len(processed_custom_embeddings):
             processed_custom_embeddings = torch.cat(processed_custom_embeddings, dim=2)
             if self.custom_embedding_batch_norm is not None:
@@ -172,9 +169,8 @@ class TrxEncoder(TrxEncoderBase):
             processed_embeddings.append(processed_custom_embeddings)
 
         out = torch.cat(processed_embeddings, dim=2)
-
-        if self.linear_projection_head is not None:
-            out = self.linear_projection_head(out)
+        out = out.type(TORCH_EMB_DTYPE)
+        out = self.linear_projection_head(out) if self.linear_projection_head is not None else out
         return PaddedBatch(out, x.seq_lens)
 
     @property

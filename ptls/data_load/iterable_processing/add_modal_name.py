@@ -1,12 +1,20 @@
 from ptls.data_load.iterable_processing_dataset import IterableProcessingDataset
-import numpy as np
+
 
 class AddModalName(IterableProcessingDataset):
-    '''Add_Modal_Name(cols = ['mcc', 'amount'], source = 'Source1') ---> Source1_mcc, Source1_amount'''
+    """
+    Add prefix to feature names.
+
+    Args:
+        cols: list of feature names
+        source: prefix to add
+    """
+
     def __init__(self, cols, source):
         super().__init__()
         self._cols = cols
         self._source = source
+
     def __iter__(self):
         for rec in self._src:
             features = rec[0] if type(rec) is tuple else rec

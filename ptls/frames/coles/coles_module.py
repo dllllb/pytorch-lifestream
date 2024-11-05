@@ -3,7 +3,9 @@ from ptls.frames.coles.losses import ContrastiveLoss
 from ptls.frames.coles.metric import BatchRecallTopK
 from ptls.frames.coles.sampling_strategies import HardNegativePairSelector
 from ptls.nn.head import Head
+from torch.nn import Module
 from ptls.nn.seq_encoder.containers import SeqEncoderContainer
+from functools import partial
 
 
 class CoLESModule(ABSModule):
@@ -39,11 +41,12 @@ class CoLESModule(ABSModule):
     """
     def __init__(self,
                  seq_encoder: SeqEncoderContainer = None,
-                 head=None,
-                 loss=None,
-                 validation_metric=None,
-                 optimizer_partial=None,
-                 lr_scheduler_partial=None):
+                 head: Module = None,
+                 loss: Module = None,
+                 validation_metric: str = None,
+                 optimizer_partial: partial =None,
+                 lr_scheduler_partial: partial = None):
+        
         if head is None:
             head = Head(use_norm_encoder=True)
 
@@ -52,7 +55,8 @@ class CoLESModule(ABSModule):
                                    sampling_strategy=HardNegativePairSelector(neg_count=5))
 
         if validation_metric is None:
-            validation_metric = BatchRecallTopK(K=4, metric='cosine')
+            validation_metric = BatchRecallTopK(K=4,
+                                                metric='cosine')
 
         super().__init__(validation_metric,
                          seq_encoder,
@@ -71,7 +75,5 @@ class CoLESModule(ABSModule):
         return True
 
     def shared_step(self, x, y):
-        y_h = self(x)
-        if self._head is not None:
-            y_h = self._head(y_h)
+        y_h = self._head(self(x)) if self._head is not None else self(x)
         return y_h, y

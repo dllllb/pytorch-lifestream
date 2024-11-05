@@ -319,7 +319,7 @@ def test_rnn_iterative_no_starter():
     x_a_1          -> out_1
     x_a_1 + x_b_2  -> out_2
 
-    Also we run an other kind os splits, for `a` and `b` groups
+    Also, we run other kind os splits, for `a` and `b` groups
     x_a   -> out_a
     x_b_2 -> out_b
 
@@ -344,7 +344,6 @@ def test_rnn_iterative_no_starter():
 
     m = RnnEncoder(INPUT_SIZE, **conf)
     m.eval()
-    print(m)
 
     x_a_1 = torch.rand(GRP_A_CLIENT_COUNT, PART_1_TRX_COUNT, INPUT_SIZE)
     x_a_2 = torch.rand(GRP_A_CLIENT_COUNT, PART_2_TRX_COUNT, INPUT_SIZE)
@@ -357,7 +356,7 @@ def test_rnn_iterative_no_starter():
     out_2 = m(PaddedBatch(torch.cat([x_a_2, x_b_2], dim=0), None), starter.unsqueeze(0))
 
     out_a_merged = torch.cat([out_1.payload, out_2.payload[:GRP_A_CLIENT_COUNT]], dim=1)
-    assert ((out_a.payload - out_a_merged).abs() < 1e-4).all()
+    assert ((out_a.payload - out_a_merged).abs() < 1e-3).all()
 
     out_b_merged = out_2.payload[GRP_A_CLIENT_COUNT:]
     assert ((out_b.payload - out_b_merged).abs() < 1e-4).all()

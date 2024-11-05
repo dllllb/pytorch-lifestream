@@ -4,53 +4,9 @@ from functools import reduce
 from collections import defaultdict
 from ptls.data_load.feature_dict import FeatureDict
 from ptls.data_load.padded_batch import PaddedBatch
-
-def collate_feature_dict(batch):
-    new_x_ = defaultdict(list)
-    for i, x in enumerate(batch):
-        for k, v in x.items():
-            new_x_[k].append(v)
-
-    seq_col = next(k for k, v in batch[0].items() if FeatureDict.is_seq_feature(k, v))
-    lengths = torch.LongTensor([len(rec[seq_col]) for rec in batch])
-    new_x = {}
-    for k, v in new_x_.items():
-        if type(v[0]) is torch.Tensor:
-            if k.startswith('target'):
-                new_x[k] = torch.stack(v, dim=0)
-            else:
-                new_x[k] = torch.nn.utils.rnn.pad_sequence(v, batch_first=True)
-        elif type(v[0]) is np.ndarray:
-            new_x[k] = v  # list of arrays[object]
-        else:
-            v = np.array(v)
-            if v.dtype.kind == 'i':
-                new_x[k] = torch.from_numpy(v).long()
-            elif v.dtype.kind == 'f':
-                new_x[k] = torch.from_numpy(v).float()
-            elif v.dtype.kind == 'b':
-                new_x[k] = torch.from_numpy(v).bool()
-            else:
-                new_x[k] = v
-    return PaddedBatch(new_x, lengths)
-
-    
-def collate_multimodal_feature_dict(batch):
-    res = {}
-    for source, source_batch in batch.items():
-        res[source] = collate_feature_dict(source_batch)
-    return res
-    
-def get_dict_class_labels(batch):
-    res = defaultdict(list)
-    for i, samples in enumerate(batch):
-        for source, values in samples.items():
-            for _ in values:
-                res[source].append(i)
-    for source in res:
-        res[source] = torch.LongTensor(res[source])
-    return dict(res)
-            
+from ptls.data_load.utils import collate_multimodal_feature_dict, get_dict_class_labels
+from ptls.frames.coles import MultiModalSortTimeSeqEncoderContainer
+ 
 
 class MultiModalDataset(FeatureDict, torch.utils.data.Dataset):
     def __init__(

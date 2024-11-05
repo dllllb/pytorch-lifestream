@@ -1,4 +1,4 @@
-from ptls.preprocessing.base import ColTransformer
+from ptls.preprocessing.base.transformation.col_numerical_transformer import ColTransformer
 
 
 class ColCategoryTransformer(ColTransformer):

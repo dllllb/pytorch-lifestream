@@ -1,4 +1,6 @@
+import pandas as pd
 from pyspark.sql import SparkSession
+from pyspark.sql.types import TimestampType
 
 from ptls.preprocessing.pyspark.event_time import dt_to_timestamp, timestamp_to_dt, DatetimeToTimestamp
 
@@ -27,10 +29,19 @@ def test_timestamp_to_dt():
         {'dt': '2012-01-01 12:01:16'},
         {'dt': '2021-12-30 00:00:00'}
     ])
+    from pyspark.sql import functions as F
 
-    df = df.withColumn('ts', dt_to_timestamp('dt'))
-    df = df.withColumn('dt2', timestamp_to_dt('ts'))
+    # df = df.withColumn('ts', dt_to_timestamp('dt'))
+    # df = df.withColumn('dt2', timestamp_to_dt('ts'))
+
+    from pyspark.sql.functions import col, unix_timestamp, from_unixtime
+
+    df = df.withColumn("ts", unix_timestamp("dt"))
+    df = df.withColumn("dt2", from_unixtime(col("ts")))
+
     df = df.toPandas()
+    # df['dt'] = pd.to_datetime(df['dt'])  # Ensure 'dt' is datetime for comparison
+    df['dt2'] = pd.to_datetime(df['dt2'])
     spark.conf.unset("spark.sql.session.timeZone")
     assert (df['dt'] == df['dt2']).all()
     assert df['dt'].dtype == 'object'

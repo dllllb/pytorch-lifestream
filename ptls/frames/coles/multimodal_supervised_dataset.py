@@ -3,8 +3,8 @@ import torch
 from functools import reduce
 from collections import defaultdict
 from ptls.data_load.feature_dict import FeatureDict
-from ptls.frames.coles.multimodal_dataset import collate_feature_dict, collate_multimodal_feature_dict, get_dict_class_labels
-
+from ptls.data_load.utils import collate_multimodal_feature_dict, get_dict_class_labels
+            
 
 class MultiModalSupervisedDataset(FeatureDict, torch.utils.data.Dataset):
     def __init__(

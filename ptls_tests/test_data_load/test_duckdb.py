@@ -1,6 +1,10 @@
-from ptls.data_load.datasets import DuckDbDataset
+from pathlib import Path
+
 import pandas as pd
 import torch
+
+from ptls.data_load.datasets import DuckDbDataset
+
 
 def test_simple_processing():
     test_df = pd.DataFrame([
@@ -29,12 +33,16 @@ def test_simple_processing():
             'category': 3
         },
     ])
-    
+
+    source = f"""
+        (SELECT * FROM read_csv_auto('{Path(__file__).parent / 'test_df.csv'}'))
+        """
+
     ds = DuckDbDataset(
-        data_read_func = 'test_df',
-        col_id = 'id',
-        col_event_time = 'dt',
-        col_event_fields = ['sum', 'category']
+        data_read_func=source,
+        col_id='id',
+        col_event_time='dt',
+        col_event_fields=['sum', 'category']
     )
 
     expected = str([

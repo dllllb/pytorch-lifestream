@@ -1,19 +1,21 @@
 import warnings
+from typing import List, Dict
 
 import pytorch_lightning as pl
-from ptls.data_load.iterable_processing.seq_len_filter import SeqLenFilter
-from ptls.data_load.iterable_processing.feature_filter import FeatureFilter
+from sklearn.model_selection import train_test_split
+from torch.utils.data import DataLoader
+
+from ptls.data_load import IterableChain
+from ptls.data_load import padded_collate
+from ptls.data_load.iterable_processing import FeatureFilter
+from ptls.data_load.iterable_processing import SeqLenFilter
 from ptls.data_load.iterable_processing.target_move import TargetMove
 from ptls.data_load.iterable_processing.to_torch_tensor import ToTorch
-from ptls.data_load import IterableChain
-from torch.utils.data import DataLoader
-from ptls.data_load import padded_collate
-from typing import List, Dict
-from sklearn.model_selection import train_test_split
 
 
 class SeqToTargetDatamodule(pl.LightningDataModule):
-    r"""pytorch-lightning data module for supervised training
+    """Pytorch-lightning data module for supervised training
+
     Parameters
     ----------
      dataset: List[Dict]
@@ -37,6 +39,7 @@ class SeqToTargetDatamodule(pl.LightningDataModule):
      random_state : int. Default : 42.
         Controls the shuffling applied to the data before applying the split.
      """
+
     def __init__(self,
                  dataset: List[dict],
                  pl_module: pl.LightningModule = None,
@@ -56,7 +59,7 @@ class SeqToTargetDatamodule(pl.LightningDataModule):
         self.dataset_train, self.dataset_valid = train_test_split(dataset,
                                                                   test_size=valid_size,
                                                                   random_state=random_state)
-        self.min_seq_len=min_seq_len
+        self.min_seq_len = min_seq_len
         self.train_num_workers = train_num_workers
         self.train_batch_size = train_batch_size
         self.valid_num_workers = valid_num_workers
@@ -91,10 +94,9 @@ class SeqToTargetDatamodule(pl.LightningDataModule):
         )
 
     def get_test_dataloader(self, data, num_workers=0, batch_size=128):
-         return DataLoader(
-             dataset=list(self.post_proc(iter(data))),
-             collate_fn=padded_collate,
-             num_workers=num_workers,
-             batch_size=batch_size,
-         )
-
+        return DataLoader(
+            dataset=list(self.post_proc(iter(data))),
+            collate_fn=padded_collate,
+            num_workers=num_workers,
+            batch_size=batch_size,
+        )

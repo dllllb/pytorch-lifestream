@@ -1,29 +1,23 @@
 import logging
 import pandas as pd
 import numpy as np
-from functools import reduce
-from operator import iadd
-from pyspark.sql import functions as F
-from pyspark.sql import types as T
-from pyspark.sql.window import Window
-from itertools import chain
 from typing import List, Dict, Union
+import dask.dataframe as dd
 
-from .base import DataPreprocessor, ColTransformer
-
-from .base.col_category_transformer import ColCategoryTransformer
-from .pyspark.category_identity_encoder import CategoryIdentityEncoder
-from .pyspark.col_identity_transformer import ColIdentityEncoder
-from .pyspark.event_time import DatetimeToTimestamp
-from .pyspark.frequency_encoder import FrequencyEncoder
-from .pyspark.user_group_transformer import UserGroupTransformer
-
+from ptls.preprocessing.base.data_preprocessor import DataPreprocessor
+from ptls.preprocessing.base.transformation.col_category_transformer import ColCategoryTransformer
+from ptls.preprocessing.base.transformation.col_identity_transformer import ColIdentityEncoder
+from ptls.preprocessing.base.transformation.col_numerical_transformer import ColTransformer
+from ptls.preprocessing.dask.dask_transformation.category_identity_encoder import CategoryIdentityEncoder
+from ptls.preprocessing.dask.dask_transformation.event_time import DatetimeToTimestamp
+from ptls.preprocessing.dask.dask_transformation.frequency_encoder import FrequencyEncoder
+from ptls.preprocessing.dask.dask_transformation.user_group_transformer import UserGroupTransformer
 
 logger = logging.getLogger(__name__)
 
 
-class PysparkDataPreprocessor(DataPreprocessor):
-    """Data preprocessor based on pyspark.sql.DataFrame
+class DaskDataPreprocessor(DataPreprocessor):
+    """Data preprocessor based on dask.dataframe
 
     During preprocessing it
         * transforms `cols_event_time` column with date and time
@@ -56,7 +50,9 @@ class PysparkDataPreprocessor(DataPreprocessor):
     print_dataset_info : bool. Default: False.
         If True, print dataset stats during preprocessor fitting and data transformation
     """
+
     def __init__(self,
+                 path: str,
                  col_id: str,
                  col_event_time: Union[str, ColTransformer],
                  event_time_transformation: str = 'dt_to_timestamp',
@@ -68,6 +64,12 @@ class PysparkDataPreprocessor(DataPreprocessor):
                  max_trx_count: int = None,
                  max_cat_num: Union[Dict[str, int], int] = 10000,
                  ):
+
+        self.dask_load_func = {'parquet': dd.read_parquet,
+                               'csv': dd.read_csv,
+                               'json': dd.read_json}
+
+        self.dask_df = self._create_dask_dataset(path)
 
         if cols_category is None:
             cols_category = []
@@ -115,12 +117,27 @@ class PysparkDataPreprocessor(DataPreprocessor):
             col_name_original=col_id, cols_last_item=cols_last_item, max_trx_count=max_trx_count)
 
         super().__init__(
-            ct_event_time=ct_event_time,
-            cts_category=cts_category,
-            cts_numerical=cts_numerical,
+            col_event_time=ct_event_time,
+            cols_category=cts_category,
+            cols_numerical=cts_numerical,
             cols_identity=cols_identity,
             t_user_group=t_user_group,
         )
+
+    def _create_dask_dataset(self, path):
+        for dataset in ['csv', 'json', 'parquet']:
+            if path.__contains__(dataset):
+                break
+            else:
+                raise AttributeError
+        df = self.dask_load_func[dataset](path)
+        return df
+
+    def categorize(self):
+        self.dask_df = self.dask_df.categorize(columns=self.dask_df.select_dtypes(include="category").columns.tolist())
+
+    def create_dask_dataset(self):
+        self.dask_df = self.dask_df.persist()
 
     @staticmethod
     def _td_default(df, cols_event_time):
@@ -130,14 +147,12 @@ class PysparkDataPreprocessor(DataPreprocessor):
         df = df.join(tmp_df, on=cols_event_time)
         return df
 
-
     @staticmethod
     def _td_float(df, col_event_time):
         logger.info('To-float time transformation begins...')
         df = df.withColumn('event_time', F.col(col_event_time).astype('float'))
         logger.info('To-float time transformation ends')
         return df
-
 
     @staticmethod
     def _td_gender(df, col_event_time):
@@ -152,6 +167,7 @@ class PysparkDataPreprocessor(DataPreprocessor):
         :param col_event_time:
         :return:
         """
+
         logger.info('Gender-dataset-like time transformation begins...')
         df = df.withColumn('_et_day', F.substring(F.lpad(F.col(col_event_time), 15, '0'), 1, 6).cast('float'))
 
@@ -164,7 +180,6 @@ class PysparkDataPreprocessor(DataPreprocessor):
         logger.info('Gender-dataset-like time transformation ends')
         return df
 
-
     def _td_hours(self, df, col_event_time):
         logger.info('To hours time transformation begins...')
         df = df.withColumn('_dt', (F.col(col_event_time)).cast(dataType=T.TimestampType()))
@@ -172,7 +187,6 @@ class PysparkDataPreprocessor(DataPreprocessor):
         df = df.drop('_dt')
         logger.info('To hours time transformation ends')
         return df
-
 
     def _reset(self):
         """Reset internal data-dependent state of the preprocessor, if necessary.
@@ -182,7 +196,6 @@ class PysparkDataPreprocessor(DataPreprocessor):
         self.remove_long_trx = False
         self.max_trx_count = 5000
         super()._reset()
-
 
     def pd_hist(self, df, name, bins=10):
         # logger.info('pd_hist begin')
@@ -203,4 +216,3 @@ class PysparkDataPreprocessor(DataPreprocessor):
         df = df.to_frame().assign(cnt=1).groupby(name)[['cnt']].sum()
         df['% of total'] = df['cnt'] / df['cnt'].sum()
         return df
-

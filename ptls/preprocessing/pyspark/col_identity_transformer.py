@@ -1,6 +1,6 @@
 import pyspark.sql.functions as F
 
-from ptls.preprocessing.base import ColTransformer
+from ptls.preprocessing.base.transformation.col_numerical_transformer import ColTransformer
 from ptls.preprocessing.pyspark.col_transformer import ColTransformerPysparkMixin
 
 
@@ -20,6 +20,7 @@ class ColIdentityEncoder(ColTransformerPysparkMixin, ColTransformer):
         When target and original columns are different manage original col deletion.
 
     """
+
     def transform(self, x):
         x = x.withColumn(self.col_name_target, F.col(self.col_name_original))
         x = super().transform(x)
