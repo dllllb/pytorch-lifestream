@@ -19,3 +19,4 @@ During the compression run directory `composition_results` is created. In each s
 Script which includes an example of `fedcore_compression` modules setup. Script may be used with inner variables change.
 * `scenario_supervised.sh` for supervised tasks and finetuning
 * `scenario_unsupervised.sh` for unsupervised tasks
+* `coles_age_pred.ipynb` notebook file demonstrating usage of fc_utils functions for experimant conduction

@@ -33,7 +33,7 @@ def load_pkl(path):
         return pickle.load(file)
 
 # fedcore train
-def fedcore_fit(model: Module, dm, experiment_setup: dict, loss: Optional[Callable]=None):
+def fedcore_fit(model: Module, dm, experiment_setup: dict, loss: Optional[Callable]=None, n_cls=None, **kwargs):
     """
     Fits a FedCore model using the provided data manager and experiment setup.
 
@@ -50,7 +50,7 @@ def fedcore_fit(model: Module, dm, experiment_setup: dict, loss: Optional[Callab
     comp_inp = get_compression_input(
             model, dm.train_dataloader(), dm.val_dataloader(),
             train_loss=loss,
-            task='classification', num_classes=2
+            task='classification', num_classes=n_cls
         )
     fedcore_compressor = FedCore(**experiment_setup)
     fedcore_compressor.fit((comp_inp, model), manually_done=True)
@@ -140,6 +140,4 @@ def get_experimental_setup(name: Union[str, Path]):
     if not isinstance(name, Path):
         name = Path(name)
     d = OmegaConf.to_container(OmegaConf.load(name))
-    # if not 'common' in d:
-    #     d['common'] = {}
     return d, name.name.split('.')[-2]
