@@ -33,8 +33,8 @@ Currently, the following setups are available:
     reaches more significant compression with respect to parameters number with more dense weight matrices. However, is often results in higher final losses.
 - QAT_1: 
     composite compression including quantization aware training.
-- PQT_1: 
-    compoite compression including post training quantization.
+- PTQ_1: 
+    composite compression including post training quantization.
 
 ## fc_fit_target.py
 Module for supervised learning and finetuning. The essential options to control and include in config file are:

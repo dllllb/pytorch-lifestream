@@ -6,10 +6,10 @@ They contain viable example of parameters which are essential for compression le
 
 Pay attention to the necessity of yaml configs and data placed carefully for scripts functioning.
 
-Common directory structure:
+Common directory structure (you may find the appropriate directories in the [ptls-experiments repository](https://github.com/dllllb/ptls-experiments)):
 
 `SCENARIO_ROOT`:
-- `bin` - scripts for configured model runs *(place this file here)*
+- `bin` - scripts for configured model runs *(place "\*.sh" files here)*
 - `conf` - folder with yaml configs for model and data initialisation
 - `data` - folder with dataset files
 
