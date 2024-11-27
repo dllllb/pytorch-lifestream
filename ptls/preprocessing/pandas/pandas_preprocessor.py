@@ -85,6 +85,7 @@ class PandasDataPreprocessor(DataPreprocessor):
             cols_identity=cols_identity,
             cols_numerical=cols_numerical,
             n_jobs=n_jobs,
+            return_records=return_records,
         )
 
     @staticmethod
