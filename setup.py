@@ -32,7 +32,7 @@ setuptools.setup(
         'torch>=1.12.0',
         'torchmetrics>=0.9.0',
         'transformers',
-        'dask',
-        'pymonad'
+        # 'dask',
+        # 'pymonad'
     ],
 )
