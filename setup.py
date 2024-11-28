@@ -33,6 +33,6 @@ setuptools.setup(
         'torchmetrics>=0.9.0',
         'transformers',
         'dask',
-        # 'pymonad'
+        'pymonad'
     ],
 )
