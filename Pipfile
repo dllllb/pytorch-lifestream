@@ -32,6 +32,8 @@ scipy = "~=1.10.1"
 pymonad = "*"
 distributed = "*"
 dask = "*"
+spacy = "==3.7.4"
+fedcore = "*"
 
 [packages]
 pytorch-lifestream = {editable = true, path = "."}
