@@ -34,7 +34,7 @@ setuptools.setup(
         'transformers',
         'dask',
         'pymonad',
-        'spacy = "==3.7.4"',
+        'spacy==3.7.4',
         'fedcore'
     ],
 )
