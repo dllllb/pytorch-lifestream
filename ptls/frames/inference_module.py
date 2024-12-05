@@ -2,6 +2,7 @@ import pandas as pd
 import pytorch_lightning as pl
 import torch
 import numpy as np
+import onnxruntime as ort
 
 from itertools import chain
 from ptls.data_load.padded_batch import PaddedBatch
@@ -43,7 +44,7 @@ class InferenceModule(pl.LightningModule):
                 len_mask = v.seq_len_mask.bool().cpu().numpy()
                 v = v.payload
             if type(v) is torch.Tensor:
-                v = v.cpu().numpy()
+                v = v.detach().cpu().numpy()
             if type(v) is list or len(v.shape) == 1:
                 scalar_features[k] = v
             elif k.startswith('target'):
@@ -69,6 +70,9 @@ class InferenceModule(pl.LightningModule):
             out_df = pd.concat([out_df.reset_index(drop=True), df_expand], axis = 1)
 
         return out_df
+    
+    def to_numpy(self, tensor):
+        return tensor.detach().cpu().numpy() if tensor.requires_grad else tensor.cpu().numpy()
 
     @staticmethod
     def to_pandas_record(x, expand_features, scalar_features, seq_features, len_mask):
