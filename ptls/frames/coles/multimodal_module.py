@@ -94,7 +94,9 @@ class MultiModalSortTimeSeqEncoderContainer(torch.nn.Module):
             length = length + source_length
         return res, length
             
-    def forward(self, x, **kwargs):
+    def forward(self, x, names=None, seq_len=None, **kwargs):
+        if names and seq_len is not None:
+            raise NotImplementedError
         x, length = self.multimodal_trx_encoder(x)
         x = self.merge_by_time(x)
         padded_x = PaddedBatch(payload=x, length=length)
