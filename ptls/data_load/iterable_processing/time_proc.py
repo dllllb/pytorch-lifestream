@@ -2,8 +2,12 @@ from ptls.data_load.iterable_processing_dataset import IterableProcessingDataset
 import numpy as np
 
 class TimeProc(IterableProcessingDataset):
-    '''This class is used for generation weekday and hour features from time_col feature'''
-    def __init__(self, time_col):
+    """This class is used for generation weekday and hour features from time_col feature
+    
+    Args:
+        time_col: field where `time` is stored
+    """
+    def __init__(self, time_col: str):
         super().__init__()
         self._time_col = time_col
         
@@ -19,8 +23,8 @@ class TimeProc(IterableProcessingDataset):
             yield rec
 
 class TimeProcMultimodal(IterableProcessingDataset):
-    '''This class is used for generation weekday and hour features from used source'''
-    def __init__(self, time_col, source):
+    "This class is used for generation weekday and hour features from used source"
+    def __init__(self, time_col: str, source: str):
         super().__init__()
         self._time_col = time_col
         self._source = source
