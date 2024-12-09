@@ -28,7 +28,7 @@ def collate_feature_dict_for_perf_eval(batch: Any):
 def save_scores(df_scores: pd.DataFrame, 
                 output_path: Union[str, Path], 
                 additional: str = '', 
-                output_format: Literal['csv', 'parquet', 'pickle']='csv'):
+                output_format: Literal['csv', 'parquet', 'pickle'] = 'csv'):
     """
     Saves embeddings to specified location.
 
