@@ -10,25 +10,20 @@ from ptls.frames.coles.split_strategy import AbsSplit
 
 
 class ColesDatasetTime(FeatureDict, torch.utils.data.Dataset):
-    """Dataset for ptls.frames.coles.CoLESModule
-    Parameters
-    ----------
-    data:
-        source data with feature dicts
-    splitter:
-        object from from `ptls.frames.coles.split_strategy`.
-        Used to split original sequence into subsequences which are samples from one client.
-    col_time:
-        column name with event_time
-    time_margin: 
-        time margin for choice negative and positive pairs.
+    """Dataset for ptls.frames.coles.CoLESModule.
+
+    Args:
+        data: Source data with feature dicts.
+        splitter: Object from `ptls.frames.coles.split_strategy`. Used to split original sequence into subsequences which are samples from one client.
+        col_time: Column name with event_time.
+        time_margin: Time margin for choice negative and positive pairs.
     """
 
     def __init__(self,
-                 data,
+                 data: dict,
                  splitter: AbsSplit,
-                 time_margin=100,
-                 col_time='event_time',
+                 time_margin: int = 100,
+                 col_time: str = 'event_time',
                  *args, **kwargs):
         super().__init__(*args, **kwargs)  # required for mixin class
 

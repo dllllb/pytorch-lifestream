@@ -40,7 +40,7 @@ from ptls.metric_learn.dataset.splitting_dataset import IterableSplittingDataset
 logger = logging.getLogger(__name__)
 
 
-def collate_nsp_pairs(batch):
+def collate_nsp_pairs(batch) -> tuple:
     lefts = [left for left, _ in batch] * 2
 
     rights = [right for _, right in batch]
@@ -63,7 +63,12 @@ def collate_nsp_pairs(batch):
 
 
 class NspDataModuleTrain(pl.LightningDataModule):
-    def __init__(self, type, setup, train, valid, pl_module):
+    def __init__(self, 
+                 type: str, 
+                 setup: dict, 
+                 train: dict, 
+                 valid: dict, 
+                 pl_module: pl.LightningModule):
         warnings.warn('Use `ptls.frames.PtlsDataModule` '
                       'with `ptls.frames.bert.NspDataset` or `ptls.frames.bert.NspIterableDataset`',
                       DeprecationWarning)
@@ -86,7 +91,7 @@ class NspDataModuleTrain(pl.LightningDataModule):
         self._train_ids = None
         self._valid_ids = None
 
-    def prepare_data(self):
+    def prepare_data(self) -> None:
         if 'dataset_files' in self.setup_conf:
             self.setup_iterable_files()
         elif 'dataset_parts' in self.setup_conf:
@@ -97,7 +102,7 @@ class NspDataModuleTrain(pl.LightningDataModule):
         if self._type == 'map':
             self.setup_map()
 
-    def setup_iterable_files(self):
+    def setup_iterable_files(self) -> None:
         if self.setup_conf.split_by == 'files':
             data_files = ParquetFiles(self.setup_conf.dataset_files.data_path).data_files
 

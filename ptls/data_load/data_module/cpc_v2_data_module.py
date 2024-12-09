@@ -19,7 +19,7 @@ client_k          -> [client_k_smpl_1, client_k_smpl_2, ..., client_k_smpl_n]
 
 
 import logging
-
+import pytorch_lightning as pl
 import torch
 
 from collections import defaultdict
@@ -34,7 +34,7 @@ torch.multiprocessing.set_sharing_strategy('file_system')
 logger = logging.getLogger(__name__)
 
 
-def collate_fn(batch):
+def collate_fn(batch) -> tuple:
     """
     batch = [
         [PaddedBatch, PaddedBatch, ..., PaddedBatch],
@@ -65,13 +65,18 @@ def collate_fn(batch):
 
 
 class CpcV2DataModuleTrain(ColesDataModuleTrain):
-    def __init__(self, type, setup, train, valid, pl_module):
+    def __init__(self, 
+                 type: str, 
+                 setup: dict, 
+                 train: dict, 
+                 valid: dict, 
+                 pl_module: pl.LightningModule):
         warnings.warn('Use `ptls.frames.PtlsDataModule` '
                       'with `ptls.frames.cpc.CpcV2Dataset` or `ptls.frames.cpc.CpcV2IterableDataset`',
                       DeprecationWarning)
         super().__init__(type, setup, train, valid, pl_module)
 
-    def train_dataloader(self):
+    def train_dataloader(self) -> DataLoader:
         return DataLoader(
             dataset=self.train_dataset,
             collate_fn=collate_fn,
@@ -80,7 +85,7 @@ class CpcV2DataModuleTrain(ColesDataModuleTrain):
             batch_size=self.train_conf.batch_size,
         )
 
-    def val_dataloader(self):
+    def val_dataloader(self) -> DataLoader:
         return DataLoader(
             dataset=self.valid_dataset,
             collate_fn=collate_fn,

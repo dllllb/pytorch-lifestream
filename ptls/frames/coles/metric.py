@@ -8,14 +8,18 @@ import torchmetrics
 logger = logging.getLogger(__name__)
 
 
-def outer_pairwise_distance(A, B=None):
+def outer_pairwise_distance(A: torch.tensor, B: torch.tensor = None):
     """
-        Compute pairwise_distance of Tensors
-            A (size(A) = n x d, where n - rows count, d - vector size) and
-            B (size(A) = m x d, where m - rows count, d - vector size)
-        return matrix C (size n x m), such as C_ij = distance(i-th row matrix A, j-th row matrix B)
+    Compute pairwise_distance of Tensors
+        A (size(A) = n x d, where n - rows count, d - vector size) and
+        B (size(A) = m x d, where m - rows count, d - vector size)
+    return matrix C (size n x m), such as C_ij = distance(i-th row matrix A, j-th row matrix B)
 
-        if only one Tensor was given, computer pairwise distance to itself (B = A)
+    if only one Tensor was given, computer pairwise distance to itself (B = A)
+
+    Args:
+        A: Tensor with size n x d
+        B: Tensor with size m x d
     """
 
     if B is None: B = A

@@ -24,34 +24,13 @@ class PostProcessDataset(torch.utils.data.Dataset):
         self.parent = parent
         self.post_processor = post_processor
 
-    def __len__(self):
+    def __len__(self) -> int:
         return len(self.parent)
 
-    def __getitem__(self, idx):
+    def __getitem__(self, idx: int) -> Dict:
         return next(self.post_processor([self.parent[idx]]))
 
 
-r"""Generate a train data loader
-
-Parameters
-----------
-data: List[Dict]
-The dataset
-min_seq_len: int. Default: 0.
-The minimal length of sequences used for training. The shorter sequences would be skipped.
-seq_split_strategy: str. Options: 'SampleSlices',  Default: 'SampleSlices'.
-The strategy for splitting sequence to subsequences
-split_count: int. Default: 5.
-An amount of subsequences from one sequence.
-split_cnt_min: int. Default: 1.
-The minimal amount of events in each subsequence.
-split_cnt_max: int. Default: 4000.
-    The maximal amount of events in each subsequence.
-num_workers: int. Default: 0.
-The number of workers for the dataloader. 0 = single-process loader
-train_batch_size: int. Default: 512.
-The number of samples (before splitting to subsequences) in each batch
-"""
 def train_data_loader(
     data: List[Dict],
     min_seq_len: int = 0,
@@ -62,6 +41,25 @@ def train_data_loader(
     drop_cols: List[str] = list(),
     num_workers: int = 0,
     batch_size: int = 512):
+    """Generates a train data loader.
+
+    Args:
+        data: a list of dictionaries. The dataset.
+        min_seq_len: Minimum length of sequences used for training. 
+            The shorter sequences would be skipped.
+        seq_split_strategy: The strategy for splitting sequence to subsequences. 
+            Options: 'SampleSlices',  Default: 'SampleSlices'.
+        split_count: An amount of subsequences from one sequence. Default: 5.
+        split_cnt_min: The minimal amount of events in each subsequence. Default: 1.
+        split_cnt_max: The maximal amount of events in each subsequence. Default: 4000.
+        num_workers: The number of workers for the dataloader. 0 = single-process loader. Default: 0.
+        train_batch_size: The number of samples (before splitting to subsequences) in 
+            each batch Default: 512.
+    
+    Returns:
+        DataLoader: The train data loader
+
+    """
     warnings.warn('Use `train_dataloader()` method of `ptls.frames.PtlsDataModule` '
                   'with `ptls.frames.coles.ColesDataset` or `ptls.frames.coles.ColesIterableDataset`',
                   DeprecationWarning)
