@@ -1,7 +1,9 @@
 """Module for embeddings obtaining or/and computational metrics evaluation."""
 import logging
 import os
+
 from pathlib import Path
+from typing import Any, Literal, Union
 
 import hydra
 from omegaconf import DictConfig
@@ -18,11 +20,24 @@ from ptls.frames.inference_module import InferenceModule
 logger = logging.getLogger(__name__)
 
 
-def collate_feature_dict_for_perf_eval(batch):
+def collate_feature_dict_for_perf_eval(batch: Any):
+    """Auxiliary function to wrap batches"""
     return collate_feature_dict(batch), None
 
 
-def save_scores(df_scores, output_path, additional='', output_format='csv'):
+def save_scores(df_scores: pd.DataFrame, 
+                output_path: Union[str, Path], 
+                additional: str = '', 
+                output_format: Literal['csv', 'parquet', 'pickle']='csv'):
+    """
+    Saves embeddings to specified location.
+
+    Parameters:
+        df_scores: obtained_embeddings
+        output_path: file destination
+        additional: auxiliary identifier to differentiate obtained results
+        output_format: how to save 
+    """
     if output_format not in ('pickle', 'csv', 'parquet'):
         logger.warning(f'Format "{output_format}" is not supported. Used default "pickle"')
         output_format = 'pickle'
@@ -40,7 +55,17 @@ def save_scores(df_scores, output_path, additional='', output_format='csv'):
     logger.info(f'{len(df_scores)} records saved to: "{output_path}"')
 
 
-def inference_run(path, conf, id=''):
+def inference_run(path: Union[str, Path], conf: DictConfig, id: str = ''):
+    """
+    Runs inference for a pretrained encoder. 
+    Also, if ``n_batches_computational`` specified in `conf` the computational metrics are calculated
+    and saved into `computational.txt`
+
+    Parameters:
+        path: path to pretrained encoder
+        conf: config specifying `.inference.dataset` 
+        id: auxiliary identifier to differentiate obtained results
+    """
     accelerator = 'cuda' if torch.cuda.is_available() else 'cpu'
     model = torch.load(path)
     seq_encoder = model.seq_encoder if hasattr(model, 'seq_encoder') else model
@@ -59,7 +84,7 @@ def inference_run(path, conf, id=''):
         batch_size=conf.inference.get('batch_size', 128),
     )
 
-    if 'n_batches_computational' in conf:
+    if conf.get('n_batches_computational', 0):
         eval_computational_metrics(
             model, 
             DataLoader(
