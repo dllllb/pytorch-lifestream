@@ -390,8 +390,7 @@ def padded_collate_emb_valid(batch):
          'pos_distribution': pos_distribution}
     return x.float(), y
 
-
-def padded_collate_wo_target(batch):
+def _collate(batch):
     new_x_ = defaultdict(list)
     for x in batch:
         for k, v in x.items():
@@ -399,8 +398,15 @@ def padded_collate_wo_target(batch):
 
     lengths = torch.IntTensor([len(e) for e in next(iter(new_x_.values()))])
     new_x = {k: torch.nn.utils.rnn.pad_sequence(v, batch_first=True) for k, v in new_x_.items()}
+    return new_x, lengths
+
+def padded_collate_wo_target(batch):
+    new_x, lengths = _collate(batch)
     return PaddedBatch(new_x, lengths)
-    
+
+def collate_wo_target(batch):
+    new_x, lengths = _collate(batch)
+    return (new_x, lengths)
 
 class ZeroDownSampler(Sampler):
     def __init__(self, targets):

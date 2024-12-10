@@ -32,5 +32,6 @@ setuptools.setup(
         'torch>=1.12.0',
         'torchmetrics>=0.9.0',
         'transformers',
+        'onnxruntime>=1.19.2'
     ],
 )

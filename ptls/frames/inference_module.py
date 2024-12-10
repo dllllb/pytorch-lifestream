@@ -1,7 +1,9 @@
+import os
 import pandas as pd
 import pytorch_lightning as pl
 import torch
 import numpy as np
+import onnxruntime as ort
 
 from itertools import chain
 from ptls.data_load.padded_batch import PaddedBatch
@@ -43,7 +45,7 @@ class InferenceModule(pl.LightningModule):
                 len_mask = v.seq_len_mask.bool().cpu().numpy()
                 v = v.payload
             if type(v) is torch.Tensor:
-                v = v.cpu().numpy()
+                v = v.detach().cpu().numpy()
             if type(v) is list or len(v.shape) == 1:
                 scalar_features[k] = v
             elif k.startswith('target'):
@@ -69,6 +71,9 @@ class InferenceModule(pl.LightningModule):
             out_df = pd.concat([out_df.reset_index(drop=True), df_expand], axis = 1)
 
         return out_df
+    
+    def to_numpy(self, tensor):
+        return tensor.detach().cpu().numpy() if tensor.requires_grad else tensor.cpu().numpy()
 
     @staticmethod
     def to_pandas_record(x, expand_features, scalar_features, seq_features, len_mask):
@@ -157,3 +162,77 @@ class InferenceModuleMultimodal(pl.LightningModule):
             dataframes.append(pd.DataFrame(v, columns=[f'{col}_{i:04d}' for i in range(v.shape[1])]))
 
         return pd.concat(dataframes, axis=1)
+
+class ONNXInferenceModule(InferenceModule):
+    def __init__(self, model, dl, model_out_name='emb.onnx', pandas_output=False):
+        super().__init__(model)
+        self.model = model
+        self.pandas_output = pandas_output
+        self.model_out_name = model_out_name
+        self.providers = ['CUDAExecutionProvider', 'CPUExecutionProvider']
+        
+        batch = next(iter(dl))
+        features, names, seq_len = self.preprocessing(batch)
+        model._col_names = names
+        model._seq_len = seq_len
+        model.example_input_array = features
+        self.export(self.model_out_name, model)
+    
+        self.ort_session = ort.InferenceSession(
+            self.model_out_name,
+            providers=self.providers
+        )
+    
+    def stack(self, x):
+        x = [v for v in x[0].values()]
+        return torch.stack(x)
+    
+    def preprocessing(self, x):
+        features = self.stack(x)
+        names = [k for k in x[0].keys()]
+        seq_len = x[1]
+        return features, names, seq_len
+
+    def export(self,
+                path: str,
+                model
+            ) -> None:
+        
+        model.to_onnx(path,
+                    export_params=True,
+                    input_names=["input"],
+                    output_names=["output"],
+                    dynamic_axes={
+                                "input": {
+                                    0: "features",
+                                    1: "batch_size",
+                                    2: "seq_len"
+                                },
+                                "output": {
+                                    0: "batch_size",
+                                    1: "hidden_size"
+                                }
+                            }
+                    )
+    
+    def forward(self, x, dtype: torch.dtype = torch.float16):
+        inputs = self.to_numpy(self.stack(x))
+        out = self.ort_session.run(None, {"input": inputs})
+        out = torch.tensor(out[0], dtype=dtype)
+        if self.pandas_output:
+            return self.to_pandas(out)
+        return out
+
+    def to(self, device):
+        return self
+
+    def size(self):
+        return os.path.getsize(self.model_name)
+    
+    def predict(self, dl, dtype: torch.dtype = torch.float16):
+        pred = list()
+        with torch.no_grad():
+            for batch in dl:
+                output = self(batch, dtype=dtype)
+                pred.append(output)
+        return pred

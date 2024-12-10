@@ -32,6 +32,7 @@ scipy = "~=1.10.1"
 pymonad = "*"
 distributed = "*"
 dask = "*"
+onnxruntime = "==1.19.2"
 
 [packages]
 pytorch-lifestream = {editable = true, path = "."}
