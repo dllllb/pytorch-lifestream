@@ -63,7 +63,9 @@ class SeqEncoderContainer(torch.nn.Module):
     def embedding_size(self):
         return self.seq_encoder.embedding_size
 
-    def forward(self, x):
+    def forward(self, x, names=None, seq_len=None):
+        if names and seq_len is not None:
+            raise NotImplementedError
         x = self.trx_encoder(x)
         x = self.seq_encoder(x)
         return x

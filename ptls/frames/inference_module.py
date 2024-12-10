@@ -6,7 +6,6 @@ import numpy as np
 import onnxruntime as ort
 
 from itertools import chain
-from tqdm import tqdm
 from ptls.data_load.padded_batch import PaddedBatch
 
 
@@ -232,9 +231,8 @@ class ONNXInferenceModule(InferenceModule):
     
     def predict(self, dl, dtype: torch.dtype = torch.float16):
         pred = list()
-        desc = 'Predicting DataLoader'
         with torch.no_grad():
-            for batch in tqdm(dl, desc=desc):
+            for batch in dl:
                 output = self(batch, dtype=dtype)
                 pred.append(output)
         return pred

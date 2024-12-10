@@ -220,9 +220,9 @@ class AggFeatureSeqEncoder(torch.nn.Module):
             if self.use_topk_cnt > 0:
                 cat_processed.append(torch.topk(e_cnt, self.use_topk_cnt, dim=1)[1])
 
-        # for i, t in enumerate(processed):
-        #     if torch.isnan(t).any():
-        #         raise Exception(f'nan in {i}')
+        for i, t in enumerate(processed):
+            if torch.isnan(t).any():
+                raise Exception(f'nan in {i}')
 
         out = torch.cat(processed + cat_processed, 1)
 
