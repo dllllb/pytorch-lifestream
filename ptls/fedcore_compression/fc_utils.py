@@ -93,7 +93,8 @@ def eval_computational_metrics(model: Module,
                                dataloader: DataLoader,
                                save_path:  str,
                                id: Any = '',
-                               n_batches: int = 1) -> dict:
+                               n_batches: int = 1,
+                               device: Optional[str] = None) -> dict:
     """
     Evaluates the computational metrics (latency, throughput) and size of the model using the provided DataLoader
     This function adresses to FedCore PerformanceEvaluator.
@@ -115,7 +116,7 @@ def eval_computational_metrics(model: Module,
         The results are appended to the specified file in a human-readable format, allowing for easy tracking 
         of performance metrics over time.
     """
-    pev = PerformanceEvaluator(model, dataloader, n_batches=n_batches)
+    pev = PerformanceEvaluator(model, dataloader, device=device, n_batches=n_batches)
     d = pev.eval()
     with open(save_path, 'at+') as file:
         print(f'#{id}', *(f'{k}: {v}' for k, v in d.items()), file=file)
