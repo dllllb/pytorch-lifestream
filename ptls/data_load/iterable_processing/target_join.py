@@ -6,7 +6,7 @@ class TargetJoin(IterableProcessingDataset):
     Store target as scalar value in a feature dictionary
 
     """
-    def __init__(self, id_col, target_values, func=int):
+    def __init__(self, id_col: str, target_values: dict, func=int):
         """Extract value from `target_values` by id_col and mention it as `y`
 
         for x, * in seq:

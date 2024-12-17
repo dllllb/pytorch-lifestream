@@ -18,7 +18,7 @@ class CoLESModule(ABSModule):
     Paired distances between all embeddings are calculated.
     The loss function tends to make positive distances smaller and negative ones larger.
 
-    Parameters
+    Args:
         seq_encoder:
             Model which calculate embeddings for original raw transaction sequences
             `seq_encoder` is trained by `CoLESModule` to get better representations of input sequences

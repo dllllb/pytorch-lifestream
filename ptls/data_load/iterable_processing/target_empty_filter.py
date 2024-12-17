@@ -4,7 +4,7 @@ from ptls.data_load.iterable_processing_dataset import IterableProcessingDataset
 
 
 class TargetEmptyFilter(IterableProcessingDataset):
-    def __init__(self, target_col):
+    def __init__(self, target_col: str):
         """Drop records where value in `target_col` is undefined
 
         Args:

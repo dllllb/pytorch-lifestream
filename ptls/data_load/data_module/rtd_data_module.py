@@ -54,7 +54,13 @@ def collate_rtd_batch(batch, replace_prob, skip_first=0):
 
 
 class RtdDataModuleTrain(pl.LightningDataModule):
-    def __init__(self, type, setup, train, valid, pl_module, replace_token=False):
+    def __init__(self, 
+                 type: str, 
+                 setup: dict, 
+                 train: dict, 
+                 valid: dict, 
+                 pl_module: pl.LightningModule, 
+                 replace_token: bool = False):
         warnings.warn('Use `ptls.frames.PtlsDataModule` '
                       'with `ptls.frames.bert.RtdDataset` or `ptls.frames.bert.RtdIterableDataset`',
                       DeprecationWarning)
@@ -78,7 +84,7 @@ class RtdDataModuleTrain(pl.LightningDataModule):
         self._train_ids = None
         self._valid_ids = None
 
-    def prepare_data(self, stage=None):
+    def prepare_data(self):
         if 'dataset_files' in self.setup_conf:
             self.setup_iterable_files()
         elif 'dataset_parts' in self.setup_conf:

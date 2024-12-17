@@ -3,8 +3,14 @@ from ptls.data_load.iterable_processing_dataset import IterableProcessingDataset
 
 
 class FeaturePreprocessing(IterableProcessingDataset):
-    def __init__(self, mode, feature_bins=None, idx_starts_from=0, keep_feature_names=None,
-                 drop_feature_names=None, drop_non_iterable=True, feature_names=None, feature_types=None):
+    def __init__(self, mode: str, 
+                 feature_bins: dict = None, 
+                 idx_starts_from: int = 0, 
+                 keep_feature_names: list = None,
+                 drop_feature_names: list = None,
+                 drop_non_iterable: bool = True, 
+                 feature_names: dict = None,
+                 feature_types: dict = None):
         super().__init__()
         self.mode = mode
 
@@ -50,20 +56,20 @@ class FeaturePreprocessing(IterableProcessingDataset):
         idx = np.abs(col.reshape(-1, 1) - bins).argmin(axis=1)
         return idx
 
-    def process_feature_filter(self, features):
+    def process_feature_filter(self, features: dict) -> dict:
         if self._drop_feature_names is not None:
             features = {k: v for k, v in features.items() if k not in self._drop_feature_names or self.is_keep(k)}
         if self._drop_non_iterable:
             features = {k: v for k, v in features.items() if self.is_seq_feature(k, v) or self.is_keep(k)}
         return features
 
-    def is_keep(self, k):
+    def is_keep(self, k: str) -> bool:
         if self._keep_feature_names is None:
             return False
         return k in self._keep_feature_names
 
-    def process_feature_rename(self, features):
+    def process_feature_rename(self, features: dict) -> dict:
         return {self._feature_names.get(k, k): v for k, v in features.items()}
 
-    def process_feature_type_cast(self, features):
+    def process_feature_type_cast(self, features: dict) -> dict:
         return {k: self._feature_types.get(k, lambda x: x)(v) for k, v in features.items()}

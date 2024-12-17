@@ -1,3 +1,4 @@
+import pandas as pd
 from ptls.data_load.iterable_processing_dataset import IterableProcessingDataset
 from ptls.data_load.augmentations.seq_len_limit import SeqLenLimit
 import numpy as np
@@ -5,8 +6,17 @@ import torch
 
 
 class Filtering(IterableProcessingDataset):
-    def __init__(self, mode, id_col=None, relevant_ids=None, category_max_size=None, replace_value='max',
-                 min_seq_len=None, max_seq_len=None, seq_len_col=None, sequence_col=None, df_relevant_ids=None, strategy='tail'):
+    def __init__(self, mode: str, 
+                 id_col: str = None, 
+                 relevant_ids: list = None,
+                 category_max_size: dict = None,
+                 replace_value: str = 'max',
+                 min_seq_len: int = None, 
+                 max_seq_len: int = None, 
+                 seq_len_col: str = None,
+                 sequence_col: str = None,
+                 df_relevant_ids: pd.DataFrame=None,
+                 strategy: str = 'tail'):
         super().__init__()
         self.mode = mode
         self._id_col = id_col

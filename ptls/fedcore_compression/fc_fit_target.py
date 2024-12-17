@@ -13,7 +13,18 @@ from ptls.fedcore_compression.fc_utils import fedcore_fit, extract_loss, get_exp
 
 logger = logging.getLogger(__name__)
 
-def fold_fit_test(conf, fold_id):
+def fold_fit_test(conf: DictConfig, fold_id: int):
+    """
+    Runs training and test inference at once on a data fold to lessen computation costs.
+
+    Parameters:
+        conf: configuration with specified:
+        * `pretrained` - pretrained encodef path
+        * `setup` - experimental setup for compression
+        * `trainer` - pl.Trainer settings
+        * `embedding_validation_results.output_path` - the output path
+        fold_id: fold number
+    """
     conf['fold_id'] = fold_id
 
     # model instantiation
