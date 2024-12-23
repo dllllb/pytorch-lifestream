@@ -76,7 +76,7 @@ if __name__ == "__main__":
         loss=ContrastiveLoss(
             margin=0.5, 
             sampling_strategy=HardNegativePairSelector(neg_count=5),
-            # distributed_mode=True
+            distributed_mode=True
         ),
         optimizer_partial=partial(Adam, **{"lr": 0.001, "weight_decay": 0.0}),
         lr_scheduler_partial=partial(StepLR, **{"step_size": 1, "gamma": 0.8}),
@@ -150,9 +150,3 @@ if __name__ == "__main__":
 
     profiler.stop()
     profiler.print()
-
-    # Time spent per epoch
-    # 1 GPU - 196.9 s
-    # 2 GPU (just devices=2) - (15.4 + 20.2) s
-    # 2 GPU (deepspeed) - (22.9 + 27.9) s
-    # 2 GPU (ddp) - (21.4 + 26.3) s
