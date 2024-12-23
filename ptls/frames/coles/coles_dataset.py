@@ -24,7 +24,7 @@ class ColesDataset(FeatureDict, torch.utils.data.Dataset):
     """
 
     def __init__(self,
-                 data,
+                 data: dict,
                  splitter: AbsSplit,
                  col_time: str = 'event_time',
                  n_jobs: int = 1,

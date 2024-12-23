@@ -32,5 +32,9 @@ setuptools.setup(
         'torch>=1.12.0',
         'torchmetrics>=0.9.0',
         'transformers',
+        'dask',
+        'pymonad',
+        'spacy==3.7.4',
+        'fedcore==0.0.4.5'
     ],
 )

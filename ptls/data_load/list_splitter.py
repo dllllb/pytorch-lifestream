@@ -6,7 +6,11 @@ class ListSplitter:
     Collect list of objects and split it on train and valid (if possible)
     Returns list of objects for train and valid
     """
-    def __init__(self, object_list, valid_size=0.5, is_sort=True, seed=None):
+    def __init__(self, 
+                 object_list: list, 
+                 valid_size: float = 0.5, 
+                 is_sort: bool = True, 
+                 seed: int = None):
         self.object_list = object_list
         self.valid_size = valid_size
         self.is_sort = is_sort

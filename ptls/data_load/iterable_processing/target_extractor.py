@@ -5,7 +5,7 @@ class TargetExtractor(IterableProcessingDataset):
     """Deprecated. Use SeqToTargetDataset
 
     """
-    def __init__(self, target_col, drop_from_features=True):
+    def __init__(self, target_col: str, drop_from_features: bool = True):
         """Extract value from `target_col` and mention it as `y`
 
         for x, * in seq:

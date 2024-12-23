@@ -2,7 +2,10 @@ from ptls.data_load import IterableProcessingDataset
 
 
 class TakeFirstTrx(IterableProcessingDataset):
-    def __init__(self, take_first_fraction=0.5, seq_len_col=None, sequence_col=None):
+    def __init__(self, 
+                 take_first_fraction: float = 0.5, 
+                 seq_len_col: str = None, 
+                 sequence_col: str = None):
         """
         Trim sequences by taking the first `take_first_fraction` portion of each sequence.
         The remaining part is discarded.
@@ -19,7 +22,7 @@ class TakeFirstTrx(IterableProcessingDataset):
         self._sequence_col = sequence_col
         self._seq_len_col = seq_len_col
 
-    def __iter__(self):
+    def __iter__(self) -> iter:
         for rec in self._src:
             features = rec[0] if type(rec) is tuple else rec
             seq_len = self.get_len(features)
@@ -30,7 +33,7 @@ class TakeFirstTrx(IterableProcessingDataset):
             rec = (features, rec[1]) if type(rec) is tuple else features
             yield rec
 
-    def get_len(self, rec):
+    def get_len(self, rec) -> int:
         if self._seq_len_col is not None:
             return rec[self._seq_len_col]
         return len(rec[self.get_sequence_col(rec)])

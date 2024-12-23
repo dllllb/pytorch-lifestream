@@ -11,32 +11,26 @@ from ptls.frames.coles import MultiModalSortTimeSeqEncoderContainer
 class MultiModalDataset(FeatureDict, torch.utils.data.Dataset):
     def __init__(
         self,
-        data,
-        splitter,
-        source_features,
-        col_id,
-        source_names,
-        col_time='event_time',
+        data: list,
+        splitter: object,
+        source_features: list,
+        col_id: str,
+        source_names: list,
+        col_time: str = 'event_time',
         *args, **kwargs
     ):
         """
         Dataset for multimodal learning.
-        Parameters:
-        -----------
-        data:
-            concatinated data with feature dicts.
-        splitter:
-            object from from `ptls.frames.coles.split_strategy`.
-            Used to split original sequence into subsequences which are samples from one client.
-        source_features:
-            list of column names 
-        col_id:
-            column name with user_id
-        source_names:
-            column name with name sources, must be specified in the same order as trx_encoders in 
-            ptls.frames.coles.multimodal_module.MultiModalSortTimeSeqEncoderContainer
-        col_time:
-            column name with event_time
+
+        Args:
+            data (list): Concatenated data with feature dicts.
+            splitter (object): Object from `ptls.frames.coles.split_strategy`.
+                Used to split original sequence into subsequences which are samples from one client.
+            source_features (list): List of column names.
+            col_id (str): Column name with user_id.
+            source_names (list): Column name with name sources, must be specified in the same order as trx_encoders in 
+                `ptls.frames.coles.multimodal_module.MultiModalSortTimeSeqEncoderContainer`.
+            col_time (str, optional): Column name with event_time. Defaults to 'event_time'.
         """
         super().__init__(*args, **kwargs)
         

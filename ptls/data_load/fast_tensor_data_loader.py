@@ -1,3 +1,4 @@
+from typing import Optional
 import torch
 
 
@@ -8,17 +9,22 @@ class FastTensorDataLoader:
     the dataset and calls cat (slow).
     Source: https://discuss.pytorch.org/t/dataloader-much-slower-than-manual-batching/27014/6
     """
-    def __init__(self, *tensors, batch_size=32, shuffle=False, post_process_func=None):
+    def __init__(self, *tensors, 
+                 batch_size: int = 32, 
+                 shuffle: bool = False, 
+                 post_process_func: Optional[callable] = None):
         """
-        Initialize a FastTensorDataLoader.
+        Initializes a FastTensorDataLoader.
 
-        :param *tensors: tensors to store. Must have the same length @ dim 0.
-        :param batch_size: batch size to load.
-        :param shuffle: if True, shuffle the data *in-place* whenever an
-            iterator is created out of this object.
-        :param post_process_func: if not None apply function to the resulting batch
+        Args:
+            *tensors: Tensors to store. Must have the same length at dimension 0.
+            batch_size: Batch size to load. Defaults to 32.
+            shuffle: If True, shuffle the data in-place whenever an iterator is created 
+                out of this object. Defaults to False.
+            post_process_func: If not None, apply function to the resulting batch.
 
-        :returns: A FastTensorDataLoader.
+        Returns:
+            FastTensorDataLoader: A FastTensorDataLoader instance.
         """
         assert all(t.shape[0] == tensors[0].shape[0] for t in tensors)
 

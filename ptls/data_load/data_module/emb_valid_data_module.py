@@ -2,7 +2,6 @@ import logging
 import warnings
 
 import pytorch_lightning as pl
-import numpy as np
 from torch.utils.data import DataLoader
 from tqdm.auto import tqdm
 from sklearn.model_selection import train_test_split
@@ -17,7 +16,13 @@ logger = logging.getLogger(__name__)
 
 
 class EmbValidDataModule(pl.LightningDataModule):
-    def __init__(self, type, setup, train, valid, pl_module, test=None):
+    def __init__(self, 
+                 type: str, 
+                 setup: dict, 
+                 train: dict, 
+                 valid: dict, 
+                 pl_module: pl.LightningModule, 
+                 test: dict = None):
         warnings.warn('Use `ptls.frames.PtlsDataModule` with `ptls.frames.supervised.SeqToTargetDataset` '
                       'or `ptls.frames.supervised.SeqToTargetIterableDataset`',
                       DeprecationWarning)
@@ -47,10 +52,9 @@ class EmbValidDataModule(pl.LightningDataModule):
         self._train_targets = None
         self._valid_targets = None
         self._test_targets = None
-
         self._fold_info = None
 
-    def prepare_data(self):
+    def prepare_data(self) -> None:
         if 'dataset_files' in self.setup_conf:
             self.setup_iterable_files()
         elif 'dataset_parts' in self.setup_conf:
@@ -58,7 +62,7 @@ class EmbValidDataModule(pl.LightningDataModule):
         else:
             raise AttributeError(f'Missing dataset definition. One of `dataset_parts` or `dataset_files` expected')
 
-    def setup_iterable_files(self):
+    def setup_iterable_files(self) -> None:
        if (self.setup_conf.get('use_files_partially', None)):
            n_train = len(glob.glob(self.setup_conf.dataset_files.train_data_path + "/*.parquet"))
            ixes = list(range(n_train))
@@ -87,7 +91,7 @@ class EmbValidDataModule(pl.LightningDataModule):
        logger.info(f'Loaded {len(self.test_dataset)} for test')
 
 
-    def train_dataloader(self):
+    def train_dataloader(self) -> DataLoader:
         return DataLoader(
             dataset=self.train_dataset,
             collate_fn=padded_collate_emb_valid,
@@ -97,7 +101,7 @@ class EmbValidDataModule(pl.LightningDataModule):
             drop_last=self.train_conf.get('drop_last', False)
         )
 
-    def test_dataloader(self):
+    def test_dataloader(self) -> DataLoader:
          return DataLoader(
              dataset=self.test_dataset,
              collate_fn=padded_collate_emb_valid,
