@@ -106,6 +106,13 @@ class AggFeatureSeqEncoder(torch.nn.Module):
         :return:
         """
 
+        if isinstance(x, PaddedBatch) is False:
+            pre_x = dict()
+            self._col_names = ["mcc_code", "tr_type", "amount"]
+            for i, field_name in enumerate(self._col_names):
+                pre_x[field_name] = x[i]
+            x = PaddedBatch(pre_x, self._seq_len)
+
         feature_arrays = x.payload
         device = x.device
         B, T = x.seq_feature_shape

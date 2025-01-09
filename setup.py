@@ -35,6 +35,6 @@ setuptools.setup(
         'dask',
         'pymonad',
         'spacy==3.7.4',
-        'fedcore==0.0.4.5'
+        'fedcore>=0.0.4.5'
     ],
 )

@@ -40,6 +40,8 @@ class ABSModule(pl.LightningModule):
 
         self._optimizer_partial = optimizer_partial
         self._lr_scheduler_partial = lr_scheduler_partial
+        self._col_names = None
+        self._seq_len = None
  
     @property
     def metric_name(self):
@@ -67,7 +69,9 @@ class ABSModule(pl.LightningModule):
         return self._seq_encoder
 
     def forward(self, x):
-        return self._seq_encoder(x)
+        names = self._col_names
+        seq_len = self._seq_len
+        return self._seq_encoder(x, names, seq_len)
 
     def training_step(self, batch, _):
         y_h, y = self.shared_step(*batch)
