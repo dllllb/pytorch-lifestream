@@ -12,8 +12,8 @@ def inference_data_loader(
     max_seq_len: int = 10000,
     num_workers: int = 0,
     batch_size: int = 512,
-    onnx = False
-):
+    onnx: bool = False
+) -> DataLoader:
     """
     Generate an inference data loader. The data loader will return a batch of sequences.
 

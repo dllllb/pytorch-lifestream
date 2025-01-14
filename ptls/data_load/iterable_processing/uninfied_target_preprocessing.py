@@ -4,7 +4,12 @@ from ptls.data_load.iterable_processing_dataset import IterableProcessingDataset
 
 
 class UnifiedProcessingDataset(IterableProcessingDataset):
-    def __init__(self, mode, target_col=None, drop_from_features=True, id_col=None, target_values=None, func=int):
+    def __init__(self, mode: str, 
+                 target_col: str = None, 
+                 drop_from_features: bool = True, 
+                 id_col: str = None, 
+                 target_values: dict = None,
+                 func=int):
         super().__init__()
         self.mode = mode
         self._target_col = target_col

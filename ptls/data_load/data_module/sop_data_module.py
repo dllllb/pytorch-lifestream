@@ -53,7 +53,12 @@ def collate_sop_pairs(batch):
 
 
 class SopDataModuleTrain(pl.LightningDataModule):
-    def __init__(self, type, setup, train, valid, pl_module):
+    def __init__(self, 
+                 type: str, 
+                 setup: dict, 
+                 train: dict, 
+                 valid: dict, 
+                 pl_module: pl.LightningModule):
         warnings.warn('Use `ptls.frames.PtlsDataModule` '
                       'with `ptls.frames.bert.SopDataset` or `ptls.frames.bert.SopIterableDataset`',
                       DeprecationWarning)

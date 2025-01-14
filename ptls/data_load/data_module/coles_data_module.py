@@ -44,7 +44,12 @@ def coles_collate_fn(batch):
 
 
 class ColesDataModuleTrain(pl.LightningDataModule):
-    def __init__(self, type, setup, train, valid, pl_module):
+    def __init__(self, 
+                 type: str, 
+                 setup: dict, 
+                 train: dict, 
+                 valid: dict, 
+                 pl_module: pl.LightningModule):
         warnings.warn('Use `ptls.frames.PtlsDataModule` '
                       'with `ptls.frames.coles.ColesDataset` or `ptls.frames.coles.ColesIterableDataset`',
                       DeprecationWarning)
@@ -68,7 +73,10 @@ class ColesDataModuleTrain(pl.LightningDataModule):
         self._train_ids = None
         self._valid_ids = None
 
-    def prepare_data(self):
+    def prepare_data(self) -> None:
+        """
+        Prepare data for training.
+        """
         if 'dataset_files' in self.setup_conf:
             self.setup_iterable_files()
         elif 'dataset_parts' in self.setup_conf:
@@ -79,7 +87,11 @@ class ColesDataModuleTrain(pl.LightningDataModule):
         if self._type == 'map':
             self.setup_map()
 
-    def setup_iterable_files(self):
+    def setup_iterable_files(self) -> None:
+        """
+        Prepare datasets for iterable processing. Split by files strategy.
+
+        """
         if self.setup_conf.split_by == 'files':
             data_files = ParquetFiles(self.setup_conf.dataset_files.data_path).data_files
 
@@ -105,7 +117,11 @@ class ColesDataModuleTrain(pl.LightningDataModule):
         else:
             raise AttributeError(f'Unknown split strategy: {self.setup_conf.split_by}')
 
-    def setup_iterable_parts(self):
+    def setup_iterable_parts(self) -> None:
+        """
+        Prepare datasets for iterable processing. Split by partitions strategy. 
+        Create `PartitionedDataset` for each split.
+        """
         data_files = PartitionedDataFiles(**self.setup_conf.dataset_parts)
 
         if self.setup_conf.split_by == 'hash_id':
@@ -133,8 +149,14 @@ class ColesDataModuleTrain(pl.LightningDataModule):
         else:
             raise AttributeError(f'Unknown split strategy: {self.setup_conf.split_by}')
 
-    def build_iterable_processing(self, part):
+    def build_iterable_processing(self, part: str):
+        """
+        Prepare iterable processing chain for dataset.
 
+        Args:
+            part: 'train' or 'valid'
+
+        """
         if part == 'train':
             yield SeqLenFilter(min_seq_len=self.train_conf.min_seq_len)
         yield FeatureFilter(keep_feature_names=self.category_names)
@@ -149,16 +171,16 @@ class ColesDataModuleTrain(pl.LightningDataModule):
                 split_strategy_conf = self.train_conf.split_strategy
             else:
                 split_strategy_conf = self.valid_conf.split_strategy
-            yield IterableSplittingDataset(split_strategy.create(**split_strategy_conf), self.build_augmentations(part), self.col_time)
+            yield IterableSplittingDataset(split_strategy.create(**split_strategy_conf), 
+                                           self.build_augmentations(part), 
+                                           self.col_time)
 
-    def build_augmentations(self, part):
+    def build_augmentations(self, part: str) -> IterableChain:
         if part == 'train':
             return build_augmentations(self.train_conf.augmentations)
+        return build_augmentations(self.valid_conf.augmentations)
 
-        if part == 'valid':
-            return build_augmentations(self.valid_conf.augmentations)
-
-    def setup_map(self):
+    def setup_map(self) -> None:
         self.train_dataset = list(tqdm(iter(self.train_dataset)))
         logger.info(f'Loaded {len(self.train_dataset)} for train')
         self.valid_dataset = list(tqdm(iter(self.valid_dataset)))
@@ -175,7 +197,7 @@ class ColesDataModuleTrain(pl.LightningDataModule):
             a_chain=self.build_augmentations('valid'),
         )
 
-    def train_dataloader(self):
+    def train_dataloader(self) -> DataLoader:
         return DataLoader(
             dataset=self.train_dataset,
             collate_fn=coles_collate_fn,
@@ -184,7 +206,7 @@ class ColesDataModuleTrain(pl.LightningDataModule):
             batch_size=self.train_conf.batch_size,
         )
 
-    def val_dataloader(self):
+    def val_dataloader(self) -> DataLoader:
         return DataLoader(
             dataset=self.valid_dataset,
             collate_fn=coles_collate_fn,

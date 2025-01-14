@@ -10,30 +10,36 @@ from typing import Union, Callable, Optional, Any
 from fedcore.api.utils.data import get_compression_input
 from fedcore.api.main import FedCore
 from fedcore.tools.ruler import PerformanceEvaluator
+from pytorch_lightning import LightningDataModule
 from torch.nn.modules import Module
 from torch.utils.data import DataLoader
 
 from ptls.fedcore_compression.fc_setups import SETUPS
 
 # save & load
-def save_json(obj, path):
+def save_json(obj: Any, path: Union[str, Path]):
     with open(path, 'w') as file:
         json.dump(obj, file)
 
-def load_json(path):
+def load_json(path: Union[str, Path]) -> Any:
     with open(path, 'r') as file:
         return json.load(file)
 
-def save_pkl(obj, path):
+def save_pkl(obj:Any, path: Union[str, Path]):
     with open(path, 'wb') as file:
         pickle.dump(obj, file)
 
-def load_pkl(path):
+def load_pkl(path: Union[str, Path]) -> Any:
     with open(path, 'rb') as file:
         return pickle.load(file)
 
 # fedcore train
-def fedcore_fit(model: Module, dm, experiment_setup: dict, loss: Optional[Callable]=None, n_cls=None, **kwargs):
+def fedcore_fit(model: Module, 
+                dm: LightningDataModule, 
+                experiment_setup: dict, 
+                loss: Optional[Callable]=None, 
+                n_cls: Optional[int] = None, 
+                **kwargs) -> FedCore:
     """
     Fits a FedCore model using the provided data manager and experiment setup.
 
@@ -87,7 +93,8 @@ def eval_computational_metrics(model: Module,
                                dataloader: DataLoader,
                                save_path:  str,
                                id: Any = '',
-                               n_batches: int = 1) -> dict:
+                               n_batches: int = 1,
+                               device: Optional[str] = None) -> dict:
     """
     Evaluates the computational metrics (latency, throughput) and size of the model using the provided DataLoader
     This function adresses to FedCore PerformanceEvaluator.
@@ -109,14 +116,14 @@ def eval_computational_metrics(model: Module,
         The results are appended to the specified file in a human-readable format, allowing for easy tracking 
         of performance metrics over time.
     """
-    pev = PerformanceEvaluator(model, dataloader, n_batches=n_batches)
+    pev = PerformanceEvaluator(model, dataloader, device=device, n_batches=n_batches)
     d = pev.eval()
     with open(save_path, 'at+') as file:
         print(f'#{id}', *(f'{k}: {v}' for k, v in d.items()), file=file)
     return d 
 
 
-def get_experimental_setup(name: Union[str, Path]):
+def get_experimental_setup(name: Union[str, Path]) -> dict:
     """
     Retrieves the experimental setup based on the provided name.
 

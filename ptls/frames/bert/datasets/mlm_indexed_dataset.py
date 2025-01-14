@@ -11,22 +11,24 @@ from ptls.data_load.utils import collate_feature_dict
 
 class MlmIndexedDataset(torch.utils.data.Dataset):
     """
+    A dataset class for Masked Language Modeling (MLM) with indexed sequences.
 
-    Parameters
-    ----------
-    data:
-        List with all sequences
-    seq_len:
-        Length of sampled sequence
-    step_rate:
-        Define step of window moving. `step = seq_len * step_rate`.
-        When `step_rate == 1.0` then `step = seq_len` ans windows aren't intersect
-        When `step_rate < 1.0` then sampled windows are intersect
-        When `step_rate > 1.0` then sampled windows aren't intersect and there are missing transactions
-    random_shift:
-        Move window start position in (-random_shift, random_shift) interval randomly
-    random_crop:
-        Reduce lenght of sampled sequence in (0, random_crop) interval randomly
+    Attributes:
+        data (list): List containing all sequences.
+        seq_len (int): Length of the sampled sequence.
+        step_rate (float): Defines the step of window moving. `step = seq_len * step_rate`.
+                          When `step_rate == 1.0`, `step = seq_len` and windows do not intersect.
+                          When `step_rate < 1.0`, sampled windows intersect.
+                          When `step_rate > 1.0`, sampled windows do not intersect and there are missing transactions.
+        random_shift (int): Moves the window start position randomly within the interval (-random_shift, random_shift).
+        random_crop (int): Reduces the length of the sampled sequence randomly within the interval (0, random_crop).
+
+    Args:
+        data (list): List with all sequences.
+        seq_len (int): Length of the sampled sequence.
+        step_rate (float, optional): Step rate for window moving. Defaults to 1.0.
+        random_shift (int, optional): Random shift for window start position. Defaults to 0.
+        random_crop (int, optional): Random crop for reducing sequence length. Defaults to 0.
     """
 
     def __init__(

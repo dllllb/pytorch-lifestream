@@ -3,19 +3,16 @@ from ptls.data_load.iterable_processing_dataset import IterableProcessingDataset
 
 class TargetMove(IterableProcessingDataset):
     """Deprecated. Only single dict allowed.
-    Store target as scalar value in a feature dictionary
-
-    Filter that takes target from sample dict and place it in tuple with dict
-    Parameters
-     ----------
-    target_col : str. Default: 'target'
-         Name of target columns in sample dict.
-         
-    Filter transformation:
-    list(input_dict) -> list((input_dict, target_val))
-    (in place of list there could be other iterable, for example generator)
+    Store target as scalar value in a feature dictionary.
+    Filter that takes target from sample dict and places it in a tuple with dict.
+    
+    Args:
+        target_col (str): Name of target column in sample dict. Default is 'target'.
+    Yields:
+        tuple: A tuple containing the input dictionary and the target value.
+    
     """
-    def __init__(self, target_col='target'):
+    def __init__(self, target_col: str = 'target'):
         super().__init__()
         self.target_col = target_col
 

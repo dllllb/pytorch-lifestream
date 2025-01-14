@@ -37,7 +37,12 @@ def cpc_collate_fn(batch):
 
 
 class CpcDataModuleTrain(pl.LightningDataModule):
-    def __init__(self, type, setup, train, valid, pl_module):
+    def __init__(self, 
+                 type: str, 
+                 setup: dict, 
+                 train: dict, 
+                 valid: dict, 
+                 pl_module: pl.LightningModule):
         warnings.warn('Use `ptls.frames.PtlsDataModule` '
                       'with `ptls.frames.cpc.CpcDataset` or `ptls.frames.cpc.CpcIterableDataset`',
                       DeprecationWarning)
@@ -60,7 +65,7 @@ class CpcDataModuleTrain(pl.LightningDataModule):
         self._train_ids = None
         self._valid_ids = None
 
-    def prepare_data(self, stage=None):
+    def prepare_data(self) -> None:
         if 'dataset_files' in self.setup_conf:
             self.setup_iterable_files()
         elif 'dataset_parts' in self.setup_conf:
@@ -71,7 +76,7 @@ class CpcDataModuleTrain(pl.LightningDataModule):
         if self._type == 'map':
             self.setup_map()
 
-    def setup_iterable_files(self):
+    def setup_iterable_files(self) -> None:
         if self.setup_conf.split_by == 'files':
             data_files = ParquetFiles(self.setup_conf.dataset_files.data_path).data_files
 
@@ -97,7 +102,7 @@ class CpcDataModuleTrain(pl.LightningDataModule):
         else:
             raise AttributeError(f'Unknown split strategy: {self.setup_conf.split_by}')
 
-    def setup_iterable_parts(self):
+    def setup_iterable_parts(self) -> None:
         data_files = PartitionedDataFiles(**self.setup_conf.dataset_parts)
 
         if self.setup_conf.split_by == 'hash_id':
@@ -125,7 +130,7 @@ class CpcDataModuleTrain(pl.LightningDataModule):
         else:
             raise AttributeError(f'Unknown split strategy: {self.setup_conf.split_by}')
 
-    def build_iterable_processing(self, part):
+    def build_iterable_processing(self, part: str) -> iter:
         if part == 'train':
             yield SeqLenFilter(min_seq_len=self.train_conf.min_seq_len)
 
@@ -139,13 +144,12 @@ class CpcDataModuleTrain(pl.LightningDataModule):
 
             yield IterableAugmentations(self.build_augmentations(part))
 
-    def build_augmentations(self, part):
+    def build_augmentations(self, part: str) -> list:
         if part == 'train':
             return build_augmentations(self.train_conf.augmentations)
-        else:
-            return build_augmentations(self.valid_conf.augmentations)
+        return build_augmentations(self.valid_conf.augmentations)
 
-    def setup_map(self):
+    def setup_map(self) -> None:
         self.train_dataset = list(tqdm(iter(self.train_dataset)))
         logger.info(f'Loaded {len(self.train_dataset)} for train')
         self.valid_dataset = list(tqdm(iter(self.valid_dataset)))
@@ -160,7 +164,7 @@ class CpcDataModuleTrain(pl.LightningDataModule):
             a_chain=self.build_augmentations('valid'),
         )
 
-    def train_dataloader(self):
+    def train_dataloader(self) -> DataLoader:
         return DataLoader(
             dataset=self.train_dataset,
             collate_fn=cpc_collate_fn,
@@ -169,7 +173,7 @@ class CpcDataModuleTrain(pl.LightningDataModule):
             batch_size=self.train_conf.batch_size,
         )
 
-    def val_dataloader(self):
+    def val_dataloader(self) -> DataLoader:
         return DataLoader(
             dataset=self.valid_dataset,
             collate_fn=cpc_collate_fn,
