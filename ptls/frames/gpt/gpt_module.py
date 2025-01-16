@@ -76,7 +76,6 @@ class GptPretrainModule(pl.LightningModule):
         self.save_hyperparameters(ignore=['trx_encoder', 'seq_encoder'])
 
         self.trx_encoder = trx_encoder
-        assert not self.trx_encoder.numeric_values, '`numeric_values` parameter of `trx_encoder` should be == {}. Discretize all numerical features into categorical to use Tabformer model!'
         assert self.trx_encoder.embeddings, '`embeddings` parameter for `trx_encoder` should contain at least 1 feature!'
 
         self._seq_encoder = seq_encoder
