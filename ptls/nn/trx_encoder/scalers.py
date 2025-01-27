@@ -104,14 +104,14 @@ class ExpScaler(IdentityScaler):
 
 class Periodic(IdentityScaler):
     '''
-    x -> [cos(cx), sin(cx)], c - (num_periods)-dimensional learnable vector
+    x -> [cos(cx), sin(cx)], c - (num_periods)-dimensional learnable vector initialized from N(0, param_dist_sigma)
     
     From paper  "On embeddings for numerical features in tabular deep learning"
     '''
-    def __init__(self, num_periods = 8):
+    def __init__(self, num_periods = 8, param_dist_sigma = 1):
         super().__init__()
         self.num_periods = num_periods
-        self.c = torch.nn.Parameter(torch.randn(1,1, num_periods), requires_grad=True)
+        self.c = torch.nn.Parameter(torch.normal(0, param_dist_sigma, size=(1,1, num_periods)), requires_grad=True)
 
     def forward(self, x):
         x = super().forward(x)
@@ -124,16 +124,17 @@ class Periodic(IdentityScaler):
 
 class PeriodicMLP(IdentityScaler):
     '''
-    x -> [cos(cx), sin(cx)], c - (num_periods)-dimensional learnable vector
-    Then Linear, Then ReLU
+    x -> [cos(cx), sin(cx)], c - (num_periods)-dimensional learnable vector initialized from N(0, param_dist_sigma)
+    Then Linear, then ReLU
     
     From paper  "On embeddings for numerical features in tabular deep learning"
     '''
-    def __init__(self, num_periods = 8):
+    def __init__(self, num_periods = 8, param_dist_sigma = 1, mlp_output_size = -1):
         super().__init__()
         self.num_periods = num_periods
-        self.c = torch.nn.Parameter(torch.randn(1,1, num_periods), requires_grad=True)
-        self.mlp = nn.Linear(self.output_size, self.output_size)
+        self.mlp_output_size = mlp_output_size if mlp_output_size > 0 else  2 * self.num_periods
+        self.c = torch.nn.Parameter(torch.normal(0, param_dist_sigma, size=(1,1, num_periods)), requires_grad=True)
+        self.mlp = nn.Linear(2 * self.num_periods, self.mlp_output_size)
         self.relu = nn.ReLU()
 
     def forward(self, x):
@@ -143,26 +144,28 @@ class PeriodicMLP(IdentityScaler):
         x = self.mlp(x)
         x = self.relu(x)
         return x
+        
     @property
     def output_size(self):
-        return 2 * self.num_periods
-
+        return self.mlp_output_size
 
 class PLE(IdentityScaler):
     '''
     x -> [1, 1,1 , ax, 0, 0, 0] based on bins
     From paper  "On embeddings for numerical features in tabular deep learning"
     '''
-    def __init__(self, bins = [ 0, 1, 2, 3,]):
+    def __init__(self, bins = [-1, 0, 1]):
         super().__init__()
         self.size = len(bins) - 1
         self.bins = torch.tensor([[bins,]])
+        
     def forward(self, x):
         self.bins = self.bins.to(x.device)
         x = super().forward(x)
         x = (x - self.bins[:,:,:-1]) / (self.bins[:,:,1:] - self.bins[:,:,:-1])
         x = x.clamp(0, 1)
         return(x)
+        
     @property
     def output_size(self):
         return self.size
@@ -174,12 +177,14 @@ class PLE_MLP(IdentityScaler):
     
     From paper  "On embeddings for numerical features in tabular deep learning"
     '''
-    def __init__(self, bins = [ 0, 1, 2, 3,]):
+    def __init__(self, bins = [-1, 0, 1], mlp_output_size = -1):
         super().__init__()
         self.size = len(bins) - 1
+        self.mlp_output_size = mlp_output_size if mlp_output_size > 0 else self.size
         self.bins = torch.tensor([[bins,]])
-        self.mlp = nn.Linear(self.output_size, self.output_size)
+        self.mlp = nn.Linear(self.size, self.mlp_output_size)
         self.relu = nn.ReLU()
+        
     def forward(self, x):
         self.bins = self.bins.to(x.device)
         x = super().forward(x)
@@ -190,7 +195,7 @@ class PLE_MLP(IdentityScaler):
         return(x)
     @property
     def output_size(self):
-        return self.size
+        return self.mlp_output_size
 
 
 def scaler_by_name(name):
