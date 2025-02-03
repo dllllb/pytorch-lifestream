@@ -11,7 +11,7 @@ from ptls.preprocessing.util import determine_n_jobs
 
 class DaskDispatcher:
     def __init__(self, n_jobs: int = -1):
-        self.dask_client = DaskServer(n_jobs=n_jobs).client
+        self.dask_client = DaskServer().client
         print(f"Link Dask Server - {self.dask_client.dashboard_link}")
         self.transformation_func = "fit_transform"
         self.n_jobs = determine_n_jobs(-1)
