@@ -79,6 +79,31 @@ def test_ple():
     assert z.payload.shape == (5, 20, len(bins) - 1)  # B, T, H
     assert trx_encoder.output_size == len(bins) - 1
 
+def test_ple2():
+    B, T = 1, 20
+    bins = [-1, 0, 1]
+    scaler = PLE(bins = bins)
+    trx_encoder = TrxEncoder(
+        numeric_values={'amount': scaler},
+    )
+    x = PaddedBatch(
+        payload={
+            'amount': torch.tensor([[-2, -1, 0, 1, 2, -0.2, 0.7]]),
+        },
+        length=torch.tensor([7]),
+    )
+    z = trx_encoder(x)
+    ans = torch.tensor([[
+         [0., 0.],
+         [0., 0.],
+         [1., 0.],
+         [1., 1.],
+         [1., 1.],
+         [0.8, 0.0],
+         [1., 0.7]
+    ]])
+    assert torch.abs(z.payload - ans).sum() < 1e-5, z.payload
+
 def test_ple_mlp():
     B, T = 5, 20
     bins = [-1, 0, 1]
