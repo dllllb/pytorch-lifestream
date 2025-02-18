@@ -1,7 +1,6 @@
 import logging
 import os
 import warnings
-from functools import partial
 from glob import glob
 from itertools import chain
 from typing import Union, List
@@ -12,7 +11,6 @@ import torch
 import torch.distributed as dist
 from omegaconf import ListConfig
 
-from pymonad.either import Either
 from ptls.data_load import read_pyarrow_file
 from ptls.data_load.utils import init_worker
 
@@ -130,17 +128,16 @@ class ParquetDataset(torch.utils.data.IterableDataset):
 
     def __iter__(self):
         init_worker(self)
-        rs = np.random.RandomState(self._shuffle_seed % 2 ** 32)
-        my_files = rs.shuffle(self._get_my_files()) if self.shuffle_files else self._get_my_files()
-        dataset_generator = map(self.iter_file, my_files)
-        sample = Either(value=dataset_generator,
-                        monoid=[dataset_generator,
-                                self.postprocessing_func is not None]). \
-            either(left_function=lambda x: x,
-                   right_function=lambda x: self.__apply_postproc(x))
-
-        return sample
-
+        my_files = self._get_my_files()
+        if self.shuffle_files:
+            rs = np.random.RandomState(self._shuffle_seed % 2**32)
+            rs.shuffle(my_files)
+        logger.debug(f'Iter [{self._worker_id:02d}/{self._num_workers:02d}]: {my_files}')
+        gen = chain(*[self.iter_file(name) for name in my_files])
+        if self.postprocessing_func is not None:
+            gen = self.__apply_postproc(gen)
+        return gen
+    
     def iter_file(self, file_name):
         """
         Iterates over parquet file
@@ -151,21 +148,16 @@ class ParquetDataset(torch.utils.data.IterableDataset):
         Returns:
             [(customer_id, features)]
         """
-
-        def _create_feature_dict(rec):
-            return {next(x) for x in map(self.to_torch, rec.items())}
-
         logger.debug(f'[{self._worker_id}/{self._num_workers}] Iter file "{file_name}"')
-        pyarrow_generator = map(partial(read_pyarrow_file, use_threads=True), file_name)
-        rec = map(_create_feature_dict, pyarrow_generator)
-        yield next(rec)
-
+        for rec in read_pyarrow_file(file_name, use_threads=True):
+            rec = {k: self.to_torch(v) for k, v in rec.items()}
+            yield rec
+    
     @staticmethod
-    def to_torch(key, val):
-        is_numpy = isinstance(val, np.ndarray)
-        is_int_or_float = val.dtype.kind in ('i', 'f')
-        val = torch.from_numpy(val) if all([is_numpy, is_int_or_float]) else val
-        return {key: val}
+    def to_torch(x):
+        if type(x) is np.ndarray and x.dtype.kind in ('i', 'f'):
+            return torch.from_numpy(x)
+        return x
 
 
 class DistributedParquetDataset(ParquetDataset):
