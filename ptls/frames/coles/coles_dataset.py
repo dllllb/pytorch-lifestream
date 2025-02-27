@@ -50,7 +50,7 @@ class ColesDataset(FeatureDict, torch.utils.data.Dataset):
             yield self.get_splits(feature_arrays)
 
     def _create_split_subset(self, idx, feature_arrays):
-        return {k: v[idx] for k, v in feature_arrays.items() if not isinstance(v, int)}
+        return {k: v[idx] for k, v in feature_arrays.items() if self.is_seq_feature(k, v)}
 
     def get_splits(self, feature_arrays: dict):
         local_date = feature_arrays[self.col_time]
