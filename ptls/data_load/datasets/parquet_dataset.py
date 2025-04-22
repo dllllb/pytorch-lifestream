@@ -217,11 +217,6 @@ class DistributedParquetDataset(ParquetDataset):
                     i % self.real_num_workers == self.real_worker_id]
         return my_files
 
-    def __apply_postproc(self, sample):
-        for func in self.postprocessing_func:
-            sample = func(sample)
-        return sample
-
     def _init_worker(self):
 
         init_worker(self)
