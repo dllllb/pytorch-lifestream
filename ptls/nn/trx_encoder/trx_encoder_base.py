@@ -2,6 +2,7 @@ from typing import Dict, Union
 
 import numpy as np
 import torch
+import warnings
 from ptls.data_load.padded_batch import PaddedBatch
 from ptls.nn.trx_encoder.encoders import BaseEncoder
 from ptls.nn.trx_encoder.scalers import IdentityScaler, scaler_by_name
@@ -48,6 +49,7 @@ class TrxEncoderBase(nn.Module):
                  numeric_values: Dict[str, Union[str, BaseEncoder]] = None,
                  custom_embeddings: Dict[str, BaseEncoder] = None,
                  out_of_index: str = 'clip',
+                 fill_numeric_nan_by: float = 0,
                  ):
         super().__init__()
 
@@ -90,6 +92,7 @@ class TrxEncoderBase(nn.Module):
                     self.custom_embeddings[col_name] = scaler
                 else:
                     raise AttributeError(f'Wrong type of numeric_values, found {type(scaler)} for "{col_name}"')
+        self.fill_numeric_nan_by = fill_numeric_nan_by
 
     def get_category_indexes(self, x: PaddedBatch, col_name: str):
         """Returns category feature values clipped to dictionary size.
@@ -125,6 +128,14 @@ class TrxEncoderBase(nn.Module):
         """
         embedder = self.custom_embeddings[col_name]
         col_name = col_name if embedder.col_name is None else embedder.col_name
+        data = x.payload[col_name]
+
+        if torch.is_tensor(data):
+            if torch.isnan(data).any():
+                warnings.warn(f"NaN detected in input tensor for feature '{col_name}'. Replacing NaNs with {self.fill_numeric_nan_by}.")
+                data = torch.nan_to_num(data, nan=self.fill_numeric_nan_by)
+            x.payload[col_name] = data
+
         if isinstance(embedder, IdentityScaler):
             return embedder(x.payload[col_name])
         
