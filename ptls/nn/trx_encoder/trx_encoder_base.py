@@ -134,14 +134,13 @@ class TrxEncoderBase(nn.Module):
             if torch.isnan(data).any():
                 warnings.warn(f"NaN detected in input tensor for feature '{col_name}'. Replacing NaNs with {self.fill_numeric_nan_by}.")
                 data = torch.nan_to_num(data, nan=self.fill_numeric_nan_by)
-            x.payload[col_name] = data
 
         if isinstance(embedder, IdentityScaler):
-            return embedder(x.payload[col_name])
+            return embedder(data)
         
         embeddings = torch.nn.utils.rnn.pad_sequence([
             embedder(trx_value)
-            for trx_value in x.payload[col_name]], batch_first=True
+            for trx_value in data], batch_first=True
         )
         return embeddings
 
