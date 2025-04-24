@@ -23,6 +23,32 @@ def test_example():
     assert z.payload.shape == (5, 20, 6)  # B, T, H
     assert trx_encoder.output_size == 6
 
+def test_fillna():
+    B, T = 5, 20
+
+    trx_encoder = TrxEncoder(
+        embeddings={'mcc_code': {'in': 100, 'out': 5}},
+        numeric_values={'amount': 'log'},
+    )
+
+    mcc_code = torch.randint(0, 99, (B, T))
+    amount = torch.randn(B, T)
+
+    nan_mask = torch.rand(B, T) < 0.2  # 20% NaN
+    amount[nan_mask] = float('nan')
+
+    x = PaddedBatch(
+        payload={
+            'mcc_code': mcc_code,
+            'amount': amount,
+        },
+        length=torch.randint(10, 20, (B,)),
+    )
+    z = trx_encoder(x)
+    assert z.payload.shape == (5, 20, 6)  # (B, T, H)
+    assert trx_encoder.output_size == 6
+    assert not torch.isnan(z.payload).any(), "Output contains NaNs!"
+
 
 def test_pickle():
     params = {
