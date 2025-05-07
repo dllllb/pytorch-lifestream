@@ -194,3 +194,25 @@ def test_padded_batch_keep_seq_features():
         ('target_array', False),
     ]:
         assert is_seq == (col in y.payload)
+
+
+def test_padded_batch_seq_indexing():
+    x = get_pb()
+    
+    y1 = x.seq_indexing(slice(2))
+    y2 = x.seq_indexing([0, 1])
+    
+    seq_lens = torch.tensor([2, 2])
+    mccs = torch.tensor([[1, 2], [3, 4]])
+    
+    torch.testing.assert_close(y1.seq_lens, seq_lens)
+    torch.testing.assert_close(y2.seq_lens, seq_lens)
+    
+    torch.testing.assert_close(y1.payload["mcc"], mccs)
+    torch.testing.assert_close(y2.payload["mcc"], mccs)
+    
+    with pytest.raises(ValueError, match="Non-monotonically increasing step not allowed"):
+        x.seq_indexing([3, 2, 1])
+        
+    with pytest.raises(ValueError, match="Negative step not allowed"):
+        x.seq_indexing(slice(-1, 0, -1))
