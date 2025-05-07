@@ -228,25 +228,22 @@ class DistributedParquetDataset(ParquetDataset):
             self.real_num_workers = self._num_workers * world_size
             self.real_worker_id = rank + self._worker_id * world_size
         logger.debug(f'Started [{self.real_worker_id:02d}/{self.real_num_workers:02d}]')
-
+    
     def __iter__(self):
         self._init_worker()
         if dist.is_initialized() and self.items_per_worker is None:
             self.items_per_worker = self._calc_min_items_per_worker()
-
         my_files = self._get_my_files()
         if self.shuffle_files:
-            rs = np.random.RandomState(self._shuffle_seed % 2 ** 32)
+            rs = np.random.RandomState(self._shuffle_seed % 2**32)
             rs.shuffle(my_files)
-
         logger.debug(f'Iter [{self._worker_id:02d}/{self._num_workers:02d}]: {my_files}')
         if self.repeat_items:
             gen = chain(*[self.iter_file(name) for _ in range(2) for name in my_files])
         else:
             gen = chain(*[self.iter_file(name) for name in my_files])
-
-        if self.i_filters is not None:
-            gen = self.i_filters(gen)
+        if self.postprocessing_func is not None:
+            gen = self.__apply_postproc(gen)
         return iter_with_max_num(gen, self.items_per_worker)
 
 

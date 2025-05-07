@@ -61,7 +61,9 @@ def main(conf: DictConfig):
     trainer = pl.Trainer(**_trainer_params, **_trainer_params_additional)
     trainer.fit(model, dm)
 
-    if 'model_path' in conf:
+    if dist.is_initialized() and dist.get_rank() > 0:
+        pass # save model once
+    elif 'model_path' in conf:
         if _use_best_epoch:
             # from shutil import copyfile
             # copyfile(checkpoint_callback.best_model_path, conf.model_path)
