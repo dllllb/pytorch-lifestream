@@ -154,7 +154,7 @@ class TabformerPretrainModule(pl.LightningModule):
             # The rest of the time (10% of the time) we keep the masked input tokens unchanged
             indices_random = (torch.bernoulli(torch.full(labels.shape, 0.5)).bool().to(inputs.device) & masked_indices & ~indices_replaced)
     
-            return labels.permute(1, 2, 0), masked_indices.permute(1, 2, 0), indices_random.permute(1, 2, 0)
+            return labels.permute(1, 2, 0), indices_replaced.permute(1, 2, 0), indices_random.permute(1, 2, 0)
 
     def loss_tabformer(self, x: PaddedBatch, target, is_train_step):
         out = self.forward(x)
