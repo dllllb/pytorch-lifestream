@@ -88,7 +88,7 @@ class TrxEncoder(TrxEncoderBase):
                  custom_embeddings=None,
                  embeddings_noise: float = 0,
                  norm_embeddings=None,
-                 use_batch_norm=False,
+                 use_batch_norm=True,
                  use_batch_norm_with_lens=False,
                  clip_replace_value=None,
                  positions=None,
