@@ -66,7 +66,7 @@ We have a demo notebooks here, some of them:
 And we have a tutorials [here](tutorials)
 ## Docs
 
-[Documentation](https://dllllb.github.io/pytorch-lifestream/)
+[Documentation](https://pytorch-lifestream.github.io/pytorch-lifestream/)
 
 Library description [index](docs/index.md)
 
