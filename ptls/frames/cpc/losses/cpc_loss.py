@@ -50,7 +50,7 @@ class CPC_Loss(nn.Module):
         step_losses = []
         for i, (positive_pred_i, neg_pred_i) in enumerate(zip(positive_preds, neg_preds)):
             positions = torch.arange(max_len-i-1, device=device)             
-            mask = positions.unsqueeze(0).expand(batch_size, max_len-i-1)             
+            mask = positions.unsqueeze(0).expand(batch_size, max_len-i-1) + i + 1            
             mask = mask < seq_lens.unsqueeze(1) 
             mask = mask.to(torch.float32)
             
