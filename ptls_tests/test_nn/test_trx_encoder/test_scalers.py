@@ -85,6 +85,7 @@ def test_ple2():
     scaler = PLE(bins = bins)
     trx_encoder = TrxEncoder(
         numeric_values={'amount': scaler},
+        use_batch_norm=False,
     )
     x = PaddedBatch(
         payload={
