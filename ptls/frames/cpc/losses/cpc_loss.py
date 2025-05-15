@@ -55,7 +55,7 @@ class CPC_Loss(nn.Module):
             mask = mask.to(torch.float32)
             
             step_loss = -F.log_softmax(torch.cat([positive_pred_i.unsqueeze(-1), neg_pred_i], dim=-1), dim=-1)[:, :, 0]
-            step_loss = (step_loss * mask).mean()
+            step_loss = (step_loss * mask).sum() / mask.sum()
             step_losses.append(step_loss)
 
         loss = torch.stack(step_losses).mean()
