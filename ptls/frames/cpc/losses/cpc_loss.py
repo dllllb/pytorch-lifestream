@@ -45,10 +45,17 @@ class CPC_Loss(nn.Module):
         base_embeddings, _, mapped_ctx_embeddings = embeddings
         device = mapped_ctx_embeddings.payload.device
         positive_preds, neg_preds = self._get_preds(base_embeddings, mapped_ctx_embeddings)
-
+        batch_size, max_len, emb_size = base_embeddings.payload.shape
+        seq_lens = mapped_ctx_embeddings.seq_lens
         step_losses = []
-        for positive_pred_i, neg_pred_i in zip(positive_preds, neg_preds):
-            step_loss = -F.log_softmax(torch.cat([positive_pred_i.unsqueeze(-1), neg_pred_i], dim=-1), dim=-1)[:, :, 0].mean()
+        for i, (positive_pred_i, neg_pred_i) in enumerate(zip(positive_preds, neg_preds)):
+            positions = torch.arange(max_len-i-1, device=device)             
+            mask = positions.unsqueeze(0).expand(batch_size, max_len-i-1) + i + 1            
+            mask = mask < seq_lens.unsqueeze(1) 
+            mask = mask.to(torch.float32)
+            
+            step_loss = -F.log_softmax(torch.cat([positive_pred_i.unsqueeze(-1), neg_pred_i], dim=-1), dim=-1)[:, :, 0]
+            step_loss = (step_loss * mask).sum() / mask.sum()
             step_losses.append(step_loss)
 
         loss = torch.stack(step_losses).mean()
