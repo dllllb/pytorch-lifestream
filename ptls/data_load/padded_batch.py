@@ -97,10 +97,13 @@ class PaddedBatch:
 
     def to(self, device, non_blocking=False):
         length = self._length.to(device=device, non_blocking=non_blocking)
-        payload = {
-            k: v.to(device=device, non_blocking=non_blocking) if type(v) is torch.Tensor else v
-            for k, v in self._payload.items()
-        }
+        if type(self._payload) == dict:
+            payload = {
+                k: v.to(device=device, non_blocking=non_blocking) if type(v) is torch.Tensor else v
+                for k, v in self._payload.items()
+            }
+        elif type(self._payload) == torch.Tensor:
+            payload = self._payload.to(device=device, non_blocking=non_blocking)
         return PaddedBatch(payload, length)
 
     @property
