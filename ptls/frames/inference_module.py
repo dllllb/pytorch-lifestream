@@ -33,7 +33,7 @@ class InferenceModule(pl.LightningModule):
         return tensor.detach().cpu().numpy() if tensor.requires_grad else tensor.cpu().numpy()
 
     def to_pandas(self, x):
-        if isinstance(x, PaddedBatch) or isinstance(x, PaddedBatch):
+        if isinstance(x, PaddedBatch):
             len_mask = x.seq_len_mask.bool().cpu().numpy()
             payload = x.payload
         else:
@@ -44,7 +44,7 @@ class InferenceModule(pl.LightningModule):
 
         scalar_feats, seq_feats, expand_feats = {}, {}, {}
         for k, v in payload.items():
-            if isinstance(v, PaddedBatch) or isinstance(v, PaddedBatch):
+            if isinstance(v, PaddedBatch):
                 len_mask = v.seq_len_mask.bool().cpu().numpy()
                 arr = v.payload
             else:
