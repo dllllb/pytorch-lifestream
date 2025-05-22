@@ -33,32 +33,25 @@ class InferenceModule(pl.LightningModule):
         return tensor.detach().cpu().numpy() if tensor.requires_grad else tensor.cpu().numpy()
 
     def to_pandas(self, x):
-        # Extract mask and payload
         if isinstance(x, PaddedBatch) or isinstance(x, PaddedBatch):
             len_mask = x.seq_len_mask.bool().cpu().numpy()
             payload = x.payload
         else:
             payload = x
-            # assume mask is unchanged from previous padded batch
             len_mask = None
 
-        # Determine if model output is per-sample (record) or per-sequence
-        # is_reduced = not isinstance(payload[self.model_out_name], PaddedBatch) or not isinstance(payload[self.model_out_name], PaddedBatchNew)
         is_reduced = not isinstance(payload[self.model_out_name], PaddedBatch)
-        # Collect features into dicts of numpy arrays
+
         scalar_feats, seq_feats, expand_feats = {}, {}, {}
         for k, v in payload.items():
-            # Unwrap PaddedBatch values
             if isinstance(v, PaddedBatch) or isinstance(v, PaddedBatch):
                 len_mask = v.seq_len_mask.bool().cpu().numpy()
                 arr = v.payload
             else:
                 arr = v
-            # Convert tensors to numpy
             if isinstance(arr, torch.Tensor):
                 arr = arr.detach().cpu().numpy()
 
-            # Classify features by shape
             if isinstance(arr, list) or arr.ndim == 1:
                 scalar_feats[k] = np.asarray(arr)
             elif arr.ndim == 3 or (k == self.model_out_name and arr.ndim == 2):
@@ -66,7 +59,6 @@ class InferenceModule(pl.LightningModule):
             else:
                 seq_feats[k] = arr
 
-        # Route to optimized routines
         if is_reduced:
             return self._record_to_pandas(scalar_feats, seq_feats, expand_feats, len_mask)
         else:
@@ -74,14 +66,13 @@ class InferenceModule(pl.LightningModule):
 
     @staticmethod
     def _record_to_pandas(scalar_feats, seq_feats, expand_feats, len_mask):
-        # Create DataFrame from scalar features
         df = pd.DataFrame(scalar_feats)
-        # Add sequence features as arrays in cells
+        # Add sequence features
         for k, arr in seq_feats.items():
             df[k] = [arr[i][:np.sum(len_mask[i])] for i in range(arr.shape[0])]
-        # Add expanded features by direct array-to-DataFrame
+        # Add expanded features
         for k, arr in expand_feats.items():
-            # Flatten last two dims (batch_size, features) -> (batch_size, -1)
+            # (batch_size, features) -> (batch_size, -1)
             flat = arr.reshape(arr.shape[0], -1)
             cols = [f'{k}_{j:04d}' for j in range(flat.shape[1])]
             df_expand = pd.DataFrame(flat, columns=cols, index=df.index)
@@ -90,7 +81,6 @@ class InferenceModule(pl.LightningModule):
 
     @staticmethod
     def _sequence_to_pandas(scalar_feats, seq_feats, expand_feats, len_mask):
-        # Compute lengths of each sequence
         lengths = len_mask.sum(axis=1).astype(int)
         total = int(lengths.sum())
         data = {}
@@ -99,15 +89,13 @@ class InferenceModule(pl.LightningModule):
         for k, arr in scalar_feats.items():
             data[k] = np.repeat(arr, lengths)
 
-        # Flatten sequence features using mask
+        # Flatten sequence features
         mask_flat = len_mask.flatten()
         for k, arr in seq_feats.items():
             data[k] = arr.flatten()[mask_flat]
 
-        # Flatten expanded features per sample
+        # Flatten expanded features
         for k, arr in expand_feats.items():
-            # arr shape: (batch_size, max_seq_len, dims) or (batch_size, dims)
-            # For sequence mode, assume seq dim present
             samples = []
             for i in range(arr.shape[0]):
                 samples.append(arr[i, :lengths[i]].reshape(lengths[i], -1))
