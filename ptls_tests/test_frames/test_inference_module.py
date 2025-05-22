@@ -161,9 +161,10 @@ def test_inference_module_record():
     )
 
     df_out = pd.concat(pl.Trainer(accelerator="cpu", max_epochs=-1).predict(rnn_model, valid_loader))
+    print(df_out)
     assert df_out.shape == (1000, 20)
-    np.testing.assert_array_almost_equal(list(df_out.mcc_code)[0], [mcc for mcc in trx_data[0]['mcc_code']])
-
+    np.testing.assert_array_almost_equal(df_out.mcc_code.to_list()[0], trx_data[0]['mcc_code'].numpy())
+    
 def test_inference_module_record_drop_seq():
     lengths = (torch.rand(1000)*60+1).long()
     trx_data = gen_trx_data(lengths, target_type='multi_cls', use_feature_arrays_key=False)

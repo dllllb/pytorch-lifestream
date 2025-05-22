@@ -28,98 +28,82 @@ class InferenceModule(pl.LightningModule):
         if self.pandas_output:
             return self.to_pandas(x)
         return x
-
-    def to_pandas(self, x):
-        is_reduced = None
-        scalar_features, seq_features, expand_features = {}, {}, {}
-        df_scalar, df_seq, df_expand, out_df = None, None, None, None
-        len_mask = None
-
-        x_ = x
-        if type(x_) is PaddedBatch:
-            len_mask = x_.seq_len_mask.bool().cpu().numpy()
-            x_ = x_.payload
-        is_reduced = (type(x_[self.model_out_name]) is not PaddedBatch)
-        for k, v in x_.items():
-            if type(v) is PaddedBatch:
-                len_mask = v.seq_len_mask.bool().cpu().numpy()
-                v = v.payload
-            if type(v) is torch.Tensor:
-                v = v.detach().cpu().numpy()
-            if type(v) is list or len(v.shape) == 1:
-                scalar_features[k] = v
-            elif k.startswith('target'):
-                scalar_features[k] = v
-            elif len(v.shape) == 3:
-                expand_features[k] = v
-            elif k == self.model_out_name and len(v.shape) == 2:
-                expand_features[k] = v
-            elif len(v.shape) == 2:
-                seq_features[k] = v
-
-        if is_reduced:
-            df_scalar, df_seq, df_expand = self.to_pandas_record(x, expand_features, scalar_features, seq_features, len_mask)
-        else:
-            df_scalar, df_seq, df_expand = self.to_pandas_sequence(x, expand_features, scalar_features, seq_features, len_mask)
-
-        out_df = df_scalar
-        if df_seq:
-            df_seq = pd.concat(df_seq, axis = 1)
-            out_df = pd.concat([df_scalar, df_seq], axis = 1)
-        if df_expand:
-            df_expand = pd.concat(df_expand, axis = 0).reset_index(drop=True)
-            out_df = pd.concat([out_df.reset_index(drop=True), df_expand], axis = 1)
-
-        return out_df
     
     def to_numpy(self, tensor):
         return tensor.detach().cpu().numpy() if tensor.requires_grad else tensor.cpu().numpy()
 
+    def to_pandas(self, x):
+        if isinstance(x, PaddedBatch):
+            len_mask = x.seq_len_mask.bool().cpu().numpy()
+            payload = x.payload
+        else:
+            payload = x
+            len_mask = None
+
+        is_reduced = not isinstance(payload[self.model_out_name], PaddedBatch)
+
+        scalar_feats, seq_feats, expand_feats = {}, {}, {}
+        for k, v in payload.items():
+            if isinstance(v, PaddedBatch):
+                len_mask = v.seq_len_mask.bool().cpu().numpy()
+                arr = v.payload
+            else:
+                arr = v
+            if isinstance(arr, torch.Tensor):
+                arr = arr.detach().cpu().numpy()
+
+            if isinstance(arr, list) or arr.ndim == 1:
+                scalar_feats[k] = np.asarray(arr)
+            elif arr.ndim == 3 or (k == self.model_out_name and arr.ndim == 2):
+                expand_feats[k] = arr
+            else:
+                seq_feats[k] = arr
+
+        if is_reduced:
+            return self._record_to_pandas(scalar_feats, seq_feats, expand_feats, len_mask)
+        else:
+            return self._sequence_to_pandas(scalar_feats, seq_feats, expand_feats, len_mask)
+
     @staticmethod
-    def to_pandas_record(x, expand_features, scalar_features, seq_features, len_mask):
-        dataframes_scalar = []
-        for k, v in scalar_features.items():
-            dataframes_scalar.append(pd.DataFrame(v, columns=[k]))
-        dataframes_scalar = pd.concat(dataframes_scalar, axis = 1)
-
-        dataframes_seq = []
-        for k, v in seq_features.items():
-            data_lst = [usr[len_mask[i]] for i, usr in enumerate(v)]
-            dataframes_seq.append(pd.DataFrame(zip(data_lst), columns=[k]))
-
-
-        dataframes_expand = []
-        for k, v in expand_features.items():
-            for i, usr in enumerate(v):
-                exp_num = usr.shape[1] if len(usr.shape) == 2 else usr.shape[0]
-                df_trx = pd.DataFrame([usr], columns=[f'{k}_{j:04d}' for j in range(exp_num)])
-                dataframes_expand.append(df_trx)
-
-        return dataframes_scalar, dataframes_seq, dataframes_expand
+    def _record_to_pandas(scalar_feats, seq_feats, expand_feats, len_mask):
+        df = pd.DataFrame(scalar_feats)
+        # Add sequence features
+        for k, arr in seq_feats.items():
+            df[k] = [arr[i][:np.sum(len_mask[i])] for i in range(arr.shape[0])]
+        # Add expanded features
+        for k, arr in expand_feats.items():
+            # (batch_size, features) -> (batch_size, -1)
+            flat = arr.reshape(arr.shape[0], -1)
+            cols = [f'{k}_{j:04d}' for j in range(flat.shape[1])]
+            df_expand = pd.DataFrame(flat, columns=cols, index=df.index)
+            df = pd.concat([df, df_expand], axis=1)
+        return df
 
     @staticmethod
-    def to_pandas_sequence(x, expand_features, scalar_features, seq_features, len_mask):
-        dataframes_scalar = []
-        for k, v in scalar_features.items():
-            data_lst = [[data]*np.sum(len_mask[i]) for i, data in enumerate(v)]
-            data_lst = list(chain(*data_lst))
-            dataframes_scalar.append(pd.DataFrame(data_lst, columns=[k]))
-        dataframes_scalar = pd.concat(dataframes_scalar, axis = 1)
+    def _sequence_to_pandas(scalar_feats, seq_feats, expand_feats, len_mask):
+        lengths = len_mask.sum(axis=1).astype(int)
+        total = int(lengths.sum())
+        data = {}
 
-        dataframes_seq = []
-        for k, v in seq_features.items():
-            data_lst = [data[len_mask[i]] for i, data in enumerate(v)]
-            data_lst = list(chain(*data_lst))
-            dataframes_seq.append(pd.DataFrame(data_lst, columns=[k]))
+        # Repeat scalar features per sequence length
+        for k, arr in scalar_feats.items():
+            data[k] = np.repeat(arr, lengths)
 
-        dataframes_expand = []
-        for k, v in expand_features.items():
-            for i, usr in enumerate(v):
-                exp_num = usr.shape[1] if len(usr.shape) == 2 else usr.shape[0]
-                df_trx = pd.DataFrame(usr[len_mask[i]], columns=[f'{k}_{j:04d}' for j in range(exp_num)])
-                dataframes_expand.append(df_trx)
+        # Flatten sequence features
+        mask_flat = len_mask.flatten()
+        for k, arr in seq_feats.items():
+            data[k] = arr.flatten()[mask_flat]
 
-        return dataframes_scalar, dataframes_seq, dataframes_expand
+        # Flatten expanded features
+        for k, arr in expand_feats.items():
+            samples = []
+            for i in range(arr.shape[0]):
+                samples.append(arr[i, :lengths[i]].reshape(lengths[i], -1))
+            flat = np.vstack(samples)
+            for j in range(flat.shape[1]):
+                data[f'{k}_{j:04d}'] = flat[:, j]
+
+        return pd.DataFrame(data)
 
 
 class InferenceModuleMultimodal(pl.LightningModule):
