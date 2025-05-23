@@ -2,8 +2,7 @@ from typing import Dict
 
 import numpy as np
 import torch
-
-from ptls.data_load.feature_dict import FeatureDict
+from collections.abc import Sequence
 
 
 class PaddedBatch:
@@ -164,3 +163,38 @@ class PaddedBatch:
             payload={k: v for k, v in self.payload.items() if PaddedBatch.is_seq_feature(k, v)},
             length=self.seq_lens,
         )
+        
+    def seq_indexing(self, ix):
+        """Indexes PaddedBatch's seq features with indices given by ix
+
+        Parameters:
+        ----------
+            ix:
+                list/tuple of indices, slice object, or an integer tensor to index seq_features with.
+                Note, that the index must be monotonically increasing.
+        
+        Returns:
+        -------
+            PaddedBatch with updated seq features and seq_lens
+        """
+        if isinstance(ix, slice):
+            if ix.step is not None and ix.step < 0:
+                raise ValueError("Negative step not allowed")
+        elif isinstance(ix, torch.Tensor):
+            if (torch.diff(ix) < 0).any():
+                raise ValueError("Non-monotonically increasing step not allowed")
+        elif isinstance(ix, Sequence):
+            if (np.diff(ix) < 0).any():
+                raise ValueError("Non-monotonically increasing step not allowed")
+        else:
+            raise TypeError("Index must be of type slice, Tensor, list or tuple")
+        
+        if isinstance(self._payload, dict):
+            payload = {k: v[:, ix] for k, v in self._payload.items() if self.is_seq_feature(k, v)}
+        else:
+            payload = self._payload[:, ix]
+            
+        old_seq_mask = self.seq_len_mask
+        new_seq_mask = old_seq_mask[:, ix]
+        new_seq_lens = torch.sum(new_seq_mask, 1)
+        return PaddedBatch(payload, new_seq_lens)
