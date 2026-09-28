@@ -121,7 +121,7 @@ class ParquetDataset(torch.utils.data.IterableDataset):
 
         return my_files
 
-    def __apply_postproc(self, sample):
+    def _apply_postproc(self, sample):
         for func in self.postprocessing_func:
             sample = func(sample)
         return sample
@@ -135,7 +135,7 @@ class ParquetDataset(torch.utils.data.IterableDataset):
         logger.debug(f'Iter [{self._worker_id:02d}/{self._num_workers:02d}]: {my_files}')
         gen = chain(*[self.iter_file(name) for name in my_files])
         if self.postprocessing_func is not None:
-            gen = self.__apply_postproc(gen)
+            gen = self._apply_postproc(gen)
         return gen
     
     def iter_file(self, file_name):
@@ -243,7 +243,7 @@ class DistributedParquetDataset(ParquetDataset):
         else:
             gen = chain(*[self.iter_file(name) for name in my_files])
         if self.postprocessing_func is not None:
-            gen = self.__apply_postproc(gen)
+            gen = self._apply_postproc(gen)
         return iter_with_max_num(gen, self.items_per_worker)
 
 
